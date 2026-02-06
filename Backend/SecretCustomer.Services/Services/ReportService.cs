@@ -1662,6 +1662,34 @@ public class ReportService : IReportService
         };
     }
 
+    /// <summary>
+    /// Cevaplardaki yorumları + genel yorumu satır satır birleştirir.
+    /// </summary>
+    private static string? BuildCombinedNotes(Evaluation evaluation)
+    {
+        var parts = new List<string>();
+
+        // Cevaplardaki yorumlar (Notes doluysa)
+        if (evaluation.Answers != null)
+        {
+            foreach (var answer in evaluation.Answers.OrderBy(a => a.Question?.Order ?? 0))
+            {
+                if (!string.IsNullOrWhiteSpace(answer.Notes))
+                {
+                    parts.Add(answer.Notes.Trim());
+                }
+            }
+        }
+
+        // Genel yorum
+        if (!string.IsNullOrWhiteSpace(evaluation.Notes))
+        {
+            parts.Add(evaluation.Notes.Trim());
+        }
+
+        return parts.Count > 0 ? string.Join("\n", parts) : null;
+    }
+
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
 
     public async Task<IEnumerable<CustomerListItemDto>> GetCustomersWithEvaluationsAsync()
@@ -1970,7 +1998,8 @@ public class ReportService : IReportService
                 CallId = e.CallId,
                 CallTime = e.CallTime,
                 Duration = e.Duration,
-                Notes = e.Notes
+                // Cevaplardaki yorumlar + genel yorum birleştirilir
+                Notes = BuildCombinedNotes(e)
             })
             .ToList();
 
@@ -2215,6 +2244,8 @@ public class ReportService : IReportService
         evalSheet.Cell(1, 8).Style.Font.Bold = true;
         evalSheet.Cell(1, 9).Value = "Kırmızı Kart";
         evalSheet.Cell(1, 9).Style.Font.Bold = true;
+        evalSheet.Cell(1, 10).Value = "Yorum";
+        evalSheet.Cell(1, 10).Style.Font.Bold = true;
 
         row = 2;
         foreach (var eval in report.RecentEvaluations)
@@ -2228,10 +2259,11 @@ public class ReportService : IReportService
             evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F1}%";
             evalSheet.Cell(row, 8).Value = eval.YellowCards;
             evalSheet.Cell(row, 9).Value = eval.RedCards;
+            evalSheet.Cell(row, 10).Value = eval.Notes ?? "-";
             row++;
         }
         evalSheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(evalSheet, callIdColumns: new[] { 2 });
+        ExcelHelper.ApplyLongTextColumnStyles(evalSheet, callIdColumns: new[] { 2 }, noteColumns: new[] { 10 });
 
         // Güçlü/Zayıf Yönler
         var analysisSheet = workbook.Worksheets.Add("Güçlü ve Zayıf Yönler");
@@ -2331,6 +2363,25 @@ public class ReportService : IReportService
 
         using var doc = new XWPFDocument();
 
+        // Helper: Hücreye gri arka plan uygula
+        void SetCellGrayBackground(XWPFTableCell cell)
+        {
+            var ctTc = cell.GetCTTc();
+            var tcPr = ctTc.IsSetTcPr() ? ctTc.tcPr : ctTc.AddNewTcPr();
+            var shd = tcPr.AddNewShd();
+            shd.fill = "C0C0C0";
+            shd.val = NPOI.OpenXmlFormats.Wordprocessing.ST_Shd.clear;
+        }
+
+        // Helper: Hücre run'ına font boyutu ayarla
+        void SetCellFontSize(XWPFTableCell cell, int fontSize)
+        {
+            if (cell.Paragraphs.Count > 0 && cell.Paragraphs[0].Runs.Count > 0)
+            {
+                cell.Paragraphs[0].Runs[0].FontSize = fontSize;
+            }
+        }
+
         // ===== BAŞLIK TABLOSU =====
         var headerTable = doc.CreateTable(2, 2);
         headerTable.Width = 5000;
@@ -2362,18 +2413,30 @@ public class ReportService : IReportService
         // Boş paragraf
         doc.CreateParagraph();
 
-        // ===== PROJE + BAŞARI ORTALAMASI =====
-        var avgPara = doc.CreateParagraph();
-        var avgRun = avgPara.CreateRun();
-        avgRun.SetText($"{projectName}");
-        avgRun.IsBold = true;
-        avgRun.FontSize = 11;
+        // ===== PROJE + BAŞARI ORTALAMASI (Tablo olarak) =====
+        var avgTable = doc.CreateTable(1, 2);
+        avgTable.Width = 5000;
 
-        var scorePara = doc.CreateParagraph();
-        var scoreRun = scorePara.CreateRun();
-        scoreRun.SetText($"  {report.AverageScore:F2}");
-        scoreRun.IsBold = true;
-        scoreRun.FontSize = 24;
+        // Sol: Proje adı (gri arka plan)
+        var projectCell = avgTable.GetRow(0).GetCell(0);
+        projectCell.SetText(projectName);
+        SetCellGrayBackground(projectCell);
+        if (projectCell.Paragraphs.Count > 0 && projectCell.Paragraphs[0].Runs.Count > 0)
+        {
+            projectCell.Paragraphs[0].Runs[0].IsBold = true;
+            projectCell.Paragraphs[0].Runs[0].FontSize = 11;
+        }
+
+        // Sağ: Ortalama puan
+        var scoreCell = avgTable.GetRow(0).GetCell(1);
+        scoreCell.SetText($"  {report.AverageScore:F2}");
+        if (scoreCell.Paragraphs.Count > 0 && scoreCell.Paragraphs[0].Runs.Count > 0)
+        {
+            scoreCell.Paragraphs[0].Runs[0].IsBold = true;
+            scoreCell.Paragraphs[0].Runs[0].FontSize = 11;
+        }
+
+        doc.CreateParagraph();
 
         var scoreLabelPara = doc.CreateParagraph();
         var scoreLabelRun = scoreLabelPara.CreateRun();
@@ -2387,12 +2450,13 @@ public class ReportService : IReportService
         var questionTable = doc.CreateTable(report.GroupPerformances.Count + 1, 2);
         questionTable.Width = 5000;
 
-        // Başlık satırı
+        // Başlık satırı (gri arka plan)
         var qHeaderRow = questionTable.GetRow(0);
         qHeaderRow.GetCell(0).SetText("Kontrol Sorusu");
         qHeaderRow.GetCell(1).SetText("Puan");
         foreach (var cell in qHeaderRow.GetTableCells())
         {
+            SetCellGrayBackground(cell);
             if (cell.Paragraphs.Count > 0 && cell.Paragraphs[0].Runs.Count > 0)
             {
                 cell.Paragraphs[0].Runs[0].IsBold = true;
@@ -2426,15 +2490,17 @@ public class ReportService : IReportService
         // Sütun genişlikleri (twips): Tarih:1200, Çağrı:3000, Yorum:3800, Puan:1000
         int[] colWidths = { 1200, 3000, 3800, 1000 };
 
-        // Başlık satırı
+        // Başlık satırı (gri arka plan)
         var evalHeaderRow = evalTable.GetRow(0);
         string[] headers = { "Görüşme Tarihi", "Değerlendirilen Çağrı", "Denetim Yorumu", "Toplam Puan" };
         for (int c = 0; c < 4; c++)
         {
             var cell = evalHeaderRow.GetCell(c);
             cell.SetText(headers[c]);
-            // Hücre genişliği ayarla
-            var tcPr = cell.GetCTTc().AddNewTcPr();
+            SetCellGrayBackground(cell);
+            // Hücre genişliği ayarla (SetCellGrayBackground zaten tcPr oluşturmuş olabilir)
+            var ctTcH = cell.GetCTTc();
+            var tcPr = ctTcH.IsSetTcPr() ? ctTcH.tcPr : ctTcH.AddNewTcPr();
             tcPr.AddNewTcW().w = colWidths[c].ToString();
             tcPr.tcW.type = NPOI.OpenXmlFormats.Wordprocessing.ST_TblWidth.dxa;
             // Başlık kalın
@@ -2464,6 +2530,12 @@ public class ReportService : IReportService
                 var tcPr = cell.GetCTTc().AddNewTcPr();
                 tcPr.AddNewTcW().w = colWidths[c].ToString();
                 tcPr.tcW.type = NPOI.OpenXmlFormats.Wordprocessing.ST_TblWidth.dxa;
+
+                // CallId sütunu (index 1): küçük font - uzun ID'ler tabloyu bozmasın
+                if (c == 1)
+                {
+                    SetCellFontSize(cell, 8);
+                }
             }
         }
 
@@ -3376,6 +3448,7 @@ public class ReportService : IReportService
                     ProjectName = e.Assignment.Project?.Name ?? "",
                     PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
                     Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                    GroupName = a.Question!.GroupName ?? "",
                     QuestionOrder = a.Question!.Order,
                     QuestionText = a.Question.Text,
                     QuestionId = a.QuestionId,
@@ -3383,10 +3456,11 @@ public class ReportService : IReportService
                     MaxPoints = a.Question.WeightPoints,
                     EvaluationId = e.Id
                 }))
-            .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.QuestionId, x.QuestionText, x.QuestionOrder })
+            .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.GroupName, x.QuestionId, x.QuestionText, x.QuestionOrder })
             .Select(g => new
             {
                 ProjectName = $"{g.Key.ProjectName} {g.Key.PeriodName}",
+                GroupName = g.Key.GroupName,
                 QuestionText = g.Key.QuestionText,
                 QuestionOrder = g.Key.QuestionOrder,
                 Year = g.Key.Year,
@@ -3396,6 +3470,7 @@ public class ReportService : IReportService
                     : 0
             })
             .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.GroupName)
             .ThenBy(x => x.QuestionOrder)
             .ToList();
 
@@ -3444,6 +3519,7 @@ public class ReportService : IReportService
         // Headers for Sheet 2
         var headers2 = new[] {
             await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Soru Grubu"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
@@ -3462,11 +3538,12 @@ public class ReportService : IReportService
         foreach (var item in questionData)
         {
             worksheet2.Cell(row, 1).Value = item.ProjectName;
-            worksheet2.Cell(row, 2).Value = item.QuestionText;
-            worksheet2.Cell(row, 3).Value = item.Year;
-            worksheet2.Cell(row, 4).Value = item.EvaluationCount;
-            worksheet2.Cell(row, 5).Value = item.AverageScore;
-            worksheet2.Cell(row, 5).Style.NumberFormat.Format = "0.00";
+            worksheet2.Cell(row, 2).Value = item.GroupName;
+            worksheet2.Cell(row, 3).Value = item.QuestionText;
+            worksheet2.Cell(row, 4).Value = item.Year;
+            worksheet2.Cell(row, 5).Value = item.EvaluationCount;
+            worksheet2.Cell(row, 6).Value = item.AverageScore;
+            worksheet2.Cell(row, 6).Style.NumberFormat.Format = "0.00";
             row++;
         }
 

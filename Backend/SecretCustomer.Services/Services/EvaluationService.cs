@@ -133,7 +133,8 @@ public class EvaluationService : IEvaluationService
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
                         : null
-                    : null
+                    : null,
+                CreatedAt = e.CreatedAt
             })
             .ToListAsync();
     }
@@ -188,7 +189,8 @@ public class EvaluationService : IEvaluationService
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
                         : null
-                    : null
+                    : null,
+                CreatedAt = e.CreatedAt
             })
             .ToListAsync();
     }
@@ -244,7 +246,8 @@ public class EvaluationService : IEvaluationService
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
                         : null
-                    : null
+                    : null,
+                CreatedAt = e.CreatedAt
             })
             .ToListAsync();
     }
@@ -298,7 +301,8 @@ public class EvaluationService : IEvaluationService
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
                         : null
-                    : null
+                    : null,
+                CreatedAt = e.CreatedAt
             })
             .ToListAsync();
     }
@@ -350,7 +354,8 @@ public class EvaluationService : IEvaluationService
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
                         : null
-                    : null
+                    : null,
+                CreatedAt = e.CreatedAt
             })
             .ToListAsync();
     }
@@ -1429,6 +1434,7 @@ public class EvaluationService : IEvaluationService
             ScoringMethod = evaluation.Assignment?.Checklist != null
                 ? ScoringMethods.GetById(evaluation.Assignment.Checklist.ScoringMethodId)?.SystemName
                 : null,
+            CreatedAt = evaluation.CreatedAt,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };
     }

@@ -109,6 +109,40 @@
                 </div>
             </div>
         </div>
+
+        <!-- Firma Ayarları (Sadece Manager ve Admin) -->
+        <div class="col-lg-12 mb-4" data-bind="visible: canManageCompanySettings">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-building me-2"></i>@Html.T("Profile.CompanySettings", "Firma Ayarları")</h5>
+                </div>
+                <div class="card-body">
+                    <form data-bind="submit: updateCompanySettings">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                <i class="bi bi-link-45deg me-1"></i>
+                                @Html.T("Profile.CallSystemUrl", "Çağrı Sistemi URL")
+                            </label>
+                            <input type="text" class="form-control" data-bind="value: callSystemUrl"
+                                   placeholder="https://firmasistemi.com/calls/{CallId}">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                @Html.T("Profile.CallSystemUrlHelp", "Çağrı ID'sine tıklandığında yönlendirilecek URL. {CallId} yazdığınız yere gerçek çağrı ID'si yazılır.")
+                                <br>
+                                <strong>@Html.T("Profile.Example", "Örnek"):</strong> <code>https://callcenter.example.com/recording/{CallId}</code>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-info w-100" data-bind="disable: isUpdatingCompanySettings()">
+                            <!-- ko if: isUpdatingCompanySettings() -->
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                            <!-- /ko -->
+                            <i class="bi bi-check-circle me-1"></i>@Html.T("Profile.SaveCompanySettings", "Firma Ayarlarını Kaydet")
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

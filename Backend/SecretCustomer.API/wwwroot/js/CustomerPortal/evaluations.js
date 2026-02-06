@@ -451,8 +451,9 @@ function EvaluationsViewModel() {
                         break;
 
                     case 'dateRange':
-                        if (e.callDate) {
-                            var evalDate = new Date(e.callDate);
+                        var dateField = e.createdAt;
+                        if (dateField) {
+                            var evalDate = new Date(dateField);
                             evalDate.setHours(0, 0, 0, 0);
                             if (f.value.start) {
                                 var fromDate = new Date(f.value.start);

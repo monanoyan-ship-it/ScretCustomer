@@ -99,6 +99,15 @@ public class Customer : BaseEntity
     /// </summary>
     public DateTime? LastNotificationSentAt { get; set; }
 
+    /// <summary>
+    /// Çağrı sistemi URL şablonu. {CallId} placeholder ile çağrı detay sayfasına yönlendirme yapılır.
+    /// Örnek: https://firmasistemi.com/calls/{CallId}
+    /// </summary>
+    [ExcelColumn("Çağrı Sistemi URL", 16, ColumnType = ExcelColumnTypes.Ids.Text,
+        Description = "Çağrı ID tıklandığında yönlendirilecek URL. {CallId} yerine gerçek ID yazılır.",
+        SampleValue = "https://callsystem.example.com/call/{CallId}")]
+    public string? CallSystemUrl { get; set; }
+
     // Navigation Properties
     public ICollection<CustomerPersonnel> Personnel { get; set; } = new List<CustomerPersonnel>();
     public ICollection<Project> Projects { get; set; } = new List<Project>();

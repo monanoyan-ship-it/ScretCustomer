@@ -24,6 +24,11 @@ function ProfileViewModel() {
     self.showNewPassword = ko.observable(false);
     self.showConfirmPassword = ko.observable(false);
 
+    // Company settings (Manager/Admin only)
+    self.canManageCompanySettings = ko.observable(false);
+    self.callSystemUrl = ko.observable('');
+    self.isUpdatingCompanySettings = ko.observable(false);
+
     self.toggleCurrentPassword = function() {
         self.showCurrentPassword(!self.showCurrentPassword());
     };
@@ -65,6 +70,12 @@ function ProfileViewModel() {
                 self.lastName(data.lastName || '');
                 self.email(data.email || '');
                 self.phoneNumber(data.phoneNumber || '');
+                self.canManageCompanySettings(data.canManageCompanySettings || false);
+
+                // Firma ayarlarını yükle (Manager/Admin için)
+                if (data.canManageCompanySettings) {
+                    self.loadCompanySettings();
+                }
             })
             .catch(function(error) {
                 console.error('Profile load error:', error);
@@ -160,6 +171,56 @@ function ProfileViewModel() {
         })
         .finally(function() {
             self.isChangingPassword(false);
+        });
+    };
+
+    // Load company settings
+    self.loadCompanySettings = function() {
+        fetch('/api/customer-portal/profile/company-settings', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Firma ayarları yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.callSystemUrl(data.callSystemUrl || '');
+            })
+            .catch(function(error) {
+                console.error('Company settings load error:', error);
+            });
+    };
+
+    // Update company settings
+    self.updateCompanySettings = function() {
+        self.isUpdatingCompanySettings(true);
+
+        fetch('/api/customer-portal/profile/company-settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                callSystemUrl: self.callSystemUrl() || null
+            })
+        })
+        .then(function(response) {
+            return response.json().then(function(data) {
+                if (!response.ok) {
+                    throw new Error(data.message || 'Firma ayarları güncellenemedi');
+                }
+                return data;
+            });
+        })
+        .then(function(result) {
+            toastr.success(result.message || 'Firma ayarları başarıyla güncellendi.');
+            if (result.callSystemUrl !== undefined) {
+                self.callSystemUrl(result.callSystemUrl || '');
+            }
+        })
+        .catch(function(error) {
+            console.error('Company settings update error:', error);
+            toastr.error(error.message || 'Firma ayarları güncellenirken bir hata oluştu.');
+        })
+        .finally(function() {
+            self.isUpdatingCompanySettings(false);
         });
     };
 

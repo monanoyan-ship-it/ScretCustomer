@@ -411,7 +411,7 @@ function CustomerPersonnelReportCardViewModel() {
         self.isExportingDetail(true);
         var filename = 'Dinleme_Detay_' + new Date().toISOString().slice(0,10) + '.xlsx';
 
-        customerApiDownloadGet('/api/customer/portal/evaluations/' + data.id + '/export', filename)
+        customerApiDownloadGet('/api/customer/portal/evaluations/' + data.evaluationId + '/export', filename)
             .then(function() { toastr.success('Excel dosyası indirildi'); })
             .catch(function(error) { console.error('Error exporting:', error); toastr.error('Excel oluşturulurken hata oluştu'); })
             .finally(function() { self.isExportingDetail(false); });
@@ -431,18 +431,35 @@ function CustomerPersonnelReportCardViewModel() {
         return 'bg-secondary';
     };
 
-    // Print report
-    self.printReport = function() {
-        var leftPanel = document.querySelector('.col-md-3');
-        var filterCard = document.querySelector('.card.shadow-sm.mb-3');
+    // Export to PDF
+    self.exportToPdf = function() {
+        if (!self.selectedPersonnelId()) return;
 
-        if (leftPanel) leftPanel.style.display = 'none';
-        if (filterCard) filterCard.style.display = 'none';
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/personnel-report-card/' + self.selectedPersonnelId() + '/export-pdf' + self.buildQueryParams();
 
-        window.print();
-
-        if (leftPanel) leftPanel.style.display = '';
-        if (filterCard) filterCard.style.display = '';
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('PDF dosyası oluşturulamadı');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                var objectUrl = URL.createObjectURL(blob);
+                a.href = objectUrl;
+                a.download = 'TemsilciKarnesi_' + (self.report() ? self.report().personnelName.replace(/ /g, '_') : 'rapor') + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('PDF dosyası oluşturulurken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
     };
 
     // Initialize

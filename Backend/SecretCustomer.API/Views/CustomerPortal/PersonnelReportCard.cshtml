@@ -97,8 +97,9 @@
                             <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-word"></i> Word</span>
                             <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
-                        <button class="btn btn-danger btn-sm" data-bind="click: printReport">
-                            <i class="bi bi-file-pdf"></i> PDF
+                        <button class="btn btn-danger btn-sm" data-bind="click: exportToPdf, disable: isExporting">
+                            <span data-bind="visible: !isExporting()"><i class="bi bi-file-pdf"></i> PDF</span>
+                            <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
                     </div>
                 </div>
@@ -305,7 +306,7 @@
                                         </li>
                                     </ul>
                                     <div class="p-2 bg-danger bg-opacity-10" data-bind="visible: report() && report().weaknesses && report().weaknesses.length > 0">
-                                        <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> Geliştirilmeli</small>
+                                        <small class="text-danger fw-bold"><i class="bi bi-arrow-down-circle"></i> Geliştirilmeli <span class="fw-normal">(Yorum sayısına göredir)</span></small>
                                     </div>
                                     <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
                                         <li class="list-group-item py-1 small">
@@ -420,15 +421,7 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width:40%;">Çağrı ID</th>
-                                                <td>
-                                                    <!-- ko if: callId -->
-                                                    <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="Kopyala">
-                                                        <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
-                                                    </button>
-                                                    <!-- /ko -->
-                                                    <!-- ko ifnot: callId --><span>-</span><!-- /ko -->
-                                                </td>
+                                                <td data-bind="callIdLink: callId"></td>
                                             </tr>
                                             <tr><th>Tarih</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
                                             <tr><th>Süre</th><td data-bind="text: duration || '-'"></td></tr>

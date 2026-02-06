@@ -420,17 +420,7 @@
                                 <tr>
                                     <td>
                                         <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
-                                        <!-- ko if: callId -->
-                                        <div class="d-flex align-items-center gap-1">
-                                            <code class="text-muted small" data-bind="text: $root.truncateCallId(callId), attr: { title: callId }" style="cursor: help;"></code>
-                                            <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { $root.copyToClipboard(callId); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                                <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
-                                            </button>
-                                        </div>
-                                        <!-- /ko -->
-                                        <!-- ko ifnot: callId -->
-                                        <small class="text-muted">-</small>
-                                        <!-- /ko -->
+                                        <div data-bind="callIdLink: callId" class="mt-1"></div>
                                     </td>
                                     <td data-bind="text: projectName || '-'"></td>
                                     <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>

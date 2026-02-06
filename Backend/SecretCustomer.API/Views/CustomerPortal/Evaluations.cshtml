@@ -263,15 +263,7 @@
                     </thead>
                     <tbody data-bind="foreach: allEvaluationsList">
                         <tr>
-                            <td>
-                                <!-- ko if: callId -->
-                                <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                    <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
-                                </button>
-                                <!-- /ko -->
-                                <!-- ko ifnot: callId --><span>-</span><!-- /ko -->
-                            </td>
+                            <td data-bind="callIdLink: callId"></td>
                             <td>
                                 <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 <!-- ko if: callTime -->
@@ -521,15 +513,7 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                <td>
-                                                    <!-- ko if: callId -->
-                                                    <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                                        <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
-                                                    </button>
-                                                    <!-- /ko -->
-                                                    <!-- ko ifnot: callId --><span>-</span><!-- /ko -->
-                                                </td>
+                                                <td data-bind="callIdLink: callId"></td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
@@ -777,15 +761,7 @@
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
-                                                <!-- ko if: callId -->
-                                                <div class="d-flex align-items-center gap-1">
-                                                    <code class="fw-bold" data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                                        <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
-                                                    </button>
-                                                </div>
-                                                <!-- /ko -->
-                                                <!-- ko ifnot: callId --><span class="fw-bold">-</span><!-- /ko -->
+                                                <span data-bind="callIdLink: callId" class="fw-bold"></span>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>

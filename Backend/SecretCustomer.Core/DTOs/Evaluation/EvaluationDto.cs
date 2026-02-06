@@ -118,6 +118,11 @@ public class EvaluationDto
     /// </summary>
     public string? ScoringMethod { get; set; }
 
+    /// <summary>
+    /// Dinlemenin/değerlendirmenin oluşturulduğu tarih
+    /// </summary>
+    public DateTime CreatedAt { get; set; }
+
     public List<AnswerDto> Answers { get; set; } = new();
 
     /// <summary>

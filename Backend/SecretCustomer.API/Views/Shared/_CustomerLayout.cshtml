@@ -495,6 +495,101 @@
             }
         })();
 
+        // Customer Settings (callSystemUrl, vb.)
+        window.CustomerSettings = {
+            callSystemUrl: null,
+            loaded: false
+        };
+
+        // CallSystemUrl'i yükle
+        (function loadCustomerSettings() {
+            fetch('/api/customer-portal/profile/company-settings', { credentials: 'include' })
+                .then(function(response) {
+                    if (!response.ok) return null;
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data && data.callSystemUrl) {
+                        window.CustomerSettings.callSystemUrl = data.callSystemUrl;
+                    }
+                    window.CustomerSettings.loaded = true;
+                })
+                .catch(function() {
+                    window.CustomerSettings.loaded = true;
+                });
+        })();
+
+        // CallId için link oluştur (callSystemUrl tanımlıysa)
+        window.getCallSystemLink = function(callId) {
+            if (!callId || !window.CustomerSettings.callSystemUrl) {
+                return null;
+            }
+            return window.CustomerSettings.callSystemUrl.replace('{CallId}', encodeURIComponent(callId));
+        };
+
+        // CallId'yi tıklanabilir link olarak render et (copy butonu dahil)
+        window.renderCallIdLink = function(callId, maxLength, includeCopyButton) {
+            if (!callId) return '<span class="text-muted">-</span>';
+
+            maxLength = maxLength || 20;
+            includeCopyButton = includeCopyButton !== false; // default true
+
+            var displayText = callId.length > maxLength
+                ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8)
+                : callId;
+
+            var link = window.getCallSystemLink(callId);
+            var escapedCallId = callId.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            var html = '';
+
+            if (link) {
+                html = '<a href="' + link + '" target="_blank" class="text-decoration-none" title="' + escapedCallId + '">' +
+                       '<code style="font-size:0.85em;">' + displayText + '</code> <i class="bi bi-box-arrow-up-right text-muted" style="font-size:0.7rem;"></i></a>';
+            } else {
+                html = '<code title="' + escapedCallId + '" style="cursor:help;font-size:0.85em;">' + displayText + '</code>';
+            }
+
+            if (includeCopyButton) {
+                html += ' <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" onclick="window.copyToClipboard(\'' + escapedCallId + '\')" title="Kopyala">' +
+                        '<i class="bi bi-clipboard" style="font-size:0.7rem;"></i></button>';
+            }
+
+            return html;
+        };
+
+        // Global copy to clipboard function
+        window.copyToClipboard = function(text) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(function() {
+                    if (typeof toastr !== 'undefined') toastr.success('Panoya kopyalandı');
+                }).catch(function() {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+
+            function fallbackCopy(t) {
+                var a = document.createElement('textarea');
+                a.value = t;
+                document.body.appendChild(a);
+                a.select();
+                document.execCommand('copy');
+                document.body.removeChild(a);
+                if (typeof toastr !== 'undefined') toastr.success('Panoya kopyalandı');
+            }
+        };
+
+        // Knockout custom binding for CallId link
+        if (typeof ko !== 'undefined') {
+            ko.bindingHandlers.callIdLink = {
+                update: function(element, valueAccessor) {
+                    var callId = ko.unwrap(valueAccessor());
+                    element.innerHTML = window.renderCallIdLink(callId);
+                }
+            };
+        }
+
         // API helper - uses credentials: include for cookie-based JWT
         function customerApiFetch(url, options) {
             options = options || {};

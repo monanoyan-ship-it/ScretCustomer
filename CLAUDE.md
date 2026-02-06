@@ -32,6 +32,15 @@ Her oturumda ve yeni özellik eklemeden önce bu dosyaları oku:
 - `Storage/Documentation/KURALLAR.md` - Development pattern'leri ve standartlar
 - `Storage/Documentation/CLAUDE.md` - Detaylı proje talimatları
 
+## Claude Memory Dosyaları (Oturum Başında Kontrol Et)
+
+Önceki oturumlarda yapılan işler ve devam eden görevler için bu dosyaları oku:
+- `~/.claude/projects/.../memory/MEMORY.md` - Proje hafızası, öğrenilen dersler, tamamlanan işler
+- `~/.claude/projects/.../memory/PDF_EXPORT_STATUS.md` - PDF export implementasyon durumu
+- `~/.claude/projects/.../memory/DAILY_REPORT_ANALYSIS.md` - Günlük dinleme raporu spec (varsa)
+
+> **Not:** Bu dosyalar otomatik olarak system prompt'a yüklenir. Yarım kalan işler veya "PC yeniden başlatılacak" gibi durumlar burada not edilir.
+
 ## Proje Yapısı
 
 - Backend: ASP.NET Core

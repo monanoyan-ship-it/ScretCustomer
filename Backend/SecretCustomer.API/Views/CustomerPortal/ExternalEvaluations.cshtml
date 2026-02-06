@@ -229,15 +229,7 @@
                         </thead>
                         <tbody data-bind="foreach: evaluations">
                             <tr>
-                                <td>
-                                    <!-- ko if: callId || id -->
-                                    <code class="text-muted" data-bind="text: (callId || id).length > 20 ? (callId || id).substring(0, 8) + '...' + (callId || id).substring((callId || id).length - 8) : (callId || id), attr: { title: callId || id }" style="cursor: help; font-size: 0.85em;"></code>
-                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { $parent.copyToClipboard(callId || id); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                        <i class="bi bi-clipboard" style="font-size: 0.7rem;"></i>
-                                    </button>
-                                    <!-- /ko -->
-                                    <!-- ko ifnot: callId || id --><span>-</span><!-- /ko -->
-                                </td>
+                                <td data-bind="callIdLink: callId || id"></td>
                                 <td>
                                     <span data-bind="text: (controlDate || callDate) ? new Date(controlDate || callDate).toLocaleDateString('tr-TR') : new Date(evaluationDate).toLocaleDateString('tr-TR')"></span>
                                 </td>
@@ -482,14 +474,7 @@
                                             <tbody data-bind="visible: projectTypeId === 2">
                                                 <tr>
                                                     <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                    <td>
-                                                        <span class="me-2" data-bind="text: callId ? (callId.length > 16 ? callId.substring(0, 16) + '...' : callId) : '-', attr: { title: callId }"></span>
-                                                        <!-- ko if: callId -->
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1" data-bind="click: function() { $parent.copyToClipboard(callId); }" title="@Html.T("Common.Copy", "Kopyala")">
-                                                            <i class="bi bi-clipboard"></i>
-                                                        </button>
-                                                        <!-- /ko -->
-                                                    </td>
+                                                    <td data-bind="callIdLink: callId"></td>
                                                 </tr>
                                                 <tr>
                                                     <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>

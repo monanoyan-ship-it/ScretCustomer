@@ -8,10 +8,16 @@ function MyPerformanceViewModel() {
 
     // State
     self.isLoading = ko.observable(true);
+    self.isExporting = ko.observable(false);
     self.evaluations = ko.observableArray([]);
     self.reportCard = ko.observable(null);
-    self.selectedEvaluation = ko.observable(null);
     self.searchText = ko.observable('');
+
+    // Details modal
+    self.isDetailsModalOpen = ko.observable(false);
+    self.isDetailsLoading = ko.observable(false);
+    self.detailsData = ko.observable(null);
+    self.isExportingDetail = ko.observable(false);
 
     // Pagination
     self.currentPage = ko.observable(1);
@@ -181,9 +187,44 @@ function MyPerformanceViewModel() {
 
     // Show detail modal
     self.showDetail = function(evaluation) {
-        self.selectedEvaluation(evaluation);
-        var modal = new bootstrap.Modal(document.getElementById('detailModal'));
-        modal.show();
+        self.isDetailsModalOpen(true);
+        self.isDetailsLoading(true);
+        self.detailsData(null);
+
+        customerApiFetch('/api/customer/portal/evaluations/' + evaluation.id)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Detay yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailsData(data);
+            })
+            .catch(function(error) {
+                console.error('Details load error:', error);
+                toastr.error('Detay yüklenirken bir hata oluştu.');
+                self.closeDetailsModal();
+            })
+            .finally(function() {
+                self.isDetailsLoading(false);
+            });
+    };
+
+    self.closeDetailsModal = function() {
+        self.isDetailsModalOpen(false);
+        self.detailsData(null);
+    };
+
+    self.exportDetailToExcel = function() {
+        var data = self.detailsData();
+        if (!data) return;
+
+        self.isExportingDetail(true);
+        var filename = 'Dinleme_Detay_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+
+        customerApiDownloadGet('/api/customer/portal/evaluations/' + data.evaluationId + '/export', filename)
+            .then(function() { toastr.success('Excel dosyası indirildi'); })
+            .catch(function(error) { console.error('Error exporting:', error); toastr.error('Excel oluşturulurken hata oluştu'); })
+            .finally(function() { self.isExportingDetail(false); });
     };
 
     // Helper: Get score badge class
@@ -200,6 +241,22 @@ function MyPerformanceViewModel() {
         if (score >= 80) return 'text-success';
         if (score >= 60) return 'text-warning';
         return 'text-danger';
+    };
+
+    // Helper: Get score class (for detail modal)
+    self.getScoreClass = function(score) {
+        if (score >= 80) return 'text-success';
+        if (score >= 60) return 'text-warning';
+        if (score > 0) return 'text-danger';
+        return 'text-muted';
+    };
+
+    // Helper: Get progress bar class (for detail modal)
+    self.getProgressBarClass = function(score) {
+        if (score >= 80) return 'bg-success';
+        if (score >= 60) return 'bg-warning';
+        if (score > 0) return 'bg-danger';
+        return 'bg-secondary';
     };
 
     // Helper: Copy to clipboard
@@ -225,6 +282,93 @@ function MyPerformanceViewModel() {
         document.execCommand('copy');
         document.body.removeChild(textarea);
         toastr.success('Panoya kopyalandi');
+    };
+
+    // Export to Excel
+    self.exportToExcel = function() {
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/my-report-card/export';
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var downloadUrl = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'Karneme_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Excel dosyasi olusturulurken bir hata olustu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Export to Word
+    self.exportToWord = function() {
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/my-report-card/export-word';
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var downloadUrl = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'Karneme_' + new Date().toISOString().slice(0, 10) + '.docx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Word dosyasi olusturulurken bir hata olustu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Export to PDF
+    self.exportToPdf = function() {
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/my-report-card/export-pdf';
+
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var downloadUrl = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = 'performansim.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(downloadUrl);
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('PDF dosyasi olusturulurken bir hata olustu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
     };
 
     // Initialize

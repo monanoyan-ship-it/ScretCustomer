@@ -66,6 +66,9 @@ public class CustomerPortalProfileController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
             }
 
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var canManageCompanySettings = role == "CustomerManager" || role == "CustomerAdmin";
+
             return Ok(new
             {
                 id = personnel.Id,
@@ -76,7 +79,9 @@ public class CustomerPortalProfileController : BaseApiController
                 fullName = $"{personnel.FirstName} {personnel.LastName}",
                 phoneNumber = personnel.PhoneNumber,
                 department = personnel.Department,
-                title = personnel.Title
+                title = personnel.Title,
+                role = role,
+                canManageCompanySettings = canManageCompanySettings
             });
         }
         catch (Exception ex)
@@ -217,6 +222,120 @@ public class CustomerPortalProfileController : BaseApiController
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError"), ex));
         }
     }
+
+    /// <summary>
+    /// Firma ayarlarını getirir (sadece Manager ve Admin)
+    /// </summary>
+    [HttpGet("company-settings")]
+    public async Task<IActionResult> GetCompanySettings()
+    {
+        try
+        {
+            if (GetUserType() != "CustomerPersonnel")
+            {
+                return Forbid();
+            }
+
+            var userId = GetCurrentUserId();
+            var personnel = await _context.CustomerPersonnel
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
+
+            if (personnel == null)
+            {
+                return NotFound(CreateErrorResponse("Kullanıcı bulunamadı"));
+            }
+
+            // Sadece Manager ve Admin erişebilir
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role != "CustomerManager" && role != "CustomerAdmin")
+            {
+                return Forbid();
+            }
+
+            var customer = await _context.Customers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == personnel.CustomerId && !c.IsDeleted);
+
+            if (customer == null)
+            {
+                return NotFound(CreateErrorResponse("Firma bulunamadı"));
+            }
+
+            return Ok(new
+            {
+                customerId = customer.Id,
+                companyName = customer.CompanyName,
+                callSystemUrl = customer.CallSystemUrl
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting company settings");
+            return StatusCode(500, CreateErrorResponse("Firma ayarları yüklenirken bir hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Firma ayarlarını günceller (sadece Manager ve Admin)
+    /// </summary>
+    [HttpPut("company-settings")]
+    public async Task<IActionResult> UpdateCompanySettings([FromBody] CompanySettingsUpdateDto dto)
+    {
+        try
+        {
+            if (GetUserType() != "CustomerPersonnel")
+            {
+                return Forbid();
+            }
+
+            var userId = GetCurrentUserId();
+            var personnel = await _context.CustomerPersonnel
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
+
+            if (personnel == null)
+            {
+                return NotFound(CreateErrorResponse("Kullanıcı bulunamadı"));
+            }
+
+            // Sadece Manager ve Admin erişebilir
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (role != "CustomerManager" && role != "CustomerAdmin")
+            {
+                return Forbid();
+            }
+
+            var customer = await _context.Customers
+                .FirstOrDefaultAsync(c => c.Id == personnel.CustomerId && !c.IsDeleted);
+
+            if (customer == null)
+            {
+                return NotFound(CreateErrorResponse("Firma bulunamadı"));
+            }
+
+            // CallSystemUrl güncelle
+            customer.CallSystemUrl = string.IsNullOrWhiteSpace(dto.CallSystemUrl) ? null : dto.CallSystemUrl.Trim();
+            customer.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Company settings updated for CustomerId {CustomerId} by PersonnelId {PersonnelId}", customer.Id, userId);
+
+            return Ok(new
+            {
+                customerId = customer.Id,
+                companyName = customer.CompanyName,
+                callSystemUrl = customer.CallSystemUrl,
+                message = "Firma ayarları başarıyla güncellendi"
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating company settings");
+            return StatusCode(500, CreateErrorResponse("Firma ayarları güncellenirken bir hata oluştu", ex));
+        }
+    }
 }
 
 /// <summary>
@@ -228,4 +347,16 @@ public class CustomerPersonnelProfileUpdateDto
     public string? LastName { get; set; }
     public string? Email { get; set; }
     public string? PhoneNumber { get; set; }
+}
+
+/// <summary>
+/// Firma ayarları güncelleme DTO
+/// </summary>
+public class CompanySettingsUpdateDto
+{
+    /// <summary>
+    /// Çağrı sistemi URL şablonu. {CallId} placeholder ile çağrı detay sayfasına yönlendirme yapılır.
+    /// Örnek: https://firmasistemi.com/calls/{CallId}
+    /// </summary>
+    public string? CallSystemUrl { get; set; }
 }

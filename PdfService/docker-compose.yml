@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  pdf-service:
+    build: .
+    container_name: pdf-service
+    ports:
+      - "5060:5060"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5060/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

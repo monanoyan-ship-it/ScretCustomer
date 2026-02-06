@@ -26,6 +26,7 @@ public class CustomerPortalApiController : ControllerBase
     private readonly IReportService _reportService;
     private readonly IEvaluationService _evaluationService;
     private readonly ICustomerScoreThresholdService _customerScoreThresholdService;
+    private readonly IPdfService _pdfService;
 
     public CustomerPortalApiController(
         ApplicationDbContext context,
@@ -33,7 +34,8 @@ public class CustomerPortalApiController : ControllerBase
         ILocalizationService localizationService,
         IReportService reportService,
         IEvaluationService evaluationService,
-        ICustomerScoreThresholdService customerScoreThresholdService)
+        ICustomerScoreThresholdService customerScoreThresholdService,
+        IPdfService pdfService)
     {
         _context = context;
         _logger = logger;
@@ -41,6 +43,7 @@ public class CustomerPortalApiController : ControllerBase
         _reportService = reportService;
         _evaluationService = evaluationService;
         _customerScoreThresholdService = customerScoreThresholdService;
+        _pdfService = pdfService;
     }
 
     private int? GetCustomerIdFromToken()
@@ -977,7 +980,7 @@ public class CustomerPortalApiController : ControllerBase
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                evaluationDate = e.StartedAt ?? e.CreatedAt,
                 projectName = e.Assignment!.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -1063,10 +1066,10 @@ public class CustomerPortalApiController : ControllerBase
         }
 
         var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.StartedAt ?? e.CreatedAt)
             .Select(e => new
             {
-                evaluationDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                evaluationDate = e.StartedAt ?? e.CreatedAt,
                 projectName = e.Assignment!.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -2400,16 +2403,16 @@ public class CustomerPortalApiController : ControllerBase
         }
         // Manager ve Admin: Tüm kayıtları görür
 
-        // Date filters
+        // Date filters (dinlemenin oluşturulduğu tarih - taslaklar da dahil)
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+            query = query.Where(e => e.CreatedAt >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+            query = query.Where(e => e.CreatedAt <= end);
         }
 
         // Project filter
@@ -2466,13 +2469,13 @@ public class CustomerPortalApiController : ControllerBase
         var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
 
         var evaluations = await query
-            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
             .Take(pageSize ?? 20)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                evaluationDate = e.CreatedAt,
                 projectName = e.Assignment.Project.Name,
                 projectCode = e.Assignment.Project.Code,
                 evaluatorName = e.EvaluatorCustomerPersonnel != null ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName : null,
@@ -2648,16 +2651,16 @@ public class CustomerPortalApiController : ControllerBase
         }
         // Manager ve Admin: Tüm kayıtları görür
 
-        // Date filters (ControlDate ziyaret tarihi, CallDate çağrı tarihi)
+        // Date filters (dinlemenin oluşturulduğu tarih)
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => (e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+            query = query.Where(e => e.CreatedAt >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => (e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+            query = query.Where(e => e.CreatedAt <= end);
         }
 
         // Project filter
@@ -2715,13 +2718,13 @@ public class CustomerPortalApiController : ControllerBase
         var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
 
         var evaluations = await query
-            .OrderByDescending(e => e.ControlDate ?? e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
             .Take(pageSize ?? 20)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                evaluationDate = e.CreatedAt,
                 projectName = e.Assignment.Project.Name,
                 projectTypeId = e.Assignment.Project.ProjectTypeId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
@@ -3466,6 +3469,96 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// Kendi Karnem Excel Export - CustomerOperator'ın kendi karnesini Excel olarak indirir
+    /// </summary>
+    [HttpGet("reports/my-report-card/export")]
+    public async Task<IActionResult> ExportMyReportCard(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Token'dan CustomerPersonnelId'yi al
+            var personnelIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (userType != "CustomerPersonnel" || string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
+            {
+                return BadRequest(new { message = "Bu endpoint sadece müşteri personeli için kullanılabilir." });
+            }
+
+            // Personelin bu müşteriye ait olup olmadığını doğrula
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Personel bulunamadı." });
+
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Karne export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Kendi Karnem Word Export - CustomerOperator'ın kendi karnesini Word olarak indirir
+    /// </summary>
+    [HttpGet("reports/my-report-card/export-word")]
+    public async Task<IActionResult> ExportMyReportCardToWord(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Token'dan CustomerPersonnelId'yi al
+            var personnelIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (userType != "CustomerPersonnel" || string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
+            {
+                return BadRequest(new { message = "Bu endpoint sadece müşteri personeli için kullanılabilir." });
+            }
+
+            // Personelin bu müşteriye ait olup olmadığını doğrula
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Personel bulunamadı." });
+
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var result = await _reportService.ExportPersonnelReportCardToWordAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card to Word for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Karne Word olarak export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// Temsilci Karnesi Excel Export (CustomerPortal)
     /// </summary>
     [HttpGet("reports/personnel-report-card/{personnelId}/export")]
@@ -3544,6 +3637,217 @@ public class CustomerPortalApiController : ControllerBase
             _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card to Word for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
             return StatusCode(500, new { message = "Temsilci karnesi Word export edilirken hata oluştu." });
         }
+    }
+
+    /// <summary>
+    /// Kendi Karnem PDF Export - CustomerOperator'ın kendi karnesini PDF olarak indirir
+    /// </summary>
+    [HttpGet("reports/my-report-card/export-pdf")]
+    public async Task<IActionResult> ExportMyReportCardToPdf(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var personnelIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userType = User.FindFirst("UserType")?.Value;
+
+            if (userType != "CustomerPersonnel" || string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
+                return BadRequest(new { message = "Bu endpoint sadece müşteri personeli için kullanılabilir." });
+
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel == null || personnel.CustomerId != customerId.Value)
+                return NotFound(new { message = "Personel bulunamadı." });
+
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var report = await _reportService.GetPersonnelReportCardAsync(filter);
+            if (report == null)
+                return NotFound(new { message = "Karne verisi bulunamadı." });
+
+            // EvaluatorName alanlarını temizle
+            foreach (var evaluation in report.RecentEvaluations)
+                evaluation.EvaluatorName = null;
+
+            var html = GenerateReportCardHtml(report);
+            var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
+
+            return File(pdfBytes, "application/pdf", $"Karneme_{DateTime.Now:yyyyMMdd}.pdf");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card to PDF for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Karne PDF olarak export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi PDF Export (CustomerPortal)
+    /// </summary>
+    [HttpGet("reports/personnel-report-card/{personnelId}/export-pdf")]
+    public async Task<IActionResult> ExportPersonnelReportCardToPdf(
+        int personnelId,
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            var personnel = await _context.CustomerPersonnel
+                .FirstOrDefaultAsync(p => p.Id == personnelId && p.CustomerId == customerId);
+
+            if (personnel == null)
+                return NotFound(new { message = "Personel bulunamadı." });
+
+            // Supervisor erişim kontrolü
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null && !allowedPersonnelIds.Contains(personnelId))
+                return StatusCode(403, new { message = "Bu temsilcinin karnesini görüntüleme yetkiniz bulunmamaktadır." });
+
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds,
+                DateRanges = dateRanges
+            };
+
+            var report = await _reportService.GetPersonnelReportCardAsync(filter);
+            if (report == null)
+                return NotFound(new { message = "Karne verisi bulunamadı." });
+
+            var html = GenerateReportCardHtml(report);
+            var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
+
+            return File(pdfBytes, "application/pdf", $"TemsilciKarnesi_{personnel.FirstName}_{personnel.LastName}_{DateTime.Now:yyyyMMdd}.pdf");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card to PDF for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            return StatusCode(500, new { message = "Temsilci karnesi PDF export edilirken hata oluştu." });
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi için HTML şablonu oluşturur
+    /// </summary>
+    private string GenerateReportCardHtml(PersonnelReportCardDto report)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>");
+
+        // Başlık
+        sb.AppendLine($"<h1>Temsilci Karnesi</h1>");
+        sb.AppendLine($"<h2>{report.PersonnelName}</h2>");
+        if (!string.IsNullOrEmpty(report.Title))
+            sb.AppendLine($"<p><strong>Ünvan:</strong> {report.Title}</p>");
+
+        // Özet
+        sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
+        sb.AppendLine("<table>");
+        sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F1}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
+        sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
+        sb.AppendLine("</table></div>");
+
+        // Aylık Trend
+        if (report.MonthlyTrend.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
+            sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
+            foreach (var trend in report.MonthlyTrend)
+            {
+                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F1}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Grup Performansı
+        if (report.GroupPerformances.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
+            sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
+            foreach (var group in report.GroupPerformances)
+            {
+                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F1}%</span></td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Güçlü/Zayıf Yönler
+        if (report.Strengths.Any() || report.Weaknesses.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Güçlü ve Zayıf Yönler</div>");
+
+            if (report.Strengths.Any())
+            {
+                sb.AppendLine("<h3 class='text-success'>Güçlü Yönler</h3><ul>");
+                foreach (var s in report.Strengths.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F0}%</span> {s.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+
+            if (report.Weaknesses.Any())
+            {
+                sb.AppendLine("<h3 class='text-danger'>Geliştirilmeli</h3><ul>");
+                foreach (var w in report.Weaknesses.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F0}%</span> {w.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+
+            sb.AppendLine("</div>");
+        }
+
+        // Son Değerlendirmeler
+        if (report.RecentEvaluations.Any())
+        {
+            sb.AppendLine("<div class='page-break'></div>");
+            sb.AppendLine("<div class='card'><div class='card-header'>Son Değerlendirmeler</div>");
+            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th>Kontrol Listesi</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th></tr></thead><tbody>");
+            foreach (var eval in report.RecentEvaluations.Take(20))
+            {
+                var cards = "";
+                if (eval.YellowCards > 0) cards += $"<span class='badge bg-warning'>{eval.YellowCards}</span> ";
+                if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
+                if (string.IsNullOrEmpty(cards)) cards = "-";
+
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F1}%</span></td><td class='text-center'>{cards}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine("</body></html>");
+
+        return sb.ToString();
+    }
+
+    private string GetScoreClass(decimal score)
+    {
+        if (score >= 80) return "text-success";
+        if (score >= 60) return "text-warning";
+        return "text-danger";
+    }
+
+    private string GetBadgeClass(decimal score)
+    {
+        if (score >= 80) return "bg-success";
+        if (score >= 60) return "bg-warning";
+        return "bg-danger";
     }
 
     /// <summary>
@@ -4286,13 +4590,87 @@ public class CustomerPortalApiController : ControllerBase
             genelSheet.Columns().AdjustToContents();
             ExcelHelper.ApplyLongTextColumnStyles(genelSheet);
 
+            // ===== SÜREÇ ANALİZİ SHEET (Flat Data Format) =====
+            var surecSheet = workbook.Worksheets.Add("Süreç Analizi");
+
+            // Süreç analizi için düz veri formatı - Proje + Personel + Soru + Periyot bazında
+            var surecData = genelRaporAnswers
+                .GroupBy(a => new
+                {
+                    // Proje adı + Period adı
+                    ProjectPeriod = a.PeriodName != null
+                        ? $"{a.ProjectName} {a.PeriodName}"
+                        : $"{a.ProjectName} {a.EvalDate.Year}-{a.EvalDate.Month:D2}",
+                    a.PersonnelId,
+                    a.PersonnelName,
+                    a.OrgName,
+                    a.GroupName,
+                    Year = a.PeriodStartDate?.Year ?? a.EvalDate.Year,
+                    YearMonth = a.PeriodStartDate != null
+                        ? $"{a.PeriodStartDate.Value.Year}{a.PeriodStartDate.Value.Month:D2}"
+                        : $"{a.EvalDate.Year}{a.EvalDate.Month:D2}"
+                })
+                .Select(g =>
+                {
+                    var answers = g.ToList();
+                    var sumWeight = answers.Sum(a => a.WeightPoints);
+                    var sumEarned = answers.Sum(a => a.EarnedPoints);
+                    return new
+                    {
+                        g.Key.ProjectPeriod,
+                        g.Key.PersonnelName,
+                        Departman = g.Key.OrgName,
+                        KontrolSorusu = g.Key.GroupName,
+                        Periyot = g.Key.Year,
+                        PeriyotAy = g.Key.YearMonth,
+                        OrtalamaPuan = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
+                        HataSayisi = answers.Count(a => a.EarnedPoints < a.WeightPoints)
+                    };
+                })
+                .OrderBy(x => x.ProjectPeriod)
+                .ThenBy(x => x.PersonnelName)
+                .ThenBy(x => x.KontrolSorusu)
+                .ToList();
+
+            // Headers
+            surecSheet.Cell(1, 1).Value = "Proje";
+            surecSheet.Cell(1, 2).Value = "Müşteri Temsilcisi";
+            surecSheet.Cell(1, 3).Value = "Departman";
+            surecSheet.Cell(1, 4).Value = "Kontrol Sorusu";
+            surecSheet.Cell(1, 5).Value = "Periyot";
+            surecSheet.Cell(1, 6).Value = "Periyot (Ay)";
+            surecSheet.Cell(1, 7).Value = "Ortalama Puan";
+            surecSheet.Cell(1, 8).Value = "Hata Sayısı";
+
+            var surecHeaderRange = surecSheet.Range(1, 1, 1, 8);
+            surecHeaderRange.Style.Font.Bold = true;
+            surecHeaderRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+
+            // Data
+            int surecRow = 2;
+            foreach (var item in surecData)
+            {
+                surecSheet.Cell(surecRow, 1).Value = item.ProjectPeriod;
+                surecSheet.Cell(surecRow, 2).Value = item.PersonnelName;
+                surecSheet.Cell(surecRow, 3).Value = item.Departman;
+                surecSheet.Cell(surecRow, 4).Value = item.KontrolSorusu;
+                surecSheet.Cell(surecRow, 5).Value = item.Periyot;
+                surecSheet.Cell(surecRow, 6).Value = item.PeriyotAy;
+                surecSheet.Cell(surecRow, 7).Value = (double)item.OrtalamaPuan;
+                surecSheet.Cell(surecRow, 8).Value = item.HataSayisi;
+                surecRow++;
+            }
+
+            surecSheet.Columns().AdjustToContents();
+            ExcelHelper.ApplyLongTextColumnStyles(surecSheet);
+
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
 
             return File(
                 stream.ToArray(),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"DonemBazliBasari_{DateTime.Now:yyyyMMdd}.xlsx"
+                $"SurecAnalizi_{DateTime.Now:dd.MM.yyyyHHmmss}.xlsx"
             );
         }
         catch (Exception ex)
