@@ -402,7 +402,13 @@
                                                 <td data-bind="callIdLink: callId"></td>
                                             </tr>
                                             <tr><th>@Html.T("CustomerPortal.MyPerformance.CallDate", "Tarih")</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                                            <!-- ko if: callTime -->
+                                            <tr><th>@Html.T("Evaluation.CallTime", "Cagri Saati")</th><td data-bind="text: callTime"></td></tr>
+                                            <!-- /ko -->
                                             <tr><th>@Html.T("CustomerPortal.MyPerformance.Duration", "Sure")</th><td data-bind="text: duration || '-'"></td></tr>
+                                            <!-- ko if: controlTime -->
+                                            <tr><th>@Html.T("Evaluation.ControlTime", "Kontrol Saati")</th><td data-bind="text: controlTime"></td></tr>
+                                            <!-- /ko -->
                                         </table>
                                     </div>
                                 </div>

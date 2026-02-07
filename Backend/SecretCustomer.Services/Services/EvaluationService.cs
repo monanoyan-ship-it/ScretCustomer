@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ public class EvaluationService : IEvaluationService
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<EvaluationService> _logger;
 
     public EvaluationService(
@@ -26,6 +28,7 @@ public class EvaluationService : IEvaluationService
         ApplicationDbContext context,
         ILocalizationService localizationService,
         IServiceProvider serviceProvider,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<EvaluationService> logger)
     {
         _evaluationRepository = evaluationRepository;
@@ -33,6 +36,7 @@ public class EvaluationService : IEvaluationService
         _context = context;
         _localizationService = localizationService;
         _serviceProvider = serviceProvider;
+        _httpContextAccessor = httpContextAccessor;
         _logger = logger;
     }
 
@@ -834,6 +838,9 @@ public class EvaluationService : IEvaluationService
         if (targetStatusId == EvaluationStatuses.Ids.Completed)
         {
             var evaluationId = evaluation.Id;
+            // BaseUrl'i Task.Run öncesinde yakala (HttpContext Task.Run içinde yok)
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "";
             _ = Task.Run(async () =>
             {
                 try
@@ -843,7 +850,6 @@ public class EvaluationService : IEvaluationService
                     var notificationService = scope.ServiceProvider.GetService<IEvaluationNotificationService>();
                     if (notificationService != null)
                     {
-                        // Evaluation'ı yeniden yükle (ilişkili verilerle) - scope'tan alınan DbContext ile
                         var evalForNotification = await dbContext.Evaluations
                             .Include(e => e.Assignment)
                                 .ThenInclude(a => a!.Project)
@@ -853,11 +859,17 @@ public class EvaluationService : IEvaluationService
 
                         if (evalForNotification != null)
                         {
-                            await notificationService.SendSingleEvaluationNotificationAsync(evalForNotification);
+                            await notificationService.SendSingleEvaluationNotificationAsync(evalForNotification, baseUrl);
                         }
                     }
                 }
-                catch { /* Bildirim hatası ana işlemi etkilemesin */ }
+                catch (Exception ex)
+                {
+                    // Bildirim hatası ana işlemi etkilemesin ama loglansın
+                    using var logScope = _serviceProvider.CreateScope();
+                    var auditLog = logScope.ServiceProvider.GetService<IAuditLogService>();
+                    await auditLog!.LogErrorAsync($"Değerlendirme #{evaluationId} bildirim gönderiminde hata", "EvaluationNotification", ex);
+                }
             });
         }
 

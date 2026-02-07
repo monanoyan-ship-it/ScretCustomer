@@ -59,12 +59,15 @@ public class CustomerDto
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
 
-    // Değerlendirme Bildirimi
+    // Değerlendirme Bildirimi (eski - geriye uyumluluk)
     public int EvaluationNotificationFrequencyId { get; set; }
     public int? EvaluationNotificationTemplateId { get; set; }
     public string? EvaluationNotificationTemplateName { get; set; }
     public string? NotificationEmails { get; set; }
     public DateTime? LastNotificationSentAt { get; set; }
+
+    // Yeni çoklu bildirim kuralları
+    public List<CustomerNotificationRuleDto> NotificationRules { get; set; } = new();
 }
 
 public class CreateCustomerDto
@@ -108,10 +111,13 @@ public class CreateCustomerDto
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
 
-    // Değerlendirme Bildirimi
+    // Değerlendirme Bildirimi (eski)
     public int EvaluationNotificationFrequencyId { get; set; }
     public int? EvaluationNotificationTemplateId { get; set; }
     public string? NotificationEmails { get; set; }
+
+    // Yeni çoklu bildirim kuralları
+    public List<CreateCustomerNotificationRuleDto>? NotificationRules { get; set; }
 }
 
 public class UpdateCustomerDto
@@ -155,10 +161,13 @@ public class UpdateCustomerDto
     public int? WeeklyQuota { get; set; }
     public int? MonthlyQuota { get; set; }
 
-    // Değerlendirme Bildirimi
+    // Değerlendirme Bildirimi (eski)
     public int EvaluationNotificationFrequencyId { get; set; }
     public int? EvaluationNotificationTemplateId { get; set; }
     public string? NotificationEmails { get; set; }
+
+    // Yeni çoklu bildirim kuralları
+    public List<UpdateCustomerNotificationRuleDto>? NotificationRules { get; set; }
 }
 
 /// <summary>

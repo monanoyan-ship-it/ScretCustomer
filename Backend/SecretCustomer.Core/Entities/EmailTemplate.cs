@@ -85,6 +85,8 @@ public static class EmailPlaceholders
     public const string EvaluationSummaryTable = "{EvaluationSummaryTable}";
     public const string PeriodStartDate = "{PeriodStartDate}";
     public const string PeriodEndDate = "{PeriodEndDate}";
+    public const string EvaluationLink = "{EvaluationLink}";
+    public const string EvaluationUrl = "{EvaluationUrl}";
 
     // Sistem
     public const string CurrentDate = "{CurrentDate}";
@@ -167,7 +169,9 @@ public static class EmailPlaceholders
                     new(EvaluationCount, "Değerlendirme Sayısı", "Dönem içi toplam değerlendirme sayısı"),
                     new(EvaluationSummaryTable, "Özet Tablo", "Dönem değerlendirme özet tablosu (HTML)"),
                     new(PeriodStartDate, "Dönem Başlangıç", "Bildirim dönemi başlangıç tarihi"),
-                    new(PeriodEndDate, "Dönem Bitiş", "Bildirim dönemi bitiş tarihi")
+                    new(PeriodEndDate, "Dönem Bitiş", "Bildirim dönemi bitiş tarihi"),
+                    new(EvaluationLink, "Rapor Linki (Hazır)", "Tıklanabilir link olarak gelir"),
+                    new(EvaluationUrl, "Rapor URL", "Sadece URL - kendi linkinizi oluşturmak için")
                 }
             },
             new PlaceholderCategory

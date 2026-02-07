@@ -33,6 +33,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
     public DbSet<CustomerPersonnelOrganization> CustomerPersonnelOrganizations { get; set; }
     public DbSet<CustomerPersonnelNotificationLog> CustomerPersonnelNotificationLogs { get; set; }
+    public DbSet<CustomerNotificationRule> CustomerNotificationRules { get; set; }
 
     // Permission Management DbSets
     public DbSet<Permission> Permissions { get; set; }
@@ -220,6 +221,19 @@ public class ApplicationDbContext : DbContext
             .HasOne(c => c.EvaluationNotificationTemplate)
             .WithMany()
             .HasForeignKey(c => c.EvaluationNotificationTemplateId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // ===== CustomerNotificationRule İlişkileri =====
+        modelBuilder.Entity<CustomerNotificationRule>()
+            .HasOne(r => r.Customer)
+            .WithMany(c => c.NotificationRules)
+            .HasForeignKey(r => r.CustomerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CustomerNotificationRule>()
+            .HasOne(r => r.EmailTemplate)
+            .WithMany()
+            .HasForeignKey(r => r.EmailTemplateId)
             .OnDelete(DeleteBehavior.SetNull);
 
         // ===== CustomerOrganization İlişkileri =====

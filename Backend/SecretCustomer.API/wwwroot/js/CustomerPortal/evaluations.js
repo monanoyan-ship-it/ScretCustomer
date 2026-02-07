@@ -1252,11 +1252,11 @@ function EvaluationsViewModel() {
         if (!self.callDate()) {
             errors.push(T('Evaluation.CallDateRequired', 'Çağrı Tarihi zorunludur'));
         }
-        if (!self.callTime()) {
-            errors.push(T('Evaluation.CallTimeRequired', 'Çağrı Saati zorunludur'));
+        if (!self.callTime() || self.callTime().indexOf('_') >= 0 || !/^\d{2}:\d{2}$/.test(self.callTime())) {
+            errors.push(T('Evaluation.CallTimeRequired', 'Çağrı Saati zorunludur (SS:DD formatında giriniz)'));
         }
-        if (!self.duration()) {
-            errors.push(T('Evaluation.DurationRequired', 'Süre zorunludur'));
+        if (!self.duration() || self.duration().indexOf('_') >= 0 || !/^\d{2}:\d{2}:\d{2}$/.test(self.duration()) || parseInt(self.duration().replace(/\D/g, ''), 10) === 0) {
+            errors.push(T('Evaluation.DurationRequired', 'Süre zorunludur (SS:DD:SN formatında giriniz)'));
         }
 
         return errors;

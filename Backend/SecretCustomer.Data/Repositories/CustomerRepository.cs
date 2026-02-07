@@ -24,7 +24,9 @@ public class CustomerRepository : ICustomerRepository
             query = query
                 .Include(c => c.Personnel)
                 .Include(c => c.Projects)
-                .Include(c => c.TaskLists);
+                .Include(c => c.TaskLists)
+                .Include(c => c.NotificationRules)
+                    .ThenInclude(r => r.EmailTemplate);
         }
 
         return await query.FirstOrDefaultAsync(c => c.Id == id);

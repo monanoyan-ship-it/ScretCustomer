@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
@@ -8,315 +8,376 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Services.Services;
 
 /// <summary>
-/// Değerlendirme bildirim servisi implementasyonu
+/// Kural bazlı değerlendirme bildirim servisi.
+/// Her müşterinin N tane CustomerNotificationRule kaydı olabilir.
+/// FrequencyId=1 → anında, 2=günlük, 3=haftalık, 4=aylık
 /// </summary>
 public class EvaluationNotificationService : IEvaluationNotificationService
 {
     private readonly ApplicationDbContext _context;
     private readonly IEmailService _emailService;
-    private readonly ILogger<EvaluationNotificationService> _logger;
+    private readonly INotificationTokenService _tokenService;
+    private readonly IAuditLogService _auditLog;
+    private readonly IConfiguration _configuration;
+
+    private const string LogCategory = "EvaluationNotification";
+
+    private static readonly TimeZoneInfo TurkeyTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("Turkey Standard Time");
 
     public EvaluationNotificationService(
         ApplicationDbContext context,
         IEmailService emailService,
-        ILogger<EvaluationNotificationService> logger)
+        INotificationTokenService tokenService,
+        IAuditLogService auditLogService,
+        IConfiguration configuration)
     {
         _context = context;
         _emailService = emailService;
-        _logger = logger;
+        _tokenService = tokenService;
+        _auditLog = auditLogService;
+        _configuration = configuration;
     }
 
-    /// <summary>
-    /// Tekil değerlendirme bildirimi gönderir (Her Kayıtta seçeneği için)
-    /// Değerlendirilen personelin email adresine gönderilir
-    /// </summary>
-    public async Task SendSingleEvaluationNotificationAsync(Evaluation evaluation)
+    // ───────────────────────────────────────────────
+    // 1) TEKİL BİLDİRİM (FrequencyId = 1, Her Kayıtta)
+    // ───────────────────────────────────────────────
+
+    public async Task SendSingleEvaluationNotificationAsync(Evaluation evaluation, string baseUrl)
     {
+        // baseUrl boşsa config'ten al (fallback)
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            baseUrl = await GetBaseUrlAsync();
+
         try
         {
-            // Değerlendirilen personel kontrolü
-            if (evaluation.EvaluatedCustomerPersonnel == null)
+            // Müşteri ID'sini bul
+            var customerId = evaluation.Assignment?.Project?.CustomerId;
+            if (customerId == null)
             {
-                _logger.LogDebug("No evaluated personnel for evaluation {EvaluationId}, skipping notification", evaluation.Id);
-                return;
+                var ev = await _context.Evaluations
+                    .Include(e => e.Assignment)
+                        .ThenInclude(a => a!.Project)
+                    .Include(e => e.EvaluatedCustomerPersonnel)
+                    .Include(e => e.EvaluatedOrganization)
+                    .Include(e => e.CustomerDealer)
+                    .FirstOrDefaultAsync(e => e.Id == evaluation.Id);
+
+                if (ev?.Assignment?.Project?.CustomerId == null)
+                {
+                    await _auditLog.LogWarningAsync($"Değerlendirme #{evaluation.Id} için müşteri bulunamadı", LogCategory);
+                    return;
+                }
+
+                evaluation = ev;
+                customerId = ev.Assignment!.Project!.CustomerId;
             }
 
-            var personnelEmail = evaluation.EvaluatedCustomerPersonnel.Email;
-            if (string.IsNullOrWhiteSpace(personnelEmail))
-            {
-                _logger.LogWarning("No email for evaluated personnel {PersonnelId}", evaluation.EvaluatedCustomerPersonnelId);
-                return;
-            }
-
-            // Müşteri bilgilerini al
-            var customer = await _context.Customers
-                .Include(c => c.EvaluationNotificationTemplate)
-                .FirstOrDefaultAsync(c => c.Id == evaluation.Assignment!.Project!.CustomerId);
-
-            if (customer == null)
-            {
-                _logger.LogWarning("Customer not found for evaluation {EvaluationId}", evaluation.Id);
-                return;
-            }
-
-            // Bildirim ayarları kontrol
-            if (customer.EvaluationNotificationFrequencyId != EvaluationNotificationFrequencies.Ids.PerEvaluation)
-                return;
-
-            // Email şablonunu al
-            var template = customer.EvaluationNotificationTemplate;
-            if (template == null)
-            {
-                // Varsayılan şablon kullan
-                template = await _context.EmailTemplates
-                    .FirstOrDefaultAsync(t => t.TemplateTypeId == EmailTemplateTypes.Ids.EvaluationNotification &&
-                                              t.IsDefault && !t.IsDeleted);
-            }
-
-            if (template == null)
-            {
-                _logger.LogWarning("No email template found for evaluation notification");
-                return;
-            }
-
-            // Değerlendirilen personel adı
-            var evaluatedPersonnelName = $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}";
-
-            // Placeholder'ları değiştir
-            var subject = ReplacePlaceholders(template.Subject, customer, evaluation, evaluatedPersonnelName, null, null, 1);
-            var body = ReplacePlaceholders(template.Body, customer, evaluation, evaluatedPersonnelName, null, null, 1);
-
-            // Personelin email adresine gönder
-            var result = await _emailService.SendEmailAsync(personnelEmail, subject, body);
-
-            // Log kaydı oluştur
-            var notificationLog = new CustomerPersonnelNotificationLog
-            {
-                CustomerPersonnelId = evaluation.EvaluatedCustomerPersonnelId!.Value,
-                CustomerId = customer.Id,
-                SentAt = DateTime.UtcNow,
-                NotificationType = EvaluationNotificationTypes.PerEvaluation,
-                Email = personnelEmail,
-                Subject = subject,
-                EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(new[] { evaluation.Id }),
-                EvaluationCount = 1,
-                IsSuccess = result.Success,
-                ErrorMessage = result.Success ? null : result.ErrorMessage
-            };
-            _context.CustomerPersonnelNotificationLogs.Add(notificationLog);
-            await _context.SaveChangesAsync();
-
-            if (!result.Success)
-            {
-                _logger.LogError("Failed to send evaluation notification to {Email}: {Error}", personnelEmail, result.ErrorMessage);
-            }
-            else
-            {
-                _logger.LogInformation("Sent evaluation notification for evaluation {EvaluationId} to personnel {Email}",
-                    evaluation.Id, personnelEmail);
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error sending single evaluation notification for evaluation {EvaluationId}", evaluation.Id);
-        }
-    }
-
-    /// <summary>
-    /// Günlük özet bildirimi gönderir (dün yapılan değerlendirmeler)
-    /// </summary>
-    public async Task SendDailyNotificationsAsync()
-    {
-        var yesterday = DateTime.UtcNow.Date.AddDays(-1);
-        var today = DateTime.UtcNow.Date;
-
-        await SendPeriodNotificationsAsync(
-            EvaluationNotificationFrequencies.Ids.Daily,
-            yesterday,
-            today,
-            "Günlük");
-    }
-
-    /// <summary>
-    /// Haftalık özet bildirimi gönderir (bu hafta yapılan değerlendirmeler)
-    /// </summary>
-    public async Task SendWeeklyNotificationsAsync()
-    {
-        var today = DateTime.UtcNow.Date;
-        // Pazartesi'yi hesapla (haftanın başı)
-        var daysFromMonday = ((int)today.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-        var weekStart = today.AddDays(-daysFromMonday);
-
-        await SendPeriodNotificationsAsync(
-            EvaluationNotificationFrequencies.Ids.Weekly,
-            weekStart,
-            today.AddDays(1),
-            "Haftalık");
-    }
-
-    /// <summary>
-    /// Aylık özet bildirimi gönderir (bu ay yapılan değerlendirmeler)
-    /// </summary>
-    public async Task SendMonthlyNotificationsAsync()
-    {
-        var today = DateTime.UtcNow.Date;
-        var monthStart = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-
-        await SendPeriodNotificationsAsync(
-            EvaluationNotificationFrequencies.Ids.Monthly,
-            monthStart,
-            today.AddDays(1),
-            "Aylık");
-    }
-
-    /// <summary>
-    /// Dönem bazlı bildirim gönderir
-    /// Her değerlendirilen personele kendi değerlendirmelerinin özeti gönderilir
-    /// </summary>
-    private async Task SendPeriodNotificationsAsync(int frequencyId, DateTime periodStart, DateTime periodEnd, string periodName)
-    {
-        try
-        {
-            // Bu sıklıkta bildirim isteyen müşterileri bul
-            var customers = await _context.Customers
-                .Include(c => c.EvaluationNotificationTemplate)
-                .Where(c => !c.IsDeleted && c.IsActive &&
-                           c.EvaluationNotificationFrequencyId == frequencyId)
+            // FrequencyId=1, aktif kuralları bul
+            var rules = await _context.CustomerNotificationRules
+                .Include(r => r.EmailTemplate)
+                .Where(r => r.CustomerId == customerId
+                         && r.FrequencyId == EvaluationNotificationFrequencies.Ids.PerEvaluation
+                         && r.IsActive
+                         && !r.IsDeleted)
                 .ToListAsync();
 
-            _logger.LogInformation("Found {Count} customers for {Period} notification", customers.Count, periodName);
+            if (!rules.Any())
+            {
+                return;
+            }
 
-            foreach (var customer in customers)
+            // Personel adı
+            var personnelName = evaluation.EvaluatedCustomerPersonnel != null
+                ? $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}"
+                : evaluation.EvaluatedUnknownPersonnel ?? "-";
+
+            // Müşteri adı
+            var customer = await _context.Customers.FindAsync(customerId);
+            var companyName = customer?.CompanyName ?? "-";
+
+            foreach (var rule in rules)
             {
                 try
                 {
-                    await SendPeriodNotificationToPersonnelAsync(customer, periodStart, periodEnd, periodName);
+                    var template = await GetTemplateAsync(rule.EmailTemplateId);
+                    if (template == null)
+                    {
+                        await _auditLog.LogWarningAsync($"Kural #{rule.Id} için email şablonu bulunamadı (templateId={rule.EmailTemplateId})", LogCategory);
+                        continue;
+                    }
+
+                    // Kural bazında token oluştur
+                    var token = _tokenService.GenerateSingleToken(evaluation.Id, DateTime.UtcNow.AddDays(rule.TokenExpirationDays));
+                    var reportLink = $"{baseUrl}/report/view/{token}";
+                    var linkHtml = $"<a href=\"{reportLink}\" style=\"color: #007bff; text-decoration: underline;\">Değerlendirme Raporu</a>";
+
+                    // Alıcı listesini belirle
+                    var recipients = new List<string>();
+
+                    if (!string.IsNullOrWhiteSpace(rule.Emails))
+                    {
+                        recipients.AddRange(
+                            rule.Emails.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                                .Where(e => !string.IsNullOrWhiteSpace(e)));
+                    }
+
+                    if (rule.SendToPersonnel && evaluation.EvaluatedCustomerPersonnel != null
+                        && !string.IsNullOrWhiteSpace(evaluation.EvaluatedCustomerPersonnel.Email))
+                    {
+                        var personnelEmail = evaluation.EvaluatedCustomerPersonnel.Email.Trim();
+                        if (!recipients.Contains(personnelEmail, StringComparer.OrdinalIgnoreCase))
+                            recipients.Add(personnelEmail);
+                    }
+
+                    if (!recipients.Any())
+                    {
+                        await _auditLog.LogWarningAsync($"Kural #{rule.Id} için alıcı bulunamadı (Emails boş, SendToPersonnel={rule.SendToPersonnel})", LogCategory);
+                        continue;
+                    }
+
+                    // Placeholder'ları değiştir
+                    var subject = ReplacePlaceholders(template.Subject, companyName, evaluation, personnelName, null, null, 1, null, linkHtml, reportLink);
+                    var body = ReplacePlaceholders(template.Body, companyName, evaluation, personnelName, null, null, 1, null, linkHtml, reportLink);
+
+                    // Her alıcıya gönder
+                    foreach (var email in recipients)
+                    {
+                        var result = await _emailService.SendEmailAsync(email, subject, body);
+
+                        var log = new CustomerPersonnelNotificationLog
+                        {
+                            CustomerPersonnelId = evaluation.EvaluatedCustomerPersonnelId ?? 0,
+                            CustomerId = customerId.Value,
+                            SentAt = DateTime.UtcNow,
+                            NotificationType = EvaluationNotificationTypes.PerEvaluation,
+                            Email = email,
+                            Subject = subject,
+                            EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(new[] { evaluation.Id }),
+                            EvaluationCount = 1,
+                            IsSuccess = result.Success,
+                            ErrorMessage = result.Success ? null : result.ErrorMessage
+                        };
+                        _context.CustomerPersonnelNotificationLogs.Add(log);
+
+                        if (!result.Success)
+                            await _auditLog.LogErrorAsync($"Değerlendirme #{evaluation.Id} bildirimi gönderilemedi → {email}: {result.ErrorMessage}", LogCategory);
+                    }
+
+                    await _context.SaveChangesAsync();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error sending {Period} notification for customer {CustomerId}", periodName, customer.Id);
+                    await _auditLog.LogErrorAsync($"Kural #{rule.Id} işlenirken hata oluştu", LogCategory, ex);
                 }
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in {Period} notifications", periodName);
+            await _auditLog.LogErrorAsync($"Değerlendirme #{evaluation.Id} bildirimi genel hata", LogCategory, ex);
         }
     }
 
-    /// <summary>
-    /// Belirli bir müşterinin değerlendirilen personellerine dönem bildirimi gönderir
-    /// Her personele kendi değerlendirmelerinin özeti gönderilir
-    /// </summary>
-    private async Task SendPeriodNotificationToPersonnelAsync(Customer customer, DateTime periodStart, DateTime periodEnd, string periodName)
+    // ───────────────────────────────────────────────
+    // 2) ZAMANLI BİLDİRİMLER (Günlük/Haftalık/Aylık)
+    // ───────────────────────────────────────────────
+
+    public async Task ProcessScheduledNotificationsAsync()
     {
-        // Bu dönemdeki değerlendirmeleri al (sadece tanımlı personeli olanlar)
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatedOrganization)
-            .Where(e => e.Assignment!.Project!.CustomerId == customer.Id &&
-                       e.StatusId == EvaluationStatuses.Ids.Completed &&
-                       e.CompletedAt >= periodStart &&
-                       e.CompletedAt < periodEnd &&
-                       e.EvaluatedCustomerPersonnelId != null &&
-                       e.EvaluatedCustomerPersonnel!.Email != null &&
-                       e.EvaluatedCustomerPersonnel.Email != "")
-            .OrderByDescending(e => e.CompletedAt)
+        var now = DateTime.UtcNow;
+        var turkeyNow = TimeZoneInfo.ConvertTimeFromUtc(now, TurkeyTimeZone);
+        var turkeyToday = turkeyNow.Date;
+
+        var todayDayOfWeek = (int)turkeyNow.DayOfWeek;
+        var todayDayOfMonth = turkeyNow.Day;
+
+        var rules = await _context.CustomerNotificationRules
+            .Include(r => r.Customer)
+            .Include(r => r.EmailTemplate)
+            .Where(r => r.IsActive
+                     && !r.IsDeleted
+                     && r.FrequencyId >= EvaluationNotificationFrequencies.Ids.Daily
+                     && r.FrequencyId <= EvaluationNotificationFrequencies.Ids.Monthly
+                     && r.Customer.IsActive && !r.Customer.IsDeleted)
             .ToListAsync();
 
-        if (!evaluations.Any())
+        foreach (var rule in rules)
         {
-            _logger.LogDebug("No evaluations with personnel found for customer {CustomerId} in period {PeriodStart} - {PeriodEnd}",
-                customer.Id, periodStart, periodEnd);
-            return;
-        }
-
-        // Email şablonunu al
-        var template = customer.EvaluationNotificationTemplate;
-        if (template == null)
-        {
-            template = await _context.EmailTemplates
-                .FirstOrDefaultAsync(t => t.TemplateTypeId == EmailTemplateTypes.Ids.EvaluationNotification &&
-                                          t.IsDefault && !t.IsDeleted);
-        }
-
-        if (template == null)
-        {
-            _logger.LogWarning("No email template found for evaluation notification");
-            return;
-        }
-
-        // Personel bazlı grupla
-        var evaluationsByPersonnel = evaluations
-            .GroupBy(e => e.EvaluatedCustomerPersonnelId!.Value)
-            .ToList();
-
-        _logger.LogInformation("Sending {Period} notifications to {Count} personnel for customer {CustomerId}",
-            periodName, evaluationsByPersonnel.Count, customer.Id);
-
-        foreach (var group in evaluationsByPersonnel)
-        {
-            var personnelEvaluations = group.ToList();
-            var personnel = personnelEvaluations.First().EvaluatedCustomerPersonnel!;
-            var personnelEmail = personnel.Email;
-            var personnelName = $"{personnel.FirstName} {personnel.LastName}";
-
-            // Özet tablo oluştur (sadece bu personelin değerlendirmeleri)
-            var summaryTable = BuildSummaryTable(personnelEvaluations);
-
-            // Placeholder'ları değiştir
-            var subject = ReplacePlaceholders(template.Subject, customer, null, personnelName, periodStart, periodEnd, personnelEvaluations.Count, summaryTable);
-            var body = ReplacePlaceholders(template.Body, customer, null, personnelName, periodStart, periodEnd, personnelEvaluations.Count, summaryTable);
-
-            // Personelin email adresine gönder
-            var result = await _emailService.SendEmailAsync(personnelEmail, subject, body);
-
-            // Bildirim tipi
-            var notificationType = periodName switch
+            try
             {
-                "Günlük" => EvaluationNotificationTypes.Daily,
-                "Haftalık" => EvaluationNotificationTypes.Weekly,
-                "Aylık" => EvaluationNotificationTypes.Monthly,
-                _ => periodName
-            };
+                if (!ShouldFireToday(rule, todayDayOfWeek, todayDayOfMonth))
+                    continue;
 
-            // Log kaydı oluştur
-            var notificationLog = new CustomerPersonnelNotificationLog
-            {
-                CustomerPersonnelId = personnel.Id,
-                CustomerId = customer.Id,
-                SentAt = DateTime.UtcNow,
-                NotificationType = notificationType,
-                PeriodStart = periodStart,
-                PeriodEnd = periodEnd,
-                Email = personnelEmail,
-                Subject = subject,
-                EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(personnelEvaluations.Select(e => e.Id).ToArray()),
-                EvaluationCount = personnelEvaluations.Count,
-                IsSuccess = result.Success,
-                ErrorMessage = result.Success ? null : result.ErrorMessage
-            };
-            _context.CustomerPersonnelNotificationLogs.Add(notificationLog);
+                var (periodStart, periodEnd) = CalculatePeriod(rule, turkeyToday);
+                var periodStartUtc = TimeZoneInfo.ConvertTimeToUtc(periodStart, TurkeyTimeZone);
+                var periodEndUtc = TimeZoneInfo.ConvertTimeToUtc(periodEnd, TurkeyTimeZone);
 
-            if (!result.Success)
-            {
-                _logger.LogError("Failed to send {Period} notification to personnel {Email}: {Error}", periodName, personnelEmail, result.ErrorMessage);
+                var recipients = new List<string>();
+                if (!string.IsNullOrWhiteSpace(rule.Emails))
+                {
+                    recipients.AddRange(
+                        rule.Emails.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            .Where(e => !string.IsNullOrWhiteSpace(e)));
+                }
+
+                if (!recipients.Any())
+                {
+                    continue;
+                }
+
+                var evaluations = await _context.Evaluations
+                    .Include(e => e.Assignment)
+                        .ThenInclude(a => a!.Project)
+                    .Include(e => e.EvaluatedCustomerPersonnel)
+                    .Include(e => e.EvaluatedOrganization)
+                    .Include(e => e.CustomerDealer)
+                    .Where(e => !e.IsDeleted
+                        && e.Assignment != null
+                        && e.Assignment.Project != null
+                        && e.Assignment.Project.CustomerId == rule.CustomerId
+                        && e.StatusId == EvaluationStatuses.Ids.Completed
+                        && e.CompletedAt >= periodStartUtc
+                        && e.CompletedAt < periodEndUtc)
+                    .OrderByDescending(e => e.CompletedAt)
+                    .ToListAsync();
+
+                if (!evaluations.Any())
+                    continue;
+
+                var token = _tokenService.GenerateBulkToken(
+                    rule.CustomerId,
+                    periodStartUtc,
+                    periodEndUtc,
+                    DateTime.UtcNow.AddDays(rule.TokenExpirationDays));
+                var reportLink = $"{await GetBaseUrlAsync()}/report/view/{token}";
+                var linkHtml = $"<a href=\"{reportLink}\" style=\"color: #007bff; text-decoration: underline;\">Değerlendirme Raporu</a>";
+
+                var summaryTable = BuildSummaryTable(evaluations);
+
+                var template = await GetTemplateAsync(rule.EmailTemplateId);
+                if (template == null)
+                {
+                    await _auditLog.LogWarningAsync($"Zamanlı kural #{rule.Id} için email şablonu bulunamadı", LogCategory);
+                    continue;
+                }
+
+                var periodName = GetPeriodName(rule.FrequencyId);
+                var companyName = rule.Customer.CompanyName;
+
+                var subject = ReplacePlaceholders(template.Subject, companyName, null, null, periodStart, periodEnd, evaluations.Count, summaryTable, linkHtml, reportLink);
+                var body = ReplacePlaceholders(template.Body, companyName, null, null, periodStart, periodEnd, evaluations.Count, summaryTable, linkHtml, reportLink);
+
+                foreach (var email in recipients)
+                {
+                    var result = await _emailService.SendEmailAsync(email, subject, body);
+
+                    var log = new CustomerPersonnelNotificationLog
+                    {
+                        CustomerPersonnelId = 0,
+                        CustomerId = rule.CustomerId,
+                        SentAt = DateTime.UtcNow,
+                        NotificationType = GetNotificationType(rule.FrequencyId),
+                        PeriodStart = periodStartUtc,
+                        PeriodEnd = periodEndUtc,
+                        Email = email,
+                        Subject = subject,
+                        EvaluationIdsJson = System.Text.Json.JsonSerializer.Serialize(evaluations.Select(e => e.Id).ToArray()),
+                        EvaluationCount = evaluations.Count,
+                        IsSuccess = result.Success,
+                        ErrorMessage = result.Success ? null : result.ErrorMessage
+                    };
+                    _context.CustomerPersonnelNotificationLogs.Add(log);
+
+                    if (!result.Success)
+                        await _auditLog.LogErrorAsync($"{periodName} bildirim gönderilemedi → {email}: {result.ErrorMessage}", LogCategory);
+                }
+
+                rule.LastSentAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation("Sent {Period} notification to personnel {PersonnelName} ({Email}) with {Count} evaluations",
-                    periodName, personnelName, personnelEmail, personnelEvaluations.Count);
+                await _auditLog.LogErrorAsync($"Zamanlı kural #{rule.Id} işlenirken hata", LogCategory, ex);
             }
         }
 
-        await _context.SaveChangesAsync();
     }
 
-    /// <summary>
-    /// Özet tablo HTML'i oluşturur
-    /// </summary>
+    // ───────────────────────────────────────────────
+    // PRIVATE HELPERS
+    // ───────────────────────────────────────────────
+
+    private bool ShouldFireToday(CustomerNotificationRule rule, int todayDayOfWeek, int todayDayOfMonth)
+    {
+        return rule.FrequencyId switch
+        {
+            EvaluationNotificationFrequencies.Ids.Daily => true,
+            EvaluationNotificationFrequencies.Ids.Weekly => rule.DayOfWeek == todayDayOfWeek,
+            EvaluationNotificationFrequencies.Ids.Monthly => rule.DayOfMonth == todayDayOfMonth,
+            _ => false
+        };
+    }
+
+    private (DateTime start, DateTime end) CalculatePeriod(CustomerNotificationRule rule, DateTime turkeyToday)
+    {
+        var periodEnd = turkeyToday.AddDays(1);
+
+        return rule.FrequencyId switch
+        {
+            EvaluationNotificationFrequencies.Ids.Daily => (turkeyToday, periodEnd),
+            EvaluationNotificationFrequencies.Ids.Weekly => (turkeyToday.AddDays(-7), periodEnd),
+            EvaluationNotificationFrequencies.Ids.Monthly => (turkeyToday.AddMonths(-1), periodEnd),
+            _ => (turkeyToday, periodEnd)
+        };
+    }
+
+    private async Task<EmailTemplate?> GetTemplateAsync(int? emailTemplateId)
+    {
+        EmailTemplate? template = null;
+
+        if (emailTemplateId.HasValue)
+        {
+            template = await _context.EmailTemplates
+                .FirstOrDefaultAsync(t => t.Id == emailTemplateId.Value && !t.IsDeleted);
+        }
+
+        template ??= await _context.EmailTemplates
+            .FirstOrDefaultAsync(t => t.TemplateTypeId == EmailTemplateTypes.Ids.EvaluationNotification
+                                   && t.IsDefault && !t.IsDeleted);
+
+        return template;
+    }
+
+    private async Task<string> GetBaseUrlAsync()
+    {
+        // Önce DB'den oku (dashboard açıldığında otomatik set edilir)
+        var setting = await _context.SystemSettings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Key == SystemSettingKeys.AppUrl);
+
+        if (!string.IsNullOrWhiteSpace(setting?.Value))
+            return setting.Value.TrimEnd('/');
+
+        // Fallback: config'den oku
+        return _configuration["AppUrl"]?.TrimEnd('/') ?? "";
+    }
+
+    private static string GetPeriodName(int frequencyId) => frequencyId switch
+    {
+        EvaluationNotificationFrequencies.Ids.Daily => "Günlük",
+        EvaluationNotificationFrequencies.Ids.Weekly => "Haftalık",
+        EvaluationNotificationFrequencies.Ids.Monthly => "Aylık",
+        _ => "Bilinmeyen"
+    };
+
+    private static string GetNotificationType(int frequencyId) => frequencyId switch
+    {
+        EvaluationNotificationFrequencies.Ids.Daily => EvaluationNotificationTypes.Daily,
+        EvaluationNotificationFrequencies.Ids.Weekly => EvaluationNotificationTypes.Weekly,
+        EvaluationNotificationFrequencies.Ids.Monthly => EvaluationNotificationTypes.Monthly,
+        _ => "Unknown"
+    };
+
     private string BuildSummaryTable(List<Evaluation> evaluations)
     {
         var avgScore = evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double?)e.ScorePercentage) ?? 0;
@@ -334,7 +395,7 @@ public class EvaluationNotificationService : IEvaluationNotificationService
     </thead>
     <tbody>";
 
-        foreach (var eval in evaluations.Take(50)) // Max 50 satır
+        foreach (var eval in evaluations.Take(50))
         {
             var personnelName = eval.EvaluatedCustomerPersonnel != null
                 ? $"{eval.EvaluatedCustomerPersonnel.FirstName} {eval.EvaluatedCustomerPersonnel.LastName}"
@@ -371,26 +432,23 @@ public class EvaluationNotificationService : IEvaluationNotificationService
         return html;
     }
 
-    /// <summary>
-    /// Placeholder'ları değiştirir
-    /// </summary>
     private string ReplacePlaceholders(
         string content,
-        Customer customer,
+        string companyName,
         Evaluation? evaluation,
         string? evaluatedPersonnel,
         DateTime? periodStart,
         DateTime? periodEnd,
         int evaluationCount,
-        string? summaryTable = null)
+        string? summaryTable,
+        string? evaluationLinkHtml,
+        string? evaluationUrl)
     {
         if (string.IsNullOrEmpty(content))
             return content;
 
-        // Firma bilgileri
-        content = content.Replace(EmailPlaceholders.CompanyName, customer.CompanyName);
+        content = content.Replace(EmailPlaceholders.CompanyName, companyName);
 
-        // Değerlendirme bilgileri (tekil)
         if (evaluation != null)
         {
             content = content.Replace(EmailPlaceholders.EvaluationScore, evaluation.TotalScore?.ToString("F2") ?? "-");
@@ -401,13 +459,13 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             content = content.Replace(EmailPlaceholders.OrganizationName, evaluation.EvaluatedOrganization?.Name ?? "-");
         }
 
-        // Dönem bilgileri (özet)
         content = content.Replace(EmailPlaceholders.EvaluationCount, evaluationCount.ToString());
         content = content.Replace(EmailPlaceholders.PeriodStartDate, periodStart?.ToString("dd.MM.yyyy") ?? "-");
         content = content.Replace(EmailPlaceholders.PeriodEndDate, periodEnd?.AddDays(-1).ToString("dd.MM.yyyy") ?? "-");
         content = content.Replace(EmailPlaceholders.EvaluationSummaryTable, summaryTable ?? "");
+        content = content.Replace(EmailPlaceholders.EvaluationLink, evaluationLinkHtml ?? "");
+        content = content.Replace(EmailPlaceholders.EvaluationUrl, evaluationUrl ?? "");
 
-        // Sistem bilgileri
         content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
         content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
         content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");

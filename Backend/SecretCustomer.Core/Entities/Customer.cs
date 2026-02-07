@@ -122,4 +122,9 @@ public class Customer : BaseEntity
     /// Firma altındaki bayiler (FieldWorker ziyaretleri için)
     /// </summary>
     public ICollection<CustomerDealer> CustomerDealers { get; set; } = new List<CustomerDealer>();
+
+    /// <summary>
+    /// Değerlendirme bildirim kuralları
+    /// </summary>
+    public ICollection<CustomerNotificationRule> NotificationRules { get; set; } = new List<CustomerNotificationRule>();
 }

@@ -1936,7 +1936,99 @@ dotnet publish Backend\SecretCustomer.API\SecretCustomer.API.csproj -c Release -
 
 ---
 
-## 25. Commit Kuralları
+## 25. Loglama Kuralları (ZORUNLU!)
+
+### ⛔ ILogger KULLANILMAZ! IAuditLogService KULLAN!
+
+Tüm loglama işlemleri veritabanına yazılmalıdır. `ILogger` (console log) yerine `IAuditLogService` kullanılmalıdır. Loglar `/AuditLogs` sayfasından görüntülenebilir.
+
+### DOĞRU - IAuditLogService Kullanımı
+
+```csharp
+public class MyService
+{
+    private readonly IAuditLogService _auditLog;
+
+    public MyService(IAuditLogService auditLog)
+    {
+        _auditLog = auditLog;
+    }
+
+    public async Task DoSomethingAsync()
+    {
+        await _auditLog.LogInfoAsync("MyCategory", "İşlem başarılı: {0}", detay);
+        await _auditLog.LogWarningAsync("MyCategory", "Uyarı: {0}", mesaj);
+        await _auditLog.LogErrorAsync("MyCategory", "Hata: {0}", ex.Message, ex);
+    }
+}
+```
+
+### YANLIŞ - ILogger Kullanımı
+
+```csharp
+// ❌ YANLIŞ - Console log, DB'ye yazılmaz, kullanıcı göremez
+private readonly ILogger<MyService> _logger;
+_logger.LogInformation("...");
+_logger.LogError(ex, "...");
+```
+
+### Neden?
+- `ILogger` → console/dosyaya yazar → kullanıcı göremez
+- `IAuditLogService` → veritabanına yazar → `/AuditLogs` sayfasından filtrelenebilir
+- Özellikle arka plan servisleri (job, notification) için **ZORUNLU**
+
+### Kategori İsimlendirme
+- Her modül/servis için tutarlı kategori kullan
+- Örnekler: `"EvaluationNotification"`, `"EmailService"`, `"ScheduledJob"`
+
+---
+
+## 26. Email Placeholder İkili Pattern (ZORUNLU!)
+
+### ⛔ Link placeholder eklerken HER ZAMAN ikili oluştur!
+
+Yeni bir link/URL placeholder eklerken **HER ZAMAN** iki versiyon oluşturulmalıdır:
+
+| Tip | Suffix | İçerik | Kullanım |
+|-----|--------|--------|----------|
+| HTML Link | `{XxxLink}` | `<a href="url">Metin</a>` | Hazır tıklanabilir link |
+| Raw URL | `{XxxUrl}` | `https://...` | Kullanıcı kendi linkini oluşturur |
+
+### Mevcut İkililer
+
+```
+{SurveyLink}     + {SurveyUrl}        → Anket
+{EvaluationLink} + {EvaluationUrl}    → Değerlendirme Raporu
+{TrainingVideoLink} + {TrainingVideoUrl} → Eğitim Videosu
+```
+
+### Yeni Link Placeholder Eklerken Checklist
+
+1. [ ] `EmailPlaceholders` sınıfına `XxxLink` + `XxxUrl` const ekle
+2. [ ] `GetAllCategories()` metodunda her ikisini de listele
+3. [ ] `ReplacePlaceholders` metodunda her ikisini de replace et
+4. [ ] `LinkHtml` = `<a href="{url}">{metin}</a>` formatında
+5. [ ] `Url` = raw URL string
+
+### YANLIŞ - Sadece Link Ekleme
+
+```csharp
+// ❌ YANLIŞ - Sadece HTML link var, raw URL yok
+public const string EvaluationLink = "{EvaluationLink}";
+// {EvaluationUrl} yok!
+```
+
+### DOĞRU - İkili Ekleme
+
+```csharp
+// ✅ DOĞRU - Her zaman ikili
+public const string EvaluationLink = "{EvaluationLink}";
+public const string EvaluationUrl = "{EvaluationUrl}";
+```
+
+---
+
+## 27. Commit Kuralları
 
 ⛔ **KULLANICI COMMIT DEMEDİKÇE ASLA COMMIT YAPMA!** ⛔
 

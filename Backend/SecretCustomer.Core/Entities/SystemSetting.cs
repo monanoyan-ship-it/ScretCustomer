@@ -45,4 +45,9 @@ public static class SystemSettingKeys
     /// Varsayılan dönem hedefi
     /// </summary>
     public const string DefaultPeriodTarget = "DefaultPeriodTarget";
+
+    /// <summary>
+    /// Uygulamanın çalıştığı URL (dashboard açıldığında otomatik set edilir)
+    /// </summary>
+    public const string AppUrl = "AppUrl";
 }

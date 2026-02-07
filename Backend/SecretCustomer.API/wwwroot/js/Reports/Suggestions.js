@@ -84,6 +84,11 @@ function SuggestionsViewModel() {
     self.evaluationNotes = ko.observableArray([]);
     self.evaluationNotesCount = ko.observable(0);
 
+    // Evaluation Detail Modal
+    self.isDetailModalOpen = ko.observable(false);
+    self.isDetailLoading = ko.observable(false);
+    self.detailData = ko.observable(null);
+
     // Visible pages for pagination
     self.visiblePages = ko.computed(function() {
         var pages = [];
@@ -495,6 +500,71 @@ function SuggestionsViewModel() {
         document.body.removeChild(textArea);
     };
 
+    // Show evaluation detail in modal
+    self.showEvaluationDetail = function(suggestion) {
+        if (!suggestion.evaluationId) {
+            toastr.warning(T('Evaluation.NotFound', 'Degerlendirme bulunamadi'));
+            return;
+        }
+
+        self.isDetailModalOpen(true);
+        self.isDetailLoading(true);
+        self.detailData(null);
+
+        fetch('/api/evaluations/' + suggestion.evaluationId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error(T('Evaluation.NotFound', 'Degerlendirme bulunamadi'));
+                return response.json();
+            })
+            .then(function(data) {
+                self.detailData(data);
+            })
+            .catch(function(error) {
+                console.error('Detail load error:', error);
+                self.closeDetailModal();
+                toastr.error(T('Evaluation.DetailsLoadError', 'Degerlendirme detaylari yuklenirken hata olustu.'));
+            })
+            .finally(function() {
+                self.isDetailLoading(false);
+            });
+    };
+
+    // Export detail to Excel
+    self.exportDetailToExcel = function() {
+        var detail = self.detailData();
+        if (!detail || !detail.evaluationId) return;
+
+        self.isExporting(true);
+        fetch('/api/reports/evaluations/' + detail.evaluationId + '/export', { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export failed');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'Degerlendirme_Detay_' + detail.evaluationId + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Excel export hatasi');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
+    // Close detail modal
+    self.closeDetailModal = function() {
+        self.isDetailModalOpen(false);
+        self.detailData(null);
+    };
+
     // Initialize
     self.loadFilterOptions();
     self.loadReport();
@@ -505,7 +575,11 @@ var TRANSLATION_KEYS = [
     'Report.LoadErrorMessage',
     'Report.ExportError',
     'Report.ExcelExportError',
-    'File.SuggestionsReport'
+    'File.SuggestionsReport',
+    'Evaluation.NotFound',
+    'Evaluation.DetailsLoadError',
+    'Common.CopiedToClipboard',
+    'Common.CopyFailed'
 ];
 
 // Apply bindings

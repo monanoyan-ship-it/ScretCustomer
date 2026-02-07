@@ -408,10 +408,22 @@
                                                 <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
                                                 <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
+                                            <!-- ko if: callTime -->
+                                            <tr>
+                                                <th>@Html.T("Evaluation.CallTime", "Çağrı Saati")</th>
+                                                <td data-bind="text: callTime"></td>
+                                            </tr>
+                                            <!-- /ko -->
                                             <tr>
                                                 <th>@Html.T("Evaluation.Duration", "Süre")</th>
                                                 <td data-bind="text: duration || '-'"></td>
                                             </tr>
+                                            <!-- ko if: controlTime -->
+                                            <tr>
+                                                <th>@Html.T("Evaluation.ControlTime", "Kontrol Saati")</th>
+                                                <td data-bind="text: controlTime"></td>
+                                            </tr>
+                                            <!-- /ko -->
                                         </table>
                                     </div>
                                 </div>

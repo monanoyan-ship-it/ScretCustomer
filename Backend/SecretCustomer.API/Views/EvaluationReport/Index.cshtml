@@ -1,0 +1,289 @@
+@{
+    Layout = "_LayoutPopup";
+    ViewData["Title"] = "Değerlendirme Raporu";
+    var token = ViewData["Token"]?.ToString() ?? "";
+}
+
+<div id="report-app" class="container-fluid py-3">
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">Rapor yükleniyor...</p>
+    </div>
+
+    <!-- Error -->
+    <div data-bind="visible: errorMessage" class="text-center py-5">
+        <div class="alert alert-danger d-inline-block">
+            <i class="bi bi-exclamation-triangle fs-1 d-block mb-2"></i>
+            <span data-bind="text: errorMessage"></span>
+        </div>
+    </div>
+
+    <!-- Single Evaluation Detail -->
+    <div data-bind="visible: reportType() === 'single' && !isLoading() && !errorMessage()">
+        <!-- ko with: singleEvaluation -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Değerlendirme Detayı</h5>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-2 text-center border-end">
+                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
+                        <small class="text-muted">Toplam Puan</small>
+                    </div>
+                    <div class="col-md-10">
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $parent.getProgressBarClass(scorePercentage || 0), text: (scorePercentage || 0).toFixed(2) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-building"></i> Değerlendirilen</h6></div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tr><th style="width:40%;">Firma</th><td data-bind="text: customerName || '-'"></td></tr>
+                            <tr><th>Organizasyon</th><td data-bind="text: organizationName || '-'"></td></tr>
+                            <tr><th>Temsilci</th><td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-telephone"></i> Çağrı Bilgileri</h6></div>
+                    <div class="card-body">
+                        <table class="table table-sm mb-0">
+                            <tr><th style="width:40%;">Çağrı ID</th><td data-bind="text: callId || '-'"></td></tr>
+                            <tr><th>Tarih</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                            <tr><th>Süre</th><td data-bind="text: duration || '-'"></td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card mb-3" data-bind="visible: evaluationComment">
+            <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-chat-quote"></i> Denetim Yorumu</h6></div>
+            <div class="card-body"><p class="mb-0" data-bind="text: evaluationComment"></p></div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-list-check"></i> Cevaplar</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:12%;">Grup</th>
+                                <th style="width:30%;">Soru</th>
+                                <th class="text-center" style="width:10%;">Cevap</th>
+                                <th class="text-center" style="width:10%;">Ağırlık</th>
+                                <th class="text-center" style="width:10%;">Kazanılan</th>
+                                <th style="width:28%;">Notlar</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: answers || []">
+                            <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
+                                <td data-bind="text: groupName || '-'"></td>
+                                <td data-bind="text: questionText"></td>
+                                <td class="text-center">
+                                    <!-- ko if: givenPoints !== null && maxPoints > 0 -->
+                                    <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: givenPoints !== null && maxPoints > 0 -->
+                                    <span class="text-muted">-</span>
+                                    <!-- /ko -->
+                                </td>
+                                <td class="text-center" data-bind="text: maxPoints > 0 ? maxPoints : '-'"></td>
+                                <td class="text-center" data-bind="text: maxPoints > 0 ? (givenPoints || 0).toFixed(1) : '-'"></td>
+                                <td data-bind="text: notes || '-'"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+    </div>
+
+    <!-- Bulk / Personnel - Evaluation List -->
+    <div data-bind="visible: (reportType() === 'bulk' || reportType() === 'personnel') && !isLoading() && !errorMessage()">
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-ul me-2"></i>
+                    <!-- ko if: reportType() === 'bulk' -->
+                    <span data-bind="text: headerTitle"></span>
+                    <!-- /ko -->
+                    <!-- ko if: reportType() === 'personnel' -->
+                    <span data-bind="text: headerTitle"></span>
+                    <!-- /ko -->
+                </h5>
+                <small data-bind="text: dateRange"></small>
+            </div>
+            <div class="card-body p-0">
+                <div data-bind="visible: evaluations().length === 0" class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                    Bu tarih aralığında değerlendirme bulunamadı.
+                </div>
+                <div data-bind="visible: evaluations().length > 0" class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tarih</th>
+                                <!-- ko if: reportType() === 'bulk' -->
+                                <th>Temsilci</th>
+                                <!-- /ko -->
+                                <th>Proje</th>
+                                <th>Bayi</th>
+                                <th class="text-center">Puan</th>
+                                <th style="width:30%;">Yorum</th>
+                                <th class="text-center">Detay</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: evaluations">
+                            <tr>
+                                <td data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : '-'"></td>
+                                <!-- ko if: $parent.reportType() === 'bulk' -->
+                                <td data-bind="text: personnelName || '-'"></td>
+                                <!-- /ko -->
+                                <td data-bind="text: projectName || '-'"></td>
+                                <td data-bind="text: dealerName || '-'"></td>
+                                <td class="text-center">
+                                    <span class="badge" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage || 0)"></span>
+                                </td>
+                                <td><small data-bind="text: evaluationComment ? (evaluationComment.length > 80 ? evaluationComment.substring(0, 80) + '...' : evaluationComment) : '-'"></small></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetail">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer text-muted small" data-bind="visible: evaluations().length > 0">
+                Toplam <strong data-bind="text: evaluations().length"></strong> değerlendirme
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal (for bulk/personnel list items) -->
+    <div class="modal fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-clipboard-check me-2"></i>Değerlendirme Detayı</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeDetailModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div data-bind="visible: isDetailLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+                    <div data-bind="visible: !isDetailLoading() && detailData()">
+                        <!-- ko with: detailData -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 text-center border-end">
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
+                                        <small class="text-muted">Toplam Puan</small>
+                                    </div>
+                                    <div class="col-md-10">
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $parent.getProgressBarClass(scorePercentage || 0), text: (scorePercentage || 0).toFixed(2) + '%'"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-building"></i> Değerlendirilen</h6></div>
+                                    <div class="card-body">
+                                        <table class="table table-sm mb-0">
+                                            <tr><th style="width:40%;">Firma</th><td data-bind="text: customerName || '-'"></td></tr>
+                                            <tr><th>Organizasyon</th><td data-bind="text: organizationName || '-'"></td></tr>
+                                            <tr><th>Temsilci</th><td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-telephone"></i> Çağrı Bilgileri</h6></div>
+                                    <div class="card-body">
+                                        <table class="table table-sm mb-0">
+                                            <tr><th style="width:40%;">Çağrı ID</th><td data-bind="text: callId || '-'"></td></tr>
+                                            <tr><th>Tarih</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                                            <tr><th>Süre</th><td data-bind="text: duration || '-'"></td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card mb-4" data-bind="visible: evaluationComment">
+                            <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-chat-quote"></i> Denetim Yorumu</h6></div>
+                            <div class="card-body"><p class="mb-0" data-bind="text: evaluationComment"></p></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header bg-light"><h6 class="mb-0"><i class="bi bi-list-check"></i> Cevaplar</h6></div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th style="width:12%;">Grup</th>
+                                                <th style="width:30%;">Soru</th>
+                                                <th class="text-center" style="width:10%;">Cevap</th>
+                                                <th class="text-center" style="width:10%;">Ağırlık</th>
+                                                <th class="text-center" style="width:10%;">Kazanılan</th>
+                                                <th style="width:28%;">Notlar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: answers || []">
+                                            <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
+                                                <td data-bind="text: groupName || '-'"></td>
+                                                <td data-bind="text: questionText"></td>
+                                                <td class="text-center">
+                                                    <!-- ko if: givenPoints !== null && maxPoints > 0 -->
+                                                    <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
+                                                    <!-- /ko -->
+                                                    <!-- ko ifnot: givenPoints !== null && maxPoints > 0 -->
+                                                    <span class="text-muted">-</span>
+                                                    <!-- /ko -->
+                                                </td>
+                                                <td class="text-center" data-bind="text: maxPoints > 0 ? maxPoints : '-'"></td>
+                                                <td class="text-center" data-bind="text: maxPoints > 0 ? (givenPoints || 0).toFixed(1) : '-'"></td>
+                                                <td data-bind="text: notes || '-'"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeDetailModal">
+                        <i class="bi bi-x-lg me-1"></i> Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isDetailModalOpen }, style: { display: isDetailModalOpen() ? 'block' : 'none' }"></div>
+</div>
+
+@section Scripts {
+    <script>
+        var REPORT_TOKEN = '@Html.Raw(token)';
+    </script>
+    <script src="~/js/EvaluationReport/view.js"></script>
+}

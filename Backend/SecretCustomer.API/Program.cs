@@ -210,6 +210,7 @@ builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<SmtpEmailService>();
 builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<SmtpEmailService>());
 builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
+builder.Services.AddSingleton<INotificationTokenService, NotificationTokenService>();
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 builder.Services.AddScoped<ITrainingQuizService, TrainingQuizService>();
 

@@ -255,6 +255,48 @@ function CustomersViewModel() {
     self.notificationFrequencies = ko.observableArray([]);
     self.notificationTemplates = ko.observableArray([]);
 
+    // Bildirim kuralları için yardımcı veriler (EnumsService'den dolduruluyor, init'te)
+    self.ruleFrequencies = ko.observableArray([]);
+
+    self.daysOfWeek = ko.observableArray([]);
+
+    self.daysOfMonth = (function() {
+        var arr = [];
+        for (var i = 1; i <= 28; i++) arr.push({ id: i, name: String(i) });
+        return arr;
+    })();
+
+    // Kural objesi oluştur (observable alanlarla)
+    self.createRuleObservable = function(rule) {
+        return {
+            id: ko.observable(rule ? rule.id : 0),
+            frequencyId: ko.observable(rule ? String(rule.frequencyId) : '1'),
+            dayOfWeek: ko.observable(rule && rule.dayOfWeek ? String(rule.dayOfWeek) : null),
+            dayOfMonth: ko.observable(rule && rule.dayOfMonth ? String(rule.dayOfMonth) : null),
+            emails: ko.observable(rule ? (rule.emails || '') : ''),
+            sendToPersonnel: ko.observable(rule ? rule.sendToPersonnel : false),
+            emailTemplateId: ko.observable(rule && rule.emailTemplateId ? String(rule.emailTemplateId) : null),
+            tokenExpirationDays: ko.observable(rule ? (rule.tokenExpirationDays || 30) : 30),
+            isActive: ko.observable(rule ? rule.isActive : true)
+        };
+    };
+
+    // Kural ekle
+    self.addNotificationRule = function() {
+        var customer = self.editingCustomer();
+        if (customer && customer.notificationRules) {
+            customer.notificationRules.push(self.createRuleObservable());
+        }
+    };
+
+    // Kural sil
+    self.removeNotificationRule = function(rule) {
+        var customer = self.editingCustomer();
+        if (customer && customer.notificationRules) {
+            customer.notificationRules.remove(rule);
+        }
+    };
+
     // Show personnel actions (hide when password reset is open)
     self.showPersonnelActions = ko.computed(function() {
         return !self.showChangePasswordModal();
@@ -410,35 +452,48 @@ function CustomersViewModel() {
             monthlyQuota: null,
             evaluationNotificationFrequencyId: 0,
             evaluationNotificationTemplateId: null,
-            notificationEmails: ''
+            notificationEmails: '',
+            notificationRules: ko.observableArray([])
         });
         self.isModalOpen(true);
     };
 
-    // Edit customer
+    // Edit customer (fetch full detail for notification rules)
     self.editCustomer = function(customer) {
-        self.editingCustomer({
-            id: customer.id,
-            code: customer.code || '',
-            companyName: customer.companyName,
-            taxNumber: customer.taxNumber || '',
-            phone: customer.phone || '',
-            email: customer.email || '',
-            address: customer.address || '',
-            city: customer.city || '',
-            isActive: customer.isActive,
-            contractStartDate: self.formatDateForInput(customer.contractStartDate),
-            contractEndDate: self.formatDateForInput(customer.contractEndDate),
-            notes: customer.notes || '',
-            targetCount: customer.targetCount || null,
-            dailyQuota: customer.dailyQuota || null,
-            weeklyQuota: customer.weeklyQuota || null,
-            monthlyQuota: customer.monthlyQuota || null,
-            evaluationNotificationFrequencyId: customer.evaluationNotificationFrequencyId || 0,
-            evaluationNotificationTemplateId: customer.evaluationNotificationTemplateId || null,
-            notificationEmails: customer.notificationEmails || ''
-        });
-        self.isModalOpen(true);
+        customerApiService.getCustomerById(customer.id)
+            .then(function(detail) {
+                var rules = (detail.notificationRules || []).map(function(r) {
+                    return self.createRuleObservable(r);
+                });
+
+                self.editingCustomer({
+                    id: detail.id,
+                    code: detail.code || '',
+                    companyName: detail.companyName,
+                    taxNumber: detail.taxNumber || '',
+                    phone: detail.phone || '',
+                    email: detail.email || '',
+                    address: detail.address || '',
+                    city: detail.city || '',
+                    isActive: detail.isActive,
+                    contractStartDate: self.formatDateForInput(detail.contractStartDate),
+                    contractEndDate: self.formatDateForInput(detail.contractEndDate),
+                    notes: detail.notes || '',
+                    targetCount: detail.targetCount || null,
+                    dailyQuota: detail.dailyQuota || null,
+                    weeklyQuota: detail.weeklyQuota || null,
+                    monthlyQuota: detail.monthlyQuota || null,
+                    evaluationNotificationFrequencyId: detail.evaluationNotificationFrequencyId || 0,
+                    evaluationNotificationTemplateId: detail.evaluationNotificationTemplateId || null,
+                    notificationEmails: detail.notificationEmails || '',
+                    notificationRules: ko.observableArray(rules)
+                });
+                self.isModalOpen(true);
+            })
+            .catch(function(error) {
+                console.error('Error loading customer details:', error);
+                toastr.error('Müşteri detayları yüklenirken hata oluştu.');
+            });
     };
 
     // Save customer
@@ -455,9 +510,32 @@ function CustomersViewModel() {
 
         self.isSaving(true);
 
+        // Prepare data - unwrap notificationRules observables for JSON serialization
+        var customerData = {};
+        for (var key in customer) {
+            if (key !== 'notificationRules' && customer.hasOwnProperty(key)) {
+                customerData[key] = customer[key];
+            }
+        }
+        if (customer.notificationRules) {
+            customerData.notificationRules = customer.notificationRules().map(function(rule) {
+                return {
+                    id: ko.unwrap(rule.id) || 0,
+                    frequencyId: parseInt(ko.unwrap(rule.frequencyId), 10),
+                    dayOfWeek: ko.unwrap(rule.dayOfWeek) ? parseInt(ko.unwrap(rule.dayOfWeek), 10) : null,
+                    dayOfMonth: ko.unwrap(rule.dayOfMonth) ? parseInt(ko.unwrap(rule.dayOfMonth), 10) : null,
+                    emails: ko.unwrap(rule.emails) || null,
+                    sendToPersonnel: ko.unwrap(rule.sendToPersonnel) || false,
+                    emailTemplateId: ko.unwrap(rule.emailTemplateId) ? parseInt(ko.unwrap(rule.emailTemplateId), 10) : null,
+                    tokenExpirationDays: parseInt(ko.unwrap(rule.tokenExpirationDays), 10) || 30,
+                    isActive: ko.unwrap(rule.isActive)
+                };
+            });
+        }
+
         var promise = customer.id
-            ? customerApiService.updateCustomer(customer.id, customer)
-            : customerApiService.createCustomer(customer);
+            ? customerApiService.updateCustomer(customer.id, customerData)
+            : customerApiService.createCustomer(customerData);
 
         promise
             .then(function(savedCustomer) {
@@ -1729,20 +1807,18 @@ function CustomersViewModel() {
     // Add ESC key listener
     document.addEventListener('keydown', self.handleEscapeKey);
 
-    // Load notification frequencies from EnumsService
+    // Load notification frequencies + days from EnumsService
     self.loadNotificationFrequencies = function() {
         var frequencies = EnumsService.getByType('evaluationNotificationFrequency');
         if (frequencies && frequencies.length > 0) {
             self.notificationFrequencies(frequencies);
-        } else {
-            // Fallback: hardcoded values
-            self.notificationFrequencies([
-                { id: 0, description: 'Bildirim Yok' },
-                { id: 1, description: 'Her Kayıtta' },
-                { id: 2, description: 'Her Gün' },
-                { id: 3, description: 'Her Hafta (Cuma)' },
-                { id: 4, description: 'Her Ay (Son Gün)' }
-            ]);
+            // Kural dropdown'u için id=0 (None) hariç olanları al
+            self.ruleFrequencies(frequencies.filter(function(f) { return f.id > 0; }));
+        }
+
+        var days = EnumsService.getByType('daysOfWeek');
+        if (days && days.length > 0) {
+            self.daysOfWeek(days);
         }
     };
 

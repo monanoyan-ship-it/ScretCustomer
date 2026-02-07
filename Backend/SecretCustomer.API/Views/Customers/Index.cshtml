@@ -252,25 +252,78 @@
                         </div>
                     </div>
 
-                    <!-- Değerlendirme Bildirimi -->
+                    <!-- Bildirim Kuralları -->
                     <div class="card mb-3">
-                        <div class="card-header py-2"><i class="bi bi-bell"></i> @Html.T("Customer.EvaluationNotification", "Değerlendirme Bildirimi")</div>
+                        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-bell"></i> @Html.T("Customer.NotificationRules", "Bildirim Kuralları")</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.addNotificationRule">
+                                <i class="bi bi-plus"></i> @Html.T("Customer.AddRule", "Kural Ekle")
+                            </button>
+                        </div>
                         <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">@Html.T("Customer.NotificationFrequency", "Bildirim Sıklığı")</label>
-                                    <select class="form-select" data-bind="value: evaluationNotificationFrequencyId, options: $parent.notificationFrequencies, optionsText: 'description', optionsValue: 'id'"></select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">@Html.T("Customer.NotificationTemplate", "E-posta Şablonu")</label>
-                                    <select class="form-select" data-bind="value: evaluationNotificationTemplateId, options: $parent.notificationTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.SelectDefault", "-- Varsayılan --")'"></select>
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">@Html.T("Customer.NotificationEmails", "Bildirim E-postaları")</label>
-                                    <input type="text" class="form-control" data-bind="value: notificationEmails" placeholder="email1@firma.com, email2@firma.com">
-                                    <small class="text-muted">@Html.T("Customer.NotificationEmailsHelp", "Virgülle ayırarak birden fazla e-posta ekleyebilirsiniz")</small>
+                            <!-- Kural yoksa -->
+                            <div data-bind="visible: notificationRules().length === 0" class="text-muted text-center py-2">
+                                <i class="bi bi-info-circle"></i> @Html.T("Customer.NoNotificationRules", "Henüz bildirim kuralı eklenmedi.")
+                            </div>
+
+                            <!-- Kurallar listesi -->
+                            <!-- ko foreach: notificationRules -->
+                            <div class="card mb-2 border-start border-3 border-primary">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="badge bg-primary">@Html.T("Customer.Rule", "Kural") #<span data-bind="text: $index() + 1"></span></span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="form-check form-switch mb-0">
+                                                <input type="checkbox" class="form-check-input" data-bind="checked: isActive">
+                                                <label class="form-check-label small" data-bind="text: isActive() ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></label>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bind="click: $parents[1].removeNotificationRule" title="@Html.T("Common.Delete", "Sil")">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.NotificationFrequency", "Sıklık")</label>
+                                            <select class="form-select form-select-sm" data-bind="value: frequencyId, options: $parents[1].ruleFrequencies, optionsText: 'description', optionsValue: 'id'"></select>
+                                        </div>
+                                        <!-- Haftalık gün seçimi -->
+                                        <!-- ko if: frequencyId() == '3' -->
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.DayOfWeek", "Gün")</label>
+                                            <select class="form-select form-select-sm" data-bind="value: dayOfWeek, options: $parents[1].daysOfWeek, optionsText: 'displayName', optionsValue: 'id', optionsCaption: '-- @Html.T("Common.Select", "Seçiniz") --'"></select>
+                                        </div>
+                                        <!-- /ko -->
+                                        <!-- Aylık gün seçimi -->
+                                        <!-- ko if: frequencyId() == '4' -->
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.DayOfMonth", "Ayın Günü")</label>
+                                            <select class="form-select form-select-sm" data-bind="value: dayOfMonth, options: $parents[1].daysOfMonth, optionsText: 'name', optionsValue: 'id', optionsCaption: '-- @Html.T("Common.Select", "Seçiniz") --'"></select>
+                                        </div>
+                                        <!-- /ko -->
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.NotificationTemplate", "Şablon")</label>
+                                            <select class="form-select form-select-sm" data-bind="value: emailTemplateId, options: $parents[1].notificationTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '-- @Html.T("Common.SelectDefault", "Varsayılan") --'"></select>
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.NotificationEmails", "E-postalar")</label>
+                                            <input type="text" class="form-control form-control-sm" data-bind="value: emails" placeholder="email1@firma.com, email2@firma.com">
+                                        </div>
+                                        <div class="col-md-2 mb-2">
+                                            <label class="form-label small mb-1">@Html.T("Customer.TokenExpirationDays", "Link Süresi (gün)")</label>
+                                            <input type="number" class="form-control form-control-sm" data-bind="value: tokenExpirationDays" min="1" max="365">
+                                        </div>
+                                    </div>
+                                    <!-- Personele gönder (sadece "Her Kayıtta" modunda) -->
+                                    <!-- ko if: frequencyId() == '1' -->
+                                    <div class="form-check mt-1">
+                                        <input type="checkbox" class="form-check-input" data-bind="checked: sendToPersonnel">
+                                        <label class="form-check-label small">@Html.T("Customer.SendToPersonnel", "Personelin kendi e-postasına da gönder")</label>
+                                    </div>
+                                    <!-- /ko -->
                                 </div>
                             </div>
+                            <!-- /ko -->
                         </div>
                     </div>
 

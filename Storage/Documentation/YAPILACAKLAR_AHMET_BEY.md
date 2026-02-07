@@ -182,10 +182,22 @@
 
 ---
 
-### 18. Mail Sistemi - Karne Gönderimi
-**Durum:** ⏸️ Beklemede (Müşteriye soruldu)
+### 18. Mail Sistemi - Değerlendirme Bildirimi Yeniden Tasarım
+**Durum:** 🚧 Devam Ediyor
 **Sorunlar:**
-- [ ] Değerlendirme kapatınca mail ile karneler gitmeli - **SORU: Detay lazım** -- Bununla ilgili çalışmayı tamamlayamadık. Bu sorun bizim sorunumuz sırası gelince bana sor.
+- [ ] Çoklu bildirim kuralı sistemi (CustomerNotificationRule entity)
+- [ ] Her müşteri N tane kural tanımlayabilecek (Sıklık + Gün + Email + Şablon)
+- [ ] Sıklık: Her Kayıtta / Günlük / Haftalık / Aylık
+- [ ] Haftalıksa hangi gün, aylıksa ayın kaçı seçilebilecek
+- [ ] "Personelin kendi mailine gidecek" checkbox (Her Kayıtta'da personel maili kullanılır)
+- [ ] Public linkler (AES token, login gerektirmez): Tekil/Toplu/Personel bazlı
+- [ ] Token süresi dolunca erişilemez
+- [ ] Günlük 19:00'da, haftalık/aylık belirtilen gün 19:00'da otomatik gönderim
+- [ ] Email şablonunda {EvaluationLink} placeholder'ı (<a> tag)
+**Not:** Detaylı spec: `~/.claude/projects/.../memory/NOTIFICATION_SYSTEM.md`
+
+**Ek Yapılacak:**
+- [ ] Bazı raporlarda DateTime'lar yanlış geliyor - Araştırılacak
 
 ---
 

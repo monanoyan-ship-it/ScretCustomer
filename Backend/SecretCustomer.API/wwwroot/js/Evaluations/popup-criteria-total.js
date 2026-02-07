@@ -409,12 +409,12 @@ var EvaluationPopupViewModel = function() {
             toastr.error('Çağrı Tarihi zorunludur');
             return;
         }
-        if (!self.callTime()) {
-            toastr.error('Çağrı Saati zorunludur');
+        if (!self.callTime() || self.callTime().indexOf('_') >= 0 || !/^\d{2}:\d{2}$/.test(self.callTime())) {
+            toastr.error('Çağrı Saati zorunludur (SS:DD formatında giriniz)');
             return;
         }
-        if (!self.duration()) {
-            toastr.error('Süre zorunludur');
+        if (!self.duration() || self.duration().indexOf('_') >= 0 || !/^\d{2}:\d{2}:\d{2}$/.test(self.duration()) || parseInt(self.duration().replace(/\D/g, ''), 10) === 0) {
+            toastr.error('Süre zorunludur (SS:DD:SN formatında giriniz)');
             return;
         }
 
@@ -543,16 +543,16 @@ var EvaluationPopupViewModel = function() {
             toastr.error('Çağrı Tarihi zorunludur');
             return;
         }
-        if (!self.callTime()) {
-            self.errorMessage('Çağrı Saati zorunludur');
+        if (!self.callTime() || self.callTime().indexOf('_') >= 0 || !/^\d{2}:\d{2}$/.test(self.callTime())) {
+            self.errorMessage('Çağrı Saati zorunludur (SS:DD formatında giriniz)');
             self.isSaving(false);
-            toastr.error('Çağrı Saati zorunludur');
+            toastr.error('Çağrı Saati zorunludur (SS:DD formatında giriniz)');
             return;
         }
-        if (!self.duration()) {
-            self.errorMessage('Süre zorunludur');
+        if (!self.duration() || self.duration().indexOf('_') >= 0 || !/^\d{2}:\d{2}:\d{2}$/.test(self.duration()) || parseInt(self.duration().replace(/\D/g, ''), 10) === 0) {
+            self.errorMessage('Süre zorunludur (SS:DD:SN formatında giriniz)');
             self.isSaving(false);
-            toastr.error('Süre zorunludur');
+            toastr.error('Süre zorunludur (SS:DD:SN formatında giriniz)');
             return;
         }
 

@@ -252,13 +252,33 @@ public class CustomerService : ICustomerService
             CreatedAt = DateTime.UtcNow
         };
 
+        // Bildirim kurallarını ekle
+        if (createCustomerDto.NotificationRules?.Any() == true)
+        {
+            foreach (var ruleDto in createCustomerDto.NotificationRules)
+            {
+                customer.NotificationRules.Add(new CustomerNotificationRule
+                {
+                    FrequencyId = ruleDto.FrequencyId,
+                    DayOfWeek = ruleDto.DayOfWeek,
+                    DayOfMonth = ruleDto.DayOfMonth,
+                    Emails = ruleDto.Emails,
+                    SendToPersonnel = ruleDto.SendToPersonnel,
+                    EmailTemplateId = ruleDto.EmailTemplateId,
+                    TokenExpirationDays = ruleDto.TokenExpirationDays,
+                    IsActive = ruleDto.IsActive,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
+
         var createdCustomer = await _customerRepository.CreateAsync(customer);
         return MapToDto(createdCustomer);
     }
 
     public async Task<CustomerDto> UpdateAsync(int id, UpdateCustomerDto updateCustomerDto)
     {
-        var customer = await _customerRepository.GetByIdAsync(id);
+        var customer = await _customerRepository.GetByIdAsync(id, includeDetails: true);
         if (customer == null)
         {
             throw new KeyNotFoundException($"Müşteri bulunamadı (ID: {id})");
@@ -297,6 +317,58 @@ public class CustomerService : ICustomerService
         customer.EvaluationNotificationFrequencyId = updateCustomerDto.EvaluationNotificationFrequencyId;
         customer.EvaluationNotificationTemplateId = updateCustomerDto.EvaluationNotificationTemplateId;
         customer.NotificationEmails = updateCustomerDto.NotificationEmails;
+
+        // Bildirim kurallarını güncelle (gönderilmişse)
+        if (updateCustomerDto.NotificationRules != null)
+        {
+            var existingRules = customer.NotificationRules.ToList();
+            var incomingIds = updateCustomerDto.NotificationRules
+                .Where(r => r.Id > 0)
+                .Select(r => r.Id)
+                .ToHashSet();
+
+            // Silinecek kurallar (incoming'de olmayan mevcut kurallar)
+            var toRemove = existingRules.Where(r => !incomingIds.Contains(r.Id)).ToList();
+            foreach (var rule in toRemove)
+            {
+                _context.CustomerNotificationRules.Remove(rule);
+            }
+
+            // Mevcut kuralları güncelle
+            foreach (var ruleDto in updateCustomerDto.NotificationRules.Where(r => r.Id > 0))
+            {
+                var existing = existingRules.FirstOrDefault(r => r.Id == ruleDto.Id);
+                if (existing != null)
+                {
+                    existing.FrequencyId = ruleDto.FrequencyId;
+                    existing.DayOfWeek = ruleDto.DayOfWeek;
+                    existing.DayOfMonth = ruleDto.DayOfMonth;
+                    existing.Emails = ruleDto.Emails;
+                    existing.SendToPersonnel = ruleDto.SendToPersonnel;
+                    existing.EmailTemplateId = ruleDto.EmailTemplateId;
+                    existing.TokenExpirationDays = ruleDto.TokenExpirationDays;
+                    existing.IsActive = ruleDto.IsActive;
+                    existing.UpdatedAt = DateTime.UtcNow;
+                }
+            }
+
+            // Yeni kuralları ekle (Id == 0)
+            foreach (var ruleDto in updateCustomerDto.NotificationRules.Where(r => r.Id == 0))
+            {
+                customer.NotificationRules.Add(new CustomerNotificationRule
+                {
+                    FrequencyId = ruleDto.FrequencyId,
+                    DayOfWeek = ruleDto.DayOfWeek,
+                    DayOfMonth = ruleDto.DayOfMonth,
+                    Emails = ruleDto.Emails,
+                    SendToPersonnel = ruleDto.SendToPersonnel,
+                    EmailTemplateId = ruleDto.EmailTemplateId,
+                    TokenExpirationDays = ruleDto.TokenExpirationDays,
+                    IsActive = ruleDto.IsActive,
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+        }
 
         var updatedCustomer = await _customerRepository.UpdateAsync(customer);
         return MapToDto(updatedCustomer);
@@ -343,7 +415,22 @@ public class CustomerService : ICustomerService
             EvaluationNotificationTemplateId = customer.EvaluationNotificationTemplateId,
             EvaluationNotificationTemplateName = customer.EvaluationNotificationTemplate?.Name,
             NotificationEmails = customer.NotificationEmails,
-            LastNotificationSentAt = customer.LastNotificationSentAt
+            LastNotificationSentAt = customer.LastNotificationSentAt,
+            NotificationRules = customer.NotificationRules?.Select(r => new CustomerNotificationRuleDto
+            {
+                Id = r.Id,
+                CustomerId = r.CustomerId,
+                FrequencyId = r.FrequencyId,
+                DayOfWeek = r.DayOfWeek,
+                DayOfMonth = r.DayOfMonth,
+                Emails = r.Emails,
+                SendToPersonnel = r.SendToPersonnel,
+                EmailTemplateId = r.EmailTemplateId,
+                EmailTemplateName = r.EmailTemplate?.Name,
+                TokenExpirationDays = r.TokenExpirationDays,
+                IsActive = r.IsActive,
+                LastSentAt = r.LastSentAt
+            }).ToList() ?? new()
         };
     }
 

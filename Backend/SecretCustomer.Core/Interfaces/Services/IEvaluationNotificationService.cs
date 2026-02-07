@@ -8,22 +8,16 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IEvaluationNotificationService
 {
     /// <summary>
-    /// Tekil değerlendirme bildirimi gönderir (Her Kayıtta seçeneği için)
+    /// Tekil değerlendirme bildirimi gönderir (FrequencyId=1 kuralları için).
+    /// Değerlendirme tamamlanınca anında çağrılır.
     /// </summary>
-    Task SendSingleEvaluationNotificationAsync(Evaluation evaluation);
+    /// <param name="evaluation">Değerlendirme (Include'lar yüklenmiş olmalı)</param>
+    /// <param name="baseUrl">Uygulamanın base URL'i (Request.Scheme + Request.Host)</param>
+    Task SendSingleEvaluationNotificationAsync(Evaluation evaluation, string baseUrl);
 
     /// <summary>
-    /// Günlük özet bildirimi gönderir (dün yapılan değerlendirmeler)
+    /// Zamanlı bildirim kurallarını işler (Günlük, Haftalık, Aylık).
+    /// Job tarafından her gün 19:00'da çağrılır.
     /// </summary>
-    Task SendDailyNotificationsAsync();
-
-    /// <summary>
-    /// Haftalık özet bildirimi gönderir (bu hafta yapılan değerlendirmeler)
-    /// </summary>
-    Task SendWeeklyNotificationsAsync();
-
-    /// <summary>
-    /// Aylık özet bildirimi gönderir (bu ay yapılan değerlendirmeler)
-    /// </summary>
-    Task SendMonthlyNotificationsAsync();
+    Task ProcessScheduledNotificationsAsync();
 }
