@@ -123,16 +123,16 @@ function InternalAssignmentsViewModel() {
             case 'customer':
                 var customerId = self.tempFilter.customerId();
                 if (!customerId) return;
-                var customer = self.customers().find(function(c) { return c.id === customerId; });
+                var customer = self.customers().find(function(c) { return String(c.id) === String(customerId); });
                 filter.value = customerId;
-                filter.displayValue = customer ? customer.companyName : customerId;
+                filter.displayValue = customer ? customer.name : customerId;
                 self.tempFilter.customerId(null);
                 break;
 
             case 'project':
                 var projectId = self.tempFilter.projectId();
                 if (!projectId) return;
-                var project = self.projects().find(function(p) { return p.id === projectId; });
+                var project = self.projects().find(function(p) { return String(p.id) === String(projectId); });
                 filter.value = projectId;
                 filter.displayValue = project ? project.name : projectId;
                 self.tempFilter.projectId(null);
@@ -180,23 +180,23 @@ function InternalAssignmentsViewModel() {
         self.loadSummary();
     };
 
-    // Build filter params
+    // Build filter params (URLSearchParams pattern - KURALLAR.md #20)
     self.buildFilterParams = function() {
-        var params = [];
+        var params = new URLSearchParams();
 
         self.activeFilters().forEach(function(filter) {
             switch (filter.type) {
                 case 'customer':
-                    params.push('customerId=' + filter.value);
+                    params.append('customerIds', filter.value);
                     break;
                 case 'project':
-                    params.push('projectId=' + filter.value);
+                    params.append('projectIds', filter.value);
                     break;
                 case 'status':
-                    params.push('status=' + filter.value);
+                    params.append('status', filter.value);
                     break;
                 case 'dueDate':
-                    params.push('dueDateFilter=' + filter.value);
+                    params.append('dueDateFilter', filter.value);
                     break;
             }
         });
@@ -252,7 +252,8 @@ function InternalAssignmentsViewModel() {
         self.isLoading(true);
 
         var params = self.buildFilterParams();
-        var url = '/api/internal-assignments' + (params.length > 0 ? '?' + params.join('&') : '');
+        var paramStr = params.toString();
+        var url = '/api/internal-assignments' + (paramStr ? '?' + paramStr : '');
 
         fetch(url, { credentials: 'include' })
             .then(function(r) { return r.json(); })
