@@ -1156,6 +1156,9 @@ public class ReportService : IReportService
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
 
+        if (filter.PersonnelIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
+
         // PenaltyType - çoklu değer desteği
         if (filter.PenaltyTypes?.Any() == true)
         {
@@ -1397,6 +1400,9 @@ public class ReportService : IReportService
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
+
+        if (filter.PersonnelIds?.Any() == true)
+            query = query.Where(a => a.Evaluation.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
 
         if (filter.PenaltyTypes?.Any() == true)
         {
@@ -3694,6 +3700,10 @@ public class ReportService : IReportService
         if (filter.CallIds?.Any() == true)
             query = query.Where(e => e.CallId != null &&
                 filter.CallIds.Any(callId => EF.Functions.ILike(e.CallId, $"%{callId}%")));
+
+        // Personnel ID filter (supervisor erişim kontrolü için)
+        if (filter.PersonnelIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
 
         var evaluations = await query
             .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)

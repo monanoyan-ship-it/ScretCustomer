@@ -14,6 +14,7 @@ public class ReportFilterDto
     public List<int>? EvaluatorIds { get; set; }
     public List<int>? ChecklistIds { get; set; }
     public List<int>? PeriodIds { get; set; }
+    public List<int>? PersonnelIds { get; set; }
     public List<string>? PersonnelNames { get; set; }
     public List<string>? SupervisorNames { get; set; }
     public List<string>? CallIds { get; set; }
@@ -275,6 +276,7 @@ public class PenaltyFilterDto
     public List<int>? ChecklistIds { get; set; }
     public List<int>? EvaluatorIds { get; set; }
     public List<string>? PenaltyTypes { get; set; }
+    public List<int>? PersonnelIds { get; set; }
     public List<DateRangeFilter>? DateRanges { get; set; }
 
     public int Page { get; set; } = 1;
