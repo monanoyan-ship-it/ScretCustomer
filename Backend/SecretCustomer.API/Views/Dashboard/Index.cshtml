@@ -170,6 +170,7 @@
                                     <th>@Html.T("Common.User", "Kullanıcı")</th>
                                     <th class="text-center">@Html.T("Dashboard.Count", "Adet")</th>
                                     <th class="text-end">@Html.T("Common.Average", "Ortalama")</th>
+                                    <th class="text-center" style="width: 50px;"></th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: userPerformance().topEvaluatorsToday">
@@ -180,6 +181,12 @@
                                     <td data-bind="text: userName"></td>
                                     <td class="text-center"><strong data-bind="text: evaluationCount"></strong></td>
                                     <td class="text-end"><span data-bind="text: averageScore.toFixed(1)"></span>%</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-success" title="@Html.T("Common.Detail", "Detay")"
+                                                data-bind="click: function() { $parent.showUserProjectDetailToday(userId, userName); }">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

@@ -681,7 +681,6 @@ public class TrainingVideoService : ITrainingVideoService
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
                     .ThenInclude(cp => cp!.Customer)
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
             .Where(a => !a.IsDeleted)
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(a => a.Evaluation.CompletedAt >= sourceStartUtc)
@@ -691,7 +690,7 @@ public class TrainingVideoService : ITrainingVideoService
         // Opsiyonel filtreler
         if (dto.ProjectId.HasValue)
         {
-            query = query.Where(a => a.Evaluation.Assignment.ProjectId == dto.ProjectId);
+            query = query.Where(a => a.Evaluation.ProjectId == dto.ProjectId);
         }
 
         if (dto.CustomerId.HasValue)
@@ -1323,7 +1322,7 @@ public class TrainingVideoService : ITrainingVideoService
         // Bu checklist'lerde değerlendirmesi olan müşterileri bul
         var customerIds = await _context.Evaluations
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .Where(e => checklistIds.Contains(e.Assignment.ChecklistId))
+            .Where(e => checklistIds.Contains(e.Project.ChecklistId))
             .Where(e => e.EvaluatedCustomerPersonnelId.HasValue && e.EvaluatedCustomerPersonnel != null)
             .Select(e => e.EvaluatedCustomerPersonnel!.CustomerId)
             .Distinct()
@@ -1406,7 +1405,7 @@ public class TrainingVideoService : ITrainingVideoService
         // Checklist filtresi (scope varsa)
         if (checklistIds.Any())
         {
-            query = query.Where(e => checklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => checklistIds.Contains(e.Project.ChecklistId));
         }
 
         // Arama filtresi

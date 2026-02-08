@@ -20,7 +20,7 @@ public class EvaluationRepository : IEvaluationRepository
         if (includeDetails)
         {
             query = query
-                .Include(e => e.Assignment)
+                .Include(e => e.Project)
                 .Include(e => e.Evaluator)
                 .Include(e => e.EvaluatorCustomerPersonnel)
                 .Include(e => e.Answers)
@@ -33,7 +33,7 @@ public class EvaluationRepository : IEvaluationRepository
         return await query.FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<Evaluation?> GetByAssignmentIdAsync(int assignmentId, bool includeDetails = false)
+    public async Task<Evaluation?> GetByProjectIdAsync(int projectId, bool includeDetails = false)
     {
         var query = _context.Evaluations.AsQueryable();
 
@@ -44,16 +44,14 @@ public class EvaluationRepository : IEvaluationRepository
                     .ThenInclude(a => a.Question);
         }
 
-        return await query.FirstOrDefaultAsync(e => e.AssignmentId == assignmentId);
+        return await query.FirstOrDefaultAsync(e => e.ProjectId == projectId);
     }
 
     public async Task<IEnumerable<Evaluation>> GetByEvaluatorIdAsync(int evaluatorId)
     {
         return await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatedPersonnel)
             .Where(e => e.EvaluatorId == evaluatorId)
             .OrderByDescending(e => e.CompletedAt)
@@ -63,7 +61,7 @@ public class EvaluationRepository : IEvaluationRepository
     public async Task<IEnumerable<Evaluation>> GetAllAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
+            .Include(e => e.Project)
             .AsQueryable();
 
         if (startDate.HasValue)

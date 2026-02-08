@@ -57,15 +57,15 @@ public class EvaluationsApiController : BaseApiController
         try
         {
             var query = _context.Evaluations
-                .Include(e => e.Assignment).ThenInclude(a => a.Project)
-                .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                .Include(e => e.Project)
+                .Include(e => e.Project).ThenInclude(p => p.Checklist)
                 .Include(e => e.EvaluatedCustomerPersonnel)
                 .Include(e => e.Evaluator)
                 .Where(e => !e.IsDeleted);
 
             // Çoklu filtreler
             if (projectIds?.Any() == true)
-                query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+                query = query.Where(e => projectIds.Contains(e.ProjectId));
 
             if (customerIds?.Any() == true)
                 query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
@@ -80,7 +80,7 @@ public class EvaluationsApiController : BaseApiController
                 query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
 
             if (checklistIds?.Any() == true)
-                query = query.Where(e => checklistIds.Contains(e.Assignment.ChecklistId));
+                query = query.Where(e => checklistIds.Contains(e.Project.ChecklistId));
 
             if (statuses?.Any() == true)
             {
@@ -96,13 +96,13 @@ public class EvaluationsApiController : BaseApiController
             if (startDate.HasValue)
             {
                 var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => (e.CompletedAt ?? e.CreatedAt) >= start);
+                query = query.Where(e => e.CreatedAt >= start);
             }
 
             if (endDate.HasValue)
             {
                 var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => (e.CompletedAt ?? e.CreatedAt) <= end);
+                query = query.Where(e => e.CreatedAt <= end);
             }
 
             var totalCount = await query.CountAsync();
@@ -115,8 +115,8 @@ public class EvaluationsApiController : BaseApiController
                     e.Id,
                     e.StatusId,
                     Status = EvaluationStatuses.GetById(e.StatusId)!.SystemName,
-                    ProjectName = e.Assignment.Project.Name,
-                    ChecklistName = e.Assignment.Checklist.Name,
+                    ProjectName = e.Project.Name,
+                    ChecklistName = e.Project.Checklist.Name,
                     EvaluatorName = e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null,
                     PersonnelName = e.EvaluatedCustomerPersonnel != null
                         ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -290,20 +290,20 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Atama bazli degerlendirme getirir
+    /// Proje bazli tek degerlendirme getirir
     /// </summary>
-    [HttpGet("assignment/{assignmentId:int}")]
+    [HttpGet("by-project/{projectId:int}")]
     [Authorize]
-    public async Task<IActionResult> GetByAssignment(int assignmentId)
+    public async Task<IActionResult> GetByProjectSingle(int projectId)
     {
         try
         {
-            var evaluation = await _evaluationService.GetByAssignmentIdAsync(assignmentId);
+            var evaluation = await _evaluationService.GetByProjectIdSingleAsync(projectId);
             return Ok(evaluation);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluation for assignment {AssignmentId}", assignmentId);
+            _logger.LogError(ex, "Error loading evaluation for project {ProjectId}", projectId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
@@ -424,7 +424,7 @@ public class EvaluationsApiController : BaseApiController
             var exists = await _context.Evaluations
                 .AnyAsync(e => !e.IsDeleted &&
                               e.CallId == callId &&
-                              e.Assignment.Project.CustomerId == customerId &&
+                              e.Project.CustomerId == customerId &&
                               (!evaluationId.HasValue || e.Id != evaluationId.Value));
 
             return Ok(new { exists = exists });
@@ -511,7 +511,7 @@ public class EvaluationsApiController : BaseApiController
             // Aktif proje kontrolü
             var assignment = await _context.Assignments
                 .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId);
+                .FirstOrDefaultAsync(a => a.ProjectId == dto.ProjectId);
 
             if (assignment == null)
             {
@@ -546,7 +546,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error starting evaluation for assignment {AssignmentId}", dto.AssignmentId);
+            _logger.LogError(ex, "Error starting evaluation for project {ProjectId}", dto.ProjectId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.StartError"), ex));
         }
     }
@@ -626,7 +626,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting evaluation for assignment {AssignmentId}", dto.AssignmentId);
+            _logger.LogError(ex, "Error submitting evaluation for project {ProjectId}", dto.ProjectId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.SubmitError"), ex));
         }
     }
@@ -685,7 +685,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving draft for assignment {AssignmentId}", dto.AssignmentId);
+            _logger.LogError(ex, "Error saving draft for project {ProjectId}", dto.ProjectId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveError"), ex));
         }
     }
@@ -918,14 +918,14 @@ public class EvaluationsApiController : BaseApiController
         try
         {
             var query = _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a.Checklist)
+                .Include(e => e.Project)
+                    .ThenInclude(p => p.Checklist)
                         .ThenInclude(c => c!.Questions)
                 .Include(e => e.Answers)
                 .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
 
             if (projectId.HasValue)
-                query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+                query = query.Where(e => e.ProjectId == projectId.Value);
 
             var evaluations = await query.ToListAsync();
             int updatedCount = 0;
@@ -997,8 +997,7 @@ public class EvaluationsApiController : BaseApiController
             if (userType == "CustomerPersonnel")
             {
                 query = _context.Evaluations
-                    .Include(e => e.Assignment).ThenInclude(a => a.Project)
-                    .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                    .Include(e => e.Project).ThenInclude(p => p.Checklist)
                     .Include(e => e.EvaluatedPersonnel)
                     .Include(e => e.EvaluatedCustomerPersonnel)
                     .Where(e => !e.IsDeleted && e.EvaluatorCustomerPersonnelId == userId);
@@ -1006,8 +1005,7 @@ public class EvaluationsApiController : BaseApiController
             else
             {
                 query = _context.Evaluations
-                    .Include(e => e.Assignment).ThenInclude(a => a.Project)
-                    .Include(e => e.Assignment).ThenInclude(a => a.Checklist)
+                    .Include(e => e.Project).ThenInclude(p => p.Checklist)
                     .Include(e => e.EvaluatedPersonnel)
                     .Include(e => e.EvaluatedCustomerPersonnel)
                     .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
@@ -1015,7 +1013,7 @@ public class EvaluationsApiController : BaseApiController
 
             // Çoklu filtreler (OR mantığı)
             if (projectIds?.Any() == true)
-                query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+                query = query.Where(e => projectIds.Contains(e.ProjectId));
 
             if (customerIds?.Any() == true)
                 query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
@@ -1030,7 +1028,7 @@ public class EvaluationsApiController : BaseApiController
                 query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
 
             if (checklistIds?.Any() == true)
-                query = query.Where(e => checklistIds.Contains(e.Assignment.ChecklistId));
+                query = query.Where(e => checklistIds.Contains(e.Project.ChecklistId));
 
             // Çoklu status filtresi
             if (statuses?.Any() == true)
@@ -1057,8 +1055,8 @@ public class EvaluationsApiController : BaseApiController
             {
                 var searchLower = search.ToLower();
                 query = query.Where(e =>
-                    (e.Assignment.Project != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
-                    (e.Assignment.Checklist != null && e.Assignment.Checklist.Name.ToLower().Contains(searchLower)) ||
+                    (e.Project != null && e.Project.Name.ToLower().Contains(searchLower)) ||
+                    (e.Project.Checklist != null && e.Project.Checklist.Name.ToLower().Contains(searchLower)) ||
                     (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(searchLower)) ||
                     (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
                     (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
@@ -1076,19 +1074,19 @@ public class EvaluationsApiController : BaseApiController
             // Proje adı filtresi
             if (!string.IsNullOrEmpty(projectName))
             {
-                query = query.Where(e => e.Assignment.Project != null && e.Assignment.Project.Name == projectName);
+                query = query.Where(e => e.Project != null && e.Project.Name == projectName);
             }
 
-            // Tarih aralığı filtresi (callDate, completedAt veya createdAt)
+            // Tarih aralığı filtresi (oluşturma tarihi - createdAt)
             if (startDate.HasValue)
             {
                 var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= start);
+                query = query.Where(e => e.CreatedAt >= start);
             }
             if (endDate.HasValue)
             {
                 var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= end);
+                query = query.Where(e => e.CreatedAt <= end);
             }
 
             // Kontrol tarihi filtresi (sadece createdAt)
@@ -1104,7 +1102,7 @@ public class EvaluationsApiController : BaseApiController
             }
 
             var evaluations = await query
-                .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
+                .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
             // Excel oluştur
@@ -1138,8 +1136,8 @@ public class EvaluationsApiController : BaseApiController
                     : (e.EvaluatedPersonnel != null
                         ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
                         : (e.EvaluatedUnknownPersonnel ?? "-"));
-                worksheet.Cell(currentRow, 6).Value = e.Assignment?.Project?.Name ?? "-";
-                worksheet.Cell(currentRow, 7).Value = e.Assignment?.Checklist?.Name ?? "-";
+                worksheet.Cell(currentRow, 6).Value = e.Project?.Name ?? "-";
+                worksheet.Cell(currentRow, 7).Value = e.Project?.Checklist?.Name ?? "-";
                 worksheet.Cell(currentRow, 8).Value = e.ScorePercentage?.ToString("F2") ?? "0";
                 worksheet.Cell(currentRow, 9).Value = e.YellowCardCount;
                 worksheet.Cell(currentRow, 10).Value = e.RedCardCount;

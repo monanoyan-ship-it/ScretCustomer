@@ -84,9 +84,9 @@ public class EvaluationService : IEvaluationService
         return evaluation == null ? null : await MapToDtoAsync(evaluation);
     }
 
-    public async Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId)
+    public async Task<EvaluationDto?> GetByProjectIdSingleAsync(int projectId)
     {
-        var evaluation = await _evaluationRepository.GetByAssignmentIdAsync(assignmentId, includeDetails: true);
+        var evaluation = await _evaluationRepository.GetByProjectIdAsync(projectId, includeDetails: true);
         return evaluation == null ? null : await MapToDtoAsync(evaluation);
     }
 
@@ -99,8 +99,7 @@ public class EvaluationService : IEvaluationService
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
-                AssignmentId = e.AssignmentId,
-                ChecklistId = e.ChecklistId,
+                ProjectId = e.ProjectId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -132,11 +131,11 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
-                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
-                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
-                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                ProjectName = e.Project != null ? e.Project.Name : null,
+                ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                ScoringMethod = e.Project != null && e.Project.Checklist != null
+                    ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
                 CreatedAt = e.CreatedAt
@@ -156,8 +155,7 @@ public class EvaluationService : IEvaluationService
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
-                AssignmentId = e.AssignmentId,
-                ChecklistId = e.ChecklistId,
+                ProjectId = e.ProjectId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -189,11 +187,11 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
-                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
-                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
-                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                ProjectName = e.Project != null ? e.Project.Name : null,
+                ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                ScoringMethod = e.Project != null && e.Project.Checklist != null
+                    ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
                 CreatedAt = e.CreatedAt
@@ -214,8 +212,7 @@ public class EvaluationService : IEvaluationService
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
-                AssignmentId = e.AssignmentId,
-                ChecklistId = e.ChecklistId,
+                ProjectId = e.ProjectId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -247,11 +244,11 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
-                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
-                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
-                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                ProjectName = e.Project != null ? e.Project.Name : null,
+                ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                ScoringMethod = e.Project != null && e.Project.Checklist != null
+                    ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
                 CreatedAt = e.CreatedAt
@@ -270,8 +267,7 @@ public class EvaluationService : IEvaluationService
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
-                AssignmentId = e.AssignmentId,
-                ChecklistId = e.ChecklistId,
+                ProjectId = e.ProjectId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -303,11 +299,11 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
-                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
-                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
-                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                ProjectName = e.Project != null ? e.Project.Name : null,
+                ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                ScoringMethod = e.Project != null && e.Project.Checklist != null
+                    ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
                 CreatedAt = e.CreatedAt
@@ -319,13 +315,12 @@ public class EvaluationService : IEvaluationService
     {
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.Assignment.ProjectId == projectId)
+            .Where(e => !e.IsDeleted && e.ProjectId == projectId)
             .OrderByDescending(e => e.CreatedAt)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
-                AssignmentId = e.AssignmentId,
-                ChecklistId = e.ChecklistId,
+                ProjectId = e.ProjectId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -357,11 +352,11 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
-                ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
-                    ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
-                        ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
+                ProjectName = e.Project != null ? e.Project.Name : null,
+                ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                ScoringMethod = e.Project != null && e.Project.Checklist != null
+                    ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
                 CreatedAt = e.CreatedAt
@@ -369,21 +364,15 @@ public class EvaluationService : IEvaluationService
             .ToListAsync();
     }
 
-    public async Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId)
+    public async Task<EvaluationDto> StartEvaluationAsync(int projectId, int? evaluatorId)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(assignmentId);
-        if (assignment == null)
-            throw new KeyNotFoundException($"Assignment with ID {assignmentId} not found");
-
-        // Check if evaluation already exists
-        var existing = await _evaluationRepository.GetByAssignmentIdAsync(assignmentId);
-        if (existing != null)
-            throw new InvalidOperationException("Evaluation already exists for this assignment");
+        var project = await _context.Projects.FindAsync(projectId);
+        if (project == null)
+            throw new KeyNotFoundException($"Project with ID {projectId} not found");
 
         var evaluation = new Evaluation
         {
-            AssignmentId = assignmentId,
-            ChecklistId = assignment.ChecklistId,
+            ProjectId = projectId,
             EvaluatorId = evaluatorId,
             StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
@@ -396,22 +385,13 @@ public class EvaluationService : IEvaluationService
 
     public async Task<EvaluationDto> StartEvaluationAsync(StartEvaluationDto dto)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(dto.AssignmentId);
-        if (assignment == null)
-            throw new KeyNotFoundException($"Assignment with ID {dto.AssignmentId} not found");
-
-        // Check if evaluation already exists
-        var existing = await _evaluationRepository.GetByAssignmentIdAsync(dto.AssignmentId);
-        if (existing != null)
-        {
-            // Return existing evaluation
-            return await MapToDtoAsync(existing);
-        }
+        var project = await _context.Projects.FindAsync(dto.ProjectId);
+        if (project == null)
+            throw new KeyNotFoundException($"Project with ID {dto.ProjectId} not found");
 
         var evaluation = new Evaluation
         {
-            AssignmentId = dto.AssignmentId,
-            ChecklistId = assignment.ChecklistId,
+            ProjectId = dto.ProjectId,
             AssignmentPeriodId = dto.AssignmentPeriodId,
             // User mı CustomerPersonnel mı olduğunu ayır
             EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -471,21 +451,19 @@ public class EvaluationService : IEvaluationService
         return await MapToDtoAsync(evaluation);
     }
 
-    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId)
+    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(int projectId)
     {
-        var assignment = await _context.Assignments
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Customer)
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Organization)
-            .Include(a => a.Checklist)
+        var project = await _context.Projects
+            .Include(p => p.Customer)
+            .Include(p => p.Organization)
+            .Include(p => p.Checklist)
                 .ThenInclude(c => c.CustomerOrganization)
-            .Include(a => a.Checklist)
+            .Include(p => p.Checklist)
                 .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
                     .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
-            .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
 
-        if (assignment == null)
+        if (project == null)
             return null;
 
         // Not: Her "Ekle" dediğinde yeni evaluation oluşturulacak
@@ -495,7 +473,7 @@ public class EvaluationService : IEvaluationService
         // Organizasyon önce Project'ten, yoksa Checklist'ten geliyor
         var organizations = new List<OrganizationOptionDto>();
         // Öncelik: Project.OrganizationId > Checklist.CustomerOrganizationId
-        int? selectedOrganizationId = assignment.Project?.OrganizationId ?? assignment.Checklist?.CustomerOrganizationId;
+        int? selectedOrganizationId = project.OrganizationId ?? project.Checklist?.CustomerOrganizationId;
 
         // Organizasyon seçiliyse sadece o organizasyonu göster
         if (selectedOrganizationId.HasValue)
@@ -515,10 +493,10 @@ public class EvaluationService : IEvaluationService
                 organizations.Add(org);
         }
         // Organizasyon seçilmemişse checklist'in customer'ına göre tüm organizasyonları göster
-        else if (assignment.Checklist?.CustomerId.HasValue == true)
+        else if (project.Checklist?.CustomerId.HasValue == true)
         {
             organizations = await _context.CustomerOrganizations
-                .Where(co => !co.IsDeleted && co.IsActive && co.CustomerId == assignment.Checklist.CustomerId)
+                .Where(co => !co.IsDeleted && co.IsActive && co.CustomerId == project.Checklist.CustomerId)
                 .Select(co => new OrganizationOptionDto
                 {
                     Id = co.Id,
@@ -541,41 +519,28 @@ public class EvaluationService : IEvaluationService
         else
         {
             // Organizasyon seçilmemişse (proje tüm firmayı kapsıyorsa) müşterinin tüm personelini getir
-            var customerId = assignment.Project?.CustomerId ?? assignment.Checklist?.CustomerId;
+            var customerId = project.CustomerId ?? project.Checklist?.CustomerId;
             if (customerId.HasValue)
             {
                 personnel = await GetPersonnelByCustomerAsync(customerId.Value);
             }
         }
 
-        // Get available periods for this assignment (only Open periods)
-        var periods = await _context.AssignmentPeriods
-            .Where(p => p.AssignmentId == assignmentId && !p.IsDeleted)
-            .OrderByDescending(p => p.StartDate)
-            .Select(p => new PeriodOptionDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                Status = p.StatusId == PeriodStatuses.Ids.Open ? "Open" : "Closed",
-                TargetCount = p.TargetCount,
-                CompletedCount = p.CompletedCount
-            })
-            .ToListAsync();
+        // Get available periods (only Open periods)
+        var periods = new List<PeriodOptionDto>();
 
         return new EvaluationFormDto
         {
-            AssignmentId = assignmentId,
+            ProjectId = projectId,
             EvaluationId = null, // Yeni evaluation oluşturulacak
             Status = "New",
-            ProjectName = assignment.Project?.Name ?? "",
-            CustomerName = assignment.Project?.Customer?.CompanyName,
-            ChecklistId = assignment.ChecklistId,
-            ChecklistName = assignment.Checklist?.Name ?? "",
-            ChecklistType = assignment.Checklist != null ? ChecklistTypes.GetById(assignment.Checklist.ChecklistTypeId)?.SystemName : null,
-            ScoringMethod = assignment.Checklist?.ScoringMethodId.ToString(),
-            MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
+            ProjectName = project.Name ?? "",
+            CustomerName = project.Customer?.CompanyName,
+            ChecklistId = project.ChecklistId,
+            ChecklistName = project.Checklist?.Name ?? "",
+            ChecklistType = project.Checklist != null ? ChecklistTypes.GetById(project.Checklist.ChecklistTypeId)?.SystemName : null,
+            ScoringMethod = project.Checklist?.ScoringMethodId.ToString(),
+            MaxTotalPoints = project.Checklist?.MaxTotalPoints ?? 100,
             CallId = null,
             CallDate = null,
             CallTime = null,
@@ -590,7 +555,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = null,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            PenaltyGroups = BuildPenaltyGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(project.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
         };
     }
@@ -598,17 +563,15 @@ public class EvaluationService : IEvaluationService
     public async Task<EvaluationFormDto?> GetExistingEvaluationFormAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-                    .ThenInclude(p => p.Customer)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-                    .ThenInclude(p => p.Organization)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Customer)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Organization)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
                     .ThenInclude(c => c.CustomerOrganization)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
                     .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
                         .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
             .Include(e => e.Answers)
@@ -619,14 +582,12 @@ public class EvaluationService : IEvaluationService
         if (evaluation == null)
             return null;
 
-        var assignment = evaluation.Assignment;
-        if (assignment == null)
-            return null;
+        var project = evaluation.Project;
 
         // Organizasyon - Öncelik: Evaluation > Project > Checklist
         int? selectedOrganizationId = evaluation.EvaluatedOrganizationId
-            ?? assignment.Project?.OrganizationId
-            ?? assignment.Checklist?.CustomerOrganizationId;
+            ?? project.OrganizationId
+            ?? project.Checklist?.CustomerOrganizationId;
 
         var personnel = new List<PersonnelOptionDto>();
         if (selectedOrganizationId.HasValue)
@@ -636,7 +597,7 @@ public class EvaluationService : IEvaluationService
         else
         {
             // Organizasyon seçilmemişse tüm firma personelini getir
-            var customerId = assignment.Project?.CustomerId ?? assignment.Checklist?.CustomerId;
+            var customerId = project.CustomerId ?? project.Checklist?.CustomerId;
             if (customerId.HasValue)
             {
                 personnel = await GetPersonnelByCustomerAsync(customerId.Value);
@@ -644,33 +605,20 @@ public class EvaluationService : IEvaluationService
         }
 
         // Dönemler
-        var periods = await _context.AssignmentPeriods
-            .Where(p => p.AssignmentId == assignment.Id && !p.IsDeleted)
-            .OrderByDescending(p => p.StartDate)
-            .Select(p => new PeriodOptionDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                StartDate = p.StartDate,
-                EndDate = p.EndDate,
-                Status = p.StatusId == PeriodStatuses.Ids.Open ? "Open" : "Closed",
-                TargetCount = p.TargetCount,
-                CompletedCount = p.CompletedCount
-            })
-            .ToListAsync();
+        var periods = new List<PeriodOptionDto>();
 
         return new EvaluationFormDto
         {
-            AssignmentId = assignment.Id,
+            ProjectId = project.Id,
             EvaluationId = evaluation.Id,
             Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
-            ProjectName = assignment.Project?.Name ?? "",
-            CustomerName = assignment.Project?.Customer?.CompanyName,
-            ChecklistId = assignment.ChecklistId,
-            ChecklistName = assignment.Checklist?.Name ?? "",
-            ChecklistType = assignment.Checklist != null ? ChecklistTypes.GetById(assignment.Checklist.ChecklistTypeId)?.SystemName : null,
-            ScoringMethod = assignment.Checklist?.ScoringMethodId.ToString(),
-            MaxTotalPoints = assignment.Checklist?.MaxTotalPoints ?? 100,
+            ProjectName = project.Name ?? "",
+            CustomerName = project.Customer?.CompanyName,
+            ChecklistId = project.ChecklistId,
+            ChecklistName = project.Checklist?.Name ?? "",
+            ChecklistType = project.Checklist != null ? ChecklistTypes.GetById(project.Checklist.ChecklistTypeId)?.SystemName : null,
+            ScoringMethod = project.Checklist?.ScoringMethodId.ToString(),
+            MaxTotalPoints = project.Checklist?.MaxTotalPoints ?? 100,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
@@ -685,7 +633,7 @@ public class EvaluationService : IEvaluationService
             SelectedPeriodId = evaluation.AssignmentPeriodId,
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
-            PenaltyGroups = BuildPenaltyGroupsFromQuestions(assignment.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(project.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = evaluation.Answers
                 .Select(a => MapAnswerToDto(a))
                 .ToList()
@@ -699,25 +647,24 @@ public class EvaluationService : IEvaluationService
 
     private async Task<EvaluationDto> ProcessEvaluationAsync(SubmitEvaluationDto dto, int targetStatusId)
     {
-        // Get assignment with checklist details (Questions direkt Checklist'e bağlı, GroupName ile gruplandırılır)
-        var assignment = await _context.Assignments
-            .Include(a => a.Project)
-            .Include(a => a.Checklist)
+        // Get project with checklist details (Questions direkt Checklist'e bağlı, GroupName ile gruplandırılır)
+        var project = await _context.Projects
+            .Include(p => p.Checklist)
                 .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
                     .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
-            .FirstOrDefaultAsync(a => a.Id == dto.AssignmentId && !a.IsDeleted);
+            .FirstOrDefaultAsync(p => p.Id == dto.ProjectId && !p.IsDeleted);
 
-        if (assignment == null)
-            throw new KeyNotFoundException($"Assignment with ID {dto.AssignmentId} not found");
+        if (project == null)
+            throw new KeyNotFoundException($"Project with ID {dto.ProjectId} not found");
 
         // CallId tekrar kontrolü - aynı müşteriye ait başka bir dinlemede aynı CallId varsa hata ver
-        if (!string.IsNullOrWhiteSpace(dto.CallId) && assignment.Project?.CustomerId != null)
+        if (!string.IsNullOrWhiteSpace(dto.CallId) && project.CustomerId != null)
         {
-            var customerId = assignment.Project.CustomerId.Value;
+            var customerId = project.CustomerId.Value;
             var duplicateExists = await _context.Evaluations
                 .AnyAsync(e => !e.IsDeleted &&
                               e.CallId == dto.CallId &&
-                              e.Assignment.Project.CustomerId == customerId &&
+                              e.Project.CustomerId == customerId &&
                               (!dto.EvaluationId.HasValue || e.Id != dto.EvaluationId.Value));
 
             if (duplicateExists)
@@ -739,8 +686,7 @@ public class EvaluationService : IEvaluationService
         {
             evaluation = new Evaluation
             {
-                AssignmentId = dto.AssignmentId,
-                ChecklistId = assignment.ChecklistId,
+                ProjectId = dto.ProjectId,
                 AssignmentPeriodId = dto.AssignmentPeriodId,
                 // User mı CustomerPersonnel mı olduğunu ayır
                 EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -758,12 +704,12 @@ public class EvaluationService : IEvaluationService
         }
 
         // Get all questions from checklist (Questions direkt Checklist'e bağlı)
-        var allQuestions = assignment.Checklist.Questions
+        var allQuestions = project.Checklist.Questions
             .Where(q => !q.IsDeleted)
             .ToList();
 
         // Calculate scores with penalty handling
-        var scoreResult = CalculateScoreWithPenalties(allQuestions, dto.Answers, assignment.Checklist.ScoringMethodId);
+        var scoreResult = CalculateScoreWithPenalties(allQuestions, dto.Answers, project.Checklist.ScoringMethodId);
 
         // Clear existing answers and add new ones
         if (evaluation.Answers.Any())
@@ -859,8 +805,7 @@ public class EvaluationService : IEvaluationService
                     if (notificationService != null)
                     {
                         var evalForNotification = await dbContext.Evaluations
-                            .Include(e => e.Assignment)
-                                .ThenInclude(a => a!.Project)
+                            .Include(e => e.Project)
                             .Include(e => e.EvaluatedCustomerPersonnel)
                             .Include(e => e.EvaluatedOrganization)
                             .FirstOrDefaultAsync(e => e.Id == evaluationId);
@@ -886,11 +831,11 @@ public class EvaluationService : IEvaluationService
         if (dto.NewPersonnel != null &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.FirstName) &&
             !string.IsNullOrWhiteSpace(dto.NewPersonnel.LastName) &&
-            assignment.Project?.CustomerId != null)
+            project.CustomerId != null)
         {
             try
             {
-                personnelRequestWarning = await CreatePersonnelRequestAsync(evaluation, dto, assignment.Project.CustomerId.Value);
+                personnelRequestWarning = await CreatePersonnelRequestAsync(evaluation, dto, project.CustomerId.Value);
             }
             catch (Exception ex)
             {
@@ -1316,7 +1261,6 @@ public class EvaluationService : IEvaluationService
     public async Task<EvaluationDto> CancelEvaluationAsync(int evaluationId, int cancelledByUserId, string? reason = null)
     {
         var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
             .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
         if (evaluation == null)
@@ -1343,13 +1287,12 @@ public class EvaluationService : IEvaluationService
     private async Task<EvaluationDto> MapToDtoAsync(Evaluation evaluation)
     {
         // Load related data if not loaded
-        if (evaluation.Assignment == null)
+        if (evaluation.Project == null)
         {
             await _context.Entry(evaluation)
-                .Reference(e => e.Assignment)
+                .Reference(e => e.Project)
                 .Query()
-                .Include(a => a.Project)
-                .Include(a => a.Checklist)
+                .Include(p => p.Checklist)
                 .LoadAsync();
         }
 
@@ -1411,8 +1354,7 @@ public class EvaluationService : IEvaluationService
         return new EvaluationDto
         {
             Id = evaluation.Id,
-            AssignmentId = evaluation.AssignmentId,
-            ChecklistId = evaluation.ChecklistId,
+            ProjectId = evaluation.ProjectId,
             AssignmentPeriodId = evaluation.AssignmentPeriodId,
             AssignmentPeriodName = periodName,
             EvaluatorId = evaluation.EvaluatorId,
@@ -1447,16 +1389,11 @@ public class EvaluationService : IEvaluationService
             FormOpenedAt = evaluation.FormOpenedAt,
             ControlDate = evaluation.ControlDate,
             ControlTime = evaluation.ControlTime,
-            ProjectName = evaluation.Assignment?.Project?.Name,
-            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name,
-            AssigneeName = evaluation.Assignment?.AssignedUser != null
-                ? $"{evaluation.Assignment.AssignedUser.FirstName} {evaluation.Assignment.AssignedUser.LastName}"
+            ProjectName = evaluation.Project?.Name,
+            ChecklistName = evaluation.Project?.Checklist?.Name,
+            ScoringMethod = evaluation.Project?.Checklist != null
+                ? ScoringMethods.GetById(evaluation.Project.Checklist.ScoringMethodId)?.SystemName
                 : null,
-            ScoringMethod = evaluation.Assignment?.Checklist != null
-                ? ScoringMethods.GetById(evaluation.Assignment.Checklist.ScoringMethodId)?.SystemName
-                : (evaluation.Checklist != null
-                    ? ScoringMethods.GetById(evaluation.Checklist.ScoringMethodId)?.SystemName
-                    : null),
             CreatedAt = evaluation.CreatedAt,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };
@@ -1644,8 +1581,8 @@ public class EvaluationService : IEvaluationService
     public async Task<(bool Success, string Message)> RecalculateScoreAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
                     .ThenInclude(c => c!.Questions.Where(q => !q.IsDeleted))
                         .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
             .Include(e => e.Answers)
@@ -1658,7 +1595,7 @@ public class EvaluationService : IEvaluationService
         if (evaluation.StatusId != EvaluationStatuses.Ids.Completed)
             return (false, "Sadece tamamlanmış değerlendirmeler yeniden hesaplanabilir.");
 
-        var checklist = evaluation.Assignment.Checklist;
+        var checklist = evaluation.Project.Checklist;
         var questions = checklist?.Questions.ToList() ?? new List<Question>();
 
         if (!questions.Any())

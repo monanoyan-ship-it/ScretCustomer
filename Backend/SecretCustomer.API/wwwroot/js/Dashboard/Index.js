@@ -417,6 +417,37 @@ function DashboardViewModel() {
             });
     };
 
+    // Show user project detail modal (today)
+    self.showUserProjectDetailToday = function(userId, userName) {
+        self.selectedUserName(userName);
+        self.isLoadingProjectDetail(true);
+        self.selectedUserProjectDetail({
+            userId: 0,
+            userName: '',
+            totalEvaluations: 0,
+            projects: []
+        });
+
+        var modal = new bootstrap.Modal(document.getElementById('userProjectDetailModal'));
+        modal.show();
+
+        fetch('/api/dashboard/user-projects-today/' + userId, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('User project detail (today) load error');
+                return response.json();
+            })
+            .then(function(data) {
+                self.selectedUserProjectDetail(data);
+            })
+            .catch(function(error) {
+                console.error('User project detail (today) error:', error);
+                toastr.error(T('Common.Error', 'Bir hata oluştu'));
+            })
+            .finally(function() {
+                self.isLoadingProjectDetail(false);
+            });
+    };
+
     // Daily Trend Chart (last 7 days)
     var dailyTrendChart = null;
     self.updateDailyTrendChart = function(dailyTrends) {

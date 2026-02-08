@@ -53,7 +53,7 @@ public class DateRangeFilter
 public class EvaluationReportDto
 {
     public int EvaluationId { get; set; }
-    public int? AssignmentId { get; set; }
+    public int ProjectId { get; set; }
 
     // Project
     public string ProjectName { get; set; } = string.Empty;
@@ -1518,4 +1518,52 @@ public class DealerListItemDto
     public string? City { get; set; }
     public int CustomerId { get; set; }
     public string? CustomerName { get; set; }
+}
+
+// ===== CUSTOMERPORTAL SURVEY SCORE DETAIL DTO'LARI =====
+// (Admin DTO'larından farklı JSON shape - frontend uyumluluğu için ayrı)
+
+public class CpSurveyScoreDetailResultDto
+{
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public int TotalResponses { get; set; }
+    public List<CpSurveyScoreDetailQuestionDto> Questions { get; set; } = new();
+}
+
+public class CpSurveyScoreDetailQuestionDto
+{
+    public int QuestionId { get; set; }
+    public string QuestionText { get; set; } = string.Empty;
+    public string? GroupName { get; set; }
+    public int MaxPoints { get; set; }
+    public bool ShowScoreInput { get; set; }
+    public int ResponseCount { get; set; }
+    public decimal? AverageScore { get; set; }
+    public List<ScoreDistributionItemDto> ScoreDistribution { get; set; } = new();
+    public List<SubCriteriaStatItemDto> SubCriteriaStats { get; set; } = new();
+}
+
+public class ScoreDistributionItemDto
+{
+    public int Score { get; set; }
+    public int Count { get; set; }
+}
+
+public class SubCriteriaStatItemDto
+{
+    public int SubCriteriaId { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public int SelectedCount { get; set; }
+    public decimal Percentage { get; set; }
+}
+
+// ===== ENNEAGRAM SAYFALANMIŞ SONUÇ DTO =====
+
+public class EnneagramResultsPagedDto
+{
+    public List<EnneagramResultListDto> Results { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int TotalPages { get; set; }
+    public EnneagramSummaryDto Summary { get; set; } = new();
 }

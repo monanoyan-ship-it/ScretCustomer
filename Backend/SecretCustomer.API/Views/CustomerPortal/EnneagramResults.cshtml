@@ -4,6 +4,11 @@
 }
 
 <div id="enneagram-results-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-people text-purple"></i> @Html.T("Report.EnneagramResults", "Enneagram Kisilik Testi Sonuclari")</h2>
+    </div>
+
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
@@ -40,7 +45,7 @@
 
         <!-- Summary Cards -->
         <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-primary text-white">
                     <div class="card-body text-center">
                         <h3 data-bind="text: summary().totalResponses || 0"></h3>
@@ -48,7 +53,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
                         <h3 data-bind="text: summary().dominantType || '-'"></h3>
@@ -56,11 +61,19 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card bg-info text-white">
                     <div class="card-body text-center">
                         <h3 data-bind="text: summary().projectCount || 0"></h3>
                         <small>@Html.T("Report.ProjectCount", "Proje Sayisi")</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark">
+                    <div class="card-body text-center">
+                        <h3 data-bind="text: summary().averageCompletionRate ? summary().averageCompletionRate.toFixed(1) + '%' : '-'"></h3>
+                        <small>@Html.T("Report.CompletionRate", "Tamamlama Orani")</small>
                     </div>
                 </div>
             </div>
@@ -290,6 +303,9 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle"></i> @Html.T("Common.Close", "Kapat")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: exportDetail, visible: detail()">
+                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
                     </button>
                 </div>
             </div>

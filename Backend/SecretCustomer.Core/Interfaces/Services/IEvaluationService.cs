@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.Interfaces.Services;
 public interface IEvaluationService
 {
     Task<EvaluationDto?> GetByIdAsync(int id);
-    Task<EvaluationDto?> GetByAssignmentIdAsync(int assignmentId);
+    Task<EvaluationDto?> GetByProjectIdSingleAsync(int projectId);
     Task<IEnumerable<EvaluationDto>> GetByEvaluatorIdAsync(int evaluatorId);
     Task<IEnumerable<EvaluationDto>> GetByEvaluatorCustomerPersonnelIdAsync(int customerPersonnelId);
 
@@ -16,7 +16,7 @@ public interface IEvaluationService
     Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId);
 
     Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto);
-    Task<EvaluationDto> StartEvaluationAsync(int assignmentId, int? evaluatorId);
+    Task<EvaluationDto> StartEvaluationAsync(int projectId, int? evaluatorId);
 
     // ===== YENİ METOTLAR - Çağrı Denetleme =====
 
@@ -38,7 +38,7 @@ public interface IEvaluationService
     /// <summary>
     /// Değerlendirme formunu yükle (checklist bilgileriyle birlikte)
     /// </summary>
-    Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId);
+    Task<EvaluationFormDto?> GetEvaluationFormAsync(int projectId);
 
     /// <summary>
     /// Mevcut değerlendirmeyi yükle (düzenleme için)
@@ -88,7 +88,7 @@ public interface IEvaluationService
 /// </summary>
 public class EvaluationFormDto
 {
-    public int AssignmentId { get; set; }
+    public int ProjectId { get; set; }
     public int? EvaluationId { get; set; }
     public string Status { get; set; } = "New";
 

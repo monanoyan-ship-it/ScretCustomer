@@ -28,6 +28,8 @@ public class CustomerPortalApiController : ControllerBase
     private readonly IEvaluationService _evaluationService;
     private readonly ICustomerScoreThresholdService _customerScoreThresholdService;
     private readonly IPdfService _pdfService;
+    private readonly ICustomerPortalReportService _cpReportService;
+    private readonly ICustomerPortalDataService _cpDataService;
 
     public CustomerPortalApiController(
         ApplicationDbContext context,
@@ -36,7 +38,9 @@ public class CustomerPortalApiController : ControllerBase
         IReportService reportService,
         IEvaluationService evaluationService,
         ICustomerScoreThresholdService customerScoreThresholdService,
-        IPdfService pdfService)
+        IPdfService pdfService,
+        ICustomerPortalReportService cpReportService,
+        ICustomerPortalDataService cpDataService)
     {
         _context = context;
         _logger = logger;
@@ -45,6 +49,8 @@ public class CustomerPortalApiController : ControllerBase
         _evaluationService = evaluationService;
         _customerScoreThresholdService = customerScoreThresholdService;
         _pdfService = pdfService;
+        _cpReportService = cpReportService;
+        _cpDataService = cpDataService;
     }
 
     private int? GetCustomerIdFromToken()
@@ -452,59 +458,8 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        // Organizasyon sayısı (Supervisor için kendi organizasyonları)
-        int organizationCount;
-        if (allowedPersonnelIds == null)
-        {
-            // Manager - tüm organizasyonlar
-            organizationCount = await _context.CustomerOrganizations
-                .CountAsync(o => o.CustomerId == customerId && !o.IsDeleted && o.IsActive);
-        }
-        else
-        {
-            // Supervisor/Operator - sadece bağlı olduğu organizasyonlar
-            organizationCount = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => allowedPersonnelIds.Contains(cpo.CustomerPersonnelId))
-                .Select(cpo => cpo.CustomerOrganizationId)
-                .Distinct()
-                .CountAsync();
-        }
-
-        // Değerlendirmeler - rol bazlı filtreleme (Survey/Enneagram hariç)
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
-
-        // Supervisor/Operator için personel filtresi
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        var evaluations = await evaluationsQuery.ToListAsync();
-
-        var totalEvaluations = evaluations.Count;
-        var averageScore = evaluations.Any() ? evaluations.Average(e => e.ScorePercentage ?? 0) : 0;
-
-        var thisMonth = DateTime.UtcNow.Month;
-        var thisYear = DateTime.UtcNow.Year;
-        var thisMonthEvaluations = evaluations.Count(e =>
-            e.CreatedAt.Month == thisMonth && e.CreatedAt.Year == thisYear);
-
-        return Ok(new
-        {
-            organizationCount,
-            totalEvaluations,
-            averageScore = Math.Round(averageScore, 1),
-            thisMonthEvaluations
-        });
+        var result = await _cpDataService.GetDashboardStatsAsync(customerId.Value, allowedPersonnelIds);
+        return Ok(result);
     }
 
     /// <summary>
@@ -518,77 +473,9 @@ public class CustomerPortalApiController : ControllerBase
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-        var now = DateTime.UtcNow;
-        var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
-        var effectiveStartDate = startDate.HasValue
-            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
-            : defaultStartDate;
 
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId) &&
-                        e.CreatedAt >= effectiveStartDate);
-
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
-        }
-
-        // Proje filtresi
-        if (projectId.HasValue)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e => e.Assignment!.ProjectId == projectId.Value);
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        var evaluations = await evaluationsQuery.ToListAsync();
-
-        // Ay bazlı döngü
-        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var loopEnd = endDate.HasValue
-            ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc)
-            : now;
-        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
-        if (monthCount < 1) monthCount = 1;
-        if (monthCount > 36) monthCount = 36;
-
-        var monthlyData = new List<object>();
-        for (int i = 0; i < monthCount; i++)
-        {
-            var monthStart = loopStart.AddMonths(i);
-            var monthEnd = monthStart.AddMonths(1);
-
-            var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
-            var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
-            var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
-
-            var yellowCardCount = monthEvals.Sum(e => e.YellowCardCount);
-            var redCardCount = monthEvals.Sum(e => e.RedCardCount);
-
-            monthlyData.Add(new
-            {
-                month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
-                year = monthStart.Year,
-                count = monthEvals.Count,
-                averageScore = Math.Round(avgScore, 1),
-                yellowCardCount,
-                redCardCount
-            });
-        }
-
-        return Ok(monthlyData);
+        var result = await _cpDataService.GetMonthlyTrendAsync(customerId.Value, allowedPersonnelIds, projectId, startDate, endDate);
+        return Ok(result);
     }
 
     /// <summary>
@@ -602,121 +489,9 @@ public class CustomerPortalApiController : ControllerBase
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-        var now = DateTime.UtcNow;
-        var effectiveStartDate = startDate.HasValue
-            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
-            : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        // Projeleri getir (dropdown için, Survey/Enneagram hariç)
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted &&
-                        !excludedChecklistTypes.Contains(p.Checklist.ChecklistTypeId))
-            .Select(p => new { p.Id, p.Name })
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-
-        // Cevapları getir (Survey/Enneagram hariç)
-        var answersQuery = _context.Answers
-            .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
-            .Include(a => a.Question)
-            .Where(a => a.Evaluation.Assignment != null &&
-                        a.Evaluation.Assignment.Project != null &&
-                        a.Evaluation.Assignment.Project.CustomerId == customerId &&
-                        a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(a.Evaluation.Checklist.ChecklistTypeId) &&
-                        a.Evaluation.CreatedAt >= effectiveStartDate &&
-                        a.Question.GroupName != null &&
-                        a.Question.GroupName != "" &&
-                        a.EarnedPoints.HasValue &&
-                        a.Question.WeightPoints > 0);
-
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
-        }
-
-        if (projectIds?.Any() == true)
-        {
-            answersQuery = answersQuery.Where(a => projectIds.Contains(a.Evaluation.Assignment!.ProjectId));
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            answersQuery = answersQuery.Where(a =>
-                a.Evaluation.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        var answers = await answersQuery
-            .Select(a => new
-            {
-                a.Evaluation.CreatedAt,
-                a.Question.GroupName,
-                a.EarnedPoints,
-                a.Question.WeightPoints
-            })
-            .ToListAsync();
-
-        // Grup adlarını al
-        var groupNames = answers.Select(a => a.GroupName).Distinct().OrderBy(g => g).ToList();
-
-        // Ay etiketlerini oluştur
-        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var loopEnd = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc) : now;
-        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
-        if (monthCount < 1) monthCount = 1;
-        if (monthCount > 36) monthCount = 36;
-
-        var monthLabels = new List<string>();
-        for (int i = 0; i < monthCount; i++)
-        {
-            var monthDate = loopStart.AddMonths(i);
-            monthLabels.Add(monthDate.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")));
-        }
-
-        // Her grup için aylık trend
-        var groupTrends = new List<object>();
-        foreach (var groupName in groupNames)
-        {
-            var monthlyScores = new List<double>();
-            for (int i = 0; i < monthCount; i++)
-            {
-                var monthStart = loopStart.AddMonths(i);
-                var monthEnd = monthStart.AddMonths(1);
-
-                var monthAnswers = answers.Where(a =>
-                    a.GroupName == groupName &&
-                    a.CreatedAt >= monthStart &&
-                    a.CreatedAt < monthEnd).ToList();
-
-                double avgScore = 0;
-                if (monthAnswers.Any())
-                {
-                    // Her cevabın yüzdesini hesapla ve ortalamasını al
-                    avgScore = monthAnswers.Average(a =>
-                        (double)(a.EarnedPoints!.Value / a.WeightPoints * 100));
-                }
-                monthlyScores.Add(Math.Round(avgScore, 1));
-            }
-
-            groupTrends.Add(new
-            {
-                groupName,
-                scores = monthlyScores
-            });
-        }
-
-        return Ok(new
-        {
-            projects,
-            selectedProjectIds = projectIds,
-            monthLabels,
-            groupTrends
-        });
+        var result = await _cpDataService.GetQuestionGroupTrendAsync(customerId.Value, allowedPersonnelIds, projectIds, startDate, endDate);
+        return Ok(result);
     }
 
     /// <summary>
@@ -734,145 +509,9 @@ public class CustomerPortalApiController : ControllerBase
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-        var now = DateTime.UtcNow;
-        var effectiveStartDate = startDate.HasValue
-            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
-            : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        // Cevapları getir (Survey/Enneagram hariç)
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var answersQuery = _context.Answers
-            .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
-            .Include(a => a.Question)
-            .Where(a => a.Evaluation.Assignment != null &&
-                        a.Evaluation.Assignment.Project != null &&
-                        a.Evaluation.Assignment.Project.CustomerId == customerId &&
-                        a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(a.Evaluation.Checklist.ChecklistTypeId) &&
-                        a.Evaluation.CreatedAt >= effectiveStartDate &&
-                        a.EarnedPoints.HasValue &&
-                        a.Question.WeightPoints > 0 &&
-                        a.Question.ScoringTypeId == ScoringTypes.Ids.Scored); // Sadece puanlı sorular
-
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
-        }
-
-        if (projectIds?.Any() == true)
-        {
-            answersQuery = answersQuery.Where(a => projectIds.Contains(a.Evaluation.Assignment!.ProjectId));
-        }
-
-        if (!string.IsNullOrEmpty(groupName))
-        {
-            answersQuery = answersQuery.Where(a => a.Question.GroupName == groupName);
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            answersQuery = answersQuery.Where(a =>
-                a.Evaluation.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        var answers = await answersQuery
-            .Select(a => new
-            {
-                a.Evaluation.CreatedAt,
-                a.QuestionId,
-                QuestionText = a.Question.Text,
-                a.Question.GroupName,
-                a.Question.Order,
-                a.EarnedPoints,
-                a.Question.WeightPoints
-            })
-            .ToListAsync();
-
-        // Soruları al (en çok cevap alan ilk 10 soru)
-        var questions = answers
-            .GroupBy(a => new { a.QuestionId, a.QuestionText, a.GroupName, a.Order })
-            .Select(g => new
-            {
-                g.Key.QuestionId,
-                g.Key.QuestionText,
-                g.Key.GroupName,
-                g.Key.Order,
-                AnswerCount = g.Count()
-            })
-            .OrderByDescending(q => q.AnswerCount)
-            .Take(10)
-            .OrderBy(q => q.GroupName)
-            .ThenBy(q => q.Order)
-            .ToList();
-
-        // Ay etiketlerini oluştur
-        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var loopEnd = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc) : now;
-        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
-        if (monthCount < 1) monthCount = 1;
-        if (monthCount > 36) monthCount = 36;
-
-        var monthLabels = new List<string>();
-        for (int i = 0; i < monthCount; i++)
-        {
-            var monthDate = loopStart.AddMonths(i);
-            monthLabels.Add(monthDate.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")));
-        }
-
-        // Her soru için aylık trend
-        var questionTrends = new List<object>();
-        foreach (var question in questions)
-        {
-            var monthlyScores = new List<double>();
-            for (int i = 0; i < monthCount; i++)
-            {
-                var monthStart = loopStart.AddMonths(i);
-                var monthEnd = monthStart.AddMonths(1);
-
-                var monthAnswers = answers.Where(a =>
-                    a.QuestionId == question.QuestionId &&
-                    a.CreatedAt >= monthStart &&
-                    a.CreatedAt < monthEnd).ToList();
-
-                double avgScore = 0;
-                if (monthAnswers.Any())
-                {
-                    avgScore = monthAnswers.Average(a =>
-                        (double)(a.EarnedPoints!.Value / a.WeightPoints * 100));
-                }
-                monthlyScores.Add(Math.Round(avgScore, 1));
-            }
-
-            questionTrends.Add(new
-            {
-                questionId = question.QuestionId,
-                questionText = question.QuestionText.Length > 50
-                    ? question.QuestionText.Substring(0, 47) + "..."
-                    : question.QuestionText,
-                groupName = question.GroupName,
-                scores = monthlyScores
-            });
-        }
-
-        // Grup adlarını getir (filtre için)
-        var groupNames = await _context.Questions
-            .Where(q => q.GroupName != null && q.GroupName != "")
-            .Select(q => q.GroupName)
-            .Distinct()
-            .OrderBy(g => g)
-            .ToListAsync();
-
-        return Ok(new
-        {
-            groupNames,
-            selectedGroupName = groupName,
-            monthLabels,
-            questionTrends
-        });
+        var result = await _cpDataService.GetQuestionTrendAsync(customerId.Value, allowedPersonnelIds, projectIds, groupName, startDate, endDate);
+        return Ok(result);
     }
 
     /// <summary>
@@ -887,83 +526,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
-
-        // Proje filtresi
-        if (projectId.HasValue)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e => e.Assignment!.ProjectId == projectId.Value);
-        }
-
-        // Tarih filtresi
-        if (startDate.HasValue)
-        {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
-        }
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        // Proje tipi ile birlikte puanları çek
-        var scores = await evaluationsQuery
-            .Select(e => new
-            {
-                ProjectTypeId = e.Assignment!.Project!.ProjectTypeId,
-                Score = e.ScorePercentage ?? 0
-            })
-            .ToListAsync();
-
-        // Değerlemesi olmayan proje tipleri gelmesin
-        var groupedByType = scores.GroupBy(s => s.ProjectTypeId).ToList();
-        if (groupedByType.Count == 0)
-            return Ok(new List<object>());
-
-        // Müşteriye özel eşikleri al (yoksa global fallback)
-        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
-
-        var result = groupedByType.Select(g =>
-        {
-            var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == g.Key);
-            var successThreshold = threshold?.SuccessThreshold ?? 80m;
-            var warningThreshold = threshold?.WarningThreshold ?? 60m;
-            var projectType = ProjectTypes.GetById(g.Key);
-
-            var typeScores = g.Select(s => s.Score).ToList();
-
-            return new
-            {
-                projectTypeId = g.Key,
-                projectTypeName = threshold?.ProjectTypeName ?? projectType?.Description ?? "Bilinmeyen",
-                projectTypeIcon = threshold?.ProjectTypeIcon ?? projectType?.Icon ?? "bi-folder",
-                projectTypeColor = threshold?.ProjectTypeColor ?? projectType?.CssClass ?? "bg-secondary",
-                successThreshold,
-                warningThreshold,
-                success = typeScores.Count(s => s >= successThreshold),
-                warning = typeScores.Count(s => s >= warningThreshold && s < successThreshold),
-                danger = typeScores.Count(s => s < warningThreshold),
-                total = typeScores.Count
-            };
-        })
-        .OrderBy(r => r.projectTypeId)
-        .ToList();
-
+        var result = await _cpDataService.GetScoreDistributionAsync(customerId.Value, allowedPersonnelIds, projectId, startDate, endDate);
         return Ok(result);
     }
 
@@ -985,81 +548,11 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatedOrganization)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.Assignment.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
+        var result = await _cpDataService.GetScoreDistributionEvaluationsAsync(customerId.Value, allowedPersonnelIds, category, projectTypeId, startDate, endDate, page, pageSize);
+        if (result == null)
+            return BadRequest(new { message = "Geçersiz kategori. Geçerli değerler: success, warning, danger" });
 
-        // Tarih filtresi
-        if (startDate.HasValue)
-        {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
-        }
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        // Eşikleri al (müşteriye özel, yoksa global fallback)
-        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
-        var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == projectTypeId);
-        var st = threshold?.SuccessThreshold ?? 80m;
-        var wt = threshold?.WarningThreshold ?? 60m;
-
-        // Kategori filtresi (eşiklere göre)
-        switch (category?.ToLower())
-        {
-            case "success":
-                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= st);
-                break;
-            case "warning":
-                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= wt && (e.ScorePercentage ?? 0) < st);
-                break;
-            case "danger":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || (e.ScorePercentage ?? 0) < wt);
-                break;
-            default:
-                return BadRequest(new { message = "Geçersiz kategori. Geçerli değerler: success, warning, danger" });
-        }
-
-        var total = await evaluationsQuery.CountAsync();
-
-        var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(e => new
-            {
-                e.Id,
-                evaluationDate = e.StartedAt ?? e.CreatedAt,
-                projectName = e.Assignment!.Project!.Name,
-                personnelName = e.EvaluatedCustomerPersonnel != null
-                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
-                    : "-",
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : "-",
-                score = e.ScorePercentage ?? 0,
-                e.YellowCardCount,
-                e.RedCardCount
-            })
-            .ToListAsync();
-
-        return Ok(new { items = evaluations, total, page, pageSize });
+        return Ok(result);
     }
 
     /// <summary>
@@ -1078,120 +571,11 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatedOrganization)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.Assignment.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
+        var exportResult = await _cpDataService.ExportScoreDistributionEvaluationsAsync(customerId.Value, allowedPersonnelIds, category, projectTypeId, startDate, endDate);
+        if (exportResult == null)
+            return BadRequest(new { message = "Geçersiz kategori" });
 
-        // Tarih filtresi
-        if (startDate.HasValue)
-        {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
-        }
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
-        }
-
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        // Eşikleri al
-        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId.Value);
-        var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == projectTypeId);
-        var st = threshold?.SuccessThreshold ?? 80m;
-        var wt = threshold?.WarningThreshold ?? 60m;
-
-        var categoryLabel = "";
-        switch (category?.ToLower())
-        {
-            case "success":
-                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= st);
-                categoryLabel = $"Başarılı ({st}+)";
-                break;
-            case "warning":
-                evaluationsQuery = evaluationsQuery.Where(e => (e.ScorePercentage ?? 0) >= wt && (e.ScorePercentage ?? 0) < st);
-                categoryLabel = $"Uyarı ({wt}-{st})";
-                break;
-            case "danger":
-                evaluationsQuery = evaluationsQuery.Where(e => e.ScorePercentage == null || (e.ScorePercentage ?? 0) < wt);
-                categoryLabel = $"Başarısız (<{wt})";
-                break;
-            default:
-                return BadRequest(new { message = "Geçersiz kategori" });
-        }
-
-        var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.StartedAt ?? e.CreatedAt)
-            .Select(e => new
-            {
-                evaluationDate = e.StartedAt ?? e.CreatedAt,
-                projectName = e.Assignment!.Project!.Name,
-                personnelName = e.EvaluatedCustomerPersonnel != null
-                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
-                    : "-",
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : "-",
-                score = e.ScorePercentage ?? 0,
-                yellowCardCount = e.YellowCardCount,
-                redCardCount = e.RedCardCount
-            })
-            .ToListAsync();
-
-        // Excel oluştur
-        using var workbook = new ClosedXML.Excel.XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Değerlendirmeler");
-
-        // Başlık
-        worksheet.Cell(1, 1).Value = "Tarih";
-        worksheet.Cell(1, 2).Value = "Proje";
-        worksheet.Cell(1, 3).Value = "Personel";
-        worksheet.Cell(1, 4).Value = "Organizasyon";
-        worksheet.Cell(1, 5).Value = "Puan";
-        worksheet.Cell(1, 6).Value = "Sarı Kart";
-        worksheet.Cell(1, 7).Value = "Kırmızı Kart";
-
-        // Başlık stili
-        var headerRange = worksheet.Range(1, 1, 1, 7);
-        headerRange.Style.Font.Bold = true;
-        headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
-
-        // Veri
-        for (int i = 0; i < evaluations.Count; i++)
-        {
-            var row = i + 2;
-            var eval = evaluations[i];
-            worksheet.Cell(row, 1).Value = eval.evaluationDate.ToString("dd.MM.yyyy");
-            worksheet.Cell(row, 2).Value = eval.projectName;
-            worksheet.Cell(row, 3).Value = eval.personnelName;
-            worksheet.Cell(row, 4).Value = eval.organizationName;
-            worksheet.Cell(row, 5).Value = eval.score;
-            worksheet.Cell(row, 6).Value = eval.yellowCardCount;
-            worksheet.Cell(row, 7).Value = eval.redCardCount;
-        }
-
-        // Kolon genişliklerini ayarla
-        worksheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
-
-        using var stream = new MemoryStream();
-        workbook.SaveAs(stream);
-        stream.Position = 0;
-
-        var fileName = $"PuanDagilimi_{categoryLabel.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        return File(exportResult.Value.FileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", exportResult.Value.FileName);
     }
 
     /// <summary>
@@ -1418,64 +802,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        // Supervisor filtrelemesi
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-
-        var query = _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
-
-        // Proje tipi filtresi
-        if (projectTypeId.HasValue)
-            query = query.Where(p => p.ProjectTypeId == projectTypeId.Value);
-
-        // Supervisor için sadece kendi personelinin değerlendirildiği projeler
-        if (allowedPersonnelIds != null)
-        {
-            var projectIdsWithPersonnel = await _context.Evaluations
-                .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
-                           e.AssignmentId != null &&
-                           allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.Assignment!.Project.CustomerId == customerId &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed)
-                .Select(e => e.Assignment!.ProjectId)
-                .Distinct()
-                .ToListAsync();
-
-            query = query.Where(p => projectIdsWithPersonnel.Contains(p.Id));
-        }
-
-        var projects = await query
-            .Select(p => new
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Code = p.Code,
-                City = "",
-                Address = "",
-                IsActive = p.IsActive,
-                evaluationCount = allowedPersonnelIds == null
-                    ? _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed)
-                    : _context.Evaluations.Count(e => e.Assignment.ProjectId == p.Id &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.EvaluatedCustomerPersonnelId.HasValue &&
-                        allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)),
-                averageScore = allowedPersonnelIds == null
-                    ? _context.Evaluations
-                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue &&
-                            e.StatusId == EvaluationStatuses.Ids.Completed)
-                        .Average(e => (double?)e.ScorePercentage) ?? 0
-                    : _context.Evaluations
-                        .Where(e => e.Assignment.ProjectId == p.Id && e.ScorePercentage.HasValue &&
-                            e.StatusId == EvaluationStatuses.Ids.Completed &&
-                            e.EvaluatedCustomerPersonnelId.HasValue &&
-                            allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value))
-                        .Average(e => (double?)e.ScorePercentage) ?? 0
-            })
-            .OrderBy(p => p.Name)
-            .ToListAsync();
-
-        return Ok(projects);
+        var result = await _cpDataService.GetProjectsAsync(customerId.Value, projectTypeId, allowedPersonnelIds);
+        return Ok(result);
     }
 
     /// <summary>
@@ -1490,52 +819,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var evaluationsQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed);
-
-        if (allowedPersonnelIds != null)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                e.EvaluatedCustomerPersonnelId.HasValue &&
-                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-        }
-
-        var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
-            .Take(count)
-            .Select(e => new
-            {
-                e.Id,
-                evaluationDate = e.CompletedAt ?? e.CreatedAt,
-                projectName = e.Assignment!.Project!.Name,
-                checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
-                personnelName = e.EvaluatedCustomerPersonnel != null
-                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
-                    : e.EvaluatedUnknownPersonnel ?? "-",
-                score = e.ScorePercentage ?? 0,
-                statusId = e.StatusId
-            })
-            .ToListAsync();
-
-        var result = evaluations.Select(e => new
-        {
-            e.Id,
-            e.evaluationDate,
-            e.projectName,
-            e.checklistName,
-            e.personnelName,
-            e.score,
-            status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
-            statusText = GetStatusText(e.statusId)
-        });
-
+        var result = await _cpDataService.GetRecentEvaluationsAsync(customerId.Value, allowedPersonnelIds, count);
         return Ok(result);
     }
 
@@ -1551,75 +835,10 @@ public class CustomerPortalApiController : ControllerBase
 
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null &&
-                        e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId != EvaluationStatuses.Ids.Cancelled); // Taslaklar dahil, iptal edilenler hariç
-
-        // Rol bazlı filtreleme
-        // Manager/Supervisor: Kendi yaptıkları değerlendirmeler (EvaluatorCustomerPersonnelId)
-        // Operator: Kendilerinin değerlendirildiği kayıtlar (EvaluatedCustomerPersonnelId)
-        if (role == "CustomerOperator" && personnelId.HasValue)
-        {
-            // Operator: Sadece kendisinin değerlendirildiği kayıtlar
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
-        }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
-        {
-            // Supervisor: Kendi yaptığı değerlendirmeler + allowedPersonnelIds'deki personelin değerlendirildiği kayıtlar
-            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-            if (allowedPersonnelIds != null)
-            {
-                query = query.Where(e =>
-                    e.EvaluatorCustomerPersonnelId == personnelId.Value ||
-                    (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
-            }
-        }
-        // Manager ve Admin: Tüm kayıtları görür (ek filtre yok)
-
-        var totalCount = await query.CountAsync();
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(e => new
-            {
-                e.Id,
-                evaluationDate = e.CreatedAt,
-                projectName = e.Assignment!.Project!.Name,
-                checklistName = e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : "N/A",
-                scoringMethodId = e.Assignment.Checklist != null ? e.Assignment.Checklist.ScoringMethodId : 1,
-                score = e.ScorePercentage ?? 0,
-                statusId = e.StatusId
-            })
-            .ToListAsync();
-
-        var mappedEvaluations = evaluations.Select(e => new
-        {
-            e.Id,
-            e.evaluationDate,
-            e.projectName,
-            e.checklistName,
-            scoringMethod = ScoringMethods.GetById(e.scoringMethodId)?.SystemName ?? "Maximum",
-            e.score,
-            status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
-            statusText = GetStatusText(e.statusId)
-        });
-
-        return Ok(new
-        {
-            items = mappedEvaluations,
-            totalCount,
-            page,
-            pageSize,
-            totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-        });
+        var result = await _cpDataService.GetEvaluationsAsync(customerId.Value, role, personnelId, allowedPersonnelIds, page, pageSize);
+        return Ok(result);
     }
 
     private static string GetStatusText(int statusId)
@@ -1650,78 +869,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        // Supervisor filtrelemesi
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
-
-        // UTC'ye çevir
-        if (start.Kind == DateTimeKind.Unspecified)
-            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        if (end.Kind == DateTimeKind.Unspecified)
-            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-
-        var projectsQuery = _context.Projects
-            .Where(p => p.CustomerId == customerId && !p.IsDeleted);
-
-        // Project filter
-        if (projectIds?.Any() == true)
-            projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
-
-        var projects = await projectsQuery.ToListAsync();
-
-        var evalQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
-
-        // İç/Dış dinleme filtresi
-        if (isInternal == true)
-            evalQuery = evalQuery.Where(e => e.EvaluatorCustomerPersonnelId != null);
-        else if (isInternal == false)
-            evalQuery = evalQuery.Where(e => e.EvaluatorId != null);
-
-        // Supervisor personel filtresi
-        if (allowedPersonnelIds != null)
-            evalQuery = evalQuery.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-
-        // Project filter
-        if (projectIds?.Any() == true)
-            evalQuery = evalQuery.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-            evalQuery = evalQuery.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-
-        var evaluations = await evalQuery.ToListAsync();
-
-        // Supervisor için sadece değerlendirmesi olan projeleri göster
-        var projectIdsWithEvaluations = evaluations.Select(e => e.Assignment.ProjectId).Distinct().ToHashSet();
-        var filteredProjects = allowedPersonnelIds != null
-            ? projects.Where(p => projectIdsWithEvaluations.Contains(p.Id)).ToList()
-            : projects;
-
-        var projectPerformance = filteredProjects.Select(p =>
-        {
-            var projectEvals = evaluations.Where(e => e.Assignment.ProjectId == p.Id).ToList();
-            return new
-            {
-                projectId = p.Id,
-                projectName = p.Name,
-                evaluationCount = projectEvals.Count,
-                averageScore = projectEvals.Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
-                minScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
-                maxScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0
-            };
-        })
-        .OrderByDescending(p => p.averageScore)
-        .ToList();
-
-        return Ok(projectPerformance);
+        var result = await _cpDataService.GetProjectPerformanceAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectIds, organizationIds, isInternal);
+        return Ok(result);
     }
 
     /// <summary>
@@ -1739,73 +890,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        // Supervisor filtrelemesi
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
-
-        if (start.Kind == DateTimeKind.Unspecified)
-            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        if (end.Kind == DateTimeKind.Unspecified)
-            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
-
-        // İç/Dış dinleme filtresi
-        if (isInternal == true)
-            query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
-        else if (isInternal == false)
-            query = query.Where(e => e.EvaluatorId != null);
-
-        // Supervisor personel filtresi
-        if (allowedPersonnelIds != null)
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-
-        // Project filter
-        if (projectIds?.Any() == true)
-            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-
-        var evaluations = await query.ToListAsync();
-
-        // Supervisor için sadece değerlendirmesi olan proje sayısı
-        int projectCount;
-        if (allowedPersonnelIds != null)
-        {
-            projectCount = evaluations.Select(e => e.Assignment.ProjectId).Distinct().Count();
-        }
-        else
-        {
-            projectCount = await _context.Projects
-                .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
-        }
-
-        var summary = new
-        {
-            periodStart = start,
-            periodEnd = end,
-            totalEvaluations = evaluations.Count,
-            projectCount,
-            averageScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
-            minScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
-            maxScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0,
-            excellentCount = evaluations.Count(e => e.ScorePercentage >= 90),
-            goodCount = evaluations.Count(e => e.ScorePercentage >= 80 && e.ScorePercentage < 90),
-            averageCount = evaluations.Count(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80),
-            poorCount = evaluations.Count(e => e.ScorePercentage < 60)
-        };
-
-        return Ok(summary);
+        var result = await _cpDataService.GetReportSummaryAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectIds, organizationIds, isInternal);
+        return Ok(result);
     }
 
     /// <summary>
@@ -1825,65 +913,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        // Supervisor filtrelemesi
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
-
-        if (start.Kind == DateTimeKind.Unspecified)
-            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        if (end.Kind == DateTimeKind.Unspecified)
-            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.EvaluatedPersonnel)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed
-                && e.ScorePercentage.HasValue
-                && e.ScorePercentage >= minScore
-                && e.ScorePercentage < maxScore);
-
-        // İç/Dış dinleme filtresi
-        if (isInternal == true)
-            query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
-        else if (isInternal == false)
-            query = query.Where(e => e.EvaluatorId != null);
-
-        // Supervisor personel filtresi
-        if (allowedPersonnelIds != null)
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-
-        // Project filter
-        if (projectIds?.Any() == true)
-            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
-            .Take(100)
-            .Select(e => new
-            {
-                evaluationId = e.Id,
-                evaluationDate = e.CreatedAt,
-                projectName = e.Assignment.Project != null ? e.Assignment.Project.Name : "-",
-                personnelName = e.EvaluatedPersonnel != null
-                    ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
-                    : "-",
-                scorePercentage = e.ScorePercentage,
-                yellowCards = e.YellowCardCount,
-                redCards = e.RedCardCount
-            })
-            .ToListAsync();
-
-        return Ok(evaluations);
+        var result = await _cpDataService.GetEvaluationsByScoreRangeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectIds, organizationIds, minScore, maxScore, isInternal);
+        return Ok(result);
     }
 
     /// <summary>
@@ -1901,60 +934,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        // Supervisor filtrelemesi
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-6);
-        var end = endDate ?? DateTime.UtcNow;
-
-        if (start.Kind == DateTimeKind.Unspecified)
-            start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        if (end.Kind == DateTimeKind.Unspecified)
-            end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
-
-        // İç/Dış dinleme filtresi
-        if (isInternal == true)
-            query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
-        else if (isInternal == false)
-            query = query.Where(e => e.EvaluatorId != null);
-
-        // Supervisor personel filtresi
-        if (allowedPersonnelIds != null)
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-
-        // Project filter
-        if (projectIds?.Any() == true)
-            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-
-        var evaluations = await query.ToListAsync();
-
-        // Aylara göre grupla
-        var monthlyData = evaluations
-            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
-            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-            .Select(g => new
-            {
-                year = g.Key.Year,
-                month = g.Key.Month,
-                monthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy", new System.Globalization.CultureInfo("tr-TR")),
-                count = g.Count(),
-                averageScore = g.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0
-            })
-            .ToList();
-
-        return Ok(monthlyData);
+        var result = await _cpDataService.GetReportMonthlyTrendAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectIds, organizationIds, isInternal);
+        return Ok(result);
     }
 
     /// <summary>
@@ -1967,65 +950,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        // Supervisor filtrelemesi
         var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
-
-        var query = _context.CustomerOrganizations
-            .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted);
-
-        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
-        if (allowedOrgIds != null)
-            query = query.Where(o => allowedOrgIds.Contains(o.Id));
-
-        var organizations = await query
-            .OrderBy(o => o.ParentId)
-            .ThenBy(o => o.Order)
-            .ThenBy(o => o.Name)
-            .Select(o => new
-            {
-                o.Id,
-                o.Name,
-                o.Code,
-                o.Description,
-                o.ParentId,
-                parentName = o.Parent != null ? o.Parent.Name : null,
-                o.Level,
-                o.Order,
-                personnelCount = _context.CustomerPersonnelOrganizations
-                    .Count(cpo => cpo.CustomerOrganizationId == o.Id &&
-                                  !cpo.CustomerPersonnel.IsDeleted &&
-                                  cpo.CustomerPersonnel.IsActive),
-                evaluationCount = _context.Evaluations
-                    .Count(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               (e.EvaluatedOrganizationId == o.Id ||
-                                (e.EvaluatedCustomerPersonnelId.HasValue &&
-                                 _context.CustomerPersonnelOrganizations
-                                     .Any(cpo => cpo.CustomerPersonnelId == e.EvaluatedCustomerPersonnelId.Value &&
-                                                 cpo.CustomerOrganizationId == o.Id)))),
-                averageScore = _context.Evaluations
-                    .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.ScorePercentage.HasValue &&
-                               (e.EvaluatedOrganizationId == o.Id ||
-                                (e.EvaluatedCustomerPersonnelId.HasValue &&
-                                 _context.CustomerPersonnelOrganizations
-                                     .Any(cpo => cpo.CustomerPersonnelId == e.EvaluatedCustomerPersonnelId.Value &&
-                                                 cpo.CustomerOrganizationId == o.Id))))
-                    .Average(e => (double?)e.ScorePercentage) ?? 0
-            })
-            .ToListAsync();
-
-        // Group by parent (null parent = independent/root level)
-        var grouped = organizations
-            .GroupBy(o => o.parentName ?? "Bağımsız")
-            .Select(g => new
-            {
-                groupName = g.Key,
-                organizations = g.ToList()
-            })
-            .OrderBy(g => g.groupName == "Bağımsız" ? "" : g.groupName) // Bağımsız en başa
-            .ToList();
-
-        return Ok(grouped);
+        var result = await _cpDataService.GetOrganizationsAsync(customerId.Value, allowedOrgIds);
+        return Ok(result);
     }
 
     /// <summary>
@@ -2042,200 +969,10 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        var now = DateTime.UtcNow;
-
-        // Default: Bu haftanın başı (Pazartesi) - Bugün
-        DateTime start;
-        if (startDate.HasValue)
-        {
-            start = startDate.Value.Date;
-        }
-        else
-        {
-            // Pazartesi'yi hesapla
-            var daysFromMonday = ((int)now.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
-            start = now.Date.AddDays(-daysFromMonday);
-        }
-
-        var end = endDate?.Date ?? now.Date;
-
-        // UTC'ye çevir
-        start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
-        end = DateTime.SpecifyKind(end.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-
-        // Supervisor filtrelemesi
         var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
 
-        // Organizasyonları al
-        var organizationsQuery = _context.CustomerOrganizations
-            .Where(o => o.CustomerId == customerId && o.IsActive && !o.IsDeleted);
-
-        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
-        if (allowedOrgIds != null)
-            organizationsQuery = organizationsQuery.Where(o => allowedOrgIds.Contains(o.Id));
-
-        if (organizationIds?.Any() == true)
-        {
-            organizationsQuery = organizationsQuery.Where(o => organizationIds.Contains(o.Id));
-        }
-
-        var organizations = await organizationsQuery
-            .OrderBy(o => o.Name)
-            .Select(o => new { o.Id, o.Name })
-            .ToListAsync();
-
-        // Organizasyon ID'lerini al
-        var orgIds = organizations.Select(o => o.Id).ToList();
-
-        // Personel -> Organizasyon eşleştirmesini al (junction table)
-        var personnelOrgMap = await _context.CustomerPersonnelOrganizations
-            .Where(cpo => orgIds.Contains(cpo.CustomerOrganizationId))
-            .Select(cpo => new { cpo.CustomerPersonnelId, cpo.CustomerOrganizationId })
-            .ToListAsync();
-
-        var personnelIds = personnelOrgMap.Select(x => x.CustomerPersonnelId).Distinct().ToList();
-
-        // Değerlendirmeleri al: personel organizasyon ataması VEYA EvaluatedOrganizationId üzerinden
-        var evaluationsQuery = _context.Evaluations
-            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CallDate.HasValue &&
-                        e.CallDate.Value >= start &&
-                        e.CallDate.Value <= end &&
-                        ((e.EvaluatedCustomerPersonnelId.HasValue && personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)) ||
-                         (e.EvaluatedOrganizationId.HasValue && orgIds.Contains(e.EvaluatedOrganizationId.Value))));
-
-        if (organizationIds?.Any() == true)
-        {
-            evaluationsQuery = evaluationsQuery.Where(e =>
-                (e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value)) ||
-                (e.EvaluatedCustomerPersonnelId.HasValue &&
-                 _context.CustomerPersonnelOrganizations.Any(cpo =>
-                     cpo.CustomerPersonnelId == e.EvaluatedCustomerPersonnelId.Value &&
-                     organizationIds.Contains(cpo.CustomerOrganizationId))));
-        }
-
-        var evaluations = await evaluationsQuery.ToListAsync();
-
-        // Evaluation -> Org eşleştirme lookup'ı oluştur
-        var personnelToOrgs = personnelOrgMap
-            .GroupBy(x => x.CustomerPersonnelId)
-            .ToDictionary(g => g.Key, g => g.Select(x => x.CustomerOrganizationId).ToList());
-
-        // Tarih aralığına göre gruplama tipini belirle
-        var totalDays = (end - start).TotalDays;
-        var labels = new List<string>();
-        var dateRanges = new List<(DateTime Start, DateTime End)>();
-
-        if (totalDays <= 14)
-        {
-            // 2 hafta veya daha az: Günlük
-            for (var date = start.Date; date <= end.Date; date = date.AddDays(1))
-            {
-                labels.Add(date.ToString("dd MMM", new System.Globalization.CultureInfo("tr-TR")));
-                dateRanges.Add((DateTime.SpecifyKind(date, DateTimeKind.Utc), DateTime.SpecifyKind(date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc)));
-            }
-        }
-        else if (totalDays <= 90)
-        {
-            // 3 ay veya daha az: Haftalık
-            var weekStart = start.Date;
-            while (weekStart <= end.Date)
-            {
-                var weekEnd = weekStart.AddDays(6);
-                if (weekEnd > end.Date) weekEnd = end.Date;
-
-                labels.Add(weekStart.ToString("dd MMM", new System.Globalization.CultureInfo("tr-TR")));
-                dateRanges.Add((DateTime.SpecifyKind(weekStart, DateTimeKind.Utc), DateTime.SpecifyKind(weekEnd.AddDays(1).AddSeconds(-1), DateTimeKind.Utc)));
-                weekStart = weekStart.AddDays(7);
-            }
-        }
-        else
-        {
-            // 3 aydan fazla: Aylık
-            var monthStart = new DateTime(start.Year, start.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            while (monthStart <= end)
-            {
-                var monthEnd = monthStart.AddMonths(1).AddSeconds(-1);
-
-                labels.Add(monthStart.ToString("MMM yy", new System.Globalization.CultureInfo("tr-TR")));
-                dateRanges.Add((monthStart, monthEnd));
-                monthStart = monthStart.AddMonths(1);
-            }
-        }
-
-        // Genel trend (CallDate'e göre)
-        var overallTrend = new List<object>();
-        foreach (var (rangeStart, rangeEnd) in dateRanges)
-        {
-            var periodEvals = evaluations.Where(e => e.CallDate.HasValue && e.CallDate.Value >= rangeStart && e.CallDate.Value <= rangeEnd).ToList();
-            var withScore = periodEvals.Where(e => e.ScorePercentage.HasValue).ToList();
-            var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
-
-            overallTrend.Add(new
-            {
-                count = periodEvals.Count,
-                averageScore = Math.Round(avgScore, 1)
-            });
-        }
-
-        // Evaluation'ın hangi org'a ait olduğunu belirle (helper)
-        Func<Evaluation, int, bool> evalBelongsToOrg = (e, orgId) =>
-        {
-            if (e.EvaluatedOrganizationId == orgId) return true;
-            if (e.EvaluatedCustomerPersonnelId.HasValue &&
-                personnelToOrgs.TryGetValue(e.EvaluatedCustomerPersonnelId.Value, out var orgs2) &&
-                orgs2.Contains(orgId)) return true;
-            return false;
-        };
-
-        // Organizasyon bazlı trend (en fazla 5 organizasyon)
-        var topOrganizations = organizations
-            .Select(o => new
-            {
-                o.Id,
-                o.Name,
-                EvaluationCount = evaluations.Count(e => evalBelongsToOrg(e, o.Id))
-            })
-            .Where(o => o.EvaluationCount > 0)
-            .OrderByDescending(o => o.EvaluationCount)
-            .Take(5)
-            .ToList();
-
-        var organizationTrends = new List<object>();
-        foreach (var org in topOrganizations)
-        {
-            var orgData = new List<double>();
-            foreach (var (rangeStart, rangeEnd) in dateRanges)
-            {
-                var orgEvals = evaluations
-                    .Where(e => evalBelongsToOrg(e, org.Id) &&
-                               e.CallDate.HasValue &&
-                               e.CallDate.Value >= rangeStart &&
-                               e.CallDate.Value <= rangeEnd &&
-                               e.ScorePercentage.HasValue)
-                    .ToList();
-
-                var avgScore = orgEvals.Any() ? orgEvals.Average(e => (double)e.ScorePercentage!.Value) : 0;
-                orgData.Add(Math.Round(avgScore, 1));
-            }
-
-            organizationTrends.Add(new
-            {
-                organizationId = org.Id,
-                organizationName = org.Name,
-                data = orgData
-            });
-        }
-
-        return Ok(new
-        {
-            labels,
-            overallTrend,
-            organizationTrends,
-            periodType = totalDays <= 14 ? "daily" : (totalDays <= 90 ? "weekly" : "monthly"),
-            startDate = start,
-            endDate = end.Date
-        });
+        var result = await _cpDataService.GetOrganizationsMonthlyTrendAsync(customerId.Value, allowedOrgIds, organizationIds, startDate, endDate);
+        return Ok(result);
     }
 
     /// <summary>
@@ -2251,126 +988,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        // Supervisor filtrelemesi
         var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
-
-        // Süpervizör olan personelleri bul (CustomerPersonnelOrganization'da SupervisorId olarak geçenler)
-        var supervisorIdsQuery = _context.CustomerPersonnelOrganizations
-            .Where(cpo => cpo.SupervisorId.HasValue &&
-                          cpo.CustomerOrganization.CustomerId == customerId);
-
-        // Supervisor için sadece yetkili olduğu organizasyonları filtrele
-        if (allowedOrgIds != null)
-            supervisorIdsQuery = supervisorIdsQuery.Where(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId));
-
-        // Organizasyon filtresi
-        if (organizationIds?.Any() == true)
-        {
-            supervisorIdsQuery = supervisorIdsQuery.Where(cpo =>
-                organizationIds.Contains(cpo.CustomerOrganizationId));
-        }
-
-        var supervisorIds = await supervisorIdsQuery
-            .Select(cpo => cpo.SupervisorId!.Value)
-            .Distinct()
-            .ToListAsync();
-
-        // Her süpervizörün takımındaki personel ID'lerini al (organizasyon filtresine göre)
-        var supervisorTeamsQuery = _context.CustomerPersonnelOrganizations
-            .Where(cpo => cpo.SupervisorId.HasValue && supervisorIds.Contains(cpo.SupervisorId.Value));
-
-        // Organizasyon filtresi uygula
-        if (organizationIds?.Any() == true)
-            supervisorTeamsQuery = supervisorTeamsQuery.Where(cpo => organizationIds.Contains(cpo.CustomerOrganizationId));
-
-        var supervisorTeams = await supervisorTeamsQuery
-            .GroupBy(cpo => cpo.SupervisorId!.Value)
-            .Select(g => new
-            {
-                SupervisorId = g.Key,
-                TeamMemberIds = g.Select(x => x.CustomerPersonnelId).Distinct().ToList()
-            })
-            .ToListAsync();
-
-        var supervisorTeamDict = supervisorTeams.ToDictionary(x => x.SupervisorId, x => x.TeamMemberIds);
-
-        var supervisorsQuery = _context.CustomerPersonnel
-            .Where(cp => supervisorIds.Contains(cp.Id) && cp.IsActive && !cp.IsDeleted);
-
-        // Metin arama filtresi
-        if (!string.IsNullOrEmpty(searchText))
-        {
-            var searchLower = searchText.ToLower();
-            supervisorsQuery = supervisorsQuery.Where(cp =>
-                (cp.FirstName + " " + cp.LastName).ToLower().Contains(searchLower) ||
-                (cp.Title != null && cp.Title.ToLower().Contains(searchLower)));
-        }
-
-        // Organizasyon filtresi için liste (boşsa tüm organizasyonlar)
-        var orgFilterIds = organizationIds?.Any() == true ? organizationIds : null;
-
-        var supervisors = await supervisorsQuery
-            .OrderBy(cp => cp.FirstName).ThenBy(cp => cp.LastName)
-            .Select(cp => new
-            {
-                cp.Id,
-                fullName = cp.FirstName + " " + cp.LastName,
-                cp.Email,
-                cp.Title,
-                organizations = _context.CustomerPersonnelOrganizations
-                    .Where(cpo => cpo.SupervisorId == cp.Id &&
-                                  (orgFilterIds == null || orgFilterIds.Contains(cpo.CustomerOrganizationId)))
-                    .Select(cpo => new { cpo.CustomerOrganization.Id, cpo.CustomerOrganization.Name })
-                    .Distinct()
-                    .ToList(),
-                personnelCount = _context.CustomerPersonnelOrganizations
-                    .Count(cpo => cpo.SupervisorId == cp.Id &&
-                                  (orgFilterIds == null || orgFilterIds.Contains(cpo.CustomerOrganizationId)))
-            })
-            .ToListAsync();
-
-        // Takım bazlı değerlendirme sayısı ve ortalamasını hesapla (takımın ALDIĞI değerlendirmeler)
-        var result = supervisors.Select(s =>
-        {
-            var teamMemberIds = supervisorTeamDict.ContainsKey(s.Id) ? supervisorTeamDict[s.Id] : new List<int>();
-
-            var evaluationCount = _context.Evaluations
-                .Count(e => e.EvaluatedCustomerPersonnelId.HasValue &&
-                           teamMemberIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed);
-
-            var averageScore = _context.Evaluations
-                .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
-                           teamMemberIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed &&
-                           e.ScorePercentage.HasValue)
-                .Average(e => (double?)e.ScorePercentage) ?? 0;
-
-            return new
-            {
-                s.Id,
-                s.fullName,
-                s.Email,
-                s.Title,
-                s.organizations,
-                s.personnelCount,
-                evaluationCount,
-                averageScore
-            };
-        }).ToList();
-
-        // Group by first organization
-        var grouped = result
-            .GroupBy(s => s.organizations.FirstOrDefault()?.Name ?? "Atanmamış")
-            .Select(g => new
-            {
-                groupName = g.Key,
-                supervisors = g.ToList()
-            })
-            .OrderBy(g => g.groupName == "Atanmamış" ? "ZZZZ" : g.groupName)
-            .ToList();
-
-        return Ok(grouped);
+        var result = await _cpDataService.GetSupervisorsAsync(customerId.Value, allowedOrgIds, organizationIds, searchText);
+        return Ok(result);
     }
 
     /// <summary>
@@ -2383,58 +1003,11 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
-        // Süpervizörü doğrula
-        var supervisor = await _context.CustomerPersonnel
-            .FirstOrDefaultAsync(cp => cp.Id == supervisorId && cp.CustomerId == customerId && !cp.IsDeleted);
-
-        if (supervisor == null)
+        var result = await _cpDataService.GetSupervisorMonthlyTrendAsync(customerId.Value, supervisorId);
+        if (result == null)
             return NotFound(new { message = "Süpervizör bulunamadı" });
 
-        // Süpervizörün takımındaki personel ID'lerini al
-        var teamMemberIds = await _context.CustomerPersonnelOrganizations
-            .Where(cpo => cpo.SupervisorId == supervisorId)
-            .Select(cpo => cpo.CustomerPersonnelId)
-            .Distinct()
-            .ToListAsync();
-
-        var now = DateTime.UtcNow;
-        var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
-
-        // Takımın aldığı değerlendirmeleri al
-        var evaluations = await _context.Evaluations
-            .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
-                        teamMemberIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CreatedAt >= startDate)
-            .ToListAsync();
-
-        // Aylık trend verisi oluştur
-        var monthlyData = new List<object>();
-        for (int i = 0; i < 12; i++)
-        {
-            var monthStart = startDate.AddMonths(i);
-            var monthEnd = monthStart.AddMonths(1);
-
-            var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
-            var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
-            var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
-
-            monthlyData.Add(new
-            {
-                month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
-                year = monthStart.Year,
-                count = monthEvals.Count,
-                averageScore = Math.Round(avgScore, 1)
-            });
-        }
-
-        return Ok(new
-        {
-            supervisorId,
-            supervisorName = supervisor.FirstName + " " + supervisor.LastName,
-            teamMemberCount = teamMemberIds.Count,
-            monthlyTrend = monthlyData
-        });
+        return Ok(result);
     }
 
     /// <summary>
@@ -2460,177 +1033,8 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        // Anket ve Enneagram checklist tipleri hariç (kendi raporları var)
-        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
-
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.EvaluatorCustomerPersonnel)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatedOrganization)
-            .Include(e => e.CustomerDealer)
-            .Where(e => e.AssignmentId != null &&
-                       e.Assignment!.Project.CustomerId == customerId &&
-                       e.EvaluatorCustomerPersonnelId != null &&
-                       !excludedChecklistTypes.Contains(e.Assignment.Checklist!.ChecklistTypeId)); // Anket/Enneagram hariç
-
-        // Rol bazlı filtreleme (İç Dinlemeler)
-        // Operator: Sadece kendisinin değerlendirildiği kayıtlar
-        // Supervisor: Kendi yaptığı değerlendirmeler + takımındaki personelin değerlendirildiği kayıtlar
-        if (role == "CustomerOperator" && personnelId.HasValue)
-        {
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
-        }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
-        {
-            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-            if (allowedPersonnelIds != null)
-            {
-                query = query.Where(e =>
-                    e.EvaluatorCustomerPersonnelId == personnelId.Value ||
-                    (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
-            }
-        }
-        // Manager ve Admin: Tüm kayıtları görür
-
-        // Date filters (dinlemenin oluşturulduğu tarih - taslaklar da dahil)
-        if (startDate.HasValue)
-        {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CreatedAt >= start);
-        }
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CreatedAt <= end);
-        }
-
-        // Project filter
-        if (projectIds?.Any() == true)
-        {
-            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-        }
-
-        // Evaluator name filter
-        if (evaluatorNames?.Any() == true)
-        {
-            var lowerNames = evaluatorNames.Select(n => n.ToLower()).ToList();
-            query = query.Where(e => e.EvaluatorCustomerPersonnel != null &&
-                lowerNames.Any(n => (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(n)));
-        }
-
-        // Personnel name filter
-        if (personnelNames?.Any() == true)
-        {
-            var lowerNames = personnelNames.Select(n => n.ToLower()).ToList();
-            query = query.Where(e =>
-                lowerNames.Any(n =>
-                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(n)) ||
-                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(n))));
-        }
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-        {
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-        }
-
-        // CallId filter
-        if (callIds?.Any() == true)
-        {
-            var lowerCallIds = callIds.Select(c => c.ToLower()).ToList();
-            query = query.Where(e => e.CallId != null && lowerCallIds.Any(c => e.CallId.ToLower().Contains(c)));
-        }
-
-        // General search filter (legacy support)
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var searchLower = search.ToLower();
-            query = query.Where(e =>
-                (e.Assignment.Project.Name != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
-                (e.EvaluatorCustomerPersonnel != null && (e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
-                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
-                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
-                (e.EvaluatedOrganization != null && e.EvaluatedOrganization.Name.ToLower().Contains(searchLower)) ||
-                (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
-        }
-
-        var total = await query.CountAsync();
-        var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
-            .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
-            .Take(pageSize ?? 20)
-            .Select(e => new
-            {
-                e.Id,
-                evaluationDate = e.CreatedAt,
-                projectName = e.Assignment.Project.Name,
-                projectCode = e.Assignment.Project.Code,
-                evaluatorName = e.EvaluatorCustomerPersonnel != null
-                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
-                    : (e.Assignment.AssignedCustomerPersonnel != null
-                        ? e.Assignment.AssignedCustomerPersonnel.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.LastName
-                        : null),
-                e.EvaluatorCustomerPersonnelId,
-                evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
-                dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
-                e.TotalScore,
-                e.ScorePercentage,
-                e.YellowCardCount,
-                e.RedCardCount,
-                e.CallId,
-                e.CallDate,
-                e.CallTime,
-                e.Duration,
-                e.StatusId
-            })
-            .ToListAsync();
-
-        // Soft-deleted personel isimlerini IgnoreQueryFilters ile al (global filter bypass)
-        var nullEvaluatorIds = evaluations
-            .Where(e => e.evaluatorName == null && e.EvaluatorCustomerPersonnelId.HasValue)
-            .Select(e => e.EvaluatorCustomerPersonnelId!.Value)
-            .Distinct()
-            .ToList();
-
-        var deletedPersonnelNames = new Dictionary<int, string>();
-        if (nullEvaluatorIds.Any())
-        {
-            deletedPersonnelNames = await _context.CustomerPersonnel
-                .IgnoreQueryFilters()
-                .Where(cp => nullEvaluatorIds.Contains(cp.Id))
-                .ToDictionaryAsync(cp => cp.Id, cp => cp.FirstName + " " + cp.LastName);
-        }
-
-        var items = evaluations.Select(e => new
-        {
-            e.Id,
-            e.evaluationDate,
-            e.projectName,
-            e.projectCode,
-            evaluatorName = e.evaluatorName
-                ?? (e.EvaluatorCustomerPersonnelId.HasValue && deletedPersonnelNames.ContainsKey(e.EvaluatorCustomerPersonnelId.Value)
-                    ? deletedPersonnelNames[e.EvaluatorCustomerPersonnelId.Value]
-                    : null),
-            e.evaluatedPersonnelName,
-            e.dealerName,
-            e.organizationName,
-            e.TotalScore,
-            e.ScorePercentage,
-            e.YellowCardCount,
-            e.RedCardCount,
-            e.CallId,
-            e.CallDate,
-            e.CallTime,
-            e.Duration,
-            status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? "Unknown"
-        });
-
-        return Ok(new { items, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) });
+        var result = await _cpDataService.GetInternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, startDate, endDate, projectIds, evaluatorNames, personnelNames, organizationIds, callIds);
+        return Ok(result);
     }
 
     #region Saved Filters
@@ -2645,32 +1049,7 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
 
-        var savedFilters = await _context.SavedFilters
-            .Where(f => f.CustomerId == customerId.Value && f.PageName == page && !f.IsDeleted)
-            .OrderByDescending(f => f.IsDefault)
-            .ThenByDescending(f => f.CreatedAt)
-            .Select(f => new
-            {
-                f.Id,
-                f.Name,
-                f.PageName,
-                f.FilterData,
-                f.IsDefault,
-                f.CreatedAt
-            })
-            .ToListAsync();
-
-        // Parse FilterData outside of LINQ expression
-        var result = savedFilters.Select(f => new
-        {
-            f.Id,
-            f.Name,
-            f.PageName,
-            f.IsDefault,
-            f.CreatedAt,
-            filters = System.Text.Json.JsonSerializer.Deserialize<List<object>>(f.FilterData)
-        });
-
+        var result = await _cpDataService.GetSavedFiltersAsync(customerId.Value, page);
         return Ok(result);
     }
 
@@ -2687,21 +1066,9 @@ public class CustomerPortalApiController : ControllerBase
         if (string.IsNullOrEmpty(request.Name))
             return BadRequest(new { message = "Filtre adı zorunludur" });
 
-        var filter = new Core.Entities.SavedFilter
-        {
-            CustomerId = customerId.Value,
-            UserId = null, // CustomerPortal'dan kaydedildi
-            PageName = request.Page,
-            Name = request.Name,
-            FilterData = System.Text.Json.JsonSerializer.Serialize(request.Filters),
-            IsDefault = false,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.SavedFilters.Add(filter);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { message = "Filtre kaydedildi", id = filter.Id });
+        var filterDataJson = System.Text.Json.JsonSerializer.Serialize(request.Filters);
+        var id = await _cpDataService.SaveFilterAsync(customerId.Value, request.Name, request.Page, filterDataJson);
+        return Ok(new { message = "Filtre kaydedildi", id });
     }
 
     /// <summary>
@@ -2714,14 +1081,9 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
 
-        var filter = await _context.SavedFilters
-            .FirstOrDefaultAsync(f => f.Id == id && f.CustomerId == customerId.Value);
-
-        if (filter == null)
+        var deleted = await _cpDataService.DeleteSavedFilterAsync(customerId.Value, id);
+        if (!deleted)
             return NotFound(new { message = "Filtre bulunamadı" });
-
-        filter.IsDeleted = true;
-        await _context.SaveChangesAsync();
 
         return Ok(new { message = "Filtre silindi" });
     }
@@ -2759,129 +1121,8 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Evaluator)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.EvaluatedOrganization)
-            .Include(e => e.CustomerDealer)
-            .Where(e => e.AssignmentId != null &&
-                       e.Assignment!.Project.CustomerId == customerId &&
-                       e.EvaluatorId != null &&
-                       e.StatusId == EvaluationStatuses.Ids.Completed);
-
-        // Rol bazlı filtreleme (Dış Dinlemeler)
-        // Operator: Sadece kendisinin değerlendirildiği kayıtlar
-        // Supervisor: Takımındaki personelin değerlendirildiği kayıtlar
-        if (role == "CustomerOperator" && personnelId.HasValue)
-        {
-            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
-        }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
-        {
-            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-            if (allowedPersonnelIds != null)
-            {
-                query = query.Where(e =>
-                    e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
-            }
-        }
-        // Manager ve Admin: Tüm kayıtları görür
-
-        // Date filters (dinlemenin oluşturulduğu tarih)
-        if (startDate.HasValue)
-        {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CreatedAt >= start);
-        }
-        if (endDate.HasValue)
-        {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CreatedAt <= end);
-        }
-
-        // Project filter
-        if (projectIds?.Any() == true)
-        {
-            query = query.Where(e => projectIds.Contains(e.Assignment.ProjectId));
-        }
-
-        // Personnel name filter
-        if (personnelNames?.Any() == true)
-        {
-            var lowerNames = personnelNames.Select(n => n.ToLower()).ToList();
-            query = query.Where(e =>
-                lowerNames.Any(n =>
-                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(n)) ||
-                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(n))));
-        }
-
-        // Organization filter
-        if (organizationIds?.Any() == true)
-        {
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
-        }
-
-        // CallId filter
-        if (callIds?.Any() == true)
-        {
-            var lowerCallIds = callIds.Select(c => c.ToLower()).ToList();
-            query = query.Where(e => e.CallId != null && lowerCallIds.Any(c => e.CallId.ToLower().Contains(c)));
-        }
-
-        // Score range filter
-        if (minScore.HasValue)
-        {
-            query = query.Where(e => e.ScorePercentage.HasValue && e.ScorePercentage.Value >= minScore.Value);
-        }
-        if (maxScore.HasValue)
-        {
-            query = query.Where(e => e.ScorePercentage.HasValue && e.ScorePercentage.Value <= maxScore.Value);
-        }
-
-        // General search filter (legacy support)
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var searchLower = search.ToLower();
-            query = query.Where(e =>
-                (e.Assignment.Project.Name != null && e.Assignment.Project.Name.ToLower().Contains(searchLower)) ||
-                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(searchLower)) ||
-                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
-                (e.EvaluatedOrganization != null && e.EvaluatedOrganization.Name.ToLower().Contains(searchLower)) ||
-                (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
-        }
-
-        var total = await query.CountAsync();
-        var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
-            .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
-            .Take(pageSize ?? 20)
-            .Select(e => new
-            {
-                e.Id,
-                evaluationDate = e.CreatedAt,
-                projectName = e.Assignment.Project.Name,
-                projectTypeId = e.Assignment.Project.ProjectTypeId,
-                evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
-                dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
-                e.TotalScore,
-                e.ScorePercentage,
-                e.YellowCardCount,
-                e.RedCardCount,
-                e.CallId,
-                e.CallDate,
-                e.CallTime,
-                e.Duration,
-                e.ControlDate,
-                e.ControlTime
-            })
-            .ToListAsync();
-
-        return Ok(new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) });
+        var result = await _cpDataService.GetExternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, startDate, endDate, projectIds, personnelNames, organizationIds, callIds, minScore, maxScore);
+        return Ok(result);
     }
 
     /// <summary>
@@ -2896,21 +1137,13 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var evaluation = await _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
-                .FirstOrDefaultAsync(e => e.Id == evaluationId);
-
-            if (evaluation?.Assignment?.Project?.CustomerId != customerId)
-                return Forbid();
-
-            // Supervisor erişim kontrolü - evaluator da erişebilmeli
             var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
             var personnelId = GetPersonnelId();
-            var isEvaluator = personnelId.HasValue && evaluation.EvaluatorCustomerPersonnelId == personnelId.Value;
-            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
-                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value) &&
-                !isEvaluator)
+
+            var accessCheck = await _cpDataService.CheckEvaluationAccessAsync(evaluationId, customerId.Value, allowedPersonnelIds, personnelId);
+            if (accessCheck == null)
+                return Forbid();
+            if (!accessCheck.Value.IsAuthorized)
                 return StatusCode(403, new { message = "Bu değerlendirmeyi görüntüleme yetkiniz bulunmamaktadır." });
 
             var detail = await _reportService.GetEvaluationDetailAsync(evaluationId);
@@ -2938,32 +1171,17 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var evaluation = await _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
-                .FirstOrDefaultAsync(e => e.Id == evaluationId);
-
-            if (evaluation?.Assignment?.Project?.CustomerId != customerId)
-                return Forbid();
-
-            // Supervisor erişim kontrolü
             var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
-                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value))
+            var personnelId = GetPersonnelId();
+            var accessResult = await _cpDataService.CheckEvaluationAccessAsync(evaluationId, customerId.Value, allowedPersonnelIds, personnelId);
+
+            if (accessResult == null)
+                return NotFound(new { message = "Değerlendirme bulunamadı." });
+
+            if (!accessResult.Value.IsAuthorized)
                 return StatusCode(403, new { message = "Bu değerlendirmenin dosyalarını görüntüleme yetkiniz bulunmamaktadır." });
 
-            var attachments = await _context.EvaluationAttachments
-                .Where(a => a.EvaluationId == evaluationId && !a.IsDeleted)
-                .Select(a => new
-                {
-                    id = a.Id,
-                    fileName = a.FileName,
-                    fileSize = a.FileSize,
-                    contentType = a.ContentType,
-                    uploadedAt = a.CreatedAt
-                })
-                .ToListAsync();
-
+            var attachments = await _cpDataService.GetEvaluationAttachmentsAsync(evaluationId);
             return Ok(attachments);
         }
         catch (Exception ex)
@@ -2985,19 +1203,14 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            // Müşteri sadece kendi değerlendirmesini export edebilir
-            var evaluation = await _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
-                .FirstOrDefaultAsync(e => e.Id == evaluationId);
-
-            if (evaluation?.Assignment?.Project?.CustomerId != customerId)
-                return Forbid();
-
-            // Supervisor erişim kontrolü
             var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-            if (allowedPersonnelIds != null && evaluation.EvaluatedCustomerPersonnelId.HasValue &&
-                !allowedPersonnelIds.Contains(evaluation.EvaluatedCustomerPersonnelId.Value))
+            var personnelId = GetPersonnelId();
+            var accessResult = await _cpDataService.CheckEvaluationAccessAsync(evaluationId, customerId.Value, allowedPersonnelIds, personnelId);
+
+            if (accessResult == null)
+                return NotFound(new { message = "Değerlendirme bulunamadı." });
+
+            if (!accessResult.Value.IsAuthorized)
                 return StatusCode(403, new { message = "Bu değerlendirmeyi dışa aktarma yetkiniz bulunmamaktadır." });
 
             var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId, excludeEvaluatorInfo: true);
@@ -3642,8 +1855,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Güvenlik kontrolü: Personelin bu müşteriye ait olup olmadığını doğrula
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Temsilci bulunamadı." });
 
             // Supervisor erişim kontrolü
@@ -3704,8 +1916,7 @@ public class CustomerPortalApiController : ControllerBase
             }
 
             // Personelin bu müşteriye ait olup olmadığını doğrula
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Personel bulunamadı." });
 
             var filter = new PersonnelReportCardFilterDto
@@ -3759,8 +1970,7 @@ public class CustomerPortalApiController : ControllerBase
             }
 
             // Personelin bu müşteriye ait olup olmadığını doğrula
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Personel bulunamadı." });
 
             var filter = new PersonnelReportCardFilterDto
@@ -3804,8 +2014,7 @@ public class CustomerPortalApiController : ControllerBase
             }
 
             // Personelin bu müşteriye ait olup olmadığını doğrula
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Personel bulunamadı." });
 
             var filter = new PersonnelReportCardFilterDto
@@ -3842,8 +2051,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Güvenlik kontrolü: Personelin bu müşteriye ait olup olmadığını doğrula
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Temsilci bulunamadı." });
 
             // Supervisor erişim kontrolü
@@ -3886,10 +2094,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Personelin bu müşteriye ait olup olmadığını kontrol et
-            var personnel = await _context.CustomerPersonnel
-                .FirstOrDefaultAsync(p => p.Id == personnelId && p.CustomerId == customerId);
-
-            if (personnel == null)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Personel bulunamadı." });
 
             // Supervisor erişim kontrolü
@@ -3935,8 +2140,7 @@ public class CustomerPortalApiController : ControllerBase
             if (userType != "CustomerPersonnel" || string.IsNullOrEmpty(personnelIdClaim) || !int.TryParse(personnelIdClaim, out var personnelId))
                 return BadRequest(new { message = "Bu endpoint sadece müşteri personeli için kullanılabilir." });
 
-            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
-            if (personnel == null || personnel.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidatePersonnelBelongsToCustomerAsync(personnelId, customerId.Value))
                 return NotFound(new { message = "Personel bulunamadı." });
 
             var filter = new PersonnelReportCardFilterDto
@@ -3982,10 +2186,8 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var personnel = await _context.CustomerPersonnel
-                .FirstOrDefaultAsync(p => p.Id == personnelId && p.CustomerId == customerId);
-
-            if (personnel == null)
+            var personnelName = await _cpDataService.GetPersonnelNameAsync(personnelId, customerId.Value);
+            if (personnelName == null)
                 return NotFound(new { message = "Personel bulunamadı." });
 
             // Supervisor erişim kontrolü
@@ -4008,7 +2210,7 @@ public class CustomerPortalApiController : ControllerBase
             var html = GenerateReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            return File(pdfBytes, "application/pdf", $"TemsilciKarnesi_{personnel.FirstName}_{personnel.LastName}_{DateTime.Now:yyyyMMdd}.pdf");
+            return File(pdfBytes, "application/pdf", $"TemsilciKarnesi_{personnelName.Value.FirstName}_{personnelName.Value.LastName}_{DateTime.Now:yyyyMMdd}.pdf");
         }
         catch (Exception ex)
         {
@@ -4173,241 +2375,8 @@ public class CustomerPortalApiController : ControllerBase
             var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
             var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
 
-            // Müşteriye ait projeleri al
-            var projectsQuery = _context.Projects
-                .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
-
-            if (projectIds?.Any() == true)
-            {
-                projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
-            }
-
-            var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
-
-            if (!filteredProjectIds.Any())
-            {
-                return Ok(new { periods = new List<object>(), data = new List<object>() });
-            }
-
-            // Personelleri al (organizasyon filtresiyle)
-            var personnelQuery = _context.CustomerPersonnel
-                .Include(cp => cp.OrganizationAssignments)
-                    .ThenInclude(cpo => cpo.CustomerOrganization)
-                .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
-
-            // Supervisor personel filtresi
-            if (allowedPersonnelIds != null)
-            {
-                personnelQuery = personnelQuery.Where(cp => allowedPersonnelIds.Contains(cp.Id));
-            }
-
-            // Supervisor organizasyon filtresi
-            if (allowedOrgIds != null)
-            {
-                personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId)));
-            }
-
-            // Kullanıcının seçtiği organizasyon filtresi
-            if (organizationIds?.Any() == true)
-            {
-                personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => organizationIds.Contains(cpo.CustomerOrganizationId)));
-            }
-
-            var personnel = await personnelQuery
-                .OrderBy(cp => cp.FirstName).ThenBy(cp => cp.LastName)
-                .Select(cp => new
-                {
-                    cp.Id,
-                    FullName = cp.FirstName + " " + cp.LastName,
-                    OrganizationName = cp.OrganizationAssignments
-                        .Select(cpo => cpo.CustomerOrganization.Name)
-                        .FirstOrDefault() ?? "-"
-                })
-                .ToListAsync();
-
-            var personnelIds = personnel.Select(p => p.Id).ToList();
-
-            // Önce AssignmentPeriod'ları kontrol et
-            var assignmentPeriodsQuery = _context.AssignmentPeriods
-                .Include(ap => ap.Assignment)
-                    .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
-
-            // Tarih filtresi (AssignmentPeriod'lar için dönem tarihlerine göre)
-            if (startDate.HasValue)
-            {
-                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
-            }
-
-            var assignmentPeriods = await assignmentPeriodsQuery
-                .OrderBy(ap => ap.StartDate)
-                .Select(ap => new
-                {
-                    ap.Id,
-                    ap.Name,
-                    ap.StartDate,
-                    ap.EndDate,
-                    ProjectName = ap.Assignment.Project.Name
-                })
-                .ToListAsync();
-
-            // AssignmentPeriod varsa onları kullan
-            if (assignmentPeriods.Any())
-            {
-                var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
-
-                var evaluations = await _context.Evaluations
-                    .Where(e => e.AssignmentPeriodId.HasValue &&
-                               periodIds.Contains(e.AssignmentPeriodId.Value) &&
-                               e.EvaluatedCustomerPersonnelId.HasValue &&
-                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                               e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.ScorePercentage.HasValue)
-                    .Select(e => new
-                    {
-                        e.AssignmentPeriodId,
-                        e.EvaluatedCustomerPersonnelId,
-                        e.ScorePercentage,
-                        e.YellowCardCount,
-                        e.RedCardCount
-                    })
-                    .ToListAsync();
-
-                var data = personnel.Select(p => new
-                {
-                    personnelId = p.Id,
-                    personnelName = p.FullName,
-                    organizationName = p.OrganizationName,
-                    periodScores = assignmentPeriods.Select(period =>
-                    {
-                        var periodEvals = evaluations
-                            .Where(e => e.AssignmentPeriodId == period.Id && e.EvaluatedCustomerPersonnelId == p.Id)
-                            .ToList();
-
-                        return new
-                        {
-                            periodId = period.Id,
-                            periodName = period.Name,
-                            evaluationCount = periodEvals.Count,
-                            averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 1) : (double?)null,
-                            yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
-                            redCardCount = periodEvals.Sum(e => e.RedCardCount)
-                        };
-                    }).ToList(),
-                    overallAverage = evaluations
-                        .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
-                        .Select(e => (double)e.ScorePercentage!.Value)
-                        .DefaultIfEmpty()
-                        .Average(),
-                    totalEvaluations = evaluations.Count(e => e.EvaluatedCustomerPersonnelId == p.Id)
-                })
-                .Where(p => p.totalEvaluations > 0)
-                .OrderByDescending(p => p.overallAverage)
-                .ToList();
-
-                return Ok(new
-                {
-                    periods = assignmentPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
-                    data
-                });
-            }
-
-            // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
-            var allEvaluationsQuery = _context.Evaluations
-                .Include(e => e.Assignment)
-                .Where(e => e.Assignment != null &&
-                           filteredProjectIds.Contains(e.Assignment.ProjectId) &&
-                           e.EvaluatedCustomerPersonnelId.HasValue &&
-                           personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                           e.StatusId == EvaluationStatuses.Ids.Completed &&
-                           e.ScorePercentage.HasValue &&
-                           e.CallDate.HasValue);
-
-            // Tarih filtresi (CallDate'e göre)
-            if (startDate.HasValue)
-            {
-                allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate <= endDate.Value);
-            }
-
-            var allEvaluations = await allEvaluationsQuery
-                .Select(e => new
-                {
-                    e.EvaluatedCustomerPersonnelId,
-                    e.ScorePercentage,
-                    e.YellowCardCount,
-                    e.RedCardCount,
-                    e.CallDate,
-                    ProjectName = e.Assignment!.Project!.Name
-                })
-                .ToListAsync();
-
-            if (!allEvaluations.Any())
-            {
-                return Ok(new { periods = new List<object>(), data = new List<object>() });
-            }
-
-            // CallDate'e göre aylık dönemler oluştur
-            var monthlyPeriods = allEvaluations
-                .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
-                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                .Select((g, idx) => new
-                {
-                    Id = -(idx + 1), // Negatif ID (sanal dönem)
-                    Name = $"{g.Key.Year}-{g.Key.Month:D2}",
-                    StartDate = new DateTime(g.Key.Year, g.Key.Month, 1),
-                    EndDate = new DateTime(g.Key.Year, g.Key.Month, DateTime.DaysInMonth(g.Key.Year, g.Key.Month)),
-                    ProjectName = g.Select(e => e.ProjectName).FirstOrDefault() ?? "-",
-                    Evaluations = g.ToList()
-                })
-                .ToList();
-
-            var monthlyData = personnel.Select(p => new
-            {
-                personnelId = p.Id,
-                personnelName = p.FullName,
-                organizationName = p.OrganizationName,
-                periodScores = monthlyPeriods.Select(period =>
-                {
-                    var periodEvals = period.Evaluations
-                        .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
-                        .ToList();
-
-                    return new
-                    {
-                        periodId = period.Id,
-                        periodName = period.Name,
-                        evaluationCount = periodEvals.Count,
-                        averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 1) : (double?)null,
-                        yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
-                        redCardCount = periodEvals.Sum(e => e.RedCardCount)
-                    };
-                }).ToList(),
-                overallAverage = allEvaluations
-                    .Where(e => e.EvaluatedCustomerPersonnelId == p.Id)
-                    .Select(e => (double)e.ScorePercentage!.Value)
-                    .DefaultIfEmpty()
-                    .Average(),
-                totalEvaluations = allEvaluations.Count(e => e.EvaluatedCustomerPersonnelId == p.Id)
-            })
-            .Where(p => p.totalEvaluations > 0)
-            .OrderByDescending(p => p.overallAverage)
-            .ToList();
-
-            return Ok(new
-            {
-                periods = monthlyPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
-                data = monthlyData
-            });
+            var result = await _cpDataService.GetPerformanceByPeriodAsync(customerId.Value, allowedPersonnelIds, allowedOrgIds, projectIds, organizationIds, startDate, endDate);
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -4436,520 +2405,11 @@ public class CustomerPortalApiController : ControllerBase
             var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
             var allowedOrgIds = await GetAllowedOrganizationIdsAsync();
 
-            // Proje filtresi
-            var projectsQuery = _context.Projects
-                .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
+            var result = await _cpDataService.ExportPerformanceByPeriodAsync(customerId.Value, allowedPersonnelIds, allowedOrgIds, projectIds, organizationIds, startDate, endDate);
+            if (result == null)
+                return NotFound(new { message = "Veri bulunamadı." });
 
-            if (projectIds?.Any() == true)
-            {
-                projectsQuery = projectsQuery.Where(p => projectIds.Contains(p.Id));
-            }
-
-            var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
-
-            // Personel filtresi
-            var personnelQuery = _context.CustomerPersonnel
-                .Include(cp => cp.OrganizationAssignments)
-                    .ThenInclude(cpo => cpo.CustomerOrganization)
-                .Where(cp => cp.CustomerId == customerId && cp.IsActive && !cp.IsDeleted);
-
-            // Supervisor personel filtresi
-            if (allowedPersonnelIds != null)
-            {
-                personnelQuery = personnelQuery.Where(cp => allowedPersonnelIds.Contains(cp.Id));
-            }
-
-            // Supervisor organizasyon filtresi
-            if (allowedOrgIds != null)
-            {
-                personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => allowedOrgIds.Contains(cpo.CustomerOrganizationId)));
-            }
-
-            // Kullanıcının seçtiği organizasyon filtresi
-            if (organizationIds?.Any() == true)
-            {
-                personnelQuery = personnelQuery.Where(cp =>
-                    cp.OrganizationAssignments.Any(cpo => organizationIds.Contains(cpo.CustomerOrganizationId)));
-            }
-
-            var personnel = await personnelQuery
-                .OrderBy(cp => cp.FirstName).ThenBy(cp => cp.LastName)
-                .Select(cp => new
-                {
-                    cp.Id,
-                    FullName = cp.FirstName + " " + cp.LastName,
-                    OrganizationName = cp.OrganizationAssignments
-                        .Select(cpo => cpo.CustomerOrganization.Name)
-                        .FirstOrDefault() ?? "-"
-                })
-                .ToListAsync();
-
-            var personnelIds = personnel.Select(p => p.Id).ToList();
-
-            // AssignmentPeriod kontrolü
-            var assignmentPeriodsQuery = _context.AssignmentPeriods
-                .Include(ap => ap.Assignment)
-                    .ThenInclude(a => a.Project)
-                .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
-
-            // Tarih filtresi (AssignmentPeriod'lar için dönem tarihlerine göre)
-            if (startDate.HasValue)
-            {
-                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
-            }
-            if (endDate.HasValue)
-            {
-                assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
-            }
-
-            var assignmentPeriods = await assignmentPeriodsQuery
-                .OrderBy(ap => ap.StartDate)
-                .Select(ap => new { ap.Id, ap.Name })
-                .ToListAsync();
-
-            // Excel oluştur
-            using var workbook = new ClosedXML.Excel.XLWorkbook();
-            var sheet = workbook.Worksheets.Add("Dönem Bazlı Başarı");
-
-            // AssignmentPeriod varsa onu kullan
-            if (assignmentPeriods.Any())
-            {
-                var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
-
-                var evaluations = await _context.Evaluations
-                    .Where(e => e.AssignmentPeriodId.HasValue &&
-                               periodIds.Contains(e.AssignmentPeriodId.Value) &&
-                               e.EvaluatedCustomerPersonnelId.HasValue &&
-                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                               e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.ScorePercentage.HasValue)
-                    .Select(e => new
-                    {
-                        e.AssignmentPeriodId,
-                        e.EvaluatedCustomerPersonnelId,
-                        e.ScorePercentage
-                    })
-                    .ToListAsync();
-
-                // Headers
-                sheet.Cell(1, 1).Value = "Personel";
-                sheet.Cell(1, 1).Style.Font.Bold = true;
-                sheet.Cell(1, 2).Value = "Organizasyon";
-                sheet.Cell(1, 2).Style.Font.Bold = true;
-
-                int col = 3;
-                foreach (var period in assignmentPeriods)
-                {
-                    sheet.Cell(1, col).Value = period.Name;
-                    sheet.Cell(1, col).Style.Font.Bold = true;
-                    col++;
-                }
-                sheet.Cell(1, col).Value = "Genel Ortalama";
-                sheet.Cell(1, col).Style.Font.Bold = true;
-                sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
-                sheet.Cell(1, col + 1).Style.Font.Bold = true;
-
-                // Data rows
-                int row = 2;
-                foreach (var p in personnel)
-                {
-                    var personEvals = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
-                    if (!personEvals.Any()) continue;
-
-                    sheet.Cell(row, 1).Value = p.FullName;
-                    sheet.Cell(row, 2).Value = p.OrganizationName;
-
-                    col = 3;
-                    foreach (var period in assignmentPeriods)
-                    {
-                        var periodEvals = personEvals.Where(e => e.AssignmentPeriodId == period.Id).ToList();
-                        if (periodEvals.Any())
-                        {
-                            var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
-                            sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                            if (avg >= 80)
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
-                            else if (avg >= 60)
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
-                            else
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
-                        }
-                        else
-                        {
-                            sheet.Cell(row, col).Value = "-";
-                        }
-                        col++;
-                    }
-
-                    var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
-                    sheet.Cell(row, col).Style.Font.Bold = true;
-                    sheet.Cell(row, col + 1).Value = personEvals.Count;
-
-                    row++;
-                }
-            }
-            else
-            {
-                // AssignmentPeriod yoksa CallDate'e göre aylık dönemler oluştur
-                var allEvaluationsQuery = _context.Evaluations
-                    .Include(e => e.Assignment)
-                    .Where(e => e.Assignment != null &&
-                               filteredProjectIds.Contains(e.Assignment.ProjectId) &&
-                               e.EvaluatedCustomerPersonnelId.HasValue &&
-                               personnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
-                               e.StatusId == EvaluationStatuses.Ids.Completed &&
-                               e.ScorePercentage.HasValue &&
-                               e.CallDate.HasValue);
-
-                // Tarih filtresi (CallDate'e göre)
-                if (startDate.HasValue)
-                {
-                    allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate >= startDate.Value);
-                }
-                if (endDate.HasValue)
-                {
-                    allEvaluationsQuery = allEvaluationsQuery.Where(e => e.CallDate <= endDate.Value);
-                }
-
-                var allEvaluations = await allEvaluationsQuery
-                    .Select(e => new
-                    {
-                        e.EvaluatedCustomerPersonnelId,
-                        e.ScorePercentage,
-                        e.CallDate
-                    })
-                    .ToListAsync();
-
-                // CallDate'e göre aylık dönemler oluştur
-                var monthlyPeriods = allEvaluations
-                    .GroupBy(e => new { Year = e.CallDate!.Value.Year, Month = e.CallDate!.Value.Month })
-                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
-                    .Select(g => new
-                    {
-                        Name = $"{g.Key.Year}-{g.Key.Month:D2}",
-                        Year = g.Key.Year,
-                        Month = g.Key.Month
-                    })
-                    .ToList();
-
-                // Headers
-                sheet.Cell(1, 1).Value = "Personel";
-                sheet.Cell(1, 1).Style.Font.Bold = true;
-                sheet.Cell(1, 2).Value = "Organizasyon";
-                sheet.Cell(1, 2).Style.Font.Bold = true;
-
-                int col = 3;
-                foreach (var period in monthlyPeriods)
-                {
-                    sheet.Cell(1, col).Value = period.Name;
-                    sheet.Cell(1, col).Style.Font.Bold = true;
-                    col++;
-                }
-                sheet.Cell(1, col).Value = "Genel Ortalama";
-                sheet.Cell(1, col).Style.Font.Bold = true;
-                sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
-                sheet.Cell(1, col + 1).Style.Font.Bold = true;
-
-                // Data rows
-                int row = 2;
-                foreach (var p in personnel)
-                {
-                    var personEvals = allEvaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
-                    if (!personEvals.Any()) continue;
-
-                    sheet.Cell(row, 1).Value = p.FullName;
-                    sheet.Cell(row, 2).Value = p.OrganizationName;
-
-                    col = 3;
-                    foreach (var period in monthlyPeriods)
-                    {
-                        var periodEvals = personEvals
-                            .Where(e => e.CallDate!.Value.Year == period.Year && e.CallDate!.Value.Month == period.Month)
-                            .ToList();
-                        if (periodEvals.Any())
-                        {
-                            var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
-                            sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                            if (avg >= 80)
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
-                            else if (avg >= 60)
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
-                            else
-                                sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
-                        }
-                        else
-                        {
-                            sheet.Cell(row, col).Value = "-";
-                        }
-                        col++;
-                    }
-
-                    var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
-                    sheet.Cell(row, col).Style.Font.Bold = true;
-                    sheet.Cell(row, col + 1).Value = personEvals.Count;
-
-                    row++;
-                }
-            }
-
-            sheet.Columns().AdjustToContents();
-            ExcelHelper.ApplyLongTextColumnStyles(sheet);
-
-            // ===== GENEL RAPOR SHEET =====
-            // Düz veri: Proje, Temsilci, Departman, Kontrol Sorusu (GroupName), Periyot, Periyot (Ay), Ortalama Puan, Hata Sayısı
-            var genelRaporQuery = _context.Answers
-                .Include(a => a.Question)
-                .Include(a => a.Evaluation)
-                    .ThenInclude(e => e.Assignment)
-                        .ThenInclude(asn => asn.Project)
-                .Include(a => a.Evaluation)
-                    .ThenInclude(e => e.AssignmentPeriod)
-                .Include(a => a.Evaluation)
-                    .ThenInclude(e => e.EvaluatedCustomerPersonnel)
-                        .ThenInclude(cp => cp!.OrganizationAssignments)
-                            .ThenInclude(oa => oa.CustomerOrganization)
-                .Where(a => a.Evaluation.Assignment != null &&
-                           a.Evaluation.Assignment.Project != null &&
-                           a.Evaluation.Assignment.Project.CustomerId == customerId &&
-                           a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                           a.Question.GroupName != null &&
-                           a.Question.WeightPoints > 0);
-
-            if (startDate.HasValue)
-            {
-                var startUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-                genelRaporQuery = genelRaporQuery.Where(a =>
-                    (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.EndDate >= startUtc) ||
-                    (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) >= startUtc));
-            }
-            if (endDate.HasValue)
-            {
-                var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                genelRaporQuery = genelRaporQuery.Where(a =>
-                    (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.StartDate <= endUtc) ||
-                    (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) <= endUtc));
-            }
-
-            var genelRaporAnswers = await genelRaporQuery
-                .Select(a => new
-                {
-                    ProjectName = a.Evaluation.Assignment.Project.Name,
-                    PersonnelId = a.Evaluation.EvaluatedCustomerPersonnelId,
-                    PersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
-                        ? a.Evaluation.EvaluatedCustomerPersonnel.FirstName + " " + a.Evaluation.EvaluatedCustomerPersonnel.LastName
-                        : "-",
-                    OrgName = a.Evaluation.EvaluatedCustomerPersonnel != null
-                        ? a.Evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
-                            .Select(oa => oa.CustomerOrganization.Name)
-                            .FirstOrDefault() ?? "-"
-                        : "-",
-                    GroupName = a.Question.GroupName!,
-                    EarnedPoints = a.EarnedPoints ?? 0,
-                    WeightPoints = a.Question.WeightPoints,
-                    PeriodName = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.Name : null,
-                    PeriodStartDate = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.StartDate : (DateTime?)null,
-                    EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt
-                })
-                .ToListAsync();
-
-            // Genel Rapor sheet'i her zaman ekle - PIVOT TABLO FORMATI
-            var genelSheet = workbook.Worksheets.Add("Genel Rapor");
-
-            if (genelRaporAnswers.Any())
-            {
-                // Önce GroupName + Personnel bazında grupla ve hesapla
-                var pivotData = genelRaporAnswers
-                    .GroupBy(a => new { a.GroupName, a.PersonnelId, a.PersonnelName })
-                    .Select(g =>
-                    {
-                        var answers = g.ToList();
-                        var sumWeight = answers.Sum(a => a.WeightPoints);
-                        var sumEarned = answers.Sum(a => a.EarnedPoints);
-                        return new
-                        {
-                            g.Key.GroupName,
-                            g.Key.PersonnelId,
-                            g.Key.PersonnelName,
-                            AvgScore = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
-                            ErrorCount = answers.Count(a => a.EarnedPoints < a.WeightPoints)
-                        };
-                    })
-                    .ToList();
-
-                // Unique değerleri al
-                var groupNames = pivotData.Select(p => p.GroupName).Distinct().OrderBy(g => g).ToList();
-                var personnelList = pivotData
-                    .Select(p => new { p.PersonnelId, p.PersonnelName })
-                    .Distinct()
-                    .OrderBy(p => p.PersonnelName)
-                    .ToList();
-
-                // Row 1: Personel isimleri (her biri 2 sütun merge) + Toplam sütunları
-                genelSheet.Cell(1, 1).Value = "Kontrol Sorusu";
-                genelSheet.Cell(1, 1).Style.Font.Bold = true;
-                int col = 2;
-                foreach (var person in personnelList)
-                {
-                    genelSheet.Cell(1, col).Value = person.PersonnelName;
-                    genelSheet.Cell(1, col).Style.Font.Bold = true;
-                    genelSheet.Range(1, col, 1, col + 1).Merge();
-                    genelSheet.Cell(1, col).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
-                    col += 2;
-                }
-                // Toplam sütun başlıkları
-                int totalColStart = col;
-                genelSheet.Cell(1, col).Value = "Ortalama Puan Toplamı";
-                genelSheet.Cell(1, col).Style.Font.Bold = true;
-                genelSheet.Cell(1, col + 1).Value = "Hata Sayısı Toplamı";
-                genelSheet.Cell(1, col + 1).Style.Font.Bold = true;
-
-                // Row 2: Alt başlıklar (Ortalama Puan, Hata Sayısı)
-                genelSheet.Cell(2, 1).Value = "";
-                col = 2;
-                foreach (var _ in personnelList)
-                {
-                    genelSheet.Cell(2, col).Value = "Ortalama Puan";
-                    genelSheet.Cell(2, col).Style.Font.Bold = true;
-                    genelSheet.Cell(2, col + 1).Value = "Hata Sayısı";
-                    genelSheet.Cell(2, col + 1).Style.Font.Bold = true;
-                    col += 2;
-                }
-                genelSheet.Cell(2, totalColStart).Value = "";
-                genelSheet.Cell(2, totalColStart + 1).Value = "";
-
-                // Data rows: Her GroupName için bir satır
-                int row = 3;
-                foreach (var groupName in groupNames)
-                {
-                    genelSheet.Cell(row, 1).Value = groupName;
-                    col = 2;
-                    var rowScores = new List<decimal>();
-                    var rowErrors = 0;
-                    foreach (var person in personnelList)
-                    {
-                        var data = pivotData.FirstOrDefault(p => p.GroupName == groupName && p.PersonnelId == person.PersonnelId);
-                        if (data != null)
-                        {
-                            genelSheet.Cell(row, col).Value = (double)data.AvgScore;
-                            genelSheet.Cell(row, col + 1).Value = data.ErrorCount;
-                            rowScores.Add(data.AvgScore);
-                            rowErrors += data.ErrorCount;
-                        }
-                        else
-                        {
-                            genelSheet.Cell(row, col).Value = "-";
-                            genelSheet.Cell(row, col + 1).Value = "-";
-                        }
-                        col += 2;
-                    }
-                    // Satır toplamları
-                    if (rowScores.Any())
-                    {
-                        genelSheet.Cell(row, totalColStart).Value = (double)Math.Round(rowScores.Average(), 2);
-                        genelSheet.Cell(row, totalColStart).Style.Font.Bold = true;
-                    }
-                    else
-                    {
-                        genelSheet.Cell(row, totalColStart).Value = "-";
-                    }
-                    genelSheet.Cell(row, totalColStart + 1).Value = rowErrors;
-                    genelSheet.Cell(row, totalColStart + 1).Style.Font.Bold = true;
-                    row++;
-                }
-            }
-            else
-            {
-                genelSheet.Cell(1, 1).Value = "Veri bulunamadı";
-            }
-
-            genelSheet.Columns().AdjustToContents();
-            ExcelHelper.ApplyLongTextColumnStyles(genelSheet);
-
-            // ===== SÜREÇ ANALİZİ SHEET (Flat Data Format) =====
-            var surecSheet = workbook.Worksheets.Add("Süreç Analizi");
-
-            // Süreç analizi için düz veri formatı - Proje + Personel + Soru + Periyot bazında
-            var surecData = genelRaporAnswers
-                .GroupBy(a => new
-                {
-                    // Proje adı + Period adı
-                    ProjectPeriod = a.PeriodName != null
-                        ? $"{a.ProjectName} {a.PeriodName}"
-                        : $"{a.ProjectName} {a.EvalDate.Year}-{a.EvalDate.Month:D2}",
-                    a.PersonnelId,
-                    a.PersonnelName,
-                    a.OrgName,
-                    a.GroupName,
-                    Year = a.PeriodStartDate?.Year ?? a.EvalDate.Year,
-                    YearMonth = a.PeriodStartDate != null
-                        ? $"{a.PeriodStartDate.Value.Year}{a.PeriodStartDate.Value.Month:D2}"
-                        : $"{a.EvalDate.Year}{a.EvalDate.Month:D2}"
-                })
-                .Select(g =>
-                {
-                    var answers = g.ToList();
-                    var sumWeight = answers.Sum(a => a.WeightPoints);
-                    var sumEarned = answers.Sum(a => a.EarnedPoints);
-                    return new
-                    {
-                        g.Key.ProjectPeriod,
-                        g.Key.PersonnelName,
-                        Departman = g.Key.OrgName,
-                        KontrolSorusu = g.Key.GroupName,
-                        Periyot = g.Key.Year,
-                        PeriyotAy = g.Key.YearMonth,
-                        OrtalamaPuan = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
-                        HataSayisi = answers.Count(a => a.EarnedPoints < a.WeightPoints)
-                    };
-                })
-                .OrderBy(x => x.ProjectPeriod)
-                .ThenBy(x => x.PersonnelName)
-                .ThenBy(x => x.KontrolSorusu)
-                .ToList();
-
-            // Headers
-            surecSheet.Cell(1, 1).Value = "Proje";
-            surecSheet.Cell(1, 2).Value = "Müşteri Temsilcisi";
-            surecSheet.Cell(1, 3).Value = "Departman";
-            surecSheet.Cell(1, 4).Value = "Kontrol Sorusu";
-            surecSheet.Cell(1, 5).Value = "Periyot";
-            surecSheet.Cell(1, 6).Value = "Periyot (Ay)";
-            surecSheet.Cell(1, 7).Value = "Ortalama Puan";
-            surecSheet.Cell(1, 8).Value = "Hata Sayısı";
-
-            var surecHeaderRange = surecSheet.Range(1, 1, 1, 8);
-            surecHeaderRange.Style.Font.Bold = true;
-            surecHeaderRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
-
-            // Data
-            int surecRow = 2;
-            foreach (var item in surecData)
-            {
-                surecSheet.Cell(surecRow, 1).Value = item.ProjectPeriod;
-                surecSheet.Cell(surecRow, 2).Value = item.PersonnelName;
-                surecSheet.Cell(surecRow, 3).Value = item.Departman;
-                surecSheet.Cell(surecRow, 4).Value = item.KontrolSorusu;
-                surecSheet.Cell(surecRow, 5).Value = item.Periyot;
-                surecSheet.Cell(surecRow, 6).Value = item.PeriyotAy;
-                surecSheet.Cell(surecRow, 7).Value = (double)item.OrtalamaPuan;
-                surecSheet.Cell(surecRow, 8).Value = item.HataSayisi;
-                surecRow++;
-            }
-
-            surecSheet.Columns().AdjustToContents();
-            ExcelHelper.ApplyLongTextColumnStyles(surecSheet);
-
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-
-            return File(
-                stream.ToArray(),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                $"SurecAnalizi_{DateTime.Now:dd.MM.yyyyHHmmss}.xlsx"
-            );
+            return File(result.Value.FileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result.Value.FileName);
         }
         catch (Exception ex)
         {
@@ -4972,51 +2432,8 @@ public class CustomerPortalApiController : ControllerBase
         if (!personnelId.HasValue)
             return Ok(new List<object>());
 
-        var now = DateTime.UtcNow;
-
-        var trainings = await _context.TrainingVideoParticipants
-            .Include(p => p.Assignment)
-                .ThenInclude(a => a.TrainingVideo)
-            .Where(p => p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted)
-            .Where(p => p.Assignment.IsActive && !p.Assignment.IsDeleted)
-            .OrderByDescending(p => p.Assignment.DueDate)
-            .Select(p => new
-            {
-                participantId = p.Id,
-                assignmentId = p.Assignment.Id,
-                assignmentTitle = p.Assignment.Title,
-                videoId = p.Assignment.TrainingVideo.Id,
-                videoTitle = p.Assignment.TrainingVideo.Title,
-                videoDescription = p.Assignment.TrainingVideo.Description,
-                videoDurationSeconds = p.Assignment.TrainingVideo.DurationSeconds,
-                startDate = p.Assignment.StartDate,
-                dueDate = p.Assignment.DueDate,
-                statusId = p.StatusId,
-                statusName = p.StatusId == 1 ? "Bekliyor" : p.StatusId == 2 ? "İzleniyor" : "Tamamlandı",
-                startedAt = p.StartedAt,
-                completedAt = p.CompletedAt,
-                watchedSeconds = p.WatchedSeconds,
-                isCompleted = p.IsCompleted,
-                isOverdue = p.Assignment.DueDate < now && !p.IsCompleted,
-                daysRemaining = p.IsCompleted ? 0 : (int)Math.Max(0, (p.Assignment.DueDate - now).TotalDays),
-                // Video izleme kuralları (Video'dan)
-                minWatchPercentage = p.Assignment.TrainingVideo.MinWatchPercentage,
-                allowSkipping = p.Assignment.TrainingVideo.AllowSkipping,
-                maxPlaybackSpeed = p.Assignment.TrainingVideo.MaxPlaybackSpeed,
-                // Atama izleme kuralları (Assignment'tan)
-                allowSeeking = p.Assignment.AllowSeeking,
-                allowSpeedChange = p.Assignment.AllowSpeedChange,
-                // İzleme sayısı bilgileri
-                watchCount = p.WatchCount,
-                minWatchCount = p.Assignment.MinWatchCount,
-                maxWatchCount = p.Assignment.MaxWatchCount,
-                remainingWatches = p.Assignment.MaxWatchCount.HasValue
-                    ? Math.Max(0, p.Assignment.MaxWatchCount.Value - p.WatchCount)
-                    : (int?)null
-            })
-            .ToListAsync();
-
-        return Ok(trainings);
+        var result = await _cpDataService.GetMyTrainingsAsync(personnelId.Value);
+        return Ok(result);
     }
 
     /// <summary>
@@ -5029,44 +2446,11 @@ public class CustomerPortalApiController : ControllerBase
         if (!personnelId.HasValue)
             return Unauthorized(new { message = "Personel bilgisi bulunamadı." });
 
-        var participant = await _context.TrainingVideoParticipants
-            .Include(p => p.Assignment)
-                .ThenInclude(a => a.TrainingVideo)
-            .FirstOrDefaultAsync(p => p.Id == participantId && p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted);
+            var result = await _cpDataService.UpdateMyTrainingProgressAsync(participantId, personnelId.Value, dto.WatchedSeconds, dto.IsCompleted);
+            if (result == null)
+                return NotFound(new { message = "Eğitim kaydı bulunamadı." });
 
-        if (participant == null)
-            return NotFound(new { message = "Eğitim kaydı bulunamadı." });
-
-        var now = DateTime.UtcNow;
-
-        // İlk izlemeye başlama
-        if (participant.StatusId == 1 && dto.WatchedSeconds > 0)
-        {
-            participant.StatusId = 2;
-            participant.StartedAt = now;
-        }
-
-        participant.WatchedSeconds = dto.WatchedSeconds;
-
-        // Tamamlama kontrolü
-        if (dto.IsCompleted || participant.WatchedSeconds >= participant.Assignment.TrainingVideo.DurationSeconds)
-        {
-            participant.IsCompleted = true;
-            participant.StatusId = 3;
-            participant.CompletedAt ??= now;
-        }
-
-        participant.UpdatedAt = now;
-        await _context.SaveChangesAsync();
-
-        return Ok(new {
-            success = true,
-            watchCount = participant.WatchCount,
-            maxWatchCount = participant.Assignment.MaxWatchCount,
-            remainingWatches = participant.Assignment.MaxWatchCount.HasValue
-                ? Math.Max(0, participant.Assignment.MaxWatchCount.Value - participant.WatchCount)
-                : (int?)null
-        });
+            return Ok(result);
     }
 
     /// <summary>
@@ -5079,48 +2463,17 @@ public class CustomerPortalApiController : ControllerBase
         if (!personnelId.HasValue)
             return Unauthorized(new { message = "Personel bilgisi bulunamadı." });
 
-        var participant = await _context.TrainingVideoParticipants
-            .Include(p => p.Assignment)
-            .FirstOrDefaultAsync(p => p.Id == participantId && p.CustomerPersonnelId == personnelId.Value && !p.IsDeleted);
+            var result = await _cpDataService.StartWatchSessionAsync(participantId, personnelId.Value);
+            if (result == null)
+                return NotFound(new { message = "Eğitim kaydı bulunamadı." });
 
-        if (participant == null)
-            return NotFound(new { message = "Eğitim kaydı bulunamadı." });
+            // Check if max watches exceeded (service returns success=false in that case)
+            var resultType = result.GetType();
+            var successProp = resultType.GetProperty("success");
+            if (successProp != null && (bool)successProp.GetValue(result)! == false)
+                return BadRequest(result);
 
-        var now = DateTime.UtcNow;
-
-        // MaxWatchCount kontrolü
-        var maxWatches = participant.Assignment.MaxWatchCount;
-        if (maxWatches.HasValue && participant.WatchCount >= maxWatches.Value)
-        {
-            return BadRequest(new {
-                success = false,
-                message = "Maksimum izleme hakkınızı doldurdunuz.",
-                watchCount = participant.WatchCount,
-                maxWatchCount = maxWatches.Value
-            });
-        }
-
-        // İzleme hakkını kullan
-        participant.WatchCount++;
-
-        // İlk izlemeye başlama
-        if (participant.StatusId == 1)
-        {
-            participant.StatusId = 2;
-            participant.StartedAt = now;
-        }
-
-        participant.UpdatedAt = now;
-        await _context.SaveChangesAsync();
-
-        return Ok(new {
-            success = true,
-            watchCount = participant.WatchCount,
-            maxWatchCount = participant.Assignment.MaxWatchCount,
-            remainingWatches = participant.Assignment.MaxWatchCount.HasValue
-                ? Math.Max(0, participant.Assignment.MaxWatchCount.Value - participant.WatchCount)
-                : (int?)null
-        });
+            return Ok(result);
     }
 
     /// <summary>
@@ -5133,55 +2486,9 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var role = GetPersonnelRole();
-        var personnelId = GetPersonnelId();
-
-        // İzin verilen personel ID'lerini belirle
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
-
-        var now = DateTime.UtcNow;
-
-        var query = _context.TrainingVideoParticipants
-            .Include(p => p.CustomerPersonnel)
-            .Include(p => p.Assignment)
-                .ThenInclude(a => a.TrainingVideo)
-            .Where(p => !p.IsDeleted && p.Assignment.IsActive && !p.Assignment.IsDeleted)
-            .Where(p => p.CustomerPersonnel.CustomerId == customerId.Value);
-
-        // CustomerManager tüm personeli görebilir
-        // CustomerSupervisor sadece altındakileri görebilir
-        if (allowedPersonnelIds != null)
-        {
-            query = query.Where(p => allowedPersonnelIds.Contains(p.CustomerPersonnelId));
-        }
-
-        var trainings = await query
-            .OrderByDescending(p => p.Assignment.DueDate)
-            .ThenBy(p => p.CustomerPersonnel.FirstName)
-            .Select(p => new
-            {
-                participantId = p.Id,
-                personnelId = p.CustomerPersonnelId,
-                personnelName = p.CustomerPersonnel.FirstName + " " + p.CustomerPersonnel.LastName,
-                personnelEmail = p.CustomerPersonnel.Email,
-                assignmentId = p.Assignment.Id,
-                assignmentTitle = p.Assignment.Title,
-                videoId = p.Assignment.TrainingVideo.Id,
-                videoTitle = p.Assignment.TrainingVideo.Title,
-                videoDurationSeconds = p.Assignment.TrainingVideo.DurationSeconds,
-                startDate = p.Assignment.StartDate,
-                dueDate = p.Assignment.DueDate,
-                statusId = p.StatusId,
-                startedAt = p.StartedAt,
-                completedAt = p.CompletedAt,
-                watchedSeconds = p.WatchedSeconds,
-                isCompleted = p.IsCompleted,
-                isOverdue = p.Assignment.DueDate < now && !p.IsCompleted,
-                daysRemaining = p.IsCompleted ? 0 : (int)Math.Max(0, (p.Assignment.DueDate - now).TotalDays)
-            })
-            .ToListAsync();
-
-        return Ok(new { trainings });
+        var result = await _cpDataService.GetStaffTrainingsAsync(customerId.Value, allowedPersonnelIds);
+        return Ok(new { trainings = result });
     }
 
     /// <summary>
@@ -5205,64 +2512,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
-
-        var result = new List<object>();
-
-        foreach (var project in projects)
-        {
-            // Davetiye sayısı
-            var internalInvitations = await _context.SurveyInvitations
-                .Where(si => si.ProjectId == project.Id &&
-                       (si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent || si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Pending))
-                .CountAsync();
-
-            var externalInvitations = await _context.SurveyExternalInvitations
-                .Where(si => si.ProjectId == project.Id &&
-                       (si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent || si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Pending))
-                .CountAsync();
-
-            var invitationCount = internalInvitations + externalInvitations;
-
-            // Tamamlanan anket sayısı
-            var completedCount = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-                .CountAsync();
-
-            // Ortalama puan
-            var avgScore = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id &&
-                       e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
-                       e.ScorePercentage.HasValue)
-                .Select(e => e.ScorePercentage)
-                .AverageAsync() ?? 0;
-
-            // Son yanıt tarihi
-            var lastResponse = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-                .OrderByDescending(e => e.CompletedAt)
-                .Select(e => e.CompletedAt)
-                .FirstOrDefaultAsync();
-
-            result.Add(new
-            {
-                projectId = project.Id,
-                projectName = project.Name,
-                projectCode = project.Code,
-                totalInvitations = invitationCount,
-                totalResponses = completedCount,
-                responseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 1) : 0,
-                averageScore = completedCount > 0 ? Math.Round(avgScore, 1) : (decimal?)null,
-                lastResponseAt = lastResponse,
-                isActive = project.IsActive
-            });
-        }
-
+        var result = await _cpReportService.GetSurveyProjectsAsync(customerId.Value);
         return Ok(result);
     }
 
@@ -5280,79 +2530,8 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.AssignmentId != null &&
-                   e.Assignment!.Project.CustomerId == customerId.Value &&
-                   e.Assignment!.Project.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment!.Project.IsDeleted)
-            .AsQueryable();
-
-        if (projectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
-
-        if (startDate.HasValue)
-        {
-            var startDateUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc);
-        }
-
-        if (endDate.HasValue)
-        {
-            var endDateUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc);
-        }
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
-            .Take(count)
-            .ToListAsync();
-
-        // External invitations for evaluations without CustomerPersonnel
-        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
-        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
-        if (evaluationIds.Any())
-        {
-            var extList = await _context.SurveyExternalInvitations
-                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
-                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
-                .ToListAsync();
-            foreach (var item in extList)
-                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
-        }
-
-        var responses = evaluations.Select(e =>
-        {
-            string? respondentName = null;
-            string? respondentEmail = null;
-
-            if (e.EvaluatedCustomerPersonnel != null)
-            {
-                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
-                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
-            }
-            else if (externalInvitations.TryGetValue(e.Id, out var ext))
-            {
-                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
-                respondentEmail = ext.Email;
-            }
-
-            return new
-            {
-                evaluationId = e.Id,
-                projectId = e.Assignment.ProjectId,
-                projectName = e.Assignment.Project.Name,
-                respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
-                respondentEmail,
-                score = e.ScorePercentage,
-                completedAt = e.CompletedAt
-            };
-        }).ToList();
-
-        return Ok(responses);
+        var result = await _cpReportService.GetRecentSurveyResponsesAsync(customerId.Value, count, projectId, startDate, endDate);
+        return Ok(result);
     }
 
     /// <summary>
@@ -5365,135 +2544,11 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        var result = await _cpReportService.GetSurveyProjectDetailAsync(customerId.Value, projectId);
+        if (result == null)
             return NotFound(new { message = "Proje bulunamadı." });
 
-        // Sorular
-        var questions = await _context.Questions
-            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
-            .ToListAsync();
-
-        // Değerlendirmeler
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Answers)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-                .ThenInclude(p => p!.OrganizationAssignments)
-                    .ThenInclude(oa => oa.CustomerOrganization)
-            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CompletedAt)
-            .ToListAsync();
-
-        // Davetiye sayısı
-        var invitationCount = await _context.SurveyInvitations
-            .Where(si => si.ProjectId == projectId && si.StatusId == Core.Enums.SurveyInvitationStatuses.Ids.Sent)
-            .CountAsync();
-
-        // Grup bazlı puan hesaplaması
-        var groupScores = new List<object>();
-        var groups = questions.GroupBy(q => q.GroupName ?? "Genel");
-
-        foreach (var group in groups)
-        {
-            var groupQuestionIds = group.Select(q => q.Id).ToList();
-            var groupAnswers = evaluations
-                .SelectMany(e => e.Answers.Where(a => groupQuestionIds.Contains(a.QuestionId) && a.AnswerNumeric.HasValue))
-                .ToList();
-
-            decimal? avgScore = null;
-            if (groupAnswers.Any())
-            {
-                var totalScore = 0m;
-                var totalMaxScore = 0m;
-
-                foreach (var question in group.Where(q => q.ShowScoreInput))
-                {
-                    var questionAnswers = groupAnswers.Where(a => a.QuestionId == question.Id).ToList();
-                    if (questionAnswers.Any())
-                    {
-                        totalScore += questionAnswers.Sum(a => a.AnswerNumeric ?? 0);
-                        totalMaxScore += questionAnswers.Count * question.MaxPoints;
-                    }
-                }
-
-                avgScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 1) : null;
-            }
-
-            groupScores.Add(new
-            {
-                groupName = group.Key ?? "Genel",
-                questionCount = group.Count(),
-                totalResponses = evaluations.Count,
-                averageScore = avgScore
-            });
-        }
-
-        // Son 10 katılımcı - External invitation'ları da al
-        var top10 = evaluations.Take(10).ToList();
-        var extEvalIds = top10.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
-        var extInvs = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
-        if (extEvalIds.Any())
-        {
-            var extList = await _context.SurveyExternalInvitations
-                .Where(sei => sei.EvaluationId != null && extEvalIds.Contains(sei.EvaluationId.Value))
-                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
-                .ToListAsync();
-            foreach (var item in extList)
-                extInvs[item.EvalId] = (item.FirstName, item.LastName, item.Email);
-        }
-
-        var recentRespondents = top10.Select(e =>
-        {
-            string? fullName = null;
-            string? email = null;
-            string? orgName = null;
-
-            if (e.EvaluatedCustomerPersonnel != null)
-            {
-                fullName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
-                email = e.EvaluatedCustomerPersonnel.Email;
-                orgName = e.EvaluatedCustomerPersonnel.OrganizationAssignments.FirstOrDefault()?.CustomerOrganization?.Name;
-            }
-            else if (extInvs.TryGetValue(e.Id, out var ext))
-            {
-                fullName = $"{ext.FirstName} {ext.LastName}".Trim();
-                email = ext.Email;
-            }
-
-            return new
-            {
-                personnelId = e.EvaluatedCustomerPersonnelId ?? 0,
-                evaluationId = e.Id,
-                fullName = string.IsNullOrWhiteSpace(fullName) ? null : fullName,
-                email,
-                organizationName = orgName,
-                score = e.ScorePercentage,
-                completedAt = e.CompletedAt
-            };
-        }).ToList();
-
-        return Ok(new
-        {
-            projectId = project.Id,
-            projectName = project.Name,
-            organizationName = project.Organization?.Name,
-            totalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
-            totalResponses = evaluations.Count,
-            responseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 1) : 100,
-            averageScore = evaluations.Any(e => e.ScorePercentage.HasValue)
-                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 1)
-                : (decimal?)null,
-            totalQuestions = questions.Count,
-            groupScores = groupScores.OrderBy(g => ((dynamic)g).groupName).ToList(),
-            recentRespondents
-        });
+        return Ok(result);
     }
 
     /// <summary>
@@ -5507,83 +2562,8 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        // Proje zorunlu
-        if (!projectId.HasValue)
-            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
-
-        // Proje müşteriye ait mi kontrol et
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId.Value &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
-            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
-
-        // Değerlendirme ID'leri
-        var evaluationIds = await _context.Evaluations
-            .Where(e => e.Assignment.ProjectId == projectId.Value &&
-                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-            .Select(e => e.Id)
-            .ToListAsync();
-
-        if (!evaluationIds.Any())
-            return Ok(new { questions = new List<object>(), totalResponses = 0, overallAverageScore = 0 });
-
-        // Cevapları ve soruları getir (ReportService gibi)
-        var answers = await _context.Answers
-            .Include(a => a.Question)
-            .Where(a => evaluationIds.Contains(a.EvaluationId) && !a.Question.IsDeleted)
-            .ToListAsync();
-
-        // Soru bazlı gruplama - EarnedPoints kullan
-        var questionStats = answers
-            .GroupBy(a => new
-            {
-                a.QuestionId,
-                a.Question.Text,
-                a.Question.GroupName,
-                a.Question.Order,
-                a.Question.WeightPoints
-            })
-            .Select(g =>
-            {
-                var avgRaw = g.Where(a => a.EarnedPoints.HasValue).Any()
-                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value), 2)
-                    : null;
-
-                var avgPercent = g.Where(a => a.EarnedPoints.HasValue).Any() && g.Key.WeightPoints > 0
-                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 1)
-                    : null;
-
-                return new
-                {
-                    questionId = g.Key.QuestionId,
-                    questionText = g.Key.Text,
-                    groupName = g.Key.GroupName ?? "Genel",
-                    order = g.Key.Order,
-                    maxPoints = (int)g.Key.WeightPoints,
-                    responseCount = g.Count(),
-                    averageRawScore = avgRaw,
-                    averageScore = avgPercent
-                };
-            })
-            .OrderBy(q => q.groupName)
-            .ThenBy(q => q.order)
-            .ToList();
-
-        // Genel ortalama hesapla
-        var overallAverage = questionStats.Where(q => q.averageScore.HasValue).Any()
-            ? Math.Round(questionStats.Where(q => q.averageScore.HasValue).Average(q => q.averageScore!.Value), 1)
-            : 0m;
-
-        return Ok(new
-        {
-            questions = questionStats,
-            totalResponses = evaluationIds.Count,
-            overallAverageScore = overallAverage
-        });
+        var result = await _cpReportService.GetSurveyQuestionScoreDistributionAsync(customerId.Value, projectId);
+        return Ok(result);
     }
 
     /// <summary>
@@ -5596,84 +2576,11 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        var result = await _cpReportService.GetSurveyQuestionScoreDetailAsync(customerId.Value, projectId);
+        if (result == null)
             return NotFound(new { message = "Proje bulunamadı." });
 
-        // Sorular
-        var questions = await _context.Questions
-            .Include(q => q.SubCriteria.Where(sc => !sc.IsDeleted))
-            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
-            .OrderBy(q => q.Order)
-            .ToListAsync();
-
-        // Değerlendirmeler ve cevapları
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Answers)
-                .ThenInclude(a => a.SubCriteriaSelections)
-            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-            .ToListAsync();
-
-        var questionDetails = questions.Select(q =>
-        {
-            var answers = evaluations.SelectMany(e => e.Answers.Where(a => a.QuestionId == q.Id)).ToList();
-
-            // Puan dağılımı
-            var scoreDistribution = new Dictionary<int, int>();
-            if (q.ShowScoreInput)
-            {
-                for (int i = 0; i <= q.MaxPoints; i++)
-                    scoreDistribution[i] = 0;
-
-                foreach (var answer in answers.Where(a => a.AnswerNumeric.HasValue))
-                {
-                    var score = (int)(answer.AnswerNumeric ?? 0);
-                    if (scoreDistribution.ContainsKey(score))
-                        scoreDistribution[score]++;
-                }
-            }
-
-            // Alt kriter seçim dağılımı
-            var subCriteriaStats = q.SubCriteria.Select(sc =>
-            {
-                var selectedCount = answers.Count(a => a.SubCriteriaSelections.Any(s => s.SubCriteriaId == sc.Id));
-                return new
-                {
-                    subCriteriaId = sc.Id,
-                    description = sc.Description,
-                    selectedCount,
-                    percentage = answers.Any() ? Math.Round((decimal)selectedCount / answers.Count * 100, 1) : 0
-                };
-            }).ToList();
-
-            return new
-            {
-                questionId = q.Id,
-                questionText = q.Text,
-                groupName = q.GroupName ?? "Genel",
-                maxPoints = q.MaxPoints,
-                showScoreInput = q.ShowScoreInput,
-                responseCount = answers.Count,
-                averageScore = q.ShowScoreInput && answers.Any(a => a.AnswerNumeric.HasValue)
-                    ? (decimal)Math.Round(answers.Where(a => a.AnswerNumeric.HasValue).Average(a => a.AnswerNumeric!.Value), 2)
-                    : (decimal?)null,
-                scoreDistribution = scoreDistribution.OrderBy(d => d.Key).Select(d => new { score = d.Key, count = d.Value }).ToList(),
-                subCriteriaStats
-            };
-        }).ToList();
-
-        return Ok(new
-        {
-            projectId = project.Id,
-            projectName = project.Name,
-            totalResponses = evaluations.Count,
-            questions = questionDetails
-        });
+        return Ok(result);
     }
 
     /// <summary>
@@ -5687,13 +2594,7 @@ public class CustomerPortalApiController : ControllerBase
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
         // Proje kontrolü
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
         var result = await _reportService.ExportSurveyGroupScoresToExcelAsync(projectId);
@@ -5713,13 +2614,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
         var result = await _reportService.ExportSurveyQuestionStatsToExcelAsync(projectId);
@@ -5739,13 +2634,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
         var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: false);
@@ -5765,13 +2654,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
         var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: true);
@@ -5791,13 +2674,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
         var result = await _reportService.ExportSurveyQuestionScoreDetailAsync(projectId);
@@ -5820,51 +2697,26 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var role = GetPersonnelRole();
-        var personnelId = GetPersonnelId();
-        var isManager = role == "CustomerManager" || User.IsInRole("Admin");
+            var role = GetPersonnelRole();
+            var personnelId = GetPersonnelId();
+            var isManager = role == "CustomerManager" || User.IsInRole("Admin");
 
-        // Değerlendirmeyi bul
-        var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+            var result = await _cpDataService.DeleteDraftAsync(id, customerId.Value, isManager ? "CustomerManager" : role, personnelId);
 
-        if (evaluation == null)
-        {
-            return NotFound(new { message = "Değerlendirme bulunamadı." });
-        }
+            if (result == null)
+                return NotFound(new { message = "Değerlendirme bulunamadı." });
 
-        // Müşteri kontrolü
-        if (evaluation.Assignment?.Project?.CustomerId != customerId)
-        {
-            return Forbid();
-        }
-
-        // Sadece Draft durumundakiler silinebilir
-        if (evaluation.StatusId != Core.Enums.EvaluationStatuses.Ids.Draft)
-        {
-            return BadRequest(new { message = "Sadece taslak durumundaki değerlendirmeler silinebilir." });
-        }
-
-        // Yetki kontrolü: Manager değilse kendi taslağı olmalı
-        if (!isManager && personnelId.HasValue)
-        {
-            if (evaluation.EvaluatorCustomerPersonnelId != personnelId.Value)
+            if (!result.Value.Success)
             {
-                return Forbid();
+                if (result.Value.StatusCode == 403) return Forbid();
+                if (result.Value.StatusCode == 404) return NotFound(new { message = result.Value.ErrorMessage });
+                return BadRequest(new { message = result.Value.ErrorMessage });
             }
-        }
 
-        // Soft delete
-        evaluation.IsDeleted = true;
-        evaluation.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
+            _logger.LogInformation("Taslak değerlendirme silindi (CustomerPortal): EvaluationId={EvaluationId}, PersonnelId={PersonnelId}, IsManager={IsManager}",
+                id, personnelId, isManager);
 
-        _logger.LogInformation("Taslak değerlendirme silindi (CustomerPortal): EvaluationId={EvaluationId}, PersonnelId={PersonnelId}, IsManager={IsManager}",
-            id, personnelId, isManager);
-
-        return Ok(new { message = "Taslak başarıyla silindi." });
+            return Ok(new { message = "Taslak başarıyla silindi." });
     }
 
     /// <summary>
@@ -5877,47 +2729,31 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
-        var role = GetPersonnelRole();
-        var isManager = role == "CustomerManager" || User.IsInRole("Admin");
+            var role = GetPersonnelRole();
+            var isManager = role == "CustomerManager" || User.IsInRole("Admin");
 
-        // Sadece Manager silebilir
-        if (!isManager)
-        {
-            return Forbid();
-        }
+            // Sadece Manager silebilir
+            if (!isManager)
+            {
+                return Forbid();
+            }
 
-        // Değerlendirmeyi bul
-        var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted && e.EvaluatorCustomerPersonnelId != null);
+            var result = await _cpDataService.DeleteInternalDraftAsync(id, customerId.Value);
 
-        if (evaluation == null)
-        {
-            return NotFound(new { message = "Değerlendirme bulunamadı." });
-        }
+            if (result == null)
+                return NotFound(new { message = "Değerlendirme bulunamadı." });
 
-        // Müşteri kontrolü
-        if (evaluation.Assignment?.Project?.CustomerId != customerId)
-        {
-            return Forbid();
-        }
+            if (!result.Value.Success)
+            {
+                if (result.Value.StatusCode == 403) return Forbid();
+                if (result.Value.StatusCode == 404) return NotFound(new { message = result.Value.ErrorMessage });
+                return BadRequest(new { message = result.Value.ErrorMessage });
+            }
 
-        // Sadece Draft durumundakiler silinebilir
-        if (evaluation.StatusId != EvaluationStatuses.Ids.Draft)
-        {
-            return BadRequest(new { message = "Sadece taslak durumundaki değerlendirmeler silinebilir." });
-        }
+            _logger.LogInformation("İç dinleme taslağı silindi (CustomerPortal): EvaluationId={EvaluationId}, Role={Role}",
+                id, role);
 
-        // Soft delete
-        evaluation.IsDeleted = true;
-        evaluation.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        _logger.LogInformation("İç dinleme taslağı silindi (CustomerPortal): EvaluationId={EvaluationId}, Role={Role}",
-            id, role);
-
-        return Ok(new { message = "Taslak başarıyla silindi." });
+            return Ok(new { message = "Taslak başarıyla silindi." });
     }
 
     // ==================== ENNEAGRAM RESULTS ====================
@@ -5932,37 +2768,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        // Enneagram checklistlerini bul
-        var enneagramChecklistIds = await _context.Checklists
-            .Where(c => c.ChecklistTypeId == Core.Enums.ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
-            .Select(c => c.Id)
-            .ToListAsync();
-
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId.Value &&
-                   enneagramChecklistIds.Contains(p.ChecklistId) &&
-                   !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt)
-            .ToListAsync();
-
-        var result = new List<object>();
-
-        foreach (var project in projects)
-        {
-            // Tamamlanan değerlendirme sayısı
-            var completedCount = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-                .CountAsync();
-
-            result.Add(new
-            {
-                projectId = project.Id,
-                projectName = project.Name,
-                totalResponses = completedCount,
-                isActive = project.IsActive
-            });
-        }
-
+        var result = await _cpReportService.GetEnneagramProjectsAsync(customerId.Value);
         return Ok(result);
     }
 
@@ -5980,146 +2786,8 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        // Enneagram checklistlerini bul
-        var enneagramChecklistIds = await _context.Checklists
-            .Where(c => c.ChecklistTypeId == Core.Enums.ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
-            .Select(c => c.Id)
-            .ToListAsync();
-
-        var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.AssignmentId != null &&
-                   e.Assignment!.Project.CustomerId == customerId.Value &&
-                   enneagramChecklistIds.Contains(e.Assignment!.Project.ChecklistId) &&
-                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment!.Project.IsDeleted)
-            .AsQueryable();
-
-        if (projectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
-
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            var term = searchTerm.Trim().ToLower();
-            query = query.Where(e =>
-                (e.EvaluatedCustomerPersonnel != null &&
-                    (e.EvaluatedCustomerPersonnel.FirstName.ToLower().Contains(term) ||
-                     e.EvaluatedCustomerPersonnel.LastName.ToLower().Contains(term) ||
-                     (e.EvaluatedCustomerPersonnel.Email != null && e.EvaluatedCustomerPersonnel.Email.ToLower().Contains(term)))));
-        }
-
-        var totalCount = await query.CountAsync();
-
-        var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        // Enneagram sorularını al (Grup adı = kişilik tipi)
-        var checklistIds = evaluations.Select(e => e.Assignment.Project.ChecklistId).Distinct().ToList();
-        var questions = await _context.Questions
-            .Where(q => checklistIds.Contains(q.ChecklistId) && !q.IsDeleted)
-            .ToListAsync();
-
-        // External invitations
-        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
-        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
-        if (evaluationIds.Any())
-        {
-            var extList = await _context.SurveyExternalInvitations
-                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
-                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
-                .ToListAsync();
-            foreach (var item in extList)
-                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
-        }
-
-        // Cevapları al
-        var allEvaluationIds = evaluations.Select(e => e.Id).ToList();
-        var answers = await _context.Answers
-            .Where(a => allEvaluationIds.Contains(a.EvaluationId))
-            .ToListAsync();
-
-        var results = new List<object>();
-
-        foreach (var e in evaluations)
-        {
-            string? respondentName = null;
-            string? respondentEmail = null;
-
-            if (e.EvaluatedCustomerPersonnel != null)
-            {
-                respondentName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim();
-                respondentEmail = e.EvaluatedCustomerPersonnel.Email;
-            }
-            else if (externalInvitations.TryGetValue(e.Id, out var ext))
-            {
-                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
-                respondentEmail = ext.Email;
-            }
-
-            // Kişilik tipi skorlarını hesapla
-            var evalAnswers = answers.Where(a => a.EvaluationId == e.Id).ToList();
-            var evalQuestions = questions.Where(q => q.ChecklistId == e.Assignment.Project.ChecklistId).ToList();
-
-            var personalityScores = evalQuestions
-                .GroupBy(q => q.GroupName ?? "Bilinmeyen")
-                .Select(g => new
-                {
-                    personalityType = g.Key,
-                    totalPoints = evalAnswers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0),
-                    maxPoints = g.Sum(q => (int)q.WeightPoints)
-                })
-                .OrderByDescending(x => x.totalPoints)
-                .ToList();
-
-            var dominant = personalityScores.FirstOrDefault();
-
-            results.Add(new
-            {
-                evaluationId = e.Id,
-                projectId = e.Assignment.ProjectId,
-                projectName = e.Assignment.Project.Name,
-                respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
-                respondentEmail,
-                dominantType = dominant?.personalityType,
-                dominantPercentage = dominant != null && dominant.maxPoints > 0
-                    ? Math.Round((decimal)dominant.totalPoints / dominant.maxPoints * 100, 1)
-                    : (decimal?)null,
-                totalScore = e.ScorePercentage,
-                completedAt = e.CompletedAt
-            });
-        }
-
-        // Summary
-        var allResults = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Where(e => e.AssignmentId != null &&
-                   e.Assignment!.Project.CustomerId == customerId.Value &&
-                   enneagramChecklistIds.Contains(e.Assignment!.Project.ChecklistId) &&
-                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment!.Project.IsDeleted)
-            .ToListAsync();
-
-        var projectCount = allResults.Select(e => e.Assignment!.ProjectId).Distinct().Count();
-
-        return Ok(new
-        {
-            results,
-            totalCount,
-            totalPages = (int)Math.Ceiling((double)totalCount / pageSize),
-            summary = new
-            {
-                totalResponses = allResults.Count,
-                projectCount,
-                dominantType = "-",
-                averageCompletionRate = (decimal?)null
-            }
-        });
+        var result = await _cpReportService.GetEnneagramResultsAsync(customerId.Value, projectId, searchTerm, page, pageSize);
+        return Ok(result);
     }
 
     /// <summary>
@@ -6132,73 +2800,11 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.Answers)
-            .FirstOrDefaultAsync(e => e.Id == evaluationId &&
-                   e.AssignmentId != null &&
-                   e.Assignment!.Project.CustomerId == customerId.Value);
-
-        if (evaluation == null)
+        var result = await _cpReportService.GetEnneagramResultDetailAsync(customerId.Value, evaluationId);
+        if (result == null)
             return NotFound(new { message = "Sonuç bulunamadı." });
 
-        // Respondent info
-        string? respondentName = null;
-        string? respondentEmail = null;
-
-        if (evaluation.EvaluatedCustomerPersonnel != null)
-        {
-            respondentName = $"{evaluation.EvaluatedCustomerPersonnel.FirstName} {evaluation.EvaluatedCustomerPersonnel.LastName}".Trim();
-            respondentEmail = evaluation.EvaluatedCustomerPersonnel.Email;
-        }
-        else
-        {
-            var ext = await _context.SurveyExternalInvitations
-                .Where(sei => sei.EvaluationId == evaluationId)
-                .Select(sei => new { sei.FirstName, sei.LastName, sei.Email })
-                .FirstOrDefaultAsync();
-            if (ext != null)
-            {
-                respondentName = $"{ext.FirstName} {ext.LastName}".Trim();
-                respondentEmail = ext.Email;
-            }
-        }
-
-        // Sorular ve gruplar
-        var questions = await _context.Questions
-            .Where(q => q.ChecklistId == evaluation.Assignment.Project.ChecklistId && !q.IsDeleted)
-            .ToListAsync();
-
-        // Kişilik tipi skorları
-        var scores = questions
-            .GroupBy(q => q.GroupName ?? "Bilinmeyen")
-            .Select(g => new
-            {
-                personalityType = g.Key,
-                totalPoints = evaluation.Answers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0),
-                maxPoints = (int)g.Sum(q => q.WeightPoints),
-                percentage = g.Sum(q => q.WeightPoints) > 0
-                    ? Math.Round((decimal)evaluation.Answers.Where(a => g.Select(q => q.Id).Contains(a.QuestionId)).Sum(a => a.GivenPoints ?? 0) / g.Sum(q => q.WeightPoints) * 100, 1)
-                    : 0
-            })
-            .OrderByDescending(x => x.percentage)
-            .ToList();
-
-        var dominant = scores.FirstOrDefault();
-
-        return Ok(new
-        {
-            evaluationId = evaluation.Id,
-            projectId = evaluation.Assignment.ProjectId,
-            projectName = evaluation.Assignment.Project.Name,
-            respondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
-            respondentEmail,
-            dominantType = dominant?.personalityType,
-            completedAt = evaluation.CompletedAt,
-            scores
-        });
+        return Ok(result);
     }
 
     /// <summary>
@@ -6211,77 +2817,87 @@ public class CustomerPortalApiController : ControllerBase
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId &&
-                   p.CustomerId == customerId.Value &&
-                   !p.IsDeleted);
-
-        if (project == null)
+        var result = await _cpReportService.GetEnneagramDistributionAsync(customerId.Value, projectId);
+        if (result == null)
             return NotFound(new { message = "Proje bulunamadı." });
 
-        // Tamamlanan değerlendirmeler
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Answers)
-            .Where(e => e.Assignment.ProjectId == projectId &&
-                   e.StatusId == Core.Enums.EvaluationStatuses.Ids.Completed)
-            .ToListAsync();
+        return Ok(result);
+    }
 
-        if (!evaluations.Any())
+    // ==================== SURVEY & ENNEAGRAM EXPORT ENDPOINTS ====================
+
+    /// <summary>
+    /// Anket yanıtlarını Excel'e export eder (proje bazlı)
+    /// </summary>
+    [HttpGet("reports/survey-responses/export")]
+    public async Task<IActionResult> ExportSurveyResponses([FromQuery] int? projectId = null)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        if (!projectId.HasValue)
+            return BadRequest(new { message = "Proje seçimi zorunludur." });
+
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId.Value, customerId.Value))
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyResponsesToExcelAsync(projectId);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Soru puan dağılımı Excel export
+    /// </summary>
+    [HttpGet("reports/survey-question-distribution/export")]
+    public async Task<IActionResult> ExportSurveyQuestionDistribution([FromQuery] int? projectId = null)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        if (!projectId.HasValue)
+            return BadRequest(new { message = "Proje seçimi zorunludur." });
+
+        if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId.Value, customerId.Value))
+            return NotFound(new { message = "Proje bulunamadı." });
+
+        var result = await _reportService.ExportSurveyQuestionDistributionToExcelAsync(projectId.Value);
+        if (result == null)
+            return NotFound(new { message = "Rapor oluşturulamadı." });
+
+        return File(result.FileContent, result.ContentType, result.FileName);
+    }
+
+    /// <summary>
+    /// Enneagram sonuçlarını Excel'e export eder
+    /// </summary>
+    [HttpGet("reports/enneagram-results/export")]
+    public async Task<IActionResult> ExportEnneagramResults(
+        [FromQuery] int? projectId = null,
+        [FromQuery] string? searchTerm = null)
+    {
+        var customerId = GetCustomerId();
+        if (!customerId.HasValue)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+            var projectIdsResult = await _cpDataService.GetEnneagramProjectIdsForCustomerAsync(customerId.Value, projectId);
+            if (projectIdsResult == null)
+                return NotFound(new { message = "Proje bulunamadı." });
+
+            List<int> projectIds = projectIdsResult;
+
+        var filter = new Core.DTOs.Report.EnneagramFilterDto
         {
-            return Ok(new
-            {
-                projectId,
-                projectName = project.Name,
-                totalResponses = 0,
-                distribution = new List<object>()
-            });
-        }
+            ProjectIds = projectIds,
+            SearchTerm = searchTerm
+        };
 
-        // Sorular ve gruplar
-        var questions = await _context.Questions
-            .Where(q => q.ChecklistId == project.ChecklistId && !q.IsDeleted)
-            .ToListAsync();
-
-        // Kişilik tiplerine göre toplam puanlar
-        var personalityGroups = questions
-            .GroupBy(q => q.GroupName ?? "Bilinmeyen")
-            .Select(g => new
-            {
-                personalityType = g.Key,
-                questionIds = g.Select(q => q.Id).ToList(),
-                maxPointsPerResponse = (int)g.Sum(q => q.WeightPoints)
-            })
-            .ToList();
-
-        var distribution = personalityGroups.Select(pg =>
-        {
-            var totalPoints = evaluations
-                .SelectMany(e => e.Answers)
-                .Where(a => pg.questionIds.Contains(a.QuestionId))
-                .Sum(a => a.GivenPoints ?? 0);
-
-            var maxPoints = pg.maxPointsPerResponse * evaluations.Count;
-            var avgPercentage = maxPoints > 0 ? Math.Round((decimal)totalPoints / maxPoints * 100, 1) : 0;
-
-            return new
-            {
-                pg.personalityType,
-                totalPoints,
-                maxPoints = pg.maxPointsPerResponse,
-                responseCount = evaluations.Count,
-                averagePercentage = avgPercentage
-            };
-        })
-        .OrderByDescending(x => x.averagePercentage)
-        .ToList();
-
-        return Ok(new
-        {
-            projectId,
-            projectName = project.Name,
-            totalResponses = evaluations.Count,
-            distribution
-        });
+        var result = await _reportService.ExportEnneagramResultsToExcelAsync(filter);
+        return File(result.FileContent, result.ContentType, result.FileName);
     }
 
     // ==================== PUAN EŞİKLERİ (Score Thresholds) ====================
@@ -6365,8 +2981,7 @@ public class CustomerPortalApiController : ControllerBase
         try
         {
             // Güvenlik kontrolü: Dealer'ın bu müşteriye ait olup olmadığını doğrula
-            var dealer = await _context.CustomerDealers.FindAsync(dealerId);
-            if (dealer == null || dealer.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidateDealerBelongsToCustomerAsync(dealerId, customerId.Value))
                 return NotFound(new { message = "Şube bulunamadı." });
 
             var filter = new DealerReportCardFilterDto
@@ -6408,8 +3023,7 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var dealer = await _context.CustomerDealers.FindAsync(dealerId);
-            if (dealer == null || dealer.CustomerId != customerId.Value)
+            if (!await _cpDataService.ValidateDealerBelongsToCustomerAsync(dealerId, customerId.Value))
                 return NotFound(new { message = "Şube bulunamadı." });
 
             var filter = new DealerReportCardFilterDto
@@ -6441,10 +3055,7 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var dealer = await _context.CustomerDealers
-                .FirstOrDefaultAsync(d => d.Id == dealerId && d.CustomerId == customerId);
-
-            if (dealer == null)
+            if (!await _cpDataService.ValidateDealerBelongsToCustomerAsync(dealerId, customerId.Value))
                 return NotFound(new { message = "Şube bulunamadı." });
 
             var filter = new DealerReportCardFilterDto

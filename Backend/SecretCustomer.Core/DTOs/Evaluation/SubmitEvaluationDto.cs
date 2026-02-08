@@ -5,7 +5,7 @@ namespace SecretCustomer.Core.DTOs.Evaluation;
 public class SubmitEvaluationDto
 {
     [Required]
-    public int AssignmentId { get; set; }
+    public int ProjectId { get; set; }
 
     /// <summary>
     /// Mevcut değerlendirme ID (taslak güncelleme için)
@@ -180,7 +180,7 @@ public class SubmitAnswerDto
 public class StartEvaluationDto
 {
     [Required]
-    public int AssignmentId { get; set; }
+    public int ProjectId { get; set; }
 
     /// <summary>
     /// Değerlendirmenin ait olduğu dönem

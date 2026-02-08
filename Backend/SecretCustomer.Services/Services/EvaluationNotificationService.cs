@@ -52,25 +52,24 @@ public class EvaluationNotificationService : IEvaluationNotificationService
         try
         {
             // Müşteri ID'sini bul
-            var customerId = evaluation.Assignment?.Project?.CustomerId;
+            var customerId = evaluation.Project?.CustomerId;
             if (customerId == null)
             {
                 var ev = await _context.Evaluations
-                    .Include(e => e.Assignment)
-                        .ThenInclude(a => a!.Project)
+                    .Include(e => e.Project)
                     .Include(e => e.EvaluatedCustomerPersonnel)
                     .Include(e => e.EvaluatedOrganization)
                     .Include(e => e.CustomerDealer)
                     .FirstOrDefaultAsync(e => e.Id == evaluation.Id);
 
-                if (ev?.Assignment?.Project?.CustomerId == null)
+                if (ev?.Project?.CustomerId == null)
                 {
                     await _auditLog.LogWarningAsync($"Değerlendirme #{evaluation.Id} için müşteri bulunamadı", LogCategory);
                     return;
                 }
 
                 evaluation = ev;
-                customerId = ev.Assignment!.Project!.CustomerId;
+                customerId = ev.Project!.CustomerId;
             }
 
             // FrequencyId=1, aktif kuralları bul
@@ -226,15 +225,12 @@ public class EvaluationNotificationService : IEvaluationNotificationService
                 }
 
                 var evaluations = await _context.Evaluations
-                    .Include(e => e.Assignment)
-                        .ThenInclude(a => a!.Project)
+                    .Include(e => e.Project)
                     .Include(e => e.EvaluatedCustomerPersonnel)
                     .Include(e => e.EvaluatedOrganization)
                     .Include(e => e.CustomerDealer)
                     .Where(e => !e.IsDeleted
-                        && e.Assignment != null
-                        && e.Assignment.Project != null
-                        && e.Assignment.Project.CustomerId == rule.CustomerId
+                        && e.Project.CustomerId == rule.CustomerId
                         && e.StatusId == EvaluationStatuses.Ids.Completed
                         && e.CompletedAt >= periodStartUtc
                         && e.CompletedAt < periodEndUtc)
@@ -407,7 +403,7 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             html += $@"
         <tr>
             <td style='border: 1px solid #dee2e6; padding: 8px;'>{eval.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-"}</td>
-            <td style='border: 1px solid #dee2e6; padding: 8px;'>{eval.Assignment?.Project?.Name ?? "-"}</td>
+            <td style='border: 1px solid #dee2e6; padding: 8px;'>{eval.Project?.Name ?? "-"}</td>
             <td style='border: 1px solid #dee2e6; padding: 8px;'>{personnelName}</td>
             <td style='border: 1px solid #dee2e6; padding: 8px;'>{eval.EvaluatedOrganization?.Name ?? "-"}</td>
             <td style='border: 1px solid #dee2e6; padding: 8px; text-align: center; color: {scoreColor}; font-weight: bold;'>{eval.ScorePercentage?.ToString("F2") ?? "-"}%</td>
@@ -455,7 +451,7 @@ public class EvaluationNotificationService : IEvaluationNotificationService
             content = content.Replace(EmailPlaceholders.EvaluationScorePercentage, evaluation.ScorePercentage?.ToString("F2") ?? "-");
             content = content.Replace(EmailPlaceholders.EvaluatedPersonnel, evaluatedPersonnel ?? "-");
             content = content.Replace(EmailPlaceholders.EvaluationDate, evaluation.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-");
-            content = content.Replace(EmailPlaceholders.ProjectName, evaluation.Assignment?.Project?.Name ?? "-");
+            content = content.Replace(EmailPlaceholders.ProjectName, evaluation.Project?.Name ?? "-");
             content = content.Replace(EmailPlaceholders.OrganizationName, evaluation.EvaluatedOrganization?.Name ?? "-");
         }
 

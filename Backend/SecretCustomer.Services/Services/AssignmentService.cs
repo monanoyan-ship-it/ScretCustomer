@@ -37,10 +37,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
 
         return assignment == null ? null : MapToDto(assignment);
@@ -58,8 +58,9 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
-                .ThenInclude(e => e.Evaluator)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
+                    .ThenInclude(e => e.Evaluator)
             .Include(a => a.Periods)
                 .ThenInclude(p => p.Evaluations)
             .Include(a => a.AssignmentCustomerDealers.Where(acd => !acd.IsDeleted))
@@ -103,7 +104,7 @@ public class AssignmentService : IAssignmentService
         };
 
         // Get evaluation details
-        var evaluation = assignment.Evaluations.FirstOrDefault();
+        var evaluation = assignment.Project.Evaluations.FirstOrDefault();
         if (evaluation != null)
         {
             detailDto.EvaluatorName = evaluation.Evaluator != null
@@ -179,10 +180,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .Where(a => !a.IsDeleted)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
@@ -260,14 +261,14 @@ public class AssignmentService : IAssignmentService
                 CreatedAt = a.CreatedAt,
                 Status = a.IsCompleted ? "Completed"
                     : a.DueDate < now ? "Expired"
-                    : a.Evaluations.Any(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Draft) ? "InProgress"
+                    : a.Project.Evaluations.Any(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Draft) ? "InProgress"
                     : "Pending",
                 // Evaluation aggregate'leri
-                EvaluationId = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => (int?)e.Id).FirstOrDefault(),
-                EvaluationScore = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.ScorePercentage).FirstOrDefault(),
-                YellowCardCount = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.YellowCardCount).FirstOrDefault(),
-                RedCardCount = a.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.RedCardCount).FirstOrDefault(),
-                EvaluationCount = a.Evaluations.Count(e => !e.IsDeleted)
+                EvaluationId = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => (int?)e.Id).FirstOrDefault(),
+                EvaluationScore = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.ScorePercentage).FirstOrDefault(),
+                YellowCardCount = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.YellowCardCount).FirstOrDefault(),
+                RedCardCount = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.RedCardCount).FirstOrDefault(),
+                EvaluationCount = a.Project.Evaluations.Count(e => !e.IsDeleted)
             })
             .ToListAsync();
     }
@@ -394,10 +395,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .Where(a => a.ProjectId == projectId && !a.IsDeleted)
             .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
@@ -409,9 +410,9 @@ public class AssignmentService : IAssignmentService
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Include(a => a.Evaluations)
             .Include(a => a.Periods)
             .Where(a => a.AssignedUserId == userId && !a.IsDeleted)
             // Sıralama: DueDate en uzak (gelecekte) olan en üstte
@@ -425,9 +426,9 @@ public class AssignmentService : IAssignmentService
     {
         var assignments = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .Include(a => a.Periods)
             .Where(a => a.AssignedCustomerPersonnelId == customerPersonnelId && !a.IsDeleted)
             // Sıralama: Bekleyenler önce, sonra DueDate'e göre
@@ -442,10 +443,10 @@ public class AssignmentService : IAssignmentService
     {
         var query = _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .Where(a => !a.IsDeleted)
             .AsQueryable();
 
@@ -595,10 +596,10 @@ public class AssignmentService : IAssignmentService
             "duedate" => isAscending ? query.OrderBy(a => a.DueDate) : query.OrderByDescending(a => a.DueDate),
             "status" => isAscending ? query.OrderBy(a => a.IsCompleted) : query.OrderByDescending(a => a.IsCompleted),
             "score" => isAscending
-                ? query.OrderBy(a => a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
-                    ? a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0)
-                : query.OrderByDescending(a => a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
-                    ? a.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0),
+                ? query.OrderBy(a => a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
+                    ? a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0)
+                : query.OrderByDescending(a => a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
+                    ? a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0),
             _ => query.OrderByDescending(a => a.CreatedAt) // Default
         };
 
@@ -650,10 +651,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
         if (assignment == null)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
@@ -676,10 +677,10 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _context.Assignments
             .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
-            .Include(a => a.Evaluations)
             .FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
         if (assignment == null)
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
@@ -693,7 +694,7 @@ public class AssignmentService : IAssignmentService
         assignment.UpdatedAt = DateTime.UtcNow;
 
         // İlişkili Evaluation'ları da InProgress yap
-        foreach (var evaluation in assignment.Evaluations)
+        foreach (var evaluation in assignment.Project.Evaluations)
         {
             if (evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             {
@@ -810,7 +811,8 @@ public class AssignmentService : IAssignmentService
     public async Task<AssignmentSummaryDto> GetSummaryAsync(int? projectId = null)
     {
         var query = _context.Assignments
-            .Include(a => a.Evaluations)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Where(a => !a.IsDeleted);
 
         if (projectId.HasValue)
@@ -821,7 +823,7 @@ public class AssignmentService : IAssignmentService
 
         var completed = assignments.Where(a => a.IsCompleted).ToList();
         var evaluationScores = completed
-            .SelectMany(a => a.Evaluations)
+            .SelectMany(a => a.Project.Evaluations)
             .Where(e => e.ScorePercentage.HasValue)
             .Select(e => e.ScorePercentage!.Value)
             .ToList();
@@ -830,14 +832,14 @@ public class AssignmentService : IAssignmentService
         {
             TotalAssignments = assignments.Count,
             PendingCount = assignments.Count(a => !a.IsCompleted && a.DueDate >= now),
-            InProgressCount = assignments.Count(a => !a.IsCompleted && a.Evaluations.Any(e => e.StatusId == EvaluationStatuses.Ids.Draft)),
+            InProgressCount = assignments.Count(a => !a.IsCompleted && a.Project.Evaluations.Any(e => e.StatusId == EvaluationStatuses.Ids.Draft)),
             CompletedCount = completed.Count,
             ExpiredCount = assignments.Count(a => !a.IsCompleted && a.DueDate < now),
             CancelledCount = 0, // IsDeleted ones are not included
             CompletionRate = assignments.Count > 0 ? Math.Round((decimal)completed.Count / assignments.Count * 100, 1) : 0,
             AverageScore = evaluationScores.Any() ? Math.Round(evaluationScores.Average(), 1) : 0,
-            TotalYellowCards = completed.SelectMany(a => a.Evaluations).Sum(e => e.YellowCardCount),
-            TotalRedCards = completed.SelectMany(a => a.Evaluations).Sum(e => e.RedCardCount)
+            TotalYellowCards = completed.SelectMany(a => a.Project.Evaluations).Sum(e => e.YellowCardCount),
+            TotalRedCards = completed.SelectMany(a => a.Project.Evaluations).Sum(e => e.RedCardCount)
         };
     }
 
@@ -909,7 +911,7 @@ public class AssignmentService : IAssignmentService
 
     private AssignmentDto MapToDto(Assignment assignment)
     {
-        var evaluation = assignment.Evaluations?.FirstOrDefault();
+        var evaluation = assignment.Project?.Evaluations?.FirstOrDefault();
         var status = assignment.IsCompleted ? "Completed"
             : assignment.DueDate < DateTime.UtcNow ? "Expired"
             : evaluation != null && evaluation.StatusId == EvaluationStatuses.Ids.Draft ? "InProgress"
@@ -945,7 +947,7 @@ public class AssignmentService : IAssignmentService
             EvaluationScore = evaluation?.ScorePercentage,
             YellowCardCount = evaluation?.YellowCardCount ?? 0,
             RedCardCount = evaluation?.RedCardCount ?? 0,
-            EvaluationCount = assignment.Evaluations?.Count ?? 0
+            EvaluationCount = assignment.Project?.Evaluations?.Count ?? 0
         };
     }
 

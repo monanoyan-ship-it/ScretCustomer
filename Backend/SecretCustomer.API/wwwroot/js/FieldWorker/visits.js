@@ -55,7 +55,7 @@ function FieldWorkerVisitsViewModel() {
 
     // Start new visit from assignment - popup olarak aç
     self.startNewVisit = function(assignment) {
-        var url = '/FieldWorker/VisitPopup?assignmentId=' + assignment.assignmentId;
+        var url = '/FieldWorker/VisitPopup?projectId=' + assignment.projectId;
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;
@@ -350,14 +350,14 @@ function FieldWorkerVisitsViewModel() {
         }
 
         var project = self.projects().find(function(p) { return p.projectId === parseInt(projectId); });
-        if (!project || !project.assignmentId) {
+        if (!project || !project.projectId) {
             self.formData(null);
             self.questions([]);
             return;
         }
 
         self.isLoadingQuestions(true);
-        ApiService.get('/evaluations/form/' + project.assignmentId)
+        ApiService.get('/evaluations/form/' + project.projectId)
             .then(function(data) {
                 self.formData(data);
                 // penaltyGroups'tan soruları düzleştir

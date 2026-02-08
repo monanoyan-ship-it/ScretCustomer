@@ -196,16 +196,15 @@ public class AIReportService : IAIReportService
     {
         return await _context.Evaluations
             .AsNoTracking()
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => projectIds.Contains(e.Assignment.ProjectId))
+            .Where(e => projectIds.Contains(e.ProjectId))
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt >= startDate && e.CompletedAt <= endDate)
             .Select(e => new EvaluationData
             {
                 EvaluationId = e.Id,
-                ProjectName = e.Assignment.Project.Name,
+                ProjectName = e.Project.Name,
                 PersonnelId = e.EvaluatedCustomerPersonnelId,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FullName : null,
                 CompletedAt = e.CompletedAt,
@@ -221,8 +220,7 @@ public class AIReportService : IAIReportService
             .AsNoTracking()
             .Include(a => a.Question)
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-            .Where(a => projectIds.Contains(a.Evaluation.Assignment.ProjectId))
+            .Where(a => projectIds.Contains(a.Evaluation.ProjectId))
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(a => a.Evaluation.CompletedAt >= startDate && a.Evaluation.CompletedAt <= endDate)
             .Where(a => a.Question != null && a.EarnedPoints.HasValue && a.Question.WeightPoints > 0)

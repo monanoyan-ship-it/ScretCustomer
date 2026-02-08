@@ -84,8 +84,7 @@ public class PublicReportApiController : ControllerBase
         {
             // Token sahibinin bu değerlendirmeyi görme yetkisi var mı kontrol et
             var evaluation = await _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a!.Project)
+                .Include(e => e.Project)
                 .Include(e => e.EvaluatedCustomerPersonnel)
                 .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
 
@@ -101,7 +100,7 @@ public class PublicReportApiController : ControllerBase
                     break;
 
                 case "bulk":
-                    if (evaluation.Assignment?.Project?.CustomerId != payload.CustomerId)
+                    if (evaluation.Project?.CustomerId != payload.CustomerId)
                         return Forbid();
                     break;
 
@@ -146,14 +145,12 @@ public class PublicReportApiController : ControllerBase
             return NotFound(new { message = "Müşteri bulunamadı." });
 
         var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.CustomerDealer)
             .Where(e => !e.IsDeleted
-                && e.Assignment != null
-                && e.Assignment.Project != null
-                && e.Assignment.Project.CustomerId == customerId
+                && e.Project != null
+                && e.Project.CustomerId == customerId
                 && e.CompletedAt != null
                 && e.CompletedAt >= startDate
                 && e.CompletedAt < endDate)
@@ -169,7 +166,7 @@ public class PublicReportApiController : ControllerBase
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel ?? "-",
                 DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
-                ProjectName = e.Assignment!.Project!.Name,
+                ProjectName = e.Project!.Name,
                 e.EvaluationComment
             })
             .ToListAsync();
@@ -193,8 +190,7 @@ public class PublicReportApiController : ControllerBase
             return NotFound(new { message = "Personel bulunamadı." });
 
         var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
+            .Include(e => e.Project)
             .Include(e => e.CustomerDealer)
             .Where(e => !e.IsDeleted
                 && e.EvaluatedCustomerPersonnelId == customerPersonnelId
@@ -210,7 +206,7 @@ public class PublicReportApiController : ControllerBase
                 e.MaxScore,
                 ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
                 DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
-                ProjectName = e.Assignment!.Project!.Name,
+                ProjectName = e.Project!.Name,
                 e.EvaluationComment
             })
             .ToListAsync();

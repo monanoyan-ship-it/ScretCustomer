@@ -181,10 +181,9 @@ public class PersonnelRequestService : IPersonnelRequestService
         // 4. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş DİĞER evaluation'ları da güncelle
         var fullName = $"{request.FirstName} {request.LastName}";
         var evaluationsToUpdate = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Where(e => e.Id != request.EvaluationId && // İlgili değerlendirmeyi zaten güncelledik
-                       e.Assignment.Project.CustomerId == request.CustomerId &&
+                       e.Project.CustomerId == request.CustomerId &&
                        e.EvaluatedUnknownPersonnel != null &&
                        (e.EvaluatedUnknownPersonnel.ToLower() == fullName.ToLower() ||
                         e.EvaluatedUnknownPersonnel.ToLower() == $"{request.FirstName.ToLower()} {request.LastName.ToLower()}"))

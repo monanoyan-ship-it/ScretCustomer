@@ -11,7 +11,11 @@ using SecretCustomer.Services.Helpers;
 using SecretCustomer.Services.Services;
 using SecretCustomer.API.Middleware;
 using SecretCustomer.API.Filters;
+using SecretCustomer.Core.Helpers;
 using System.Text;
+
+// Npgsql: DateTime Kind kısıtlamasını kaldır (SpecifyKind gerekliliğini ortadan kaldırır)
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -187,6 +191,8 @@ builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
+builder.Services.AddScoped<ICustomerPortalReportService, CustomerPortalReportService>();
+builder.Services.AddScoped<ICustomerPortalDataService, CustomerPortalDataService>();
 builder.Services.AddHttpClient<IPdfService, PdfService>();
 builder.Services.AddScoped<IAIReportService, AIReportService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
@@ -270,6 +276,9 @@ builder.Services.AddControllersWithViews(options =>
 {
     // String'den number okumaya izin ver (JS select elementlerinden gelen değerler için)
     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    // Tüm DateTime'ları Turkey timezone (UTC+3) olarak serialize et
+    options.JsonSerializerOptions.Converters.Add(new TurkeyDateTimeConverter());
+    options.JsonSerializerOptions.Converters.Add(new TurkeyNullableDateTimeConverter());
 });
 // Also add API controllers
 builder.Services.AddControllers(options =>
@@ -280,6 +289,9 @@ builder.Services.AddControllers(options =>
 {
     // String'den number okumaya izin ver (JS select elementlerinden gelen değerler için)
     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowReadingFromString;
+    // Tüm DateTime'ları Turkey timezone (UTC+3) olarak serialize et
+    options.JsonSerializerOptions.Converters.Add(new TurkeyDateTimeConverter());
+    options.JsonSerializerOptions.Converters.Add(new TurkeyNullableDateTimeConverter());
 });
 
 var app = builder.Build();

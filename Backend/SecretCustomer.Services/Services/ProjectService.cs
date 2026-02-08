@@ -45,8 +45,8 @@ public class ProjectService : IProjectService
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
+            .Include(p => p.Evaluations)
             .Include(p => p.Assignments)
-                .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
@@ -64,8 +64,8 @@ public class ProjectService : IProjectService
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
+            .Include(p => p.Evaluations)
             .Include(p => p.Assignments)
-                .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
                 .ThenInclude(tm => tm.User)
             .Include(p => p.EmailTemplate)
@@ -87,8 +87,8 @@ public class ProjectService : IProjectService
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
+            .Include(p => p.Evaluations)
             .Include(p => p.Assignments)
-                .ThenInclude(a => a.Evaluations)
             .Include(p => p.TeamMembers)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
@@ -246,22 +246,18 @@ public class ProjectService : IProjectService
                 ProjectManagerName = p.ProjectManager != null ? p.ProjectManager.FirstName + " " + p.ProjectManager.LastName : null,
                 TargetCount = p.TargetCount,
                 // İstatistikler
-                AverageScore = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                AverageScore = p.Evaluations
+                    .Where(e => !e.IsDeleted && e.ScorePercentage.HasValue)
                     .Any()
-                    ? Math.Round(p.Assignments
-                        .Where(a => !a.IsDeleted)
-                        .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                    ? Math.Round(p.Evaluations
+                        .Where(e => !e.IsDeleted && e.ScorePercentage.HasValue)
                         .Average(e => e.ScorePercentage!.Value), 1)
                     : 0,
-                TotalYellowCards = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                TotalYellowCards = p.Evaluations
+                    .Where(e => !e.IsDeleted)
                     .Sum(e => e.YellowCardCount),
-                TotalRedCards = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                TotalRedCards = p.Evaluations
+                    .Where(e => !e.IsDeleted)
                     .Sum(e => e.RedCardCount),
                 TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
             })
@@ -418,22 +414,18 @@ public class ProjectService : IProjectService
                 ProjectManagerId = p.ProjectManagerId,
                 ProjectManagerName = p.ProjectManager != null ? p.ProjectManager.FirstName + " " + p.ProjectManager.LastName : null,
                 TargetCount = p.TargetCount,
-                AverageScore = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                AverageScore = p.Evaluations
+                    .Where(e => !e.IsDeleted && e.ScorePercentage.HasValue)
                     .Any()
-                    ? Math.Round(p.Assignments
-                        .Where(a => !a.IsDeleted)
-                        .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted && e.ScorePercentage.HasValue))
+                    ? Math.Round(p.Evaluations
+                        .Where(e => !e.IsDeleted && e.ScorePercentage.HasValue)
                         .Average(e => e.ScorePercentage!.Value), 1)
                     : 0,
-                TotalYellowCards = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                TotalYellowCards = p.Evaluations
+                    .Where(e => !e.IsDeleted)
                     .Sum(e => e.YellowCardCount),
-                TotalRedCards = p.Assignments
-                    .Where(a => !a.IsDeleted)
-                    .SelectMany(a => a.Evaluations.Where(e => !e.IsDeleted))
+                TotalRedCards = p.Evaluations
+                    .Where(e => !e.IsDeleted)
                     .Sum(e => e.RedCardCount),
                 TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
             })
@@ -729,8 +721,7 @@ public class ProjectService : IProjectService
         var end = endDate ?? DateTime.UtcNow;
 
         var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-            .Where(e => e.Assignment.ProjectId == projectId && !e.IsDeleted)
+            .Where(e => e.ProjectId == projectId && !e.IsDeleted)
             .Where(e => e.CreatedAt >= start && e.CreatedAt <= end)
             .ToListAsync();
 
@@ -840,9 +831,8 @@ public class ProjectService : IProjectService
             completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 1) : -1;
         }
 
-        // Calculate average score - use first evaluation from each assignment
-        var evaluations = project.Assignments?
-            .SelectMany(a => a.Evaluations)
+        // Calculate average score from project evaluations
+        var evaluations = project.Evaluations?
             .Where(e => e.ScorePercentage.HasValue)
             .Select(e => e.ScorePercentage!.Value)
             .ToList() ?? new List<decimal>();
@@ -850,12 +840,10 @@ public class ProjectService : IProjectService
         var averageScore = evaluations.Any() ? Math.Round(evaluations.Average(), 1) : 0;
 
         // Calculate card counts from all evaluations
-        var yellowCards = project.Assignments?
-            .SelectMany(a => a.Evaluations)
+        var yellowCards = project.Evaluations?
             .Sum(e => e.YellowCardCount) ?? 0;
 
-        var redCards = project.Assignments?
-            .SelectMany(a => a.Evaluations)
+        var redCards = project.Evaluations?
             .Sum(e => e.RedCardCount) ?? 0;
 
         return new ProjectDto
@@ -981,8 +969,8 @@ public class ProjectService : IProjectService
             .Where(tm => !tm.IsDeleted)
             .Select(tm =>
             {
-                var completedEvals = project.Assignments?
-                    .Count(a => a.Evaluations.Any(e => e.EvaluatorId == tm.UserId) && a.IsCompleted) ?? 0;
+                var completedEvals = project.Evaluations?
+                    .Count(e => e.EvaluatorId == tm.UserId) ?? 0;
 
                 return new ProjectTeamMemberDto
                 {

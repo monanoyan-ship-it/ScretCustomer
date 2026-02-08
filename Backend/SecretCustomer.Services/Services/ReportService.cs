@@ -35,10 +35,9 @@ public class ReportService : IReportService
         var query = _context.Evaluations
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
@@ -52,7 +51,7 @@ public class ReportService : IReportService
 
         // Project filter (çoklu)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         // Project Type filter (çoklu)
         if (filter.ProjectTypes?.Any() == true)
@@ -63,12 +62,12 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Evaluator filter (çoklu)
@@ -76,7 +75,7 @@ public class ReportService : IReportService
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -127,9 +126,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
             // Eğer ikisi de seçiliyse filtre uygulanmaz (tümü gelir)
         }
 
@@ -140,7 +139,7 @@ public class ReportService : IReportService
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
@@ -191,8 +190,8 @@ public class ReportService : IReportService
                 ? query.OrderBy(e => e.Id)
                 : query.OrderByDescending(e => e.Id),
             "projectname" => isAsc
-                ? query.OrderBy(e => e.Assignment.Project!.Name)
-                : query.OrderByDescending(e => e.Assignment.Project!.Name),
+                ? query.OrderBy(e => e.Project!.Name)
+                : query.OrderByDescending(e => e.Project!.Name),
             "periodname" => isAsc
                 ? query.OrderBy(e => e.AssignmentPeriod != null ? e.AssignmentPeriod.StartDate : (DateTime?)null)
                 : query.OrderByDescending(e => e.AssignmentPeriod != null ? e.AssignmentPeriod.StartDate : (DateTime?)null),
@@ -249,7 +248,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -259,18 +258,18 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -314,9 +313,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         if (filter.CustomerIds?.Any() == true)
@@ -324,8 +323,8 @@ public class ReportService : IReportService
                 filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
 
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue &&
-                filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue &&
+                filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
             query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
@@ -370,11 +369,10 @@ public class ReportService : IReportService
         var evaluation = await _context.Evaluations
             .AsNoTracking()
             .AsSplitQuery()
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p!.Customer)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
@@ -401,10 +399,10 @@ public class ReportService : IReportService
         var dto = new EvaluationDetailReportDto
         {
             EvaluationId = evaluation.Id,
-            AssignmentId = evaluation.AssignmentId,
-            ProjectName = evaluation.Assignment?.Project?.Name ?? "",
-            ProjectCode = evaluation.Assignment?.Project?.Code,
-            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name ?? "",
+            ProjectId = evaluation.ProjectId,
+            ProjectName = evaluation.Project?.Name ?? "",
+            ProjectCode = evaluation.Project?.Code,
+            ChecklistName = evaluation.Project?.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : (evaluation.EvaluatorCustomerPersonnel != null
@@ -417,7 +415,7 @@ public class ReportService : IReportService
                     : evaluation.EvaluatedUnknownPersonnel
                         ?? evaluation.EvaluatedOrganization?.Name),
             CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName
-                ?? evaluation.Assignment?.Project?.Customer?.CompanyName,
+                ?? evaluation.Project?.Customer?.CompanyName,
             OrganizationName = evaluation.EvaluatedOrganization?.Name
                 ?? (evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments?.Any() == true
                     ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
@@ -434,14 +432,13 @@ public class ReportService : IReportService
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
-            DueDate = evaluation.Assignment?.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
             ScorePercentage = evaluation.ScorePercentage,
             YellowCardCount = evaluation.YellowCardCount,
             RedCardCount = evaluation.RedCardCount,
             Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
-            ProjectTypeId = evaluation.Assignment?.Project?.ProjectTypeId,
+            ProjectTypeId = evaluation.Project?.ProjectTypeId,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
@@ -719,7 +716,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -729,12 +726,12 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Date Range filter (çoklu - OR mantığı)
@@ -786,8 +783,8 @@ public class ReportService : IReportService
 
         // Project summaries - veritabanında group by
         var projectSummaries = await query
-            .Where(e => e.Assignment.Project != null)
-            .GroupBy(e => new { e.Assignment.Project!.Id, e.Assignment.Project.Name })
+            .Where(e => e.Project != null)
+            .GroupBy(e => new { e.Project!.Id, e.Project.Name })
             .Select(g => new ProjectSummaryReportDto
             {
                 ProjectId = g.Key.Id,
@@ -921,10 +918,9 @@ public class ReportService : IReportService
         // Get evaluations with details
         // PRENSIP: Taslaklar rapora dahil edilmez
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.Answers)
@@ -934,7 +930,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -944,12 +940,12 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Date Range filter (çoklu - OR mantığı)
@@ -1011,7 +1007,7 @@ public class ReportService : IReportService
                 if (answer.Question == null) continue;
 
                 detailSheet.Cell(detailRow, 1).Value = evaluation.Id.ToString();
-                detailSheet.Cell(detailRow, 2).Value = evaluation.Assignment.Project?.Name ?? "";
+                detailSheet.Cell(detailRow, 2).Value = evaluation.Project?.Name ?? "";
                 detailSheet.Cell(detailRow, 3).Value = "";
                 detailSheet.Cell(detailRow, 4).Value = answer.Question.GroupName ?? "";
                 detailSheet.Cell(detailRow, 5).Value = answer.Question.Order;
@@ -1066,10 +1062,10 @@ public class ReportService : IReportService
         return new EvaluationReportDto
         {
             EvaluationId = evaluation.Id,
-            AssignmentId = evaluation.AssignmentId,
-            ProjectName = evaluation.Assignment?.Project?.Name ?? "",
-            ProjectCode = evaluation.Assignment?.Project?.Code,
-            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name ?? "",
+            ProjectId = evaluation.ProjectId,
+            ProjectName = evaluation.Project?.Name ?? "",
+            ProjectCode = evaluation.Project?.Code,
+            ChecklistName = evaluation.Project?.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : (evaluation.EvaluatorCustomerPersonnel != null
@@ -1093,7 +1089,6 @@ public class ReportService : IReportService
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
-            DueDate = evaluation.Assignment?.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
             ScorePercentage = evaluation.ScorePercentage,
@@ -1114,9 +1109,8 @@ public class ReportService : IReportService
     {
         var query = _context.Answers
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Project)
-                        .ThenInclude(p => p!.Customer)
+                .ThenInclude(e => e.Project)
+                    .ThenInclude(p => p!.Customer)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
@@ -1137,15 +1131,15 @@ public class ReportService : IReportService
         // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(a => a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.ProjectId));
 
         if (filter.CustomerIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+            query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
@@ -1224,8 +1218,8 @@ public class ReportService : IReportService
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
                 PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
-                ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
-                CustomerName = a.Evaluation.Assignment.Project?.Customer?.CompanyName,
+                ProjectName = a.Evaluation.Project?.Name ?? "",
+                CustomerName = a.Evaluation.Project?.Customer?.CompanyName,
                 OrganizationName = a.Evaluation.EvaluatedOrganization?.Name,
                 ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
@@ -1276,7 +1270,7 @@ public class ReportService : IReportService
             {
                 OrgId = a.Evaluation.EvaluatedOrganizationId ?? 0,
                 OrgName = a.Evaluation.EvaluatedOrganization?.Name ?? "",
-                CustomerName = a.Evaluation.Assignment.Project?.Customer?.CompanyName ?? ""
+                CustomerName = a.Evaluation.Project?.Customer?.CompanyName ?? ""
             })
             .Where(g => g.Key.OrgId > 0)
             .Select(g => new PenaltyOrganizationDto
@@ -1359,9 +1353,8 @@ public class ReportService : IReportService
         // Export için pagination olmadan tüm veriyi çek
         var query = _context.Answers
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Project)
-                        .ThenInclude(p => p!.Customer)
+                .ThenInclude(e => e.Project)
+                    .ThenInclude(p => p!.Customer)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
@@ -1382,15 +1375,15 @@ public class ReportService : IReportService
         // Varsayılan proje tipi filtresi
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(a => a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Apply filters
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.ProjectId));
 
         if (filter.CustomerIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+            query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
@@ -1510,7 +1503,7 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallId ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallTime ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Duration ?? "";
-            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Assignment.Project?.Name ?? "";
+            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Project?.Name ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.EvaluatedOrganization?.Name ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.Checklist?.Name ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.GroupName ?? "";
@@ -1703,18 +1696,17 @@ public class ReportService : IReportService
         // Değerlendirmesi olan müşterileri getir (Project üzerinden Customer)
         // Sadece Çağrı Denetimi projeleri
         var customersFromEvaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Assignment.Project.CustomerId != null &&
-                        e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing)
+                        e.Project.CustomerId != null &&
+                        e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing)
             .Select(e => new
             {
-                e.Assignment.Project.Customer!.Id,
-                e.Assignment.Project.Customer.CompanyName,
-                e.Assignment.Project.Customer.TaxNumber,
-                e.Assignment.Project.Customer.IsActive
+                e.Project.Customer!.Id,
+                e.Project.Customer.CompanyName,
+                e.Project.Customer.TaxNumber,
+                e.Project.Customer.IsActive
             })
             .Distinct()
             .ToListAsync();
@@ -1738,16 +1730,15 @@ public class ReportService : IReportService
         // Sadece Çağrı Denetimi projeleri
         var query = _context.Evaluations
             .Include(e => e.EvaluatedOrganization)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed &&
                         e.EvaluatedOrganizationId != null &&
-                        e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+                        e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
 
         if (customerId.HasValue)
         {
-            query = query.Where(e => e.Assignment.Project.CustomerId == customerId.Value);
+            query = query.Where(e => e.Project.CustomerId == customerId.Value);
         }
 
         var orgsFromEvaluations = await query
@@ -1756,7 +1747,7 @@ public class ReportService : IReportService
                 e.EvaluatedOrganization!.Id,
                 e.EvaluatedOrganization.Name,
                 e.EvaluatedOrganization.CustomerId,
-                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : ""
+                CustomerName = e.Project.Customer != null ? e.Project.Customer.CompanyName : ""
             })
             .ToListAsync();
 
@@ -1780,17 +1771,16 @@ public class ReportService : IReportService
         var query = _context.Evaluations
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.EvaluatedCustomerPersonnelId != null && e.StatusId == EvaluationStatuses.Ids.Completed)
             // Sadece Çağrı Denetimi projeleri
-            .Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            .Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
 
         // Müşteriye göre filtrele
         if (customerId.HasValue)
         {
-            query = query.Where(e => e.Assignment.Project.CustomerId == customerId.Value);
+            query = query.Where(e => e.Project.CustomerId == customerId.Value);
         }
 
         // Organizasyona göre filtrele
@@ -1805,8 +1795,8 @@ public class ReportService : IReportService
                 e.EvaluatedCustomerPersonnelId,
                 e.EvaluatedCustomerPersonnel!.FirstName,
                 e.EvaluatedCustomerPersonnel.LastName,
-                CustomerId = e.Assignment.Project.CustomerId,
-                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : "",
+                CustomerId = e.Project.CustomerId,
+                CustomerName = e.Project.Customer != null ? e.Project.Customer.CompanyName : "",
                 OrganizationId = e.EvaluatedOrganizationId,
                 OrganizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : ""
             })
@@ -1834,10 +1824,9 @@ public class ReportService : IReportService
     public async Task<IEnumerable<ProjectListItemDto>> GetPersonnelProjectsAsync(int personnelId)
     {
         var projects = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Where(e => e.EvaluatedCustomerPersonnelId == personnelId && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .Select(e => new { e.Assignment.ProjectId, e.Assignment.Project.Name })
+            .Select(e => new { e.ProjectId, e.Project.Name })
             .Distinct()
             .ToListAsync();
 
@@ -1858,10 +1847,9 @@ public class ReportService : IReportService
             return null;
 
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -1884,11 +1872,11 @@ public class ReportService : IReportService
         if (filter.ProjectIds?.Any() != true)
         {
             // Varsayılan: Çağrı Denetimi projeleri
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
         else
         {
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
         // DateRanges pattern (UTC dönüşümü Service'de)
@@ -2004,8 +1992,8 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 EvaluationDate = e.CompletedAt,
-                ProjectName = e.Assignment.Project?.Name ?? "",
-                ChecklistName = e.Assignment.Checklist?.Name ?? "",
+                ProjectName = e.Project?.Name ?? "",
+                ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
                 ScorePercentage = e.ScorePercentage ?? 0,
                 YellowCards = e.YellowCardCount,
@@ -2072,7 +2060,7 @@ public class ReportService : IReportService
 
         // Proje tipine göre threshold değerlerini al: önce firmaya özel, yoksa global
         var projectTypeId = evaluations
-            .Select(e => e.Assignment?.Project?.ProjectTypeId)
+            .Select(e => e.Project?.ProjectTypeId)
             .FirstOrDefault(pt => pt.HasValue) ?? ProjectTypes.Ids.CallAuditing;
 
         decimal successThreshold = 80;
@@ -2097,7 +2085,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment?.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     QuestionText = a.Question!.Text,
                     Year = e.CompletedAt!.Value.Year,
                     Month = e.CompletedAt.Value.Month,
@@ -2578,11 +2566,10 @@ public class ReportService : IReportService
 
         var query = _context.Answers
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Project)
+                .ThenInclude(e => e.Project)
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Checklist)
+                .ThenInclude(e => e.Project)
+                    .ThenInclude(p => p.Checklist)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
@@ -2613,21 +2600,21 @@ public class ReportService : IReportService
         // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(a => a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.ProjectId));
 
         if (filter.CustomerIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+            query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Project.ChecklistId));
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(a => a.Evaluation.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(a.Evaluation.EvaluatorId.Value));
@@ -2725,7 +2712,7 @@ public class ReportService : IReportService
                 QuestionId = a.QuestionId,
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
-                ChecklistName = a.Evaluation.Assignment.Checklist?.Name ?? "",
+                ChecklistName = a.Evaluation.Project.Checklist?.Name ?? "",
                 Notes = a.Notes,
                 RecommendationNotes = a.RecommendationNotes,
                 GivenPoints = a.EarnedPoints,
@@ -2733,7 +2720,7 @@ public class ReportService : IReportService
                 PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
                     ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
                     : null,
-                ProjectName = a.Evaluation.Assignment.Project?.Name ?? "",
+                ProjectName = a.Evaluation.Project?.Name ?? "",
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
@@ -2757,8 +2744,7 @@ public class ReportService : IReportService
 
         // Evaluation seviyesindeki notları getir (genel notlar ve denetim yorumları)
         var evaluationNotesQuery = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.CustomerDealer)
@@ -2768,12 +2754,12 @@ public class ReportService : IReportService
 
         // Aynı filtreleri uygula
         if (filter.ProjectIds?.Any() == true)
-            evaluationNotesQuery = evaluationNotesQuery.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         else
-            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
 
         if (filter.CustomerIds?.Any() == true)
-            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (Supervisor için gerekli)
         if (filter.OrganizationIds?.Any() == true)
@@ -2806,7 +2792,7 @@ public class ReportService : IReportService
             .Select(e => new EvaluationNoteDto
             {
                 EvaluationId = e.Id,
-                ProjectName = e.Assignment.Project != null ? e.Assignment.Project.Name : "",
+                ProjectName = e.Project != null ? e.Project.Name : "",
                 EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : (e.EvaluatedPersonnel != null
@@ -2839,8 +2825,7 @@ public class ReportService : IReportService
     {
         var query = _context.Answers
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Project)
+                .ThenInclude(e => e.Project)
             .Include(a => a.Question)
                 .ThenInclude(q => q.Checklist)
             .Where(a => !string.IsNullOrEmpty(a.Notes) || !string.IsNullOrEmpty(a.RecommendationNotes))
@@ -2850,18 +2835,18 @@ public class ReportService : IReportService
         // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(a => a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+            query = query.Where(a => filter.ProjectIds.Contains(a.Evaluation.ProjectId));
 
         if (filter.CustomerIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+            query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
+            query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Project.ChecklistId));
 
         // DateRanges pattern (UTC dönüşümü Service'de)
         if (filter.DateRanges?.Any() == true)
@@ -2923,10 +2908,10 @@ public class ReportService : IReportService
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             // Aynı filtreleri uygula
             .Where(a => filter.ProjectIds == null || !filter.ProjectIds.Any()
-                ? a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing
-                : filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId))
+                ? a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing
+                : filter.ProjectIds.Contains(a.Evaluation.ProjectId))
             .Where(a => filter.CustomerIds == null || !filter.CustomerIds.Any()
-                || (a.Evaluation.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value)))
+                || (a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value)))
             .GroupBy(a => a.QuestionId)
             .Select(g => new { QuestionId = g.Key, TotalEvaluationCount = g.Select(a => a.EvaluationId).Distinct().Count() })
             .ToListAsync();
@@ -2956,8 +2941,7 @@ public class ReportService : IReportService
                     .ThenInclude(q => q.Checklist)
             .Include(s => s.Answer)
                 .ThenInclude(a => a.Evaluation)
-                    .ThenInclude(e => e.Assignment)
-                        .ThenInclude(a => a.Project)
+                    .ThenInclude(e => e.Project)
             .Where(s => s.Answer.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(s => s.SubCriteria != null && !string.IsNullOrEmpty(s.SubCriteria.Description))
             .AsQueryable();
@@ -2965,19 +2949,19 @@ public class ReportService : IReportService
         // Varsayılan proje tipi filtresi: Çağrı Denetimi (proje filtresi yoksa)
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(s => s.Answer.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(s => s.Answer.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         // Apply filters
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(s => filter.ProjectIds.Contains(s.Answer.Evaluation.Assignment.ProjectId));
+            query = query.Where(s => filter.ProjectIds.Contains(s.Answer.Evaluation.ProjectId));
 
         if (filter.CustomerIds?.Any() == true)
-            query = query.Where(s => s.Answer.Evaluation.Assignment.Project.CustomerId.HasValue &&
-                filter.CustomerIds.Contains(s.Answer.Evaluation.Assignment.Project.CustomerId.Value));
+            query = query.Where(s => s.Answer.Evaluation.Project.CustomerId.HasValue &&
+                filter.CustomerIds.Contains(s.Answer.Evaluation.Project.CustomerId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(s => filter.ChecklistIds.Contains(s.Answer.Evaluation.Assignment.ChecklistId));
+            query = query.Where(s => filter.ChecklistIds.Contains(s.Answer.Evaluation.Project.ChecklistId));
 
         // DateRanges filter
         if (filter.DateRanges?.Any() == true)
@@ -3038,24 +3022,23 @@ public class ReportService : IReportService
             // Answer tablosundan bu soruların kaç değerlendirmede sorulduğunu hesapla
             var answerQuery = _context.Answers
                 .Include(a => a.Evaluation)
-                    .ThenInclude(e => e.Assignment)
-                        .ThenInclude(a => a.Project)
+                    .ThenInclude(e => e.Project)
                 .Where(a => questionIds.Contains(a.QuestionId))
                 .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
                 .AsQueryable();
 
             // Aynı filtreleri uygula
             if (filter.ProjectIds?.Any() == true)
-                answerQuery = answerQuery.Where(a => filter.ProjectIds.Contains(a.Evaluation.Assignment.ProjectId));
+                answerQuery = answerQuery.Where(a => filter.ProjectIds.Contains(a.Evaluation.ProjectId));
             else
-                answerQuery = answerQuery.Where(a => a.Evaluation.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+                answerQuery = answerQuery.Where(a => a.Evaluation.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
 
             if (filter.CustomerIds?.Any() == true)
-                answerQuery = answerQuery.Where(a => a.Evaluation.Assignment.Project.CustomerId.HasValue &&
-                    filter.CustomerIds.Contains(a.Evaluation.Assignment.Project.CustomerId.Value));
+                answerQuery = answerQuery.Where(a => a.Evaluation.Project.CustomerId.HasValue &&
+                    filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
             if (filter.ChecklistIds?.Any() == true)
-                answerQuery = answerQuery.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Assignment.ChecklistId));
+                answerQuery = answerQuery.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Project.ChecklistId));
 
             // Tarih filtreleri
             if (filter.DateRanges?.Any() == true)
@@ -3334,8 +3317,7 @@ public class ReportService : IReportService
     public async Task<ExcelExportDto> ExportQuestionGroupAverageReportAsync(ReportFilterDto filter)
     {
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.AssignmentPeriod)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -3344,7 +3326,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -3354,19 +3336,19 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -3398,7 +3380,7 @@ public class ReportService : IReportService
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
@@ -3417,9 +3399,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         var evaluations = await query.Take(10000).ToListAsync();
@@ -3430,7 +3412,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName))
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
                     Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
                     GroupOrder = a.Question!.GroupName!.Split(' ').FirstOrDefault() ?? "",
@@ -3461,7 +3443,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null)
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
                     Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
                     GroupName = a.Question!.GroupName ?? "",
@@ -3585,8 +3567,7 @@ public class ReportService : IReportService
     {
         // PRENSIP: Taslaklar rapora dahil edilmez
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.AssignmentPeriod)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.Customer)
@@ -3600,7 +3581,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -3610,19 +3591,19 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -3671,9 +3652,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         // Customer filter (çoklu)
@@ -3683,7 +3664,7 @@ public class ReportService : IReportService
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
@@ -3797,8 +3778,8 @@ public class ReportService : IReportService
             var periodMonth = evalDate.ToString("yyyyMM");
 
             worksheet.Cell(row, 1).Value = customerName;
-            var projectCode = e.Assignment.Project?.Code;
-            var projectName = e.Assignment.Project?.Name ?? "";
+            var projectCode = e.Project?.Code;
+            var projectName = e.Project?.Name ?? "";
             worksheet.Cell(row, 2).Value = !string.IsNullOrEmpty(projectCode) ? $"{projectCode} - {projectName}" : projectName;
             worksheet.Cell(row, 3).Value = degerlendirilenmStr;
             worksheet.Cell(row, 4).Value = personnelName;
@@ -3858,15 +3839,14 @@ public class ReportService : IReportService
     public async Task<ExcelExportDto> ExportProjectPerformanceReportAsync(ReportFilterDto filter)
     {
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.AssignmentPeriod)
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed && e.ScorePercentage.HasValue)
             .AsQueryable();
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -3876,19 +3856,19 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -3920,7 +3900,7 @@ public class ReportService : IReportService
 
         // Project customer filter (for CustomerPortal - filter by project's customer)
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
@@ -3939,9 +3919,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         var evaluations = await query.Take(50000).ToListAsync();
@@ -3951,7 +3931,7 @@ public class ReportService : IReportService
             .Select(e => new
             {
                 EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
-                ProjectName = e.AssignmentPeriod?.Name ?? e.Assignment.Project?.Name ?? "",
+                ProjectName = e.AssignmentPeriod?.Name ?? e.Project?.Name ?? "",
                 ScorePercentage = e.ScorePercentage!.Value
             })
             .GroupBy(x => new
@@ -4027,8 +4007,7 @@ public class ReportService : IReportService
     {
         // Get evaluations with all necessary includes
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p!.Customer)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
@@ -4043,7 +4022,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -4053,12 +4032,12 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Çağrı Denetimi
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
@@ -4108,9 +4087,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         var evaluations = await query.Take(50000).ToListAsync();
@@ -4169,11 +4148,11 @@ public class ReportService : IReportService
             .Where(e => e.ScorePercentage.HasValue)
             .Select(e => new
             {
-                ProjectName = e.Assignment.Project?.Name ?? "",
+                ProjectName = e.Project?.Name ?? "",
                 PersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                     : e.EvaluatedUnknownPersonnel ?? "-",
-                Department = e.EvaluatedOrganization?.Name ?? e.Assignment.Project?.Customer?.CompanyName ?? "-",
+                Department = e.EvaluatedOrganization?.Name ?? e.Project?.Customer?.CompanyName ?? "-",
                 Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
                 Score = e.ScorePercentage!.Value
             })
@@ -4239,9 +4218,8 @@ public class ReportService : IReportService
             .Include(s => s.SubCriteria)
             .Include(s => s.Answer)
                 .ThenInclude(a => a.Evaluation)
-                    .ThenInclude(e => e.Assignment)
-                        .ThenInclude(a => a.Project)
-                            .ThenInclude(p => p!.Customer)
+                    .ThenInclude(e => e.Project)
+                        .ThenInclude(p => p!.Customer)
             .Include(s => s.Answer)
                 .ThenInclude(a => a.Evaluation)
                     .ThenInclude(e => e.EvaluatedCustomerPersonnel)
@@ -4257,10 +4235,10 @@ public class ReportService : IReportService
                     : s.Answer.Evaluation.EvaluatedUnknownPersonnel ?? "-",
                 Department = s.Answer.Evaluation.EvaluatedOrganization != null
                     ? s.Answer.Evaluation.EvaluatedOrganization.Name
-                    : (s.Answer.Evaluation.Assignment.Project != null && s.Answer.Evaluation.Assignment.Project.Customer != null
-                        ? s.Answer.Evaluation.Assignment.Project.Customer.CompanyName
+                    : (s.Answer.Evaluation.Project != null && s.Answer.Evaluation.Project.Customer != null
+                        ? s.Answer.Evaluation.Project.Customer.CompanyName
                         : "-"),
-                ProjectName = s.Answer.Evaluation.Assignment.Project != null ? s.Answer.Evaluation.Assignment.Project.Name : "",
+                ProjectName = s.Answer.Evaluation.Project != null ? s.Answer.Evaluation.Project.Name : "",
                 EvalDate = s.Answer.Evaluation.CallDate ?? s.Answer.Evaluation.CompletedAt ?? s.Answer.Evaluation.CreatedAt,
                 Suggestion = s.SubCriteria!.Description
             })
@@ -4269,9 +4247,8 @@ public class ReportService : IReportService
         // 2. RecommendationNotes and Notes from Answers
         var answerSuggestions = await _context.Answers
             .Include(a => a.Evaluation)
-                .ThenInclude(e => e.Assignment)
-                    .ThenInclude(a => a.Project)
-                        .ThenInclude(p => p!.Customer)
+                .ThenInclude(e => e.Project)
+                    .ThenInclude(p => p!.Customer)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
             .Include(a => a.Evaluation)
@@ -4295,8 +4272,8 @@ public class ReportService : IReportService
             var personnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
                 ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
                 : a.Evaluation.EvaluatedUnknownPersonnel ?? "-";
-            var department = a.Evaluation.EvaluatedOrganization?.Name ?? a.Evaluation.Assignment.Project?.Customer?.CompanyName ?? "-";
-            var projectName = a.Evaluation.Assignment.Project?.Name ?? "";
+            var department = a.Evaluation.EvaluatedOrganization?.Name ?? a.Evaluation.Project?.Customer?.CompanyName ?? "-";
+            var projectName = a.Evaluation.Project?.Name ?? "";
             var evalDate = a.Evaluation.CallDate ?? a.Evaluation.CompletedAt ?? a.Evaluation.CreatedAt;
 
             if (!string.IsNullOrWhiteSpace(a.RecommendationNotes))
@@ -4378,7 +4355,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && a.Question.MaxPoints > 0)
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     PersonnelName = e.EvaluatedCustomerPersonnel != null
                         ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                         : e.EvaluatedUnknownPersonnel ?? "-",
@@ -4481,13 +4458,13 @@ public class ReportService : IReportService
 
                     return new
                     {
-                        ProjectName = e.Assignment.Project?.Name ?? "",
+                        ProjectName = e.Project?.Name ?? "",
                         GroupName = a.Question!.GroupName ?? "-",
                         QuestionText = a.Question.Text,
                         PersonnelName = e.EvaluatedCustomerPersonnel != null
                             ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                             : e.EvaluatedUnknownPersonnel ?? "-",
-                        Department = e.EvaluatedOrganization?.Name ?? e.Assignment.Project?.Customer?.CompanyName ?? "-",
+                        Department = e.EvaluatedOrganization?.Name ?? e.Project?.Customer?.CompanyName ?? "-",
                         CallId = e.CallId ?? "-",
                         PeriodMonth = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).ToString("yyyyMM"),
                         CriteriaScore = a.Question.MaxPoints > 0
@@ -4548,13 +4525,13 @@ public class ReportService : IReportService
 
         // Değerlendirmeler
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.CustomerOrganization)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
-            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
 
         if (startDate.HasValue)
@@ -4882,12 +4859,12 @@ public class ReportService : IReportService
 
             // Tamamlanan anket sayısı
             var completedCount = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
+                .Where(e => e.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
                 .CountAsync();
 
             // Ortalama puan
             var avgScore = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id &&
+                .Where(e => e.ProjectId == project.Id &&
                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                        e.ScorePercentage.HasValue)
                 .Select(e => e.ScorePercentage)
@@ -4895,7 +4872,7 @@ public class ReportService : IReportService
 
             // Son yanıt tarihi
             var lastResponse = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
+                .Where(e => e.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
                 .OrderByDescending(e => e.CompletedAt)
                 .Select(e => e.CompletedAt)
                 .FirstOrDefaultAsync();
@@ -4927,19 +4904,18 @@ public class ReportService : IReportService
             .ToListAsync();
 
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
-            .Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+            .Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment.Project.IsDeleted &&
-                   !enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId))
+                   !e.Project.IsDeleted &&
+                   !enneagramChecklistIds.Contains(e.Project.ChecklistId))
             .AsQueryable();
 
         // Filter by project
         if (projectId.HasValue)
         {
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+            query = query.Where(e => e.ProjectId == projectId.Value);
         }
 
         // Filter by date range
@@ -4992,8 +4968,8 @@ public class ReportService : IReportService
             return new RecentSurveyResponseDto
             {
                 EvaluationId = e.Id,
-                ProjectId = e.Assignment.ProjectId,
-                ProjectName = e.Assignment.Project.Name,
+                ProjectId = e.ProjectId,
+                ProjectName = e.Project.Name,
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 Score = e.ScorePercentage,
@@ -5008,23 +4984,22 @@ public class ReportService : IReportService
     {
         // Yanıtları al (max 500)
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
                     .ThenInclude(s => s.SubCriteria)
-            .Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+            .Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
-                   !e.Assignment.Project.IsDeleted)
+                   !e.Project.IsDeleted)
             .AsQueryable();
 
         // Filter by project
         if (projectId.HasValue)
         {
-            query = query.Where(e => e.Assignment.ProjectId == projectId.Value);
+            query = query.Where(e => e.ProjectId == projectId.Value);
         }
 
         var evaluations = await query
@@ -5050,7 +5025,7 @@ public class ReportService : IReportService
 
         // Proje adı (dosya adı için)
         var projectName = projectId.HasValue
-            ? evaluations.FirstOrDefault()?.Assignment.Project?.Name ?? "Anket"
+            ? evaluations.FirstOrDefault()?.Project?.Name ?? "Anket"
             : "Tum_Anketler";
 
         // Excel oluştur
@@ -5084,7 +5059,7 @@ public class ReportService : IReportService
                 respondentEmail = ext.Email;
             }
 
-            sheet1.Cell(row1, 1).Value = e.Assignment.Project?.Name ?? "";
+            sheet1.Cell(row1, 1).Value = e.Project?.Name ?? "";
             sheet1.Cell(row1, 2).Value = respondentName ?? "-";
             sheet1.Cell(row1, 3).Value = respondentEmail ?? "-";
             sheet1.Cell(row1, 4).Value = e.ScorePercentage ?? 0;
@@ -5137,7 +5112,7 @@ public class ReportService : IReportService
                     .Where(d => !string.IsNullOrEmpty(d))
                     .ToList();
 
-                sheet2.Cell(row2, 1).Value = e.Assignment.Project?.Name ?? "";
+                sheet2.Cell(row2, 1).Value = e.Project?.Name ?? "";
                 sheet2.Cell(row2, 2).Value = respondentName ?? "-";
                 sheet2.Cell(row2, 3).Value = respondentEmail ?? "-";
                 sheet2.Cell(row2, 4).Value = a.Question!.GroupName ?? "Genel";
@@ -5189,7 +5164,7 @@ public class ReportService : IReportService
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.CustomerOrganization)
-            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
             .OrderByDescending(e => e.CompletedAt)
             .ToListAsync();
 
@@ -5565,7 +5540,7 @@ public class ReportService : IReportService
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
                     .ThenInclude(s => s.SubCriteria)
-            .Where(e => e.Assignment.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
             .OrderByDescending(e => e.CompletedAt)
             .ToListAsync();
 
@@ -5720,19 +5695,19 @@ public class ReportService : IReportService
 
         // Base query with filters
         var baseQuery = _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed);
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.ProjectId != null);
 
         // Apply filters
         if (customerIds?.Any() == true)
-            baseQuery = baseQuery.Where(e => e.Assignment.Project.CustomerId.HasValue && customerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            baseQuery = baseQuery.Where(e => e.Project.CustomerId.HasValue && customerIds.Contains(e.Project.CustomerId.Value));
         if (evaluatorIds?.Any() == true)
             baseQuery = baseQuery.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
         if (projectIds?.Any() == true)
-            baseQuery = baseQuery.Where(e => projectIds.Contains(e.Assignment.ProjectId));
+            baseQuery = baseQuery.Where(e => projectIds.Contains(e.ProjectId));
         if (startDate.HasValue)
-            baseQuery = baseQuery.Where(e => e.CompletedAt >= startDate.Value);
+            baseQuery = baseQuery.Where(e => e.CreatedAt >= startDate.Value);
         if (endDate.HasValue)
-            baseQuery = baseQuery.Where(e => e.CompletedAt <= endDate.Value.Date.AddDays(1));
+            baseQuery = baseQuery.Where(e => e.CreatedAt <= endDate.Value.Date.AddDays(1));
 
         // 1. Değerlendirici (Evaluator) Performansları
         var evaluatorStats = await baseQuery
@@ -5743,10 +5718,10 @@ public class ReportService : IReportService
                 EvaluatorId = g.Key.EvaluatorId!.Value,
                 FirstName = g.Key.FirstName,
                 LastName = g.Key.LastName,
-                TodayCount = g.Count(e => e.CompletedAt >= todayStart),
-                WeekCount = g.Count(e => e.CompletedAt >= weekStart),
-                MonthCount = g.Count(e => e.CompletedAt >= monthStart),
-                YearCount = g.Count(e => e.CompletedAt >= yearStart),
+                TodayCount = g.Count(e => e.CreatedAt >= todayStart),
+                WeekCount = g.Count(e => e.CreatedAt >= weekStart),
+                MonthCount = g.Count(e => e.CreatedAt >= monthStart),
+                YearCount = g.Count(e => e.CreatedAt >= yearStart),
                 TotalCount = g.Count(),
                 TotalScore = g.Sum(e => e.ScorePercentage ?? 0),
                 ScoredCount = g.Count(e => e.ScorePercentage != null)
@@ -5781,22 +5756,22 @@ public class ReportService : IReportService
                 TodayCount = _context.Evaluations.Count(e =>
                     !e.IsDeleted &&
                     e.StatusId == EvaluationStatuses.Ids.Completed &&
-                    e.Assignment.Project.CustomerId == c.Id &&
-                    e.CompletedAt >= todayStart),
+                    e.Project.CustomerId == c.Id &&
+                    e.CreatedAt >= todayStart),
                 WeekCount = _context.Evaluations.Count(e =>
                     !e.IsDeleted &&
                     e.StatusId == EvaluationStatuses.Ids.Completed &&
-                    e.Assignment.Project.CustomerId == c.Id &&
-                    e.CompletedAt >= weekStart),
+                    e.Project.CustomerId == c.Id &&
+                    e.CreatedAt >= weekStart),
                 MonthCount = _context.Evaluations.Count(e =>
                     !e.IsDeleted &&
                     e.StatusId == EvaluationStatuses.Ids.Completed &&
-                    e.Assignment.Project.CustomerId == c.Id &&
-                    e.CompletedAt >= monthStart),
+                    e.Project.CustomerId == c.Id &&
+                    e.CreatedAt >= monthStart),
                 TotalCount = _context.Evaluations.Count(e =>
                     !e.IsDeleted &&
                     e.StatusId == EvaluationStatuses.Ids.Completed &&
-                    e.Assignment.Project.CustomerId == c.Id)
+                    e.Project.CustomerId == c.Id)
             })
             .OrderByDescending(c => c.MonthCount)
             .ToListAsync();
@@ -5834,15 +5809,15 @@ public class ReportService : IReportService
             .ToListAsync();
 
         var projectTypeStats = await _context.Evaluations
-            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .GroupBy(e => e.Assignment.Project.ProjectTypeId)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.Project != null)
+            .GroupBy(e => e.Project!.ProjectTypeId)
             .Select(g => new
             {
                 ProjectTypeId = g.Key,
-                TodayCount = g.Count(e => e.CompletedAt >= todayStart),
-                WeekCount = g.Count(e => e.CompletedAt >= weekStart),
-                MonthCount = g.Count(e => e.CompletedAt >= monthStart),
-                YearCount = g.Count(e => e.CompletedAt >= yearStart),
+                TodayCount = g.Count(e => e.CreatedAt >= todayStart),
+                WeekCount = g.Count(e => e.CreatedAt >= weekStart),
+                MonthCount = g.Count(e => e.CreatedAt >= monthStart),
+                YearCount = g.Count(e => e.CreatedAt >= yearStart),
                 TotalScore = g.Sum(e => e.ScorePercentage ?? 0),
                 ScoredCount = g.Count(e => e.ScorePercentage != null)
             })
@@ -5928,8 +5903,8 @@ public class ReportService : IReportService
         var evalQuery = _context.Evaluations
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
-                        e.Assignment.ProjectId == projectId.Value);
+                        e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                        e.ProjectId == projectId.Value);
 
         var evaluationIds = await evalQuery.Select(e => e.Id).ToListAsync();
 
@@ -6151,7 +6126,7 @@ public class ReportService : IReportService
         var evaluationIds = await _context.Evaluations
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Assignment.ProjectId == projectId)
+                        e.ProjectId == projectId)
             .Select(e => e.Id)
             .ToListAsync();
 
@@ -6425,8 +6400,7 @@ public class ReportService : IReportService
     {
         // Temel sorgu - tamamlanmış değerlendirmeler
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Include(e => e.Answers)
@@ -6438,12 +6412,12 @@ public class ReportService : IReportService
         // Filtreler - çoğul parametreler (KURALLAR.md Bölüm 20)
         if (filter.CustomerIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Project.CustomerId.Value));
         }
 
         if (filter.ProjectIds?.Any() == true)
         {
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
         if (filter.OrganizationIds?.Any() == true)
@@ -6598,8 +6572,7 @@ public class ReportService : IReportService
     {
         // Temel sorgu - tamamlanmış değerlendirmeler
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -6610,12 +6583,12 @@ public class ReportService : IReportService
         // Filtreler - çoğul parametreler (KURALLAR.md Bölüm 20)
         if (filter.CustomerIds?.Any() == true)
         {
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.CustomerIds.Contains(e.Project.CustomerId.Value));
         }
 
         if (filter.ProjectIds?.Any() == true)
         {
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
         if (filter.OrganizationIds?.Any() == true)
@@ -6668,7 +6641,7 @@ public class ReportService : IReportService
                 .Where(a => !a.Question.IsDeleted && !string.IsNullOrEmpty(a.Question.GroupName))
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment?.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     PersonnelId = e.EvaluatedCustomerPersonnelId!.Value,
                     PersonnelName = e.EvaluatedCustomerPersonnel != null
                         ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim()
@@ -6785,13 +6758,13 @@ public class ReportService : IReportService
         {
             // Tamamlanan anket sayısı
             var completedCount = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id &&
+                .Where(e => e.ProjectId == project.Id &&
                            e.StatusId == EvaluationStatuses.Ids.Completed)
                 .CountAsync();
 
             // Son yanıt tarihi
             var lastResponse = await _context.Evaluations
-                .Where(e => e.Assignment.ProjectId == project.Id &&
+                .Where(e => e.ProjectId == project.Id &&
                            e.StatusId == EvaluationStatuses.Ids.Completed)
                 .OrderByDescending(e => e.CompletedAt)
                 .Select(e => e.CompletedAt)
@@ -6828,8 +6801,7 @@ public class ReportService : IReportService
 
         // Temel sorgu - Project.ChecklistId üzerinden filtrele
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -6838,13 +6810,13 @@ public class ReportService : IReportService
                     .ThenInclude(s => s.SubCriteria)
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Assignment.Project != null &&
-                        enneagramChecklistIds.Contains(e.Assignment.Project.ChecklistId));
+                        e.Project != null &&
+                        enneagramChecklistIds.Contains(e.Project.ChecklistId));
 
         // Proje filtresi
         if (filter.ProjectIds?.Any() == true)
         {
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
         // Arama filtresi (isim veya e-posta) - EvaluatedCustomerPersonnel üzerinden
@@ -6931,8 +6903,8 @@ public class ReportService : IReportService
             results.Add(new EnneagramResultListDto
             {
                 EvaluationId = eval.Id,
-                ProjectId = eval.Assignment.ProjectId,
-                ProjectName = eval.Assignment.Project?.Name ?? "",
+                ProjectId = eval.ProjectId,
+                ProjectName = eval.Project?.Name ?? "",
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 DominantType = dominantScore?.PersonalityType,
@@ -6944,7 +6916,7 @@ public class ReportService : IReportService
 
         var mostCommonType = dominantTypes.OrderByDescending(x => x.Value).FirstOrDefault().Key;
 
-        var projectCount = evaluations.Select(e => e.Assignment.ProjectId).Distinct().Count();
+        var projectCount = evaluations.Select(e => e.ProjectId).Distinct().Count();
 
         var summary = new EnneagramSummaryDto
         {
@@ -6963,8 +6935,7 @@ public class ReportService : IReportService
     public async Task<EnneagramResultDetailDto?> GetEnneagramResultDetailAsync(int evaluationId)
     {
         var evaluation = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -7004,10 +6975,10 @@ public class ReportService : IReportService
         return new EnneagramResultDetailDto
         {
             EvaluationId = evaluation.Id,
-            ProjectId = evaluation.Assignment.Project?.Id ?? 0,
+            ProjectId = evaluation.Project?.Id ?? 0,
             RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
             RespondentEmail = respondentEmail,
-            ProjectName = evaluation.Assignment.Project?.Name ?? "",
+            ProjectName = evaluation.Project?.Name ?? "",
             DominantType = dominantScore?.PersonalityType,
             DominantPercentage = dominantScore?.Percentage,
             CompletedAt = evaluation.CompletedAt,
@@ -7134,13 +7105,13 @@ public class ReportService : IReportService
 
         // Bu projedeki tamamlanmış değerlendirmeleri al
         var evaluations = await _context.Evaluations
-            .Include(e => e.Assignment)
+            .Include(e => e.Project)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
                     .ThenInclude(s => s.SubCriteria)
-            .Where(e => e.Assignment.ProjectId == projectId &&
+            .Where(e => e.ProjectId == projectId &&
                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                        !e.IsDeleted)
             .ToListAsync();
@@ -7267,8 +7238,7 @@ public class ReportService : IReportService
     {
         // PRENSIP: Taslaklar rapora dahil edilmez
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Include(e => e.AssignmentPeriod)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.Customer)
@@ -7283,7 +7253,7 @@ public class ReportService : IReportService
 
         // Apply filters - Çoklu değer desteği (OR mantığı)
         if (filter.ProjectIds?.Any() == true)
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
 
         if (filter.ProjectTypes?.Any() == true)
         {
@@ -7293,20 +7263,20 @@ public class ReportService : IReportService
                 .Select(pt => pt!.Id)
                 .ToList();
             if (projectTypeIds.Any())
-                query = query.Where(e => projectTypeIds.Contains(e.Assignment.Project.ProjectTypeId));
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
         }
         // Varsayılan proje tipi filtresi: Gizli Müşteri + Fiziksel Denetim
         else if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.MysteryShopping
-                                  || e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.PhysicalAudit);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.MysteryShopping
+                                  || e.Project.ProjectTypeId == ProjectTypes.Ids.PhysicalAudit);
         }
 
         if (filter.EvaluatorIds?.Any() == true)
             query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
 
         if (filter.ChecklistIds?.Any() == true)
-            query = query.Where(e => filter.ChecklistIds.Contains(e.Assignment.ChecklistId));
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
@@ -7354,9 +7324,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Assignment.TypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Assignment.TypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
         }
 
         // Customer filter (çoklu)
@@ -7366,7 +7336,7 @@ public class ReportService : IReportService
 
         // Project customer filter (for CustomerPortal)
         if (filter.ProjectCustomerIds?.Any() == true)
-            query = query.Where(e => e.Assignment.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Assignment.Project.CustomerId.Value));
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
@@ -7473,8 +7443,8 @@ public class ReportService : IReportService
             var periodMonth = evalDate.ToString("yyyyMM");
 
             worksheet.Cell(row, 1).Value = customerName;
-            var projectCode = e.Assignment.Project?.Code;
-            var projectName = e.Assignment.Project?.Name ?? "";
+            var projectCode = e.Project?.Code;
+            var projectName = e.Project?.Name ?? "";
             worksheet.Cell(row, 2).Value = !string.IsNullOrEmpty(projectCode) ? $"{projectCode} - {projectName}" : projectName;
             worksheet.Cell(row, 3).Value = degerlendirilenmStr;
             worksheet.Cell(row, 4).Value = dealerName;
@@ -7738,10 +7708,9 @@ public class ReportService : IReportService
     public async Task<IEnumerable<ProjectListItemDto>> GetDealerProjectsAsync(int dealerId)
     {
         var projects = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
             .Where(e => e.CustomerDealerId == dealerId && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .Select(e => new { e.Assignment.ProjectId, e.Assignment.Project.Name })
+            .Select(e => new { e.ProjectId, e.Project.Name })
             .Distinct()
             .ToListAsync();
 
@@ -7761,10 +7730,9 @@ public class ReportService : IReportService
             return null;
 
         var query = _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Checklist)
+            .Include(e => e.Project)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.Answers)
@@ -7777,12 +7745,12 @@ public class ReportService : IReportService
         // Proje filtresi
         if (filter.ProjectIds?.Any() != true)
         {
-            query = query.Where(e => e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.MysteryShopping
-                                  || e.Assignment.Project.ProjectTypeId == ProjectTypes.Ids.PhysicalAudit);
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.MysteryShopping
+                                  || e.Project.ProjectTypeId == ProjectTypes.Ids.PhysicalAudit);
         }
         else
         {
-            query = query.Where(e => filter.ProjectIds.Contains(e.Assignment.ProjectId));
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
         // DateRanges pattern
@@ -7896,8 +7864,8 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 EvaluationDate = e.CompletedAt,
-                ProjectName = e.Assignment.Project?.Name ?? "",
-                ChecklistName = e.Assignment.Checklist?.Name ?? "",
+                ProjectName = e.Project?.Name ?? "",
+                ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
@@ -7961,7 +7929,7 @@ public class ReportService : IReportService
 
         // Threshold
         var projectTypeId = evaluations
-            .Select(e => e.Assignment?.Project?.ProjectTypeId)
+            .Select(e => e.Project?.ProjectTypeId)
             .FirstOrDefault(pt => pt.HasValue) ?? ProjectTypes.Ids.MysteryShopping;
 
         decimal successThreshold = 80;
@@ -7986,7 +7954,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
-                    ProjectName = e.Assignment?.Project?.Name ?? "",
+                    ProjectName = e.Project?.Name ?? "",
                     QuestionText = a.Question!.Text,
                     Year = e.CompletedAt!.Value.Year,
                     Month = e.CompletedAt.Value.Month,

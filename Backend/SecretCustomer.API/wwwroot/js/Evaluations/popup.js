@@ -141,8 +141,8 @@ var EvaluationPopupViewModel = function() {
         self.errorMessage('');
 
         var url = '';
-        if (config.assignmentId) {
-            url = '/api/evaluations/form/' + config.assignmentId;
+        if (config.projectId) {
+            url = '/api/evaluations/form/' + config.projectId;
         } else if (config.evaluationId) {
             url = '/api/evaluations/form/edit/' + config.evaluationId;
         } else {
@@ -272,7 +272,7 @@ var EvaluationPopupViewModel = function() {
         }
 
         var data = {
-            assignmentId: config.assignmentId || self.formData()?.assignmentId,
+            projectId: config.projectId || self.formData()?.projectId,
             evaluationId: config.evaluationId || self.formData()?.evaluationId,
             callId: self.callId(),
             callDate: self.callDate() || null,

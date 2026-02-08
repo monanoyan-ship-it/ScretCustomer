@@ -48,8 +48,7 @@ public class FieldWorkerService : IFieldWorkerService
         var recentVisits = await _context.Evaluations
             .Include(e => e.CustomerDealer)
             .Include(e => e.AssignmentPeriod)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.CreatedBy == user.Username && e.VisitId != null)
             .OrderByDescending(e => e.CreatedAt)
@@ -61,8 +60,8 @@ public class FieldWorkerService : IFieldWorkerService
                 CustomerDealerId = e.CustomerDealerId,
                 CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
-                CustomerName = e.Assignment.Project.Customer.CompanyName,
-                ProjectName = e.Assignment.Project.Name,
+                CustomerName = e.Project.Customer.CompanyName,
+                ProjectName = e.Project.Name,
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
@@ -114,8 +113,8 @@ public class FieldWorkerService : IFieldWorkerService
 
         // Her proje için tamamlanan ziyaret sayısı
         var visitCounts = await _context.Evaluations
-            .Where(e => projectIds.Contains(e.Assignment.ProjectId) && e.VisitId != null)
-            .GroupBy(e => e.Assignment.ProjectId)
+            .Where(e => projectIds.Contains(e.ProjectId) && e.VisitId != null)
+            .GroupBy(e => e.ProjectId)
             .Select(g => new { ProjectId = g.Key, Count = g.Count() })
             .ToListAsync();
 
@@ -214,9 +213,9 @@ public class FieldWorkerService : IFieldWorkerService
         if (assignment == null)
             return new List<FieldWorkerDealerDto>();
 
-        // Bu atama için zaten ziyaret edilmiş bayileri bul
+        // Bu atama için zaten ziyaret edilmiş bayileri bul (projeye göre)
         var visitedDealerIds = await _context.Evaluations
-            .Where(e => e.AssignmentId == assignmentId && e.CustomerDealerId != null && !e.IsDeleted)
+            .Where(e => e.ProjectId == assignment.ProjectId && e.CustomerDealerId != null && !e.IsDeleted)
             .Select(e => e.CustomerDealerId!.Value)
             .Distinct()
             .ToListAsync();
@@ -267,9 +266,9 @@ public class FieldWorkerService : IFieldWorkerService
 
         foreach (var assignment in assignments)
         {
-            // Bu atama için ziyaret edilmiş bayi ID'leri
+            // Bu proje için ziyaret edilmiş bayi ID'leri
             var visitedDealerIds = await _context.Evaluations
-                .Where(e => e.AssignmentId == assignment.Id && e.CustomerDealerId != null && !e.IsDeleted)
+                .Where(e => e.ProjectId == assignment.ProjectId && e.CustomerDealerId != null && !e.IsDeleted)
                 .Select(e => e.CustomerDealerId!.Value)
                 .Distinct()
                 .ToListAsync();
@@ -320,20 +319,19 @@ public class FieldWorkerService : IFieldWorkerService
         var query = _context.Evaluations
             .Include(e => e.CustomerDealer)
             .Include(e => e.AssignmentPeriod)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.CreatedBy == user.Username && e.VisitId != null);
 
         // Filters
         if (filter.ProjectId.HasValue)
-            query = query.Where(e => e.Assignment.ProjectId == filter.ProjectId.Value);
+            query = query.Where(e => e.ProjectId == filter.ProjectId.Value);
 
         if (filter.CustomerDealerId.HasValue)
             query = query.Where(e => e.CustomerDealerId == filter.CustomerDealerId.Value);
 
         if (filter.CustomerId.HasValue)
-            query = query.Where(e => e.Assignment.Project.CustomerId == filter.CustomerId.Value);
+            query = query.Where(e => e.Project.CustomerId == filter.CustomerId.Value);
 
         if (filter.StatusId.HasValue)
             query = query.Where(e => e.StatusId == filter.StatusId.Value);
@@ -382,8 +380,8 @@ public class FieldWorkerService : IFieldWorkerService
                 CustomerDealerId = e.CustomerDealerId,
                 CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
-                CustomerName = e.Assignment.Project.Customer.CompanyName,
-                ProjectName = e.Assignment.Project.Name,
+                CustomerName = e.Project.Customer.CompanyName,
+                ProjectName = e.Project.Name,
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
@@ -414,8 +412,7 @@ public class FieldWorkerService : IFieldWorkerService
         return await _context.Evaluations
             .Include(e => e.CustomerDealer)
             .Include(e => e.AssignmentPeriod)
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a.Project)
+            .Include(e => e.Project)
                     .ThenInclude(p => p.Customer)
             .Where(e => e.Id == evaluationId && e.CreatedBy == user.Username)
             .Select(e => new VisitSummaryDto
@@ -425,8 +422,8 @@ public class FieldWorkerService : IFieldWorkerService
                 CustomerDealerId = e.CustomerDealerId,
                 CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
-                CustomerName = e.Assignment.Project.Customer.CompanyName,
-                ProjectName = e.Assignment.Project.Name,
+                CustomerName = e.Project.Customer.CompanyName,
+                ProjectName = e.Project.Name,
                 ScorePercentage = e.ScorePercentage,
                 StatusId = e.StatusId,
                 CreatedAt = e.CreatedAt,
@@ -472,8 +469,7 @@ public class FieldWorkerService : IFieldWorkerService
             var visitId = await GenerateVisitIdAsync();
             evaluation = new Evaluation
             {
-                AssignmentId = dto.AssignmentId,
-                ChecklistId = assignment.ChecklistId,
+                ProjectId = assignment.ProjectId,
                 VisitId = visitId,
                 EvaluatorId = userId,
                 StatusId = EvaluationStatuses.Ids.InProgress,

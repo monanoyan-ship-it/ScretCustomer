@@ -48,7 +48,6 @@ public class Assignment : BaseEntity
     public DateTime? CompletedAt { get; set; }
 
     // Navigation properties
-    public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
     public ICollection<AssignmentPeriod> Periods { get; set; } = new List<AssignmentPeriod>();
     public ICollection<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; } = new List<AssignmentCustomerDealer>();
 }

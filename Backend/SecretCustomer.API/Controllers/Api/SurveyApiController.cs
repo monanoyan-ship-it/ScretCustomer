@@ -493,7 +493,7 @@ public class SurveyApiController : ControllerBase
 
         // Bu personel için zaten değerlendirme var mı?
         var existingEvaluation = await _context.Evaluations
-            .FirstOrDefaultAsync(e => e.ChecklistId == project.ChecklistId &&
+            .FirstOrDefaultAsync(e => e.ProjectId == project.Id &&
                         e.EvaluatedCustomerPersonnelId == personnel.Id &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
                         !e.IsDeleted);
@@ -508,7 +508,7 @@ public class SurveyApiController : ControllerBase
             // Değerlendirme oluştur (Assignment oluşturulmaz)
             var evaluation = new Evaluation
             {
-                ChecklistId = project.ChecklistId,
+                ProjectId = project.Id,
                 EvaluatedCustomerPersonnelId = personnel.Id,
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = tokenData.CreatedAt,
@@ -598,7 +598,7 @@ public class SurveyApiController : ControllerBase
             // Değerlendirme oluştur (Assignment oluşturulmaz)
             var evaluation = new Evaluation
             {
-                ChecklistId = project.ChecklistId,
+                ProjectId = project.Id,
                 EvaluatedCustomerPersonnelId = null, // External - personnel yok
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = invitation.OpenedAt ?? invitation.CreatedAt,
@@ -902,12 +902,13 @@ public class SurveyApiController : ControllerBase
 
         // Tamamlayan personelleri bul
         var completedAssignments = await _context.Assignments
-            .Include(a => a.Evaluations)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Evaluations)
             .Where(a => a.ProjectId == projectId && !a.IsDeleted && a.IsCompleted && a.AssignedCustomerPersonnelId.HasValue)
             .ToDictionaryAsync(a => a.AssignedCustomerPersonnelId!.Value, a => new
             {
                 CompletedAt = a.CompletedAt,
-                Score = a.Evaluations.FirstOrDefault()?.ScorePercentage
+                Score = a.Project.Evaluations.FirstOrDefault()?.ScorePercentage
             });
 
         var personnelStatus = allPersonnel.Select(p => new

@@ -504,7 +504,7 @@ public static class SeedData
             // 7. Sample Evaluations
             var evaluation1 = new Evaluation
             {
-                AssignmentId = assignment1.Id,
+                ProjectId = project.Id,
                 EvaluatorId = evaluator1.Id,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 85.5m,
@@ -518,7 +518,7 @@ public static class SeedData
 
             var evaluation2 = new Evaluation
             {
-                AssignmentId = assignment2.Id,
+                ProjectId = project.Id,
                 EvaluatorId = evaluator2.Id,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 92.0m,
@@ -532,7 +532,7 @@ public static class SeedData
 
             var evaluation3 = new Evaluation
             {
-                AssignmentId = assignment3.Id,
+                ProjectId = project.Id,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 78.0m,
                 MaxScore = 100m,
@@ -546,7 +546,7 @@ public static class SeedData
             // Geçmiş aylardan ek değerlendirmeler
             var evaluation4 = new Evaluation
             {
-                AssignmentId = assignment1.Id,
+                ProjectId = project.Id,
                 EvaluatorId = evaluator1.Id,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 88.0m,
@@ -560,7 +560,7 @@ public static class SeedData
 
             var evaluation5 = new Evaluation
             {
-                AssignmentId = assignment2.Id,
+                ProjectId = project.Id,
                 EvaluatorId = evaluator2.Id,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 TotalScore = 75.5m,

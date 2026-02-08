@@ -92,8 +92,8 @@ public class DashboardService : IDashboardService
             .Select(e => new RepresentativeEvaluationDto
             {
                 Id = e.Id,
-                ProjectName = e.Assignment?.Project?.Name ?? "",
-                ChecklistName = e.Assignment?.Checklist?.Name ?? "",
+                ProjectName = e.Project?.Name ?? "",
+                ChecklistName = e.Project?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 CompletedAt = e.CompletedAt
             })
@@ -176,8 +176,8 @@ public class DashboardService : IDashboardService
             .Select(e => new RecentEvaluationDto
             {
                 Id = e.Id,
-                ProjectName = e.Assignment?.Project?.Name ?? "",
-                ChecklistName = e.Assignment?.Checklist?.Name ?? "",
+                ProjectName = e.Project?.Name ?? "",
+                ChecklistName = e.Project?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 EvaluationDate = e.CompletedAt ?? e.CreatedAt,
                 Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? ""
@@ -462,10 +462,9 @@ public class DashboardService : IDashboardService
 
         // Her proje için tamamlanan değerlendirmeler
         var projectCompletedQuery = baseQuery
-            .Where(e => e.Assignment != null)
-            .Where(e => projectIds.Contains(e.Assignment!.ProjectId));
+            .Where(e => projectIds.Contains(e.ProjectId));
         var projectCompletedCounts = await projectCompletedQuery
-            .GroupBy(e => e.Assignment!.ProjectId)
+            .GroupBy(e => e.ProjectId)
             .Select(g => new { ProjectId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.ProjectId, x => x.Count);
 
@@ -520,17 +519,59 @@ public class DashboardService : IDashboardService
 
         // Bu ayki değerlendirmeler - proje bazlı gruplama
         var projectData = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
-                    .ThenInclude(p => p!.Customer)
+            .Include(e => e.Project)
+                .ThenInclude(p => p!.Customer)
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId == userId)
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.CreatedAt >= monthStart)
             .GroupBy(e => new
             {
-                ProjectId = e.Assignment!.ProjectId,
-                ProjectName = e.Assignment.Project!.Name,
-                ProjectCode = e.Assignment.Project.Code,
-                CustomerName = e.Assignment.Project.Customer != null ? e.Assignment.Project.Customer.CompanyName : null
+                ProjectId = e.ProjectId,
+                ProjectName = e.Project!.Name,
+                ProjectCode = e.Project.Code,
+                CustomerName = e.Project.Customer != null ? e.Project.Customer.CompanyName : null
+            })
+            .Select(g => new UserProjectDetailDto
+            {
+                ProjectId = g.Key.ProjectId,
+                ProjectName = g.Key.ProjectName,
+                ProjectCode = g.Key.ProjectCode,
+                CustomerName = g.Key.CustomerName,
+                EvaluationCount = g.Count(),
+                AverageScore = Math.Round(g.Average(e => e.ScorePercentage ?? 0), 2)
+            })
+            .OrderByDescending(p => p.EvaluationCount)
+            .ToListAsync();
+
+        var totalCount = projectData.Sum(p => p.EvaluationCount);
+
+        return new UserProjectBreakdownDto
+        {
+            UserId = userId,
+            UserName = userName,
+            TotalEvaluations = totalCount,
+            Projects = projectData
+        };
+    }
+
+    public async Task<UserProjectBreakdownDto> GetUserProjectBreakdownTodayAsync(int userId)
+    {
+        var now = DateTime.UtcNow;
+        var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
+
+        var user = await _context.Users.FindAsync(userId);
+        var userName = user != null ? $"{user.FirstName} {user.LastName}" : "Bilinmeyen";
+
+        var projectData = await _context.Evaluations
+            .Include(e => e.Project)
+                .ThenInclude(p => p!.Customer)
+            .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId == userId)
+            .Where(e => e.CreatedAt >= todayStart)
+            .GroupBy(e => new
+            {
+                ProjectId = e.ProjectId,
+                ProjectName = e.Project!.Name,
+                ProjectCode = e.Project.Code,
+                CustomerName = e.Project.Customer != null ? e.Project.Customer.CompanyName : null
             })
             .Select(g => new UserProjectDetailDto
             {
@@ -565,16 +606,15 @@ public class DashboardService : IDashboardService
 
         // Firma bazlı gruplama
         var customerData = await _context.Evaluations
-            .Include(e => e.Assignment)
-                .ThenInclude(a => a!.Project)
-                    .ThenInclude(p => p!.Customer)
+            .Include(e => e.Project)
+                .ThenInclude(p => p!.Customer)
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
             .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
-            .Where(e => e.Assignment != null && e.Assignment.Project != null && e.Assignment.Project.CustomerId != null)
+            .Where(e => e.Project != null && e.Project.CustomerId != null)
             .GroupBy(e => new
             {
-                CustomerId = e.Assignment!.Project!.CustomerId!.Value,
-                CustomerName = e.Assignment.Project.Customer!.CompanyName
+                CustomerId = e.Project!.CustomerId!.Value,
+                CustomerName = e.Project.Customer!.CompanyName
             })
             .Select(g => new CustomerMonthlyTrendDto
             {

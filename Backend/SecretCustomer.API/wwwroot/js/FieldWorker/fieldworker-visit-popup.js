@@ -413,11 +413,11 @@ var FieldWorkerVisitPopupViewModel = function() {
     // ========================
 
     self.loadDealers = function() {
-        if (!config.assignmentId) return;
+        if (!config.projectId) return;
 
         self.isLoadingDealers(true);
-        // assignmentId ile çağır - ziyaret edilmiş bayileri hariç tutar
-        fetch('/api/fieldworker/dealers-for-assignment?assignmentId=' + config.assignmentId, { credentials: 'include' })
+        // projectId ile çağır - ziyaret edilmiş bayileri hariç tutar
+        fetch('/api/fieldworker/dealers-for-assignment?projectId=' + config.projectId, { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.availableDealers(data || []);
@@ -448,8 +448,8 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.resetFormFields();
 
         var url = '';
-        if (config.assignmentId) {
-            url = '/api/evaluations/form/' + config.assignmentId;
+        if (config.projectId) {
+            url = '/api/evaluations/form/' + config.projectId;
         } else if (config.evaluationId) {
             url = '/api/evaluations/form/edit/' + config.evaluationId;
         } else {
@@ -748,7 +748,7 @@ var FieldWorkerVisitPopupViewModel = function() {
 
         // CreateVisitDto formatında döndür
         return {
-            assignmentId: self.formData().assignmentId,
+            projectId: self.formData().projectId,
             evaluationId: self.formData().evaluationId || null,
             customerDealerId: self.selectedDealerId() ? parseInt(self.selectedDealerId()) : 0,
             controlDate: self.callDate() || null,
@@ -794,14 +794,14 @@ var FieldWorkerVisitPopupViewModel = function() {
                 resolve(false);
                 return;
             }
-            var assignmentId = self.formData() ? self.formData().assignmentId : null;
+            var projectId = self.formData() ? self.formData().projectId : null;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!assignmentId) {
+            if (!projectId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&assignmentId=' + assignmentId;
+                      '&projectId=' + projectId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }

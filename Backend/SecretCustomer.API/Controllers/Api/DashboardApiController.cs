@@ -293,17 +293,14 @@ public class DashboardApiController : BaseApiController
 
             // Değerlendirmeleri getir (junction table ile)
             var evaluations = await _context.Evaluations
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a.AssignedCustomerPersonnel)
-                        .ThenInclude(cp => cp!.OrganizationAssignments)
-                            .ThenInclude(oa => oa.CustomerOrganization)
-                .Include(e => e.Assignment)
-                    .ThenInclude(a => a.AssignedCustomerPersonnel)
-                        .ThenInclude(cp => cp!.OrganizationAssignments)
-                            .ThenInclude(oa => oa.Supervisor)
-                .Where(e => e.Assignment != null
-                    && e.Assignment.AssignedCustomerPersonnelId != null
-                    && targetUserIds.Contains(e.Assignment.AssignedCustomerPersonnelId.Value)
+                .Include(e => e.EvaluatorCustomerPersonnel)
+                    .ThenInclude(cp => cp!.OrganizationAssignments)
+                        .ThenInclude(oa => oa.CustomerOrganization)
+                .Include(e => e.EvaluatorCustomerPersonnel)
+                    .ThenInclude(cp => cp!.OrganizationAssignments)
+                        .ThenInclude(oa => oa.Supervisor)
+                .Where(e => e.EvaluatorCustomerPersonnelId != null
+                    && targetUserIds.Contains(e.EvaluatorCustomerPersonnelId.Value)
                     && e.CreatedAt.Year == targetYear
                     && e.CreatedAt.Month == targetMonth
                     && e.StatusId == EvaluationStatuses.Ids.Completed)
@@ -313,21 +310,21 @@ public class DashboardApiController : BaseApiController
                     e.Id,
                     CallDate = e.CallDate ?? e.CreatedAt,
                     Score = e.ScorePercentage ?? 0,
-                    PersonnelName = e.Assignment!.AssignedCustomerPersonnel != null
-                        ? e.Assignment.AssignedCustomerPersonnel.FirstName + " " + e.Assignment.AssignedCustomerPersonnel.LastName
+                    PersonnelName = e.EvaluatorCustomerPersonnel != null
+                        ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
                         : "",
                     // Junction table'dan ilk atamadaki supervisor
-                    SupervisorName = e.Assignment.AssignedCustomerPersonnel != null
-                        && e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.Supervisor != null)
-                        ? e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments
+                    SupervisorName = e.EvaluatorCustomerPersonnel != null
+                        && e.EvaluatorCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.Supervisor != null)
+                        ? e.EvaluatorCustomerPersonnel.OrganizationAssignments
                             .Where(oa => !oa.IsDeleted && oa.Supervisor != null)
                             .Select(oa => oa.Supervisor!.FirstName + " " + oa.Supervisor.LastName)
                             .FirstOrDefault() ?? ""
                         : "",
                     // Junction table'dan ilk atamadaki organizasyon
-                    OrganizationName = e.Assignment.AssignedCustomerPersonnel != null
-                        && e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
-                        ? e.Assignment.AssignedCustomerPersonnel.OrganizationAssignments
+                    OrganizationName = e.EvaluatorCustomerPersonnel != null
+                        && e.EvaluatorCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
+                        ? e.EvaluatorCustomerPersonnel.OrganizationAssignments
                             .Where(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
                             .Select(oa => oa.CustomerOrganization!.Name)
                             .FirstOrDefault() ?? ""
@@ -458,6 +455,24 @@ public class DashboardApiController : BaseApiController
         {
             _logger.LogError(ex, "Error loading user project breakdown for user {UserId}", userId);
             return StatusCode(500, CreateErrorResponse("Kullanıcı proje detayı yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Kullanıcının bugünkü proje bazlı değerlendirme detayını getirir
+    /// </summary>
+    [HttpGet("user-projects-today/{userId}")]
+    public async Task<IActionResult> GetUserProjectBreakdownToday(int userId)
+    {
+        try
+        {
+            var breakdown = await _dashboardService.GetUserProjectBreakdownTodayAsync(userId);
+            return Ok(breakdown);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading user project breakdown (today) for user {UserId}", userId);
+            return StatusCode(500, CreateErrorResponse("Kullanıcı bugünkü proje detayı yüklenirken hata oluştu", ex));
         }
     }
 

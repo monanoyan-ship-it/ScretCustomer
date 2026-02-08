@@ -629,7 +629,7 @@ function EvaluationsViewModel() {
 
     self.startEvaluation = function(assignment) {
         // scoringMethod'a göre doğru popup'ı aç (isInternal=true ile)
-        self.openEvaluationPopup(assignment.id, null, assignment.scoringMethod);
+        self.openEvaluationPopup(assignment.projectId, null, assignment.scoringMethod);
     };
 
     self.continueEvaluation = function(evaluation) {
@@ -638,7 +638,7 @@ function EvaluationsViewModel() {
     };
 
     // Değerlendirme popup'ı aç (scoringMethod'a göre farklı URL, isInternal=true)
-    self.openEvaluationPopup = function(assignmentId, evaluationId, scoringMethod) {
+    self.openEvaluationPopup = function(projectId, evaluationId, scoringMethod) {
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;
@@ -652,7 +652,7 @@ function EvaluationsViewModel() {
         }
 
         var url = baseUrl;
-        if (assignmentId) url += 'assignmentId=' + assignmentId + '&';
+        if (projectId) url += 'projectId=' + projectId + '&';
         if (evaluationId) url += 'evaluationId=' + evaluationId + '&';
         url += 'isInternal=true';
 
@@ -1208,7 +1208,7 @@ function EvaluationsViewModel() {
         });
 
         return {
-            assignmentId: self.formData().assignmentId,
+            projectId: self.formData().projectId,
             evaluationId: self.formData().evaluationId || null,
             assignmentPeriodId: self.selectedPeriodId() || null,
             answers: answers,
@@ -1270,14 +1270,14 @@ function EvaluationsViewModel() {
                 resolve(false);
                 return;
             }
-            var assignmentId = self.formData() ? self.formData().assignmentId : null;
+            var projectId = self.formData() ? self.formData().projectId : null;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!assignmentId) {
+            if (!projectId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&assignmentId=' + assignmentId;
+                      '&projectId=' + projectId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }
@@ -1458,7 +1458,7 @@ function EvaluationsViewModel() {
     // Confirm and submit evaluation (onaylandığında backend'e kaydet)
     self.confirmSubmit = function() {
         self.isSavingForm(true);        var data = self.prepareData();
-        var assignmentId = data.assignmentId;
+        var projectId = data.projectId;
 
         fetch('/api/evaluations/submit', {
             method: 'POST',
@@ -1505,10 +1505,10 @@ function EvaluationsViewModel() {
                     self.allEvaluations.push(newEvaluation);
                 }
 
-                // Assignment'i tamamlandi olarak isaretle
+                // Assignment'i tamamlandi olarak isaretle (projectId ile eşleştir)
                 var assignments = self.allAssignments();
                 for (var j = 0; j < assignments.length; j++) {
-                    if (assignments[j].id === assignmentId) {
+                    if (assignments[j].projectId === projectId) {
                         assignments[j].isCompleted = true;
                         self.allAssignments.splice(j, 1, assignments[j]);
                         break;

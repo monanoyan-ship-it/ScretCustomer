@@ -165,20 +165,28 @@ function CustomerEnneagramResultsViewModel() {
             });
     };
 
-    // Export results to Excel (uses admin API with customer filter)
+    // Export all results to Excel (CP endpoint with customer scoping)
     self.exportResults = function() {
         var params = new URLSearchParams();
 
         if (self.filter.projectId()) {
-            params.append('projectIds', self.filter.projectId());
+            params.append('projectId', self.filter.projectId());
         }
         if (self.filter.searchTerm()) {
             params.append('searchTerm', self.filter.searchTerm());
         }
 
         var queryString = params.toString();
-        var url = '/api/reports/enneagram-results/export' + (queryString ? '?' + queryString : '');
+        var url = '/api/customer/portal/reports/enneagram-results/export' + (queryString ? '?' + queryString : '');
         window.location.href = url;
+    };
+
+    // Export single result detail to Excel
+    self.exportDetail = function() {
+        if (!self.detail()) return;
+
+        toastr.info('Excel indirme hazirlaniyor...');
+        window.location.href = '/api/customer/portal/reports/enneagram-results/export?projectId=' + self.detail().projectId;
     };
 
     // Initialize

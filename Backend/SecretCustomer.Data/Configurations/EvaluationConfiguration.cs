@@ -25,15 +25,9 @@ public class EvaluationConfiguration : IEntityTypeConfiguration<Evaluation>
         builder.Property(e => e.Notes)
             .HasMaxLength(2000);
 
-        builder.HasOne(e => e.Assignment)
-            .WithMany(a => a.Evaluations)
-            .HasForeignKey(e => e.AssignmentId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder.HasOne(e => e.Checklist)
-            .WithMany()
-            .HasForeignKey(e => e.ChecklistId)
+        builder.HasOne(e => e.Project)
+            .WithMany(p => p.Evaluations)
+            .HasForeignKey(e => e.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Evaluator)

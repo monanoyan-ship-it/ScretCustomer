@@ -7,7 +7,8 @@ function CustomerSurveyResultsViewModel() {
     self.isLoadingPopup = ko.observable(false);
     self.isLoadingResponseDetail = ko.observable(false);
     self.isLoadingDistribution = ko.observable(false);
-    self.isLoadingScoreDetail = ko.observable(false);
+    self.isExportingDistribution = ko.observable(false);
+    self.isExportingAllResponses = ko.observable(false);
 
     // Data
     self.recentResponses = ko.observableArray([]);
@@ -17,6 +18,11 @@ function CustomerSurveyResultsViewModel() {
     self.responseDetail = ko.observable(null);
     self.questionDistribution = ko.observable(null);
     self.scoreDetail = ko.observable(null);
+    self.isLoadingScoreDetail = ko.observable(false);
+
+    // Flat cevap dagilimi tablosu icin (Soru | Cevap | Secim | Toplam | Oran)
+    self.answerDistributionFlat = ko.observableArray([]);
+    self.isLoadingAnswerDistribution = ko.observable(false);
 
     // Project Search
     self.projectSearchTerm = ko.observable('');
@@ -29,7 +35,7 @@ function CustomerSurveyResultsViewModel() {
         });
     });
 
-    // Popup Filters
+    // Popup Filters (CP advantage: date filters)
     self.popupFilter = {
         projectId: ko.observable(null),
         startDate: ko.observable(''),
@@ -86,12 +92,12 @@ function CustomerSurveyResultsViewModel() {
         self.allResponsesModal.show();
     };
 
-    // Load All Responses (with filter)
+    // Load All Responses (with filter - CP advantage: date filters)
     self.loadAllResponses = function() {
         self.isLoadingPopup(true);
         self.allResponses([]);
 
-        var params = ['count=100'];
+        var params = ['count=100']; // Max 100 for popup
         if (self.popupFilter.projectId()) {
             params.push('projectId=' + self.popupFilter.projectId());
         }
@@ -116,6 +122,22 @@ function CustomerSurveyResultsViewModel() {
             });
     };
 
+    // Export All Responses to Excel
+    self.exportAllResponses = function() {
+        if (!self.popupFilter.projectId()) {
+            toastr.warning('Lutfen bir proje secin.');
+            return;
+        }
+
+        self.isExportingAllResponses(true);
+        var url = '/api/customer/portal/reports/survey-responses/export?projectId=' + self.popupFilter.projectId();
+        window.location.href = url;
+
+        setTimeout(function() {
+            self.isExportingAllResponses(false);
+        }, 1000);
+    };
+
     // Show Project Detail Modal
     self.showProjectDetail = function(project) {
         self.projectDetail(null);
@@ -132,7 +154,7 @@ function CustomerSurveyResultsViewModel() {
             });
     };
 
-    // Show Response Detail Modal
+    // Show Response Detail Modal (CP endpoint + field mapping)
     self.showResponseDetail = function(response) {
         self.responseDetail(null);
         self.isLoadingResponseDetail(true);
@@ -196,14 +218,14 @@ function CustomerSurveyResultsViewModel() {
         window.location.href = '/api/customer/portal/reports/survey-results/' + projectId + '/export/question-stats';
     };
 
-    // Export Detail Report
+    // Export Detail Report (scores + selections)
     self.exportDetailReport = function() {
         if (!self.projectDetail()) return;
         var projectId = self.projectDetail().projectId;
         window.location.href = '/api/customer/portal/reports/survey-results/' + projectId + '/export/detail';
     };
 
-    // Export Full Detail Report
+    // Export Full Detail Report (scores + selections + comments)
     self.exportFullDetailReport = function() {
         if (!self.projectDetail()) return;
         var projectId = self.projectDetail().projectId;
@@ -251,38 +273,80 @@ function CustomerSurveyResultsViewModel() {
         window.location.href = '/api/customer/portal/reports/survey-results/' + projectId + '/export/score-detail';
     };
 
-    // Load Question Score Distribution
+    // Load Question Score Distribution (parallel: question-distribution + score-detail)
     self.loadQuestionDistribution = function() {
-        // Proje seçilmeden yükleme yapma
+        // Proje secilmeden yukleme yapma
         if (!self.distributionFilter.projectId()) {
-            toastr.warning('Lütfen bir proje seçin.');
+            toastr.warning('Lutfen bir proje secin.');
             return;
         }
 
         self.isLoadingDistribution(true);
+        self.isLoadingAnswerDistribution(true);
         self.questionDistribution(null);
+        self.answerDistributionFlat([]);
 
-        var url = '/api/customer/portal/reports/survey-question-distribution?projectId=' + self.distributionFilter.projectId();
+        var projectId = self.distributionFilter.projectId();
 
-        customerApiFetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                self.questionDistribution(data);
-            })
-            .catch(function(error) {
-                console.error('Error loading question distribution:', error);
-                toastr.error('Soru puan dagilimi yuklenirken hata olustu.');
-            })
-            .finally(function() {
-                self.isLoadingDistribution(false);
-            });
+        // Hem soru dagilimi hem de cevap dagilimi yukle
+        Promise.all([
+            customerApiFetch('/api/customer/portal/reports/survey-question-distribution?projectId=' + projectId).then(function(r) { return r.json(); }),
+            customerApiFetch('/api/customer/portal/reports/survey-projects/' + projectId + '/score-detail').then(function(r) { return r.json(); })
+        ])
+        .then(function(results) {
+            self.questionDistribution(results[0]);
+
+            // scoreDetail verisini flat tabloya donustur
+            var scoreData = results[1];
+            if (scoreData && scoreData.questions) {
+                var flatData = [];
+                scoreData.questions.forEach(function(q) {
+                    if (q.answerDistributions && q.answerDistributions.length > 0) {
+                        q.answerDistributions.forEach(function(ans) {
+                            flatData.push({
+                                questionText: q.questionText,
+                                groupName: q.groupName,
+                                answerText: ans.answerText,
+                                selectionCount: ans.selectionCount,
+                                totalCount: q.responseCount,
+                                percentage: ans.percentage
+                            });
+                        });
+                    }
+                });
+                self.answerDistributionFlat(flatData);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error loading question distribution:', error);
+            toastr.error('Soru puan dagilimi yuklenirken hata olustu.');
+        })
+        .finally(function() {
+            self.isLoadingDistribution(false);
+            self.isLoadingAnswerDistribution(false);
+        });
+    };
+
+    // Export Question Distribution to Excel
+    self.exportQuestionDistribution = function() {
+        if (!self.distributionFilter.projectId()) {
+            toastr.warning('Lutfen bir proje secin.');
+            return;
+        }
+
+        self.isExportingDistribution(true);
+        window.location.href = '/api/customer/portal/reports/survey-question-distribution/export?projectId=' + self.distributionFilter.projectId();
+
+        // Reset loading state after a short delay
+        setTimeout(function() {
+            self.isExportingDistribution(false);
+        }, 1000);
     };
 
     // Initialize
     self.init = function() {
         self.initModals();
         self.loadData();
-        // Proje seçilmeden soru dağılımı yüklenmesin
     };
 
     self.init();

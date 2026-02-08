@@ -191,6 +191,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>#</th>
+                                <th>@Html.T("Common.ProjectCode", "Proje Kodu")</th>
                                 <th>@Html.T("Common.Project", "Proje")</th>
                                 <th class="text-center">@Html.T("Common.Evaluation", "Değerlendirme")</th>
                                 <th class="text-center">@Html.T("Common.Average", "Ortalama")</th>
@@ -201,6 +202,7 @@
                         <tbody data-bind="foreach: projectPerformance">
                             <tr>
                                 <td data-bind="text: $index() + 1"></td>
+                                <td data-bind="text: projectCode"></td>
                                 <td><strong data-bind="text: projectName"></strong></td>
                                 <td class="text-center" data-bind="text: evaluationCount"></td>
                                 <td class="text-center">

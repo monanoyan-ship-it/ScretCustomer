@@ -17,6 +17,9 @@ public interface IDashboardService
     // Kullanıcı proje kırılımı (Bu ay en çok dinleyenler detayı)
     Task<UserProjectBreakdownDto> GetUserProjectBreakdownAsync(int userId);
 
+    // Kullanıcı proje kırılımı (Bugün en çok dinleyenler detayı)
+    Task<UserProjectBreakdownDto> GetUserProjectBreakdownTodayAsync(int userId);
+
     // Firma bazlı aylık trend
     Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync();
 }

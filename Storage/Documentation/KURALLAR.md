@@ -291,6 +291,40 @@ public class ModuleApiController : ControllerBase
 }
 ```
 
+### ⛔ Controller'da `_context` (DbContext) KULLANILMAZ!
+
+Controller'lar **ince (thin)** olmalıdır. Tüm veritabanı sorguları ve iş mantığı **Service** katmanında yapılmalıdır.
+
+```csharp
+// ✅ DOĞRU - Service çağır
+public class ModuleApiController : ControllerBase
+{
+    private readonly IModuleService _service;
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] FilterDto filter)
+    {
+        var result = await _service.GetAllAsync(filter);
+        return Ok(result);
+    }
+}
+
+// ❌ YANLIŞ - Controller'da _context kullanma
+public class ModuleApiController : ControllerBase
+{
+    private readonly ApplicationDbContext _context; // YASAK!
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var data = await _context.Modules.Where(...).ToListAsync(); // YASAK!
+        return Ok(data);
+    }
+}
+```
+
+**Kural:** Controller sadece Service'i çağırır, gelen sonucu döner. SQL/LINQ sorgusu, iş mantığı, mapping controller'da OLMAZ.
+
 ---
 
 ## 6. MVC Controller Pattern (View Controller)
