@@ -469,13 +469,15 @@ public class CustomerPortalApiController : ControllerBase
                 .CountAsync();
         }
 
-        // Değerlendirmeler - rol bazlı filtreleme
+        // Değerlendirmeler - rol bazlı filtreleme (Survey/Enneagram hariç)
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
 
         // Supervisor/Operator için personel filtresi
         if (allowedPersonnelIds != null)
@@ -508,7 +510,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Aylık değerlendirme trendi (son 12 ay)
     /// </summary>
     [HttpGet("dashboard/monthly-trend")]
-    public async Task<IActionResult> GetMonthlyTrend([FromQuery] int? projectId = null)
+    public async Task<IActionResult> GetMonthlyTrend([FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -516,15 +518,26 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
         var now = DateTime.UtcNow;
-        var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+        var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+        var effectiveStartDate = startDate.HasValue
+            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
+            : defaultStartDate;
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CreatedAt >= startDate);
+                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId) &&
+                        e.CreatedAt >= effectiveStartDate);
+
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+        }
 
         // Proje filtresi
         if (projectId.HasValue)
@@ -541,17 +554,25 @@ public class CustomerPortalApiController : ControllerBase
 
         var evaluations = await evaluationsQuery.ToListAsync();
 
+        // Ay bazlı döngü
+        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loopEnd = endDate.HasValue
+            ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc)
+            : now;
+        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
+        if (monthCount < 1) monthCount = 1;
+        if (monthCount > 36) monthCount = 36;
+
         var monthlyData = new List<object>();
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < monthCount; i++)
         {
-            var monthStart = startDate.AddMonths(i);
+            var monthStart = loopStart.AddMonths(i);
             var monthEnd = monthStart.AddMonths(1);
 
             var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
             var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
             var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
 
-            // Cezalı KL sayıları
             var yellowCardCount = monthEvals.Sum(e => e.YellowCardCount);
             var redCardCount = monthEvals.Sum(e => e.RedCardCount);
 
@@ -573,7 +594,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Soru grupları bazlı aylık trend (son 12 ay)
     /// </summary>
     [HttpGet("dashboard/question-group-trend")]
-    public async Task<IActionResult> GetQuestionGroupTrend([FromQuery] List<int>? projectIds = null)
+    public async Task<IActionResult> GetQuestionGroupTrend([FromQuery] List<int>? projectIds = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -581,16 +602,20 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
         var now = DateTime.UtcNow;
-        var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+        var effectiveStartDate = startDate.HasValue
+            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
+            : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        // Projeleri getir (dropdown için)
+        // Projeleri getir (dropdown için, Survey/Enneagram hariç)
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted &&
+                        !excludedChecklistTypes.Contains(p.Checklist.ChecklistTypeId))
             .Select(p => new { p.Id, p.Name })
             .OrderBy(p => p.Name)
             .ToListAsync();
 
-        // Cevapları getir
+        // Cevapları getir (Survey/Enneagram hariç)
         var answersQuery = _context.Answers
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
@@ -600,11 +625,18 @@ public class CustomerPortalApiController : ControllerBase
                         a.Evaluation.Assignment.Project != null &&
                         a.Evaluation.Assignment.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        a.Evaluation.CreatedAt >= startDate &&
+                        !excludedChecklistTypes.Contains(a.Evaluation.Checklist.ChecklistTypeId) &&
+                        a.Evaluation.CreatedAt >= effectiveStartDate &&
                         a.Question.GroupName != null &&
                         a.Question.GroupName != "" &&
                         a.EarnedPoints.HasValue &&
                         a.Question.WeightPoints > 0);
+
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
+        }
 
         if (projectIds?.Any() == true)
         {
@@ -632,10 +664,16 @@ public class CustomerPortalApiController : ControllerBase
         var groupNames = answers.Select(a => a.GroupName).Distinct().OrderBy(g => g).ToList();
 
         // Ay etiketlerini oluştur
+        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loopEnd = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc) : now;
+        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
+        if (monthCount < 1) monthCount = 1;
+        if (monthCount > 36) monthCount = 36;
+
         var monthLabels = new List<string>();
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < monthCount; i++)
         {
-            var monthDate = startDate.AddMonths(i);
+            var monthDate = loopStart.AddMonths(i);
             monthLabels.Add(monthDate.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")));
         }
 
@@ -644,9 +682,9 @@ public class CustomerPortalApiController : ControllerBase
         foreach (var groupName in groupNames)
         {
             var monthlyScores = new List<double>();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < monthCount; i++)
             {
-                var monthStart = startDate.AddMonths(i);
+                var monthStart = loopStart.AddMonths(i);
                 var monthEnd = monthStart.AddMonths(1);
 
                 var monthAnswers = answers.Where(a =>
@@ -686,7 +724,9 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/question-trend")]
     public async Task<IActionResult> GetQuestionTrend(
         [FromQuery] List<int>? projectIds = null,
-        [FromQuery] string? groupName = null)
+        [FromQuery] string? groupName = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -694,9 +734,12 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
         var now = DateTime.UtcNow;
-        var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+        var effectiveStartDate = startDate.HasValue
+            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
+            : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        // Cevapları getir
+        // Cevapları getir (Survey/Enneagram hariç)
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var answersQuery = _context.Answers
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Assignment)
@@ -706,10 +749,17 @@ public class CustomerPortalApiController : ControllerBase
                         a.Evaluation.Assignment.Project != null &&
                         a.Evaluation.Assignment.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        a.Evaluation.CreatedAt >= startDate &&
+                        !excludedChecklistTypes.Contains(a.Evaluation.Checklist.ChecklistTypeId) &&
+                        a.Evaluation.CreatedAt >= effectiveStartDate &&
                         a.EarnedPoints.HasValue &&
                         a.Question.WeightPoints > 0 &&
                         a.Question.ScoringTypeId == ScoringTypes.Ids.Scored); // Sadece puanlı sorular
+
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
+        }
 
         if (projectIds?.Any() == true)
         {
@@ -759,10 +809,16 @@ public class CustomerPortalApiController : ControllerBase
             .ToList();
 
         // Ay etiketlerini oluştur
+        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loopEnd = endDate.HasValue ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc) : now;
+        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
+        if (monthCount < 1) monthCount = 1;
+        if (monthCount > 36) monthCount = 36;
+
         var monthLabels = new List<string>();
-        for (int i = 0; i < 12; i++)
+        for (int i = 0; i < monthCount; i++)
         {
-            var monthDate = startDate.AddMonths(i);
+            var monthDate = loopStart.AddMonths(i);
             monthLabels.Add(monthDate.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")));
         }
 
@@ -771,9 +827,9 @@ public class CustomerPortalApiController : ControllerBase
         foreach (var question in questions)
         {
             var monthlyScores = new List<double>();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < monthCount; i++)
             {
-                var monthStart = startDate.AddMonths(i);
+                var monthStart = loopStart.AddMonths(i);
                 var monthEnd = monthStart.AddMonths(1);
 
                 var monthAnswers = answers.Where(a =>
@@ -819,10 +875,10 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Puan dağılımı (tarih filtreli)
+    /// Puan dağılımı (proje ve tarih filtreli)
     /// </summary>
     [HttpGet("dashboard/score-distribution")]
-    public async Task<IActionResult> GetScoreDistribution([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
+    public async Task<IActionResult> GetScoreDistribution([FromQuery] int? projectId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -830,12 +886,20 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a.Project)
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
+
+        // Proje filtresi
+        if (projectId.HasValue)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e => e.Assignment!.ProjectId == projectId.Value);
+        }
 
         // Tarih filtresi
         if (startDate.HasValue)
@@ -920,6 +984,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a!.Project)
@@ -928,7 +993,8 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
                         e.Assignment.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
 
         // Tarih filtresi
         if (startDate.HasValue)
@@ -1011,6 +1077,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Assignment)
                 .ThenInclude(a => a!.Project)
@@ -1019,7 +1086,8 @@ public class CustomerPortalApiController : ControllerBase
             .Where(e => e.Assignment != null && e.Assignment.Project != null &&
                         e.Assignment.Project.CustomerId == customerId &&
                         e.Assignment.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed);
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        !excludedChecklistTypes.Contains(e.Checklist.ChecklistTypeId));
 
         // Tarih filtresi
         if (startDate.HasValue)

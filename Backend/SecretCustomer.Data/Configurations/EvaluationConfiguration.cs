@@ -28,7 +28,13 @@ public class EvaluationConfiguration : IEntityTypeConfiguration<Evaluation>
         builder.HasOne(e => e.Assignment)
             .WithMany(a => a.Evaluations)
             .HasForeignKey(e => e.AssignmentId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne(e => e.Checklist)
+            .WithMany()
+            .HasForeignKey(e => e.ChecklistId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne(e => e.Evaluator)
             .WithMany(u => u.Evaluations)

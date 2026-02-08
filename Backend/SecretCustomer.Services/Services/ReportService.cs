@@ -402,9 +402,9 @@ public class ReportService : IReportService
         {
             EvaluationId = evaluation.Id,
             AssignmentId = evaluation.AssignmentId,
-            ProjectName = evaluation.Assignment.Project?.Name ?? "",
-            ProjectCode = evaluation.Assignment.Project?.Code,
-            ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
+            ProjectName = evaluation.Assignment?.Project?.Name ?? "",
+            ProjectCode = evaluation.Assignment?.Project?.Code,
+            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : (evaluation.EvaluatorCustomerPersonnel != null
@@ -417,7 +417,7 @@ public class ReportService : IReportService
                     : evaluation.EvaluatedUnknownPersonnel
                         ?? evaluation.EvaluatedOrganization?.Name),
             CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName
-                ?? evaluation.Assignment.Project?.Customer?.CompanyName,
+                ?? evaluation.Assignment?.Project?.Customer?.CompanyName,
             OrganizationName = evaluation.EvaluatedOrganization?.Name
                 ?? (evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments?.Any() == true
                     ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
@@ -434,14 +434,14 @@ public class ReportService : IReportService
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
-            DueDate = evaluation.Assignment.DueDate,
+            DueDate = evaluation.Assignment?.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
             ScorePercentage = evaluation.ScorePercentage,
             YellowCardCount = evaluation.YellowCardCount,
             RedCardCount = evaluation.RedCardCount,
             Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
-            ProjectTypeId = evaluation.Assignment.Project?.ProjectTypeId,
+            ProjectTypeId = evaluation.Assignment?.Project?.ProjectTypeId,
             CallId = evaluation.CallId,
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
@@ -886,7 +886,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 5).Value = item.EvaluatedPersonnelName ?? "";
             worksheet.Cell(row, 6).Value = item.EvaluationDate?.ToString("dd.MM.yyyy HH:mm") ?? "";
             worksheet.Cell(row, 7).Value = item.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "";
-            worksheet.Cell(row, 8).Value = item.DueDate.ToString("dd.MM.yyyy");
+            worksheet.Cell(row, 8).Value = item.DueDate?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 9).Value = item.TotalScore ?? 0;
             worksheet.Cell(row, 10).Value = item.MaxScore ?? 0;
             worksheet.Cell(row, 11).Value = item.ScorePercentage ?? 0;
@@ -1067,9 +1067,9 @@ public class ReportService : IReportService
         {
             EvaluationId = evaluation.Id,
             AssignmentId = evaluation.AssignmentId,
-            ProjectName = evaluation.Assignment.Project?.Name ?? "",
-            ProjectCode = evaluation.Assignment.Project?.Code,
-            ChecklistName = evaluation.Assignment.Checklist?.Name ?? "",
+            ProjectName = evaluation.Assignment?.Project?.Name ?? "",
+            ProjectCode = evaluation.Assignment?.Project?.Code,
+            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name ?? "",
             EvaluatorName = evaluation.Evaluator != null
                 ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
                 : (evaluation.EvaluatorCustomerPersonnel != null
@@ -1093,7 +1093,7 @@ public class ReportService : IReportService
             EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
-            DueDate = evaluation.Assignment.DueDate,
+            DueDate = evaluation.Assignment?.DueDate,
             TotalScore = evaluation.TotalScore,
             MaxScore = evaluation.MaxScore,
             ScorePercentage = evaluation.ScorePercentage,

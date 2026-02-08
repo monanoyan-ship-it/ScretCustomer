@@ -53,7 +53,7 @@ public class DateRangeFilter
 public class EvaluationReportDto
 {
     public int EvaluationId { get; set; }
-    public int AssignmentId { get; set; }
+    public int? AssignmentId { get; set; }
 
     // Project
     public string ProjectName { get; set; } = string.Empty;
@@ -81,7 +81,7 @@ public class EvaluationReportDto
     public DateTime? EvaluationDate { get; set; }
     public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime DueDate { get; set; }
+    public DateTime? DueDate { get; set; }
 
     // Scores
     public decimal? TotalScore { get; set; }

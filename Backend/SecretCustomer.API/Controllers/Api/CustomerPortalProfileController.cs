@@ -231,6 +231,25 @@ public class CustomerPortalProfileController : BaseApiController
     {
         try
         {
+            // Admin "müşteri gözünden" modu
+            var adminCustomerId = HttpContext.Session.GetInt32("AdminViewAsCustomerId");
+            if (adminCustomerId.HasValue && User.IsInRole("Admin"))
+            {
+                var adminCustomer = await _context.Customers
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.Id == adminCustomerId.Value && !c.IsDeleted);
+
+                if (adminCustomer == null)
+                    return NotFound(CreateErrorResponse("Firma bulunamadı"));
+
+                return Ok(new
+                {
+                    customerId = adminCustomer.Id,
+                    companyName = adminCustomer.CompanyName,
+                    callSystemUrl = adminCustomer.CallSystemUrl
+                });
+            }
+
             if (GetUserType() != "CustomerPersonnel")
             {
                 return Forbid();

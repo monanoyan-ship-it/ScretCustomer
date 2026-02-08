@@ -34,10 +34,68 @@ function CustomerDashboardViewModel() {
     // Monthly trend filters
     self.monthlyTrendProjectId = ko.observable(null);
     self.monthlyTrendProjects = ko.observableArray([]);
+    self.monthlyTrendStartDate = ko.observable('');
+    self.monthlyTrendEndDate = ko.observable('');
+    self.monthlyTrendDateRange = ko.observable('');
 
     // Score distribution filters
+    self.scoreDistProjectId = ko.observable(null);
+    self.scoreDistProjects = ko.observableArray([]);
     self.scoreDistStartDate = ko.observable('');
     self.scoreDistEndDate = ko.observable('');
+    self.scoreDistDateRange = ko.observable('');
+
+    // Tarih aralığı hızlı seçim helper
+    function applyDateRange(val, startObs, endObs) {
+        if (!val) { startObs(''); endObs(''); return; }
+        var now = new Date();
+        var end = now.toISOString().split('T')[0];
+        var start;
+        switch(val) {
+            case 'thisWeek':
+                var day = now.getDay() || 7;
+                var monday = new Date(now);
+                monday.setDate(now.getDate() - day + 1);
+                start = monday.toISOString().split('T')[0];
+                break;
+            case 'lastWeek':
+                var day2 = now.getDay() || 7;
+                var lastMonday = new Date(now);
+                lastMonday.setDate(now.getDate() - day2 - 6);
+                var lastSunday = new Date(lastMonday);
+                lastSunday.setDate(lastMonday.getDate() + 6);
+                start = lastMonday.toISOString().split('T')[0];
+                end = lastSunday.toISOString().split('T')[0];
+                break;
+            case 'thisMonth':
+                start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                break;
+            case 'lastMonth':
+                start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
+                end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+                break;
+            case 'last3Months':
+                var d3 = new Date(now); d3.setMonth(d3.getMonth() - 3);
+                start = d3.toISOString().split('T')[0];
+                break;
+            case 'last6Months':
+                var d6 = new Date(now); d6.setMonth(d6.getMonth() - 6);
+                start = d6.toISOString().split('T')[0];
+                break;
+            case 'thisYear':
+                start = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+                break;
+            case 'lastYear':
+                start = new Date(now.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
+                end = new Date(now.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+                break;
+        }
+        startObs(start);
+        endObs(end);
+    }
+
+    self.monthlyTrendDateRange.subscribe(function(val) { applyDateRange(val, self.monthlyTrendStartDate, self.monthlyTrendEndDate); });
+    self.scoreDistDateRange.subscribe(function(val) { applyDateRange(val, self.scoreDistStartDate, self.scoreDistEndDate); });
 
     // Score distribution modal state
     self.isScoreModalOpen = ko.observable(false);
@@ -371,10 +429,15 @@ function CustomerDashboardViewModel() {
     self.questionTrendTab = ko.observable('groups');
     self.questionTrendProjectId = ko.observable(null);
     self.questionTrendProjects = ko.observableArray([]);
+    self.questionTrendStartDate = ko.observable('');
+    self.questionTrendEndDate = ko.observable('');
+    self.questionTrendDateRange = ko.observable('');
     self.questionTrendData = ko.observableArray([]);
     self.questionTrendLabels = ko.observableArray([]);
     self.isQuestionTrendLoading = ko.observable(false);
     self.questionTrendChart = null;
+
+    self.questionTrendDateRange.subscribe(function(val) { applyDateRange(val, self.questionTrendStartDate, self.questionTrendEndDate); });
 
     // Watch for project change
     self.questionTrendProjectId.subscribe(function() {
@@ -390,9 +453,11 @@ function CustomerDashboardViewModel() {
         self.isQuestionTrendLoading(true);
 
         var url = '/api/customer/portal/dashboard/question-group-trend';
-        if (self.questionTrendProjectId()) {
-            url += '?projectId=' + self.questionTrendProjectId();
-        }
+        var params = [];
+        if (self.questionTrendProjectId()) params.push('projectId=' + self.questionTrendProjectId());
+        if (self.questionTrendStartDate()) params.push('startDate=' + self.questionTrendStartDate());
+        if (self.questionTrendEndDate()) params.push('endDate=' + self.questionTrendEndDate());
+        if (params.length > 0) url += '?' + params.join('&');
 
         customerApiFetch(url)
             .then(function(r) {
@@ -401,8 +466,9 @@ function CustomerDashboardViewModel() {
             })
             .then(function(data) {
                 self.questionTrendProjects(data.projects || []);
-                // Aynı projeleri Aylık Trend için de kullan
+                // Aynı projeleri Aylık Trend ve Puan Dağılımı için de kullan
                 self.monthlyTrendProjects(data.projects || []);
+                self.scoreDistProjects(data.projects || []);
                 self.questionTrendLabels(data.monthLabels || []);
                 self.questionTrendData(data.groupTrends || []);
                 self.isQuestionTrendLoading(false);
@@ -422,12 +488,10 @@ function CustomerDashboardViewModel() {
 
         var url = '/api/customer/portal/dashboard/question-trend';
         var params = [];
-        if (self.questionTrendProjectId()) {
-            params.push('projectId=' + self.questionTrendProjectId());
-        }
-        if (params.length > 0) {
-            url += '?' + params.join('&');
-        }
+        if (self.questionTrendProjectId()) params.push('projectId=' + self.questionTrendProjectId());
+        if (self.questionTrendStartDate()) params.push('startDate=' + self.questionTrendStartDate());
+        if (self.questionTrendEndDate()) params.push('endDate=' + self.questionTrendEndDate());
+        if (params.length > 0) url += '?' + params.join('&');
 
         customerApiFetch(url)
             .then(function(r) {
@@ -518,12 +582,14 @@ function CustomerDashboardViewModel() {
         self.loadMonthlyTrend();
     });
 
-    // Load monthly trend with project filter
+    // Load monthly trend with project + date filter
     self.loadMonthlyTrend = function() {
         var url = '/api/customer/portal/dashboard/monthly-trend';
-        if (self.monthlyTrendProjectId()) {
-            url += '?projectId=' + self.monthlyTrendProjectId();
-        }
+        var params = [];
+        if (self.monthlyTrendProjectId()) params.push('projectId=' + self.monthlyTrendProjectId());
+        if (self.monthlyTrendStartDate()) params.push('startDate=' + self.monthlyTrendStartDate());
+        if (self.monthlyTrendEndDate()) params.push('endDate=' + self.monthlyTrendEndDate());
+        if (params.length > 0) url += '?' + params.join('&');
 
         customerApiFetch(url)
             .then(function(r) {
@@ -643,6 +709,9 @@ function CustomerDashboardViewModel() {
         var url = '/api/customer/portal/dashboard/score-distribution';
         var params = [];
 
+        if (self.scoreDistProjectId()) {
+            params.push('projectId=' + self.scoreDistProjectId());
+        }
         if (self.scoreDistStartDate()) {
             params.push('startDate=' + self.scoreDistStartDate());
         }

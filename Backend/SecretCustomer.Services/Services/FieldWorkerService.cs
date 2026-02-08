@@ -473,6 +473,7 @@ public class FieldWorkerService : IFieldWorkerService
             evaluation = new Evaluation
             {
                 AssignmentId = dto.AssignmentId,
+                ChecklistId = assignment.ChecklistId,
                 VisitId = visitId,
                 EvaluatorId = userId,
                 StatusId = EvaluationStatuses.Ids.InProgress,

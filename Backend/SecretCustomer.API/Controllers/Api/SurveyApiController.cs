@@ -492,44 +492,23 @@ public class SurveyApiController : ControllerBase
         }
 
         // Bu personel için zaten değerlendirme var mı?
-        var existingAssignment = await _context.Assignments
-            .FirstOrDefaultAsync(a => a.ProjectId == project.Id &&
-                        a.AssignedCustomerPersonnelId == personnel.Id &&
-                        !a.IsDeleted);
+        var existingEvaluation = await _context.Evaluations
+            .FirstOrDefaultAsync(e => e.ChecklistId == project.ChecklistId &&
+                        e.EvaluatedCustomerPersonnelId == personnel.Id &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        !e.IsDeleted);
 
-        if (existingAssignment != null && existingAssignment.IsCompleted)
+        if (existingEvaluation != null)
         {
             return BadRequest(new { message = "Bu anket zaten tamamlanmış." });
         }
 
         try
         {
-            Assignment assignment;
-            if (existingAssignment != null)
-            {
-                assignment = existingAssignment;
-            }
-            else
-            {
-                // Yeni Assignment oluştur
-                assignment = new Assignment
-                {
-                    ProjectId = project.Id,
-                    ChecklistId = project.ChecklistId,
-                    TypeId = AssignmentTypes.Ids.CustomerPersonnel,
-                    AssignedCustomerPersonnelId = personnel.Id,
-                    DueDate = project.EndDate,
-                    UniqueLink = Guid.NewGuid().ToString(),
-                    CreatedAt = DateTime.UtcNow
-                };
-                _context.Assignments.Add(assignment);
-                await _context.SaveChangesAsync();
-            }
-
-            // Değerlendirme oluştur
+            // Değerlendirme oluştur (Assignment oluşturulmaz)
             var evaluation = new Evaluation
             {
-                AssignmentId = assignment.Id,
+                ChecklistId = project.ChecklistId,
                 EvaluatedCustomerPersonnelId = personnel.Id,
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = tokenData.CreatedAt,
@@ -547,10 +526,6 @@ public class SurveyApiController : ControllerBase
             evaluation.TotalScore = scoreResult.TotalScore;
             evaluation.MaxScore = scoreResult.MaxScore;
             evaluation.ScorePercentage = scoreResult.ScorePercentage;
-
-            // Assignment'ı tamamlandı olarak işaretle
-            assignment.IsCompleted = true;
-            assignment.CompletedAt = DateTime.UtcNow;
 
             // SurveyInvitation kaydını tamamlandı olarak işaretle (opsiyonel)
             try
@@ -620,26 +595,10 @@ public class SurveyApiController : ControllerBase
 
         try
         {
-            // Assignment oluştur (External için)
-            var assignment = new Assignment
-            {
-                ProjectId = project.Id,
-                ChecklistId = project.ChecklistId,
-                TypeId = AssignmentTypes.Ids.CustomerPersonnel, // Aynı tip, ama personnel null
-                AssignedCustomerPersonnelId = null, // External - personnel yok
-                DueDate = project.EndDate,
-                UniqueLink = invitation.Token,
-                CreatedAt = DateTime.UtcNow,
-                IsCompleted = true,
-                CompletedAt = DateTime.UtcNow
-            };
-            _context.Assignments.Add(assignment);
-            await _context.SaveChangesAsync();
-
-            // Değerlendirme oluştur
+            // Değerlendirme oluştur (Assignment oluşturulmaz)
             var evaluation = new Evaluation
             {
-                AssignmentId = assignment.Id,
+                ChecklistId = project.ChecklistId,
                 EvaluatedCustomerPersonnelId = null, // External - personnel yok
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = invitation.OpenedAt ?? invitation.CreatedAt,

@@ -100,6 +100,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 AssignmentId = e.AssignmentId,
+                ChecklistId = e.ChecklistId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -132,7 +133,7 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
                 ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
@@ -156,6 +157,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 AssignmentId = e.AssignmentId,
+                ChecklistId = e.ChecklistId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -188,7 +190,7 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
                 ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
@@ -213,6 +215,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 AssignmentId = e.AssignmentId,
+                ChecklistId = e.ChecklistId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -245,7 +248,7 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
                 ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
@@ -268,6 +271,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 AssignmentId = e.AssignmentId,
+                ChecklistId = e.ChecklistId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -300,7 +304,7 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
                 ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
@@ -321,6 +325,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 AssignmentId = e.AssignmentId,
+                ChecklistId = e.ChecklistId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -353,7 +358,7 @@ public class EvaluationService : IEvaluationService
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
                 ProjectName = e.Assignment != null && e.Assignment.Project != null ? e.Assignment.Project.Name : null,
-                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : null,
+                ChecklistName = e.Assignment != null && e.Assignment.Checklist != null ? e.Assignment.Checklist.Name : e.Checklist.Name,
                 ScoringMethod = e.Assignment != null && e.Assignment.Checklist != null
                     ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId) != null
                         ? ScoringMethods.GetById(e.Assignment.Checklist.ScoringMethodId)!.SystemName
@@ -378,6 +383,7 @@ public class EvaluationService : IEvaluationService
         var evaluation = new Evaluation
         {
             AssignmentId = assignmentId,
+            ChecklistId = assignment.ChecklistId,
             EvaluatorId = evaluatorId,
             StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
@@ -405,6 +411,7 @@ public class EvaluationService : IEvaluationService
         var evaluation = new Evaluation
         {
             AssignmentId = dto.AssignmentId,
+            ChecklistId = assignment.ChecklistId,
             AssignmentPeriodId = dto.AssignmentPeriodId,
             // User mı CustomerPersonnel mı olduğunu ayır
             EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -733,6 +740,7 @@ public class EvaluationService : IEvaluationService
             evaluation = new Evaluation
             {
                 AssignmentId = dto.AssignmentId,
+                ChecklistId = assignment.ChecklistId,
                 AssignmentPeriodId = dto.AssignmentPeriodId,
                 // User mı CustomerPersonnel mı olduğunu ayır
                 EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -1404,6 +1412,7 @@ public class EvaluationService : IEvaluationService
         {
             Id = evaluation.Id,
             AssignmentId = evaluation.AssignmentId,
+            ChecklistId = evaluation.ChecklistId,
             AssignmentPeriodId = evaluation.AssignmentPeriodId,
             AssignmentPeriodName = periodName,
             EvaluatorId = evaluation.EvaluatorId,
@@ -1439,13 +1448,15 @@ public class EvaluationService : IEvaluationService
             ControlDate = evaluation.ControlDate,
             ControlTime = evaluation.ControlTime,
             ProjectName = evaluation.Assignment?.Project?.Name,
-            ChecklistName = evaluation.Assignment?.Checklist?.Name,
+            ChecklistName = evaluation.Assignment?.Checklist?.Name ?? evaluation.Checklist?.Name,
             AssigneeName = evaluation.Assignment?.AssignedUser != null
                 ? $"{evaluation.Assignment.AssignedUser.FirstName} {evaluation.Assignment.AssignedUser.LastName}"
                 : null,
             ScoringMethod = evaluation.Assignment?.Checklist != null
                 ? ScoringMethods.GetById(evaluation.Assignment.Checklist.ScoringMethodId)?.SystemName
-                : null,
+                : (evaluation.Checklist != null
+                    ? ScoringMethods.GetById(evaluation.Checklist.ScoringMethodId)?.SystemName
+                    : null),
             CreatedAt = evaluation.CreatedAt,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };

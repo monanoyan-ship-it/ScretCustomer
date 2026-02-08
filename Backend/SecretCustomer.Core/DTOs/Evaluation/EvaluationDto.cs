@@ -3,7 +3,8 @@ namespace SecretCustomer.Core.DTOs.Evaluation;
 public class EvaluationDto
 {
     public int Id { get; set; }
-    public int AssignmentId { get; set; }
+    public int? AssignmentId { get; set; }
+    public int ChecklistId { get; set; }
     public int? AssignmentPeriodId { get; set; }
     public string? AssignmentPeriodName { get; set; }
     public int? EvaluatorId { get; set; }

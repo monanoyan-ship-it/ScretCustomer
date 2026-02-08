@@ -9,8 +9,14 @@ namespace SecretCustomer.Core.Entities;
 [ExcelTemplate("Değerlendirme", Description = "Değerlendirmeler için Excel import/export", IsAvailable = true)]
 public class Evaluation : BaseEntity
 {
-    public int AssignmentId { get; set; }
-    public Assignment Assignment { get; set; } = null!;
+    public int? AssignmentId { get; set; }
+    public Assignment? Assignment { get; set; }
+
+    /// <summary>
+    /// Değerlendirmenin ait olduğu kontrol listesi (zorunlu)
+    /// </summary>
+    public int ChecklistId { get; set; }
+    public Checklist Checklist { get; set; } = null!;
 
     /// <summary>
     /// Hangi döneme ait (opsiyonel - dönem olmadan da değerlendirme yapılabilir)
