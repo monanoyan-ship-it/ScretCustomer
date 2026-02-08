@@ -284,7 +284,7 @@
                         </thead>
                         <tbody data-bind="foreach: filteredEvaluations">
                             <tr>
-                                <td data-bind="callIdLink: callId"></td>
+                                <td><call-id params="value: callId"></call-id></td>
                                 <td>
                                     <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>
                                     <small class="text-muted d-block" data-bind="text: callTime || ''"></small>
@@ -399,7 +399,7 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width:40%;">@Html.T("CustomerPortal.MyPerformance.CallId", "Cagri ID")</th>
-                                                <td data-bind="callIdLink: callId"></td>
+                                                <td><call-id params="value: callId"></call-id></td>
                                             </tr>
                                             <tr><th>@Html.T("CustomerPortal.MyPerformance.CallDate", "Tarih")</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
                                             <!-- ko if: callTime -->

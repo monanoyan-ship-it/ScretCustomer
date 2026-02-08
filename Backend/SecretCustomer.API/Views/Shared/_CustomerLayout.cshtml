@@ -321,6 +321,22 @@
     <!-- Shared Confirm Modal -->
     <partial name="_ConfirmModal" />
 
+    <!-- Call ID Component Template -->
+    <script type="text/html" id="call-id-template">
+        <!-- ko if: callId -->
+        <!-- ko if: link() -->
+        <a data-bind="attr: { href: link(), title: callId }, text: truncated" target="_blank" class="text-decoration-none"></a>
+        <!-- /ko -->
+        <!-- ko ifnot: link() -->
+        <span data-bind="text: truncated, attr: { title: callId }"></span>
+        <!-- /ko -->
+        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 ms-1" data-bind="click: copy" title="@Html.T("Common.Copy", "Kopyala")">
+            <i class="bi bi-clipboard" style="font-size: 0.7rem;"></i>
+        </button>
+        <!-- /ko -->
+        <!-- ko ifnot: callId --><span class="text-muted">-</span><!-- /ko -->
+    </script>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -495,100 +511,63 @@
             }
         })();
 
-        // Customer Settings (callSystemUrl, vb.)
-        window.CustomerSettings = {
-            callSystemUrl: null,
-            loaded: false
-        };
+        // Call ID KO Component
+        (function() {
+            var _callSystemUrl = ko.observable(null);
+            var _loadStarted = false;
 
-        // CallSystemUrl'i yükle
-        (function loadCustomerSettings() {
-            fetch('/api/customer-portal/profile/company-settings', { credentials: 'include' })
-                .then(function(response) {
-                    if (!response.ok) return null;
-                    return response.json();
-                })
-                .then(function(data) {
-                    if (data && data.callSystemUrl) {
-                        window.CustomerSettings.callSystemUrl = data.callSystemUrl;
-                    }
-                    window.CustomerSettings.loaded = true;
-                })
-                .catch(function() {
-                    window.CustomerSettings.loaded = true;
-                });
-        })();
-
-        // CallId için link oluştur (callSystemUrl tanımlıysa)
-        window.getCallSystemLink = function(callId) {
-            if (!callId || !window.CustomerSettings.callSystemUrl) {
-                return null;
-            }
-            return window.CustomerSettings.callSystemUrl.replace('{CallId}', encodeURIComponent(callId));
-        };
-
-        // CallId'yi tıklanabilir link olarak render et (copy butonu dahil)
-        window.renderCallIdLink = function(callId, maxLength, includeCopyButton) {
-            if (!callId) return '<span class="text-muted">-</span>';
-
-            maxLength = maxLength || 20;
-            includeCopyButton = includeCopyButton !== false; // default true
-
-            var displayText = callId.length > maxLength
-                ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8)
-                : callId;
-
-            var link = window.getCallSystemLink(callId);
-            var escapedCallId = callId.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-            var html = '';
-
-            if (link) {
-                html = '<a href="' + link + '" target="_blank" class="text-decoration-none" title="' + escapedCallId + '">' +
-                       '<code style="font-size:0.85em;">' + displayText + '</code> <i class="bi bi-box-arrow-up-right text-muted" style="font-size:0.7rem;"></i></a>';
-            } else {
-                html = '<code title="' + escapedCallId + '" style="cursor:help;font-size:0.85em;">' + displayText + '</code>';
+            function ensureLoaded() {
+                if (_loadStarted) return;
+                _loadStarted = true;
+                fetch('/api/customer-portal/profile/company-settings', { credentials: 'include' })
+                    .then(function(r) { return r.ok ? r.json() : null; })
+                    .then(function(data) {
+                        if (data && data.callSystemUrl) _callSystemUrl(data.callSystemUrl);
+                    })
+                    .catch(function() {});
             }
 
-            if (includeCopyButton) {
-                html += ' <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" onclick="window.copyToClipboard(\'' + escapedCallId + '\')" title="Kopyala">' +
-                        '<i class="bi bi-clipboard" style="font-size:0.7rem;"></i></button>';
-            }
-
-            return html;
-        };
-
-        // Global copy to clipboard function
-        window.copyToClipboard = function(text) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(function() {
-                    if (typeof toastr !== 'undefined') toastr.success('Panoya kopyalandı');
-                }).catch(function() {
+            function copyText(text) {
+                if (!text) return;
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(text).then(function() {
+                        toastr.success('Kopyalandı');
+                    }).catch(function() { fallbackCopy(text); });
+                } else {
                     fallbackCopy(text);
-                });
-            } else {
-                fallbackCopy(text);
-            }
-
-            function fallbackCopy(t) {
-                var a = document.createElement('textarea');
-                a.value = t;
-                document.body.appendChild(a);
-                a.select();
-                document.execCommand('copy');
-                document.body.removeChild(a);
-                if (typeof toastr !== 'undefined') toastr.success('Panoya kopyalandı');
-            }
-        };
-
-        // Knockout custom binding for CallId link
-        if (typeof ko !== 'undefined') {
-            ko.bindingHandlers.callIdLink = {
-                update: function(element, valueAccessor) {
-                    var callId = ko.unwrap(valueAccessor());
-                    element.innerHTML = window.renderCallIdLink(callId);
                 }
-            };
-        }
+            }
+
+            function fallbackCopy(text) {
+                var ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); toastr.success('Kopyalandı'); }
+                catch(e) { toastr.error('Kopyalama başarısız'); }
+                document.body.removeChild(ta);
+            }
+
+            ko.components.register('call-id', {
+                viewModel: function(params) {
+                    ensureLoaded();
+                    var self = this;
+                    self.callId = params.value || null;
+                    self.truncated = self.callId && self.callId.length > 20
+                        ? self.callId.substring(0, 8) + '...' + self.callId.substring(self.callId.length - 8)
+                        : self.callId;
+                    self.link = ko.computed(function() {
+                        var url = _callSystemUrl();
+                        if (!self.callId || !url) return null;
+                        return url.replace('{CallId}', encodeURIComponent(self.callId));
+                    });
+                    self.copy = function() { copyText(self.callId); };
+                },
+                template: { element: 'call-id-template' }
+            });
+        })();
 
         // API helper - uses credentials: include for cookie-based JWT
         function customerApiFetch(url, options) {

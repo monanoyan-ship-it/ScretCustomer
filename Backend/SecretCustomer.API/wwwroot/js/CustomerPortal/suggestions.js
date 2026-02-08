@@ -6,6 +6,7 @@ function CustomerSuggestionsViewModel() {
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);
     self.isExportingTopQuestions = ko.observable(false);
+    self.isExportingTopSubCriteria = ko.observable(false);
     self.errorMessage = ko.observable('');
 
     // Filter options (müşteriye özel)
@@ -486,6 +487,36 @@ function CustomerSuggestionsViewModel() {
             })
             .finally(function() {
                 self.isExportingTopQuestions(false);
+            });
+    };
+
+    // Export Top SubCriteria to Excel
+    self.exportTopSubCriteriaToExcel = function() {
+        self.isExportingTopSubCriteria(true);
+
+        var url = '/api/customer/portal/reports/suggestions/top-subcriteria/export' + self.buildQueryParams(false);
+
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('Export başarısız');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'EnCokSecilenAltKriterler_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('Export error:', error);
+                toastr.error('Excel export başarısız: ' + error.message);
+            })
+            .finally(function() {
+                self.isExportingTopSubCriteria(false);
             });
     };
 

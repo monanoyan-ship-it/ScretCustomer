@@ -410,6 +410,12 @@ public class PersonnelReportCardFilterDto
     public int PersonnelId { get; set; }
     public List<int>? ProjectIds { get; set; }
     public List<DateRangeFilter>? DateRanges { get; set; }
+    /// <summary>
+    /// "internal" = İç Değerlendirme (EvaluatorCustomerPersonnelId != null),
+    /// "external" = Dış Değerlendirme (EvaluatorId != null),
+    /// null = Tümü
+    /// </summary>
+    public string? EvaluationType { get; set; }
 }
 
 /// <summary>

@@ -263,7 +263,7 @@
                     </thead>
                     <tbody data-bind="foreach: allEvaluationsList">
                         <tr>
-                            <td data-bind="callIdLink: callId"></td>
+                            <td><call-id params="value: callId"></call-id></td>
                             <td>
                                 <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 <!-- ko if: callTime -->
@@ -513,7 +513,7 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                <td data-bind="callIdLink: callId"></td>
+                                                <td><call-id params="value: callId"></call-id></td>
                                             </tr>
                                             <tr>
                                                 <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
@@ -769,7 +769,7 @@
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
-                                                <span data-bind="callIdLink: callId" class="fw-bold"></span>
+                                                <call-id params="value: callId"></call-id>
                                             </div>
                                             <div class="col-6">
                                                 <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>

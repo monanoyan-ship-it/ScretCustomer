@@ -229,7 +229,7 @@
                         </thead>
                         <tbody data-bind="foreach: evaluations">
                             <tr>
-                                <td data-bind="callIdLink: callId || id"></td>
+                                <td><call-id params="value: callId"></call-id></td>
                                 <td>
                                     <span data-bind="text: (controlDate || callDate) ? new Date(controlDate || callDate).toLocaleDateString('tr-TR') : new Date(evaluationDate).toLocaleDateString('tr-TR')"></span>
                                 </td>
@@ -474,7 +474,9 @@
                                             <tbody data-bind="visible: projectTypeId === 2">
                                                 <tr>
                                                     <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                    <td data-bind="callIdLink: callId"></td>
+                                                    <td>
+                                                        <call-id params="value: callId"></call-id>
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>

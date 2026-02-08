@@ -527,14 +527,23 @@ function CustomerInternalEvaluationsViewModel() {
     };
 
     // Details Modal Functions
+    self.detailsError = ko.observable('');
+
     self.showDetails = function(evaluation) {
         self.isDetailsModalOpen(true);
         self.isDetailsLoading(true);
         self.detailsData(null);
+        self.detailsError('');
 
         customerApiFetch('/api/customer/portal/evaluations/' + evaluation.id)
             .then(function(response) {
-                if (!response.ok) throw new Error('Detay yuklenemedi');
+                if (!response.ok) {
+                    return response.json().then(function(err) {
+                        throw new Error(err.message || 'Detay yüklenemedi');
+                    }).catch(function() {
+                        throw new Error('Detay yüklenemedi');
+                    });
+                }
                 return response.json();
             })
             .then(function(data) {
@@ -542,7 +551,7 @@ function CustomerInternalEvaluationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Details load error:', error);
-                self.closeDetailsModal();
+                self.detailsError(error.message || 'Değerlendirme detayı yüklenirken hata oluştu.');
             })
             .finally(function() {
                 self.isDetailsLoading(false);

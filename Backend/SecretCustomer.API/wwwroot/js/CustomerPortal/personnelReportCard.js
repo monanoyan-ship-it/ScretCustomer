@@ -62,12 +62,19 @@ function CustomerPersonnelReportCardViewModel() {
         projectId: ko.observable(null),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        dateRangeType: ko.observable('')
+        dateRangeType: ko.observable(''),
+        evaluationType: ko.observable('')
     };
 
     self.filterLabels = {
         project: 'Proje',
-        dateRange: 'Tarih'
+        dateRange: 'Tarih',
+        evaluationType: 'Değerlendirme Tipi'
+    };
+
+    self.evaluationTypeLabels = {
+        'internal': 'İç Değerlendirme',
+        'external': 'Dış Değerlendirme'
     };
 
     self.dateRanges = ko.observableArray([
@@ -90,6 +97,7 @@ function CustomerPersonnelReportCardViewModel() {
         switch (type) {
             case 'project': return self.tempFilter.projectId();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            case 'evaluationType': return !!self.tempFilter.evaluationType();
             default: return false;
         }
     });
@@ -175,6 +183,20 @@ function CustomerPersonnelReportCardViewModel() {
                 self.tempFilter.dateRangeType('');
                 break;
 
+            case 'evaluationType':
+                var evalType = self.tempFilter.evaluationType();
+                if (!evalType) return;
+                // Zaten bir evaluationType filtresi varsa ekleme
+                if (self.activeFilters().some(function(f) { return f.type === 'evaluationType'; })) {
+                    toastr.warning('Değerlendirme tipi filtresi zaten eklenmiş. Önce mevcut olanı kaldırın.');
+                    self.tempFilter.evaluationType('');
+                    return;
+                }
+                filter.value = evalType;
+                filter.displayValue = self.evaluationTypeLabels[evalType] || evalType;
+                self.tempFilter.evaluationType('');
+                break;
+
             default: return;
         }
 
@@ -213,6 +235,8 @@ function CustomerPersonnelReportCardViewModel() {
                 if (f.value.startDate) params.push('dateRanges[' + dateRangeIndex + '].startDate=' + f.value.startDate);
                 if (f.value.endDate) params.push('dateRanges[' + dateRangeIndex + '].endDate=' + f.value.endDate);
                 dateRangeIndex++;
+            } else if (f.type === 'evaluationType') {
+                params.push('evaluationType=' + f.value);
             }
         });
 
@@ -260,9 +284,9 @@ function CustomerPersonnelReportCardViewModel() {
             });
     };
 
-    // Load projects (sadece CallAuditing = 2)
+    // Load projects
     self.loadProjects = function() {
-        customerApiFetch('/api/customer/portal/projects?projectTypeId=2')
+        customerApiFetch('/api/customer/portal/projects')
             .then(function(response) {
                 if (!response.ok) throw new Error('Proje listesi yüklenemedi');
                 return response.json();

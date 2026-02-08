@@ -120,6 +120,7 @@
                                             <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
                                             <option value="project">@Html.T("Common.Project", "Proje")</option>
                                             <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                            <option value="evaluationType">Değerlendirme Tipi</option>
                                         </select>
                                     </div>
 
@@ -141,6 +142,15 @@
                                             <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('last3Months'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'last3Months' }">Son 3 Ay</button>
                                             <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('thisYear'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'thisYear' }">Bu Yıl</button>
                                         </div>
+                                    </div>
+
+                                    <!-- Evaluation Type Filter -->
+                                    <div data-bind="visible: selectedFilterType() === 'evaluationType'" class="mb-2">
+                                        <select class="form-select form-select-sm" data-bind="value: tempFilter.evaluationType">
+                                            <option value="">Seçin...</option>
+                                            <option value="internal">İç Değerlendirme</option>
+                                            <option value="external">Dış Değerlendirme</option>
+                                        </select>
                                     </div>
 
                                     <!-- Add Button -->
@@ -421,7 +431,7 @@
                                         <table class="table table-sm mb-0">
                                             <tr>
                                                 <th style="width:40%;">Çağrı ID</th>
-                                                <td data-bind="callIdLink: callId"></td>
+                                                <td><call-id params="value: callId"></call-id></td>
                                             </tr>
                                             <tr><th>Tarih</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
                                             <!-- ko if: callTime -->

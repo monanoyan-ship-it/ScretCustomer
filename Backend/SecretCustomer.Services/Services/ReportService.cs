@@ -1870,6 +1870,16 @@ public class ReportService : IReportService
                     .ThenInclude(s => s.SubCriteria)
             .Where(e => e.EvaluatedCustomerPersonnelId == filter.PersonnelId && e.StatusId == EvaluationStatuses.Ids.Completed);
 
+        // İç/Dış Değerlendirme filtresi
+        if (string.Equals(filter.EvaluationType, "internal", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
+        }
+        else if (string.Equals(filter.EvaluationType, "external", StringComparison.OrdinalIgnoreCase))
+        {
+            query = query.Where(e => e.EvaluatorId != null);
+        }
+
         // Proje filtresi: Çoğul ProjectIds veya varsayılan Çağrı Denetimi
         if (filter.ProjectIds?.Any() != true)
         {

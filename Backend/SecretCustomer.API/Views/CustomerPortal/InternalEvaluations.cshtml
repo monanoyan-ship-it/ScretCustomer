@@ -221,7 +221,7 @@
                         </thead>
                         <tbody data-bind="foreach: evaluations">
                             <tr>
-                                <td data-bind="callIdLink: callId || id"></td>
+                                <td><call-id params="value: callId"></call-id></td>
                                 <td>
                                     <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : new Date(evaluationDate).toLocaleDateString('tr-TR')"></span>
                                 </td>
@@ -397,6 +397,11 @@
                     <div data-bind="visible: isDetailsLoading" class="text-center py-5">
                         <div class="spinner-border text-info"></div>
                     </div>
+                    <!-- Error -->
+                    <div data-bind="visible: !isDetailsLoading() && detailsError()" class="text-center py-5">
+                        <i class="bi bi-exclamation-triangle text-warning fs-1"></i>
+                        <p class="mt-3 text-muted" data-bind="text: detailsError"></p>
+                    </div>
                     <!-- Content -->
                     <div data-bind="visible: !isDetailsLoading() && detailsData()">
                         <!-- ko with: detailsData -->
@@ -477,7 +482,9 @@
                                             <tbody data-bind="visible: projectTypeId === 2">
                                                 <tr>
                                                     <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
-                                                    <td data-bind="callIdLink: callId"></td>
+                                                    <td>
+                                                        <call-id params="value: callId"></call-id>
+                                                    </td>
                                                 </tr>
                                                 <tr>
                                                     <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
