@@ -503,21 +503,40 @@ function PersonnelReportCardViewModel() {
             });
     };
 
-    // Print report as PDF
-    self.printReport = function() {
-        // Hide non-printable elements
-        var header = document.querySelector('.d-flex.justify-content-between.align-items-center.mb-4');
-        var selection = document.querySelector('.card.shadow-sm.mb-4');
+    // Export to PDF via PdfService
+    self.exportToPdf = function() {
+        if (!self.selectedPersonnelId()) return;
 
-        if (header) header.style.display = 'none';
-        if (selection) selection.style.display = 'none';
+        self.isExporting(true);
 
-        // Print
-        window.print();
+        var url = '/api/reports/personnel-report-card/' + self.selectedPersonnelId() + '/export-pdf';
+        var params = self.buildFilterParams();
+        if (params) {
+            url += '?' + params;
+        }
 
-        // Restore elements
-        if (header) header.style.display = '';
-        if (selection) selection.style.display = '';
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('PDF olusturulamadi');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                var objectUrl = URL.createObjectURL(blob);
+                a.href = objectUrl;
+                a.download = 'TemsilciKarnesi_' + (self.report() ? self.report().personnelName.replace(/ /g, '_') : 'rapor') + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(objectUrl);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('PDF export error:', error);
+                toastr.error('PDF export basarisiz: ' + error.message);
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
     };
 
     // Initialize

@@ -346,18 +346,38 @@ function DealerReportCardViewModel() {
             });
     };
 
-    // Print report
-    self.printReport = function() {
-        var header = document.querySelector('.d-flex.justify-content-between.align-items-center.mb-4');
-        var selection = document.querySelector('.card.shadow-sm.mb-4');
+    // Export to PDF via PdfService
+    self.exportToPdf = function() {
+        if (!self.selectedDealerId()) return;
 
-        if (header) header.style.display = 'none';
-        if (selection) selection.style.display = 'none';
+        self.isExporting(true);
 
-        window.print();
+        var url = '/api/reports/dealer-report-card/' + self.selectedDealerId() + '/export-pdf';
+        var params = self.buildFilterParams();
+        if (params) url += '?' + params;
 
-        if (header) header.style.display = '';
-        if (selection) selection.style.display = '';
+        fetch(url, { credentials: 'include' })
+            .then(function(response) {
+                if (!response.ok) throw new Error('PDF olusturulamadi');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                var objectUrl = URL.createObjectURL(blob);
+                a.href = objectUrl;
+                a.download = 'SubeKarnesi_' + (self.report() ? self.report().dealerName.replace(/ /g, '_') : 'rapor') + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                URL.revokeObjectURL(objectUrl);
+                a.remove();
+            })
+            .catch(function(error) {
+                console.error('PDF export error:', error);
+                toastr.error('PDF export basarisiz: ' + error.message);
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
     };
 
     // Initialize

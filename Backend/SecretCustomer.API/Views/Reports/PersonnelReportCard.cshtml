@@ -16,8 +16,13 @@
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "İndiriliyor...")
                 </span>
             </button>
-            <button class="btn btn-danger" data-bind="click: printReport">
-                <i class="bi bi-file-pdf"></i> @Html.T("Report.PrintPdf", "PDF Yazdır")
+            <button class="btn btn-danger" data-bind="click: exportToPdf, disable: isExporting">
+                <span data-bind="visible: !isExporting()">
+                    <i class="bi bi-file-pdf"></i> @Html.T("Report.ExportPdf", "PDF İndir")
+                </span>
+                <span data-bind="visible: isExporting">
+                    <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "İndiriliyor...")
+                </span>
             </button>
         </div>
     </div>

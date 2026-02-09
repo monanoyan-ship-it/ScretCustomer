@@ -92,8 +92,9 @@
                             <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-word"></i> Word</span>
                             <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
-                        <button class="btn btn-danger btn-sm" data-bind="click: printReport">
-                            <i class="bi bi-file-pdf"></i> PDF
+                        <button class="btn btn-danger btn-sm" data-bind="click: exportToPdf, disable: isExporting">
+                            <span data-bind="visible: !isExporting()"><i class="bi bi-file-pdf"></i> PDF</span>
+                            <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
                         </button>
                     </div>
                 </div>

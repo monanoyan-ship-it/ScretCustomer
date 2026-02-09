@@ -394,18 +394,35 @@ function CustomerDealerReportCardViewModel() {
         return 'bg-secondary';
     };
 
-    // Print report
-    self.printReport = function() {
-        var leftPanel = document.querySelector('.col-md-3');
-        var filterCard = document.querySelector('.card.shadow-sm.mb-3');
+    // Export to PDF via PdfService
+    self.exportToPdf = function() {
+        if (!self.selectedDealerId()) return;
 
-        if (leftPanel) leftPanel.style.display = 'none';
-        if (filterCard) filterCard.style.display = 'none';
+        self.isExporting(true);
+        var url = '/api/customer/portal/reports/dealer-report-card/' + self.selectedDealerId() + '/export-pdf' + self.buildQueryParams();
 
-        window.print();
-
-        if (leftPanel) leftPanel.style.display = '';
-        if (filterCard) filterCard.style.display = '';
+        customerApiFetch(url)
+            .then(function(response) {
+                if (!response.ok) throw new Error('PDF oluşturulamadı');
+                return response.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                var objectUrl = URL.createObjectURL(blob);
+                a.href = objectUrl;
+                a.download = 'SubeKarnesi_' + (self.report() ? self.report().dealerName.replace(/ /g, '_') : 'rapor') + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+            })
+            .catch(function(error) {
+                console.error('PDF export error:', error);
+                toastr.error('PDF oluşturulurken bir hata oluştu.');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
     };
 
     // Initialize

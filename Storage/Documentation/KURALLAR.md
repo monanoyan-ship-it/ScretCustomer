@@ -2062,7 +2062,98 @@ public const string EvaluationUrl = "{EvaluationUrl}";
 
 ---
 
-## 27. Commit Kuralları
+## 27. PDF Servisi (WeasyPrint + Docker)
+
+### Nedir?
+
+HTML'den PDF oluşturan Python (FastAPI + WeasyPrint) microservice. Docker container olarak çalışır.
+
+### Dosya Konumu
+
+```
+PdfService/
+├── app.py                # FastAPI uygulama (POST /generate, POST /generate-base64, GET /health)
+├── Dockerfile            # Python 3.12-slim + WeasyPrint bağımlılıkları
+├── docker-compose.yml    # Container tanımı
+└── requirements.txt      # Python paketleri (pinned versiyonlar)
+```
+
+### Çalıştırma
+
+#### Yöntem 1: Docker ile (Geliştirme ortamı)
+
+```bash
+cd PdfService
+docker-compose up -d --build
+
+# Logları görmek için:
+docker logs pdf-service
+
+# Durdurmak için:
+docker-compose down
+```
+
+#### Yöntem 2: Python ile direkt (Sunucu / Docker olmayan ortam)
+
+```bash
+cd PdfService
+
+# İlk kurulum (bir kez):
+pip install -r requirements.txt
+
+# Çalıştırma:
+python app.py
+# veya
+uvicorn app:app --host 0.0.0.0 --port 5060
+```
+
+> **Sunucuda şu an bu yöntem kullanılıyor.** Docker kurulu değil, Python ile direkt çalıştırılıyor.
+
+#### Health Check
+
+```bash
+curl http://localhost:5060/health
+# Beklenen: {"status": "healthy"}
+```
+
+### Port & Erişim
+
+- **Container portu:** 5060
+- **URL:** `http://localhost:5060`
+- **appsettings.json:** `"PdfService": { "Url": "http://localhost:5060" }`
+
+### .NET Tarafı Entegrasyonu
+
+- **Interface:** `IPdfService` (`SecretCustomer.Core/Interfaces/Services/`)
+- **Implementasyon:** `PdfService.cs` (`SecretCustomer.Services/Services/`)
+- **DI Kayıt:** `Program.cs` → `builder.Services.AddHttpClient<IPdfService, PdfService>();`
+- **Kullanım:** Controller'da HTML string oluştur → `_pdfService.GeneratePdfFromHtmlAsync(html)` → `File(pdfBytes, "application/pdf", fileName)` döndür
+
+### API Endpoint'leri (Python)
+
+| Endpoint | Method | Açıklama |
+|----------|--------|----------|
+| `/health` | GET | Sağlık kontrolü |
+| `/generate` | POST | HTML → PDF dosya indirme |
+| `/generate-base64` | POST | HTML → Base64 PDF string |
+
+### Kullanan Sayfalar
+
+- `/CustomerPortal/MyPerformance` - Kendi karnem PDF
+- `/CustomerPortal/PersonnelReportCard` - Temsilci karnesi PDF
+- `/Reports/PersonnelReportCard` - Temsilci karnesi PDF (Admin)
+- `/Reports/DealerReportCard` - Şube karnesi PDF (Admin)
+
+### ÖNEMLİ
+
+- **Sunucuda:** Docker yok (Windows versiyonu sebebiyle güncellenemiyor), Python ile direkt çalıştırılıyor
+- **Geliştirme ortamında:** Docker Desktop varsa `docker-compose up -d --build` ile çalıştırılabilir
+- `.NET uygulaması başlamadan önce` PDF servisi çalışır durumda olmalı
+- Servis down ise PDF export butonları hata verir, diğer fonksiyonlar etkilenmez
+
+---
+
+## 28. Commit Kuralları
 
 ⛔ **KULLANICI COMMIT DEMEDİKÇE ASLA COMMIT YAPMA!** ⛔
 

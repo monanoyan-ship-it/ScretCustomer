@@ -20,6 +20,7 @@ public class ReportsApiController : BaseApiController
     private readonly ILogger<ReportsApiController> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly IAIReportService _aiReportService;
+    private readonly IPdfService _pdfService;
 
     public ReportsApiController(
         IReportService reportService,
@@ -30,6 +31,7 @@ public class ReportsApiController : BaseApiController
         ILogger<ReportsApiController> logger,
         ILocalizationService localizationService,
         IAIReportService aiReportService,
+        IPdfService pdfService,
         IConfiguration configuration) : base(configuration)
     {
         _reportService = reportService;
@@ -40,6 +42,7 @@ public class ReportsApiController : BaseApiController
         _logger = logger;
         _localizationService = localizationService;
         _aiReportService = aiReportService;
+        _pdfService = pdfService;
     }
 
     /// <summary>
@@ -635,6 +638,49 @@ public class ReportsApiController : BaseApiController
         {
             _logger.LogError(ex, "Error exporting personnel report card for {PersonnelId}", personnelId);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError"), ex));
+        }
+    }
+
+    /// <summary>
+    /// Temsilci Karnesi PDF export (PdfService kullanarak)
+    /// </summary>
+    [HttpGet("personnel-report-card/{personnelId:int}/export-pdf")]
+    public async Task<IActionResult> ExportPersonnelReportCardToPdf(
+        int personnelId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new PersonnelReportCardFilterDto
+            {
+                PersonnelId = personnelId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var report = await _reportService.GetPersonnelReportCardAsync(filter);
+            if (report == null)
+                return NotFound(CreateErrorResponse("Karne verisi bulunamadı."));
+
+            var html = GeneratePersonnelReportCardHtml(report);
+            var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
+
+            var fileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting personnel report card PDF for {PersonnelId}", personnelId);
+            return StatusCode(500, CreateErrorResponse("Temsilci karnesi PDF oluşturulurken hata oluştu.", ex));
         }
     }
 
@@ -1533,6 +1579,49 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Şube Karnesi PDF export (PdfService kullanarak)
+    /// </summary>
+    [HttpGet("dealer-report-card/{dealerId:int}/export-pdf")]
+    public async Task<IActionResult> ExportDealerReportCardToPdf(
+        int dealerId,
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null)
+    {
+        try
+        {
+            var filter = new DealerReportCardFilterDto
+            {
+                DealerId = dealerId,
+                ProjectIds = projectIds
+            };
+
+            if (startDate.HasValue || endDate.HasValue)
+            {
+                filter.DateRanges = new List<DateRangeFilter>
+                {
+                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
+                };
+            }
+
+            var report = await _reportService.GetDealerReportCardAsync(filter);
+            if (report == null)
+                return NotFound(CreateErrorResponse("Şube bulunamadı."));
+
+            var html = GenerateDealerReportCardHtml(report);
+            var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
+
+            var fileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting dealer report card PDF for {DealerId}", dealerId);
+            return StatusCode(500, CreateErrorResponse("Şube karnesi PDF oluşturulurken hata oluştu.", ex));
+        }
+    }
+
     [HttpGet("dealer-report-card/{dealerId:int}/export-word")]
     public async Task<IActionResult> ExportDealerReportCardToWord(
         int dealerId,
@@ -1564,5 +1653,237 @@ public class ReportsApiController : BaseApiController
             _logger.LogError(ex, "Error exporting dealer report card to Word for {DealerId}", dealerId);
             return StatusCode(500, CreateErrorResponse("Şube karnesi Word export edilirken hata oluştu.", ex));
         }
+    }
+
+    // ===== PDF HTML GENERATOR METOTLARI =====
+
+    private string GeneratePersonnelReportCardHtml(PersonnelReportCardDto report)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'>");
+        sb.AppendLine("<style>");
+        sb.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #333; margin: 20px; }");
+        sb.AppendLine("h1 { color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 8px; }");
+        sb.AppendLine("h2 { color: #495057; margin-top: 5px; }");
+        sb.AppendLine("table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }");
+        sb.AppendLine("th, td { border: 1px solid #dee2e6; padding: 6px 10px; text-align: left; }");
+        sb.AppendLine("th { background-color: #f8f9fa; font-weight: 600; }");
+        sb.AppendLine(".text-center { text-align: center; }");
+        sb.AppendLine(".text-success { color: #198754; }");
+        sb.AppendLine(".text-warning { color: #ffc107; }");
+        sb.AppendLine(".text-danger { color: #dc3545; }");
+        sb.AppendLine(".badge { display: inline-block; padding: 3px 8px; border-radius: 4px; color: #fff; font-size: 10pt; }");
+        sb.AppendLine(".bg-success { background-color: #198754; }");
+        sb.AppendLine(".bg-warning { background-color: #ffc107; color: #000; }");
+        sb.AppendLine(".bg-danger { background-color: #dc3545; }");
+        sb.AppendLine(".card { border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 15px; }");
+        sb.AppendLine(".card-header { background-color: #f8f9fa; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #dee2e6; }");
+        sb.AppendLine(".page-break { page-break-before: always; }");
+        sb.AppendLine("</style></head><body>");
+
+        sb.AppendLine($"<h1>Temsilci Karnesi</h1>");
+        sb.AppendLine($"<h2>{report.PersonnelName}</h2>");
+        if (!string.IsNullOrEmpty(report.Title))
+            sb.AppendLine($"<p><strong>Ünvan:</strong> {report.Title}</p>");
+
+        // Özet
+        sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
+        sb.AppendLine("<table>");
+        sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F1}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
+        sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
+        sb.AppendLine("</table></div>");
+
+        // Aylık Trend
+        if (report.MonthlyTrend.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
+            sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
+            foreach (var trend in report.MonthlyTrend)
+            {
+                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F1}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Grup Performansı
+        if (report.GroupPerformances.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
+            sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
+            foreach (var group in report.GroupPerformances)
+            {
+                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F1}%</span></td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Güçlü/Zayıf Yönler
+        if (report.Strengths.Any() || report.Weaknesses.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Güçlü ve Zayıf Yönler</div>");
+            if (report.Strengths.Any())
+            {
+                sb.AppendLine("<h3 style='color:#198754;margin:10px 12px 5px;'>Güçlü Yönler</h3><ul style='margin:0 12px 10px;'>");
+                foreach (var s in report.Strengths.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F0}%</span> {s.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+            if (report.Weaknesses.Any())
+            {
+                sb.AppendLine("<h3 style='color:#dc3545;margin:10px 12px 5px;'>Geliştirilmeli</h3><ul style='margin:0 12px 10px;'>");
+                foreach (var w in report.Weaknesses.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F0}%</span> {w.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+            sb.AppendLine("</div>");
+        }
+
+        // Son Değerlendirmeler
+        if (report.RecentEvaluations.Any())
+        {
+            sb.AppendLine("<div class='page-break'></div>");
+            sb.AppendLine("<div class='card'><div class='card-header'>Son Değerlendirmeler</div>");
+            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th>Kontrol Listesi</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th></tr></thead><tbody>");
+            foreach (var eval in report.RecentEvaluations.Take(20))
+            {
+                var cards = "";
+                if (eval.YellowCards > 0) cards += $"<span class='badge bg-warning'>{eval.YellowCards}</span> ";
+                if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
+                if (string.IsNullOrEmpty(cards)) cards = "-";
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F1}%</span></td><td class='text-center'>{cards}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine("</body></html>");
+        return sb.ToString();
+    }
+
+    private string GenerateDealerReportCardHtml(DealerReportCardDto report)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'>");
+        sb.AppendLine("<style>");
+        sb.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #333; margin: 20px; }");
+        sb.AppendLine("h1 { color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 8px; }");
+        sb.AppendLine("h2 { color: #495057; margin-top: 5px; }");
+        sb.AppendLine("table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }");
+        sb.AppendLine("th, td { border: 1px solid #dee2e6; padding: 6px 10px; text-align: left; }");
+        sb.AppendLine("th { background-color: #f8f9fa; font-weight: 600; }");
+        sb.AppendLine(".text-center { text-align: center; }");
+        sb.AppendLine(".text-success { color: #198754; }");
+        sb.AppendLine(".text-warning { color: #ffc107; }");
+        sb.AppendLine(".text-danger { color: #dc3545; }");
+        sb.AppendLine(".badge { display: inline-block; padding: 3px 8px; border-radius: 4px; color: #fff; font-size: 10pt; }");
+        sb.AppendLine(".bg-success { background-color: #198754; }");
+        sb.AppendLine(".bg-warning { background-color: #ffc107; color: #000; }");
+        sb.AppendLine(".bg-danger { background-color: #dc3545; }");
+        sb.AppendLine(".card { border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 15px; }");
+        sb.AppendLine(".card-header { background-color: #f8f9fa; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #dee2e6; }");
+        sb.AppendLine(".page-break { page-break-before: always; }");
+        sb.AppendLine("</style></head><body>");
+
+        sb.AppendLine($"<h1>Şube Karnesi</h1>");
+        sb.AppendLine($"<h2>{report.DealerName}</h2>");
+        if (!string.IsNullOrEmpty(report.DealerCode))
+            sb.AppendLine($"<p><strong>Şube Kodu:</strong> {report.DealerCode}</p>");
+        if (!string.IsNullOrEmpty(report.City))
+            sb.AppendLine($"<p><strong>Konum:</strong> {report.City}{(string.IsNullOrEmpty(report.District) ? "" : " / " + report.District)}</p>");
+
+        // Özet
+        sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
+        sb.AppendLine("<table>");
+        sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F1}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
+        sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
+        sb.AppendLine("</table></div>");
+
+        // Aylık Trend
+        if (report.MonthlyTrend.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
+            sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
+            foreach (var trend in report.MonthlyTrend)
+            {
+                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F1}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Grup Performansı
+        if (report.GroupPerformances.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
+            sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
+            foreach (var group in report.GroupPerformances)
+            {
+                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F1}%</span></td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Güçlü/Zayıf Yönler
+        if (report.Strengths.Any() || report.Weaknesses.Any())
+        {
+            sb.AppendLine("<div class='card'><div class='card-header'>Güçlü ve Zayıf Yönler</div>");
+            if (report.Strengths.Any())
+            {
+                sb.AppendLine("<h3 style='color:#198754;margin:10px 12px 5px;'>Güçlü Yönler</h3><ul style='margin:0 12px 10px;'>");
+                foreach (var s in report.Strengths.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F0}%</span> {s.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+            if (report.Weaknesses.Any())
+            {
+                sb.AppendLine("<h3 style='color:#dc3545;margin:10px 12px 5px;'>Geliştirilmeli</h3><ul style='margin:0 12px 10px;'>");
+                foreach (var w in report.Weaknesses.Take(5))
+                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F0}%</span> {w.QuestionText}</li>");
+                sb.AppendLine("</ul>");
+            }
+            sb.AppendLine("</div>");
+        }
+
+        // Son Değerlendirmeler
+        if (report.RecentEvaluations.Any())
+        {
+            sb.AppendLine("<div class='page-break'></div>");
+            sb.AppendLine("<div class='card'><div class='card-header'>Son Değerlendirmeler</div>");
+            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th>Kontrol Listesi</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th><th>Personel</th></tr></thead><tbody>");
+            foreach (var eval in report.RecentEvaluations.Take(20))
+            {
+                var cards = "";
+                if (eval.YellowCards > 0) cards += $"<span class='badge bg-warning'>{eval.YellowCards}</span> ";
+                if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
+                if (string.IsNullOrEmpty(cards)) cards = "-";
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F1}%</span></td><td class='text-center'>{cards}</td><td>{eval.PersonnelName ?? "-"}</td></tr>");
+            }
+            sb.AppendLine("</tbody></table></div>");
+        }
+
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine("</body></html>");
+        return sb.ToString();
+    }
+
+    private string GetScoreClass(decimal score)
+    {
+        if (score >= 80) return "text-success";
+        if (score >= 60) return "text-warning";
+        return "text-danger";
+    }
+
+    private string GetBadgeClass(decimal score)
+    {
+        if (score >= 80) return "bg-success";
+        if (score >= 60) return "bg-warning";
+        return "bg-danger";
     }
 }

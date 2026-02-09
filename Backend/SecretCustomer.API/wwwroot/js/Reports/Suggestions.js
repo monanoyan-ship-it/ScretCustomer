@@ -532,10 +532,10 @@ function SuggestionsViewModel() {
     // Export detail to Excel
     self.exportDetailToExcel = function() {
         var detail = self.detailData();
-        if (!detail || !detail.evaluationId) return;
+        if (!detail || !detail.id) return;
 
         self.isExporting(true);
-        fetch('/api/reports/evaluations/' + detail.evaluationId + '/export', { credentials: 'include' })
+        fetch('/api/reports/evaluations/' + detail.id + '/export', { credentials: 'include' })
             .then(function(response) {
                 if (!response.ok) throw new Error('Export failed');
                 return response.blob();
@@ -544,7 +544,7 @@ function SuggestionsViewModel() {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = 'Degerlendirme_Detay_' + detail.evaluationId + '.xlsx';
+                a.download = 'Degerlendirme_Detay_' + detail.id + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);
@@ -552,7 +552,7 @@ function SuggestionsViewModel() {
             })
             .catch(function(error) {
                 console.error('Export error:', error);
-                toastr.error('Excel export hatasi');
+                toastr.error(T('Report.ExcelExportError', 'Excel export basarisiz'));
             })
             .finally(function() {
                 self.isExporting(false);
