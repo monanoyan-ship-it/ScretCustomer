@@ -115,6 +115,17 @@ function ProjectsViewModel() {
     self.availableOrganizations = ko.observableArray([]);
     self.emailTemplates = ko.observableArray([]);
 
+    // Proje tipi - Checklist tipi eslesmesi
+    var projectChecklistRelations = {
+        'CallAuditing': ['CallPerformance'],
+        'PhysicalAudit': ['PhysicalAudit'],
+        'MysteryShopping': ['MysteryShopping', 'CallPerformance'],
+        'OnlineSurvey': ['Survey', 'Enneagram', 'OnlineEvaluation'],
+        'CustomerSatisfaction': ['Survey', 'CallPerformance'],
+        'TrainingEvaluation': ['OnlineEvaluation'],
+        'QualityControl': ['CallPerformance', 'PhysicalAudit']
+    };
+
     // View mode
     self.viewMode = ko.observable('table');
 
@@ -382,6 +393,18 @@ function ProjectsViewModel() {
     self.isDetailModalOpen = ko.observable(false);
     self.editingProject = ko.observable(null);
     self.viewingProject = ko.observable(null);
+
+    // Proje tipine gore filtrelenmis checklist listesi
+    self.filteredChecklists = ko.computed(function() {
+        var project = self.editingProject();
+        if (!project) return self.checklists();
+        var pt = project.projectType();
+        var allowed = projectChecklistRelations[pt];
+        if (!allowed) return self.checklists();
+        return self.checklists().filter(function(c) {
+            return allowed.indexOf(c.checklistType) !== -1;
+        });
+    });
 
     // File Management
     self.projectFiles = ko.observableArray([]);
@@ -662,6 +685,17 @@ function ProjectsViewModel() {
             editVm.organizationId(null); // Reset organization when customer changes
         });
 
+        // Proje tipi değişince uyumsuz checklist seçimini sıfırla
+        editVm.projectType.subscribe(function(newType) {
+            var allowed = projectChecklistRelations[newType];
+            if (allowed && editVm.checklistId()) {
+                var currentChecklist = self.checklists().find(function(c) { return c.id == editVm.checklistId(); });
+                if (currentChecklist && allowed.indexOf(currentChecklist.checklistType) === -1) {
+                    editVm.checklistId('');
+                }
+            }
+        });
+
         self.isEditModalOpen(true);
     };
 
@@ -691,6 +725,17 @@ function ProjectsViewModel() {
                     editVm.customerId.subscribe(function(customerId) {
                         self.loadOrganizations(customerId);
                         editVm.organizationId(null); // Reset organization when customer changes
+                    });
+
+                    // Proje tipi değişince uyumsuz checklist seçimini sıfırla
+                    editVm.projectType.subscribe(function(newType) {
+                        var allowed = projectChecklistRelations[newType];
+                        if (allowed && editVm.checklistId()) {
+                            var currentChecklist = self.checklists().find(function(c) { return c.id == editVm.checklistId(); });
+                            if (currentChecklist && allowed.indexOf(currentChecklist.checklistType) === -1) {
+                                editVm.checklistId('');
+                            }
+                        }
                     });
 
                     self.isDetailModalOpen(false);

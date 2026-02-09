@@ -197,12 +197,12 @@ public static class ProjectStatuses
 // ============================================================
 public static class ProjectTypes
 {
-    public static readonly TypeItem MysteryShopping = new(1, "MysteryShopping", "ProjectType.MysteryShopping", "Gizli Musteri", "bi-incognito", "bg-primary", 3, isDefault: true);
-    public static readonly TypeItem CallAuditing = new(2, "CallAuditing", "ProjectType.CallAuditing", "Cagri Denetleme", "bi-telephone", "bg-info", 1);
+    public static readonly TypeItem MysteryShopping = new(1, "MysteryShopping", "ProjectType.MysteryShopping", "Gizli Müşteri", "bi-incognito", "bg-primary", 3, isDefault: true);
+    public static readonly TypeItem CallAuditing = new(2, "CallAuditing", "ProjectType.CallAuditing", "Çağrı Denetleme", "bi-telephone", "bg-info", 1);
     public static readonly TypeItem PhysicalAudit = new(3, "PhysicalAudit", "ProjectType.PhysicalAudit", "Fiziksel Denetim", "bi-building-check", "bg-success", 4);
     public static readonly TypeItem OnlineSurvey = new(4, "OnlineSurvey", "ProjectType.OnlineSurvey", "Online Anket", "bi-globe", "bg-secondary", 2);
-    public static readonly TypeItem CustomerSatisfaction = new(5, "CustomerSatisfaction", "ProjectType.CustomerSatisfaction", "Musteri Memnuniyeti", "bi-emoji-smile", "bg-warning text-dark", 5);
-    public static readonly TypeItem TrainingEvaluation = new(6, "TrainingEvaluation", "ProjectType.TrainingEvaluation", "Egitim Degerlendirmesi", "bi-mortarboard", "bg-purple", 6);
+    public static readonly TypeItem CustomerSatisfaction = new(5, "CustomerSatisfaction", "ProjectType.CustomerSatisfaction", "Müşteri Memnuniyeti", "bi-emoji-smile", "bg-warning text-dark", 5);
+    public static readonly TypeItem TrainingEvaluation = new(6, "TrainingEvaluation", "ProjectType.TrainingEvaluation", "Eğitim Değerlendirmesi", "bi-mortarboard", "bg-purple", 6);
     public static readonly TypeItem QualityControl = new(7, "QualityControl", "ProjectType.QualityControl", "Kalite Kontrol", "bi-patch-check", "bg-danger", 7);
 
     public static IEnumerable<TypeItem> All => new[] { MysteryShopping, CallAuditing, PhysicalAudit, OnlineSurvey, CustomerSatisfaction, TrainingEvaluation, QualityControl };
@@ -227,12 +227,12 @@ public static class ProjectTypes
 // ============================================================
 public static class QuestionTypes
 {
-    public static readonly TypeItem MultipleChoice = new(1, "MultipleChoice", "QuestionType.MultipleChoice", "Coktan secmeli", "bi-ui-radios", "bg-primary", 1);
-    public static readonly TypeItem Likert = new(2, "Likert", "QuestionType.Likert", "Likert olcegi", "bi-sliders", "bg-info", 2, isDefault: true);
-    public static readonly TypeItem Star = new(3, "Star", "QuestionType.Star", "Yildiz derecelendirme", "bi-star", "bg-warning text-dark", 3);
-    public static readonly TypeItem Text = new(4, "Text", "QuestionType.Text", "Acik uclu metin", "bi-fonts", "bg-secondary", 4);
-    public static readonly TypeItem YesNo = new(5, "YesNo", "QuestionType.YesNo", "Evet/Hayir", "bi-toggle-on", "bg-success", 5);
-    public static readonly TypeItem Rating = new(6, "Rating", "QuestionType.Rating", "Puan derecelendirme", "bi-speedometer2", "bg-danger", 6);
+    public static readonly TypeItem MultipleChoice = new(1, "MultipleChoice", "QuestionType.MultipleChoice", "Çoktan Seçmeli", "bi-ui-radios", "bg-primary", 1);
+    public static readonly TypeItem Likert = new(2, "Likert", "QuestionType.Likert", "Likert Ölçeği", "bi-sliders", "bg-info", 2, isDefault: true);
+    public static readonly TypeItem Star = new(3, "Star", "QuestionType.Star", "Yıldız Derecelendirme", "bi-star", "bg-warning text-dark", 3);
+    public static readonly TypeItem Text = new(4, "Text", "QuestionType.Text", "Açık Uçlu Metin", "bi-fonts", "bg-secondary", 4);
+    public static readonly TypeItem YesNo = new(5, "YesNo", "QuestionType.YesNo", "Evet/Hayır", "bi-toggle-on", "bg-success", 5);
+    public static readonly TypeItem Rating = new(6, "Rating", "QuestionType.Rating", "Puan Derecelendirme", "bi-speedometer2", "bg-danger", 6);
 
     public static IEnumerable<TypeItem> All => new[] { MultipleChoice, Likert, Star, Text, YesNo, Rating };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -612,15 +612,14 @@ public static class AnnouncementTypes
 // ============================================================
 public static class ChecklistTypes
 {
-    public static readonly TypeItem CallPerformance = new(1, "CallPerformance", "ChecklistType.CallPerformance", "Cagri Performans degerlendirmesi", "bi-telephone", "bg-primary", 1, isDefault: true);
-    public static readonly TypeItem PhysicalAudit = new(2, "PhysicalAudit", "ChecklistType.PhysicalAudit", "Fiziksel denetim", "bi-building", "bg-info", 2);
-    public static readonly TypeItem MysteryShopping = new(3, "MysteryShopping", "ChecklistType.MysteryShopping", "Gizli Musteri", "bi-incognito", "bg-warning text-dark", 3);
-    public static readonly TypeItem OnlineEvaluation = new(4, "OnlineEvaluation", "ChecklistType.OnlineEvaluation", "Online degerlendirme", "bi-globe", "bg-success", 4);
-    public static readonly TypeItem Survey = new(5, "Survey", "ChecklistType.Survey", "Genel anket", "bi-clipboard-data", "bg-secondary", 5);
-    public static readonly TypeItem BankMysteryShopping = new(6, "BankMysteryShopping", "ChecklistType.BankMysteryShopping", "Banka Gizli Musteri", "bi-bank", "bg-dark", 6);
+    public static readonly TypeItem CallPerformance = new(1, "CallPerformance", "ChecklistType.CallPerformance", "Çağrı Performans", "bi-telephone", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem PhysicalAudit = new(2, "PhysicalAudit", "ChecklistType.PhysicalAudit", "Fiziksel Denetim", "bi-building", "bg-info", 2);
+    public static readonly TypeItem MysteryShopping = new(3, "MysteryShopping", "ChecklistType.MysteryShopping", "Gizli Müşteri", "bi-incognito", "bg-warning text-dark", 3);
+    public static readonly TypeItem OnlineEvaluation = new(4, "OnlineEvaluation", "ChecklistType.OnlineEvaluation", "Online Değerlendirme", "bi-globe", "bg-success", 4);
+    public static readonly TypeItem Survey = new(5, "Survey", "ChecklistType.Survey", "Anket", "bi-clipboard-data", "bg-secondary", 5);
     public static readonly TypeItem Enneagram = new(7, "Enneagram", "ChecklistType.Enneagram", "Enneagram Kisilik Testi", "bi-people", "bg-purple", 7);
 
-    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, BankMysteryShopping, Enneagram };
+    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, Enneagram };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -632,8 +631,36 @@ public static class ChecklistTypes
         public const int MysteryShopping = 3;
         public const int OnlineEvaluation = 4;
         public const int Survey = 5;
-        public const int BankMysteryShopping = 6;
         public const int Enneagram = 7;
+    }
+}
+
+// ============================================================
+// PROJECT-CHECKLIST TYPE RELATIONS (Proje Tipi - Checklist Tipi Eslesmesi)
+// ============================================================
+public static class ProjectChecklistTypeRelations
+{
+    private static readonly Dictionary<int, int[]> _map = new()
+    {
+        { ProjectTypes.Ids.CallAuditing,        new[] { ChecklistTypes.Ids.CallPerformance } },
+        { ProjectTypes.Ids.PhysicalAudit,       new[] { ChecklistTypes.Ids.PhysicalAudit } },
+        { ProjectTypes.Ids.MysteryShopping,      new[] { ChecklistTypes.Ids.MysteryShopping, ChecklistTypes.Ids.CallPerformance } },
+        { ProjectTypes.Ids.OnlineSurvey,         new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram, ChecklistTypes.Ids.OnlineEvaluation } },
+        { ProjectTypes.Ids.CustomerSatisfaction, new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.CallPerformance } },
+        { ProjectTypes.Ids.TrainingEvaluation,   new[] { ChecklistTypes.Ids.OnlineEvaluation } },
+        { ProjectTypes.Ids.QualityControl,       new[] { ChecklistTypes.Ids.CallPerformance, ChecklistTypes.Ids.PhysicalAudit } },
+    };
+
+    public static int[]? GetAllowedChecklistTypes(int projectTypeId)
+        => _map.GetValueOrDefault(projectTypeId);
+
+    // Frontend JS map olusturmak icin - SystemName bazli
+    public static Dictionary<string, string[]> GetAllAsSystemNameMap()
+    {
+        return _map.ToDictionary(
+            kvp => ProjectTypes.GetById(kvp.Key)?.SystemName ?? "",
+            kvp => kvp.Value.Select(ct => ChecklistTypes.GetById(ct)?.SystemName ?? "").ToArray()
+        );
     }
 }
 

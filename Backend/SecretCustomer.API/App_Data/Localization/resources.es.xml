@@ -8544,9 +8544,6 @@
   <LocaleResource Name="Checklist.SelectScoringMethod">
     <Value>Seleccionar Método de Puntuación</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Type.BankMysteryShopping">
-    <Value>Mystery Shopping Bancario</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Type.Enneagram">
     <Value>Eneagrama</Value>
   </LocaleResource>

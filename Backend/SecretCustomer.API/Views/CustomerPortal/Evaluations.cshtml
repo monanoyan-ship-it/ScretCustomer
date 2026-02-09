@@ -117,7 +117,8 @@
                         <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
                         <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
-                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                        <option value="dateRange">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</option>
+                        <option value="controlDate">@Html.T("Evaluation.EvaluationDate", "Değerlendirme Tarihi")</option>
                     </select>
 
                     <!-- ko if: evalSelectedFilterType() === 'status' -->
@@ -175,7 +176,7 @@
                     <!-- /ko -->
 
                     <!-- ko if: evalSelectedFilterType() === 'dateRange' -->
-                    <!-- Date Range Filter Input -->
+                    <!-- Date Range Filter Input (Çağrı Tarihi) -->
                     <div class="d-flex flex-wrap gap-1 align-items-center">
                         <div class="dropdown">
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -190,6 +191,28 @@
                         <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.startDate">
                         <span class="text-muted">-</span>
                         <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.endDate">
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'controlDate' -->
+                    <!-- Control Date Filter Input (Değerlendirme Tarihi) -->
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <span data-bind="text: evalTempFilter.selectedControlDateRangeType() ? evalDateRanges.find(function(r) { return r.systemName === evalTempFilter.selectedControlDateRangeType(); })?.name : '@Html.T("Common.QuickSelect", "Hızlı Seç")'"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <!-- ko foreach: evalDateRanges -->
+                                <li><a class="dropdown-item" href="#" data-bind="text: name, click: function() { $parent.evalSetTempControlDateRange(systemName); }"></a></li>
+                                <!-- /ko -->
+                            </ul>
+                        </div>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.controlStartDate">
+                        <span class="text-muted">-</span>
+                        <input type="date" class="form-control form-control-sm" style="width: 140px;" data-bind="value: evalTempFilter.controlEndDate">
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
                             <i class="bi bi-plus"></i>
                         </button>

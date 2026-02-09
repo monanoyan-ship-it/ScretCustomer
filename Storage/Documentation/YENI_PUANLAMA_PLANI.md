@@ -44,7 +44,6 @@ SESTEK sisteminde gördüğümüz puanlama yapısı:
 | 3 | MysteryShopping | Gizli Müşteri |
 | 4 | OnlineEvaluation | Online değerlendirme |
 | 5 | Survey | Genel anket |
-| 6 | BankMysteryShopping | Banka Gizli Müşteri |
 
 ### 2.3 Mevcut Hesaplama Mantığı (Maximum)
 
@@ -262,7 +261,6 @@ Toplam: 7.5 + (-10) = -2.5 puan
 | MysteryShopping | Maximum |
 | OnlineEvaluation | Maximum VEYA Kriter Toplam |
 | Survey | Maximum (puansız da olabilir) |
-| BankMysteryShopping | Kriter Toplam (SESTEK tarzı) |
 
 **NOT:** ChecklistType ile ScoringMethod bağımsız. Aynı tipte checklist farklı puanlama yöntemi kullanabilir.
 

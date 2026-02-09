@@ -468,7 +468,7 @@
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">@Html.T("Project.Checklist", "Kontrol Listesi") <span class="text-danger">*</span></label>
-                                            <select class="form-select" data-bind="value: checklistId, options: $parent.checklists, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                                            <select class="form-select" data-bind="value: checklistId, options: $parent.filteredChecklists, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">@Html.T("Project.Customer", "Müşteri")</label>

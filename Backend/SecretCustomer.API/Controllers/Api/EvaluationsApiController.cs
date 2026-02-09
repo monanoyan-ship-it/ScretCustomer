@@ -1079,19 +1079,19 @@ public class EvaluationsApiController : BaseApiController
                 query = query.Where(e => e.Project != null && e.Project.Name == projectName);
             }
 
-            // Tarih aralığı filtresi (oluşturma tarihi - createdAt)
+            // Çağrı tarihi filtresi (CallDate)
             if (startDate.HasValue)
             {
                 var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt >= start);
+                query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= start);
             }
             if (endDate.HasValue)
             {
                 var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt <= end);
+                query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= end);
             }
 
-            // Kontrol tarihi filtresi (sadece createdAt)
+            // Değerlendirme tarihi filtresi (CreatedAt)
             if (controlStartDate.HasValue)
             {
                 var cStart = DateTime.SpecifyKind(controlStartDate.Value.Date, DateTimeKind.Utc);

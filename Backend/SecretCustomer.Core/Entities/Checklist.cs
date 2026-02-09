@@ -36,7 +36,7 @@ public class Checklist : BaseEntity
     /// </summary>
     [ExcelColumn("K.L. Tipi", 6, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Kontrol listesi tipi",
-        DropdownOptions = "[\"CallPerformance\", \"PhysicalAudit\", \"MysteryShopping\", \"OnlineEvaluation\", \"Survey\", \"BankMysteryShopping\"]",
+        DropdownOptions = "[\"CallPerformance\", \"PhysicalAudit\", \"MysteryShopping\", \"OnlineEvaluation\", \"Survey\", \"Enneagram\"]",
         SampleValue = "CallPerformance")]
     public int ChecklistTypeId { get; set; } = ChecklistTypes.Ids.CallPerformance;
 

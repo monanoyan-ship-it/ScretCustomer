@@ -327,10 +327,14 @@ public class CustomerPortalApiController : ControllerBase
     /// </returns>
     private async Task<List<int>?> GetAllowedPersonnelIdsAsync()
     {
+        // Admin session ile giriş
+        if (IsAdmin())
+            return null;
+
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        // Admin ve CustomerManager tüm personeli görebilir
+        // CustomerManager tüm personeli görebilir
         if (role == "Admin" || role == "CustomerManager")
             return null;
 
@@ -466,7 +470,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Aylık değerlendirme trendi (son 12 ay)
     /// </summary>
     [HttpGet("dashboard/monthly-trend")]
-    public async Task<IActionResult> GetMonthlyTrend([FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    public async Task<IActionResult> GetMonthlyTrend([FromQuery] int? projectId = null, [FromQuery] int? projectTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -474,7 +478,23 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var result = await _cpDataService.GetMonthlyTrendAsync(customerId.Value, allowedPersonnelIds, projectId, startDate, endDate);
+        var result = await _cpDataService.GetMonthlyTrendAsync(customerId.Value, allowedPersonnelIds, projectId, projectTypeId, startDate, endDate);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Proje tipine göre ayrı aylık değerlendirme trendleri
+    /// </summary>
+    [HttpGet("dashboard/monthly-trend-by-type")]
+    public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
+
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
+        var result = await _cpDataService.GetMonthlyTrendByTypeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate);
         return Ok(result);
     }
 

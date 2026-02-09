@@ -111,11 +111,10 @@
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.Type", "K.L. Tipi")</label>
                             <select class="form-select" data-bind="value: checklistType">
-                                <option value="CallPerformance">@Html.T("Checklist.Type.CallPerformance", "Çağrı Performans")</option>
-                                <option value="PhysicalAudit">@Html.T("Checklist.Type.PhysicalAudit", "Fiziksel Denetim")</option>
-                                <option value="MysteryShopping">@Html.T("Checklist.Type.MysteryShopping", "Gizli Müşteri")</option>
-                                <option value="OnlineEvaluation">@Html.T("Checklist.Type.OnlineEvaluation", "Online Değerlendirme")</option>
-                                <option value="BankMysteryShopping">@Html.T("Checklist.Type.BankMysteryShopping", "Banka Gizli Müşteri")</option>
+                                @foreach (var ct in SecretCustomer.Core.Enums.ChecklistTypes.All)
+                                {
+                                    <option value="@ct.SystemName">@Html.T("ChecklistType." + ct.SystemName, ct.Description)</option>
+                                }
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">

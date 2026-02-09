@@ -77,47 +77,151 @@
             </div>
         </div>
 
-        <!-- Charts Row -->
-        <div class="row g-3 mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm h-100" id="monthlyChartCard">
-                    <div class="card-header bg-white border-0 py-2">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="mb-0"><i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</h6>
-                            <div class="d-flex gap-1 align-items-center flex-wrap">
-                                <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" data-bind="value: monthlyTrendProjectId, options: monthlyTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Tüm Projeler'"></select>
-                                <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: monthlyTrendDateRange">
-                                    <option value="">Tarih Seçin</option>
-                                    <option value="thisWeek">Bu Hafta</option>
-                                    <option value="lastWeek">Geçen Hafta</option>
-                                    <option value="thisMonth">Bu Ay</option>
-                                    <option value="lastMonth">Geçen Ay</option>
-                                    <option value="last3Months">Son 3 Ay</option>
-                                    <option value="last6Months">Son 6 Ay</option>
-                                    <option value="thisYear">Bu Yıl</option>
-                                    <option value="lastYear">Geçen Yıl</option>
-                                </select>
-                                <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: monthlyTrendStartDate">
-                                <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: monthlyTrendEndDate">
-                                <button class="btn btn-sm btn-primary" data-bind="click: loadMonthlyTrend" title="Filtrele">
-                                    <i class="bi bi-filter"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { exportChartToPdf('monthlyChartCard', 'Aylik_Trend'); }" title="PDF İndir">
-                                    <i class="bi bi-file-earmark-pdf"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-success" data-bind="click: function() { exportChartToExcel('monthly-trend', 'monthlyChartCard', 'Aylik_Trend'); }" title="Excel İndir">
-                                    <i class="bi bi-file-earmark-excel"></i>
-                                </button>
+        <!-- Monthly Trend by Project Type -->
+        <!-- Loading -->
+        <div data-bind="visible: isMonthlyTrendLoading" class="text-center py-4 mb-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+            </div>
+        </div>
+        <!-- No Data -->
+        <div data-bind="visible: !isMonthlyTrendLoading() && monthlyTrendByType().length === 0" class="text-center text-muted py-4 mb-4">
+            <i class="bi bi-graph-up fs-1"></i>
+            <p class="mt-2">@Html.T("CustomerPortal.Dashboard.NoTrendData", "Aylık trend verisi bulunamadı.")</p>
+        </div>
+        <!-- Charts by Project Type -->
+        <div data-bind="visible: !isMonthlyTrendLoading() && monthlyTrendByType().length > 0">
+            <!-- ko foreach: monthlyTrendByType -->
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm h-100" data-bind="attr: { id: 'monthlyChartCard_' + projectTypeId }">
+                        <div class="card-header bg-white border-0 py-2">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <h6 class="mb-0">
+                                    <i data-bind="attr: { 'class': projectTypeIcon + ' me-2' }"></i>
+                                    <span data-bind="text: projectTypeName"></span>
+                                    <!-- ko if: panelType === 'survey' -->
+                                    <small class="text-muted ms-1">@Html.T("CustomerPortal.Dashboard.SurveyTrend", "Anket Yanıt Trendi")</small>
+                                    <!-- /ko -->
+                                    <!-- ko if: panelType === 'enneagram' -->
+                                    <small class="text-muted ms-1">@Html.T("CustomerPortal.Dashboard.EnneagramTrend", "Kişilik Analizi")</small>
+                                    <!-- /ko -->
+                                    <!-- ko if: panelType !== 'survey' && panelType !== 'enneagram' -->
+                                    <small class="text-muted ms-1">@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</small>
+                                    <!-- /ko -->
+                                </h6>
+                                <div class="d-flex gap-1 align-items-center flex-wrap">
+                                    <!-- ko if: panelType !== 'survey' && panelType !== 'enneagram' -->
+                                    <select class="form-select form-select-sm" style="width: auto; min-width: 140px;"
+                                            data-bind="value: selectedProjectId, options: projects, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Tüm Projeler'"></select>
+                                    <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: dateRange">
+                                        <option value="">Tarih Seçin</option>
+                                        <option value="thisWeek">Bu Hafta</option>
+                                        <option value="lastWeek">Geçen Hafta</option>
+                                        <option value="thisMonth">Bu Ay</option>
+                                        <option value="lastMonth">Geçen Ay</option>
+                                        <option value="last3Months">Son 3 Ay</option>
+                                        <option value="last6Months">Son 6 Ay</option>
+                                        <option value="thisYear">Bu Yıl</option>
+                                        <option value="lastYear">Geçen Yıl</option>
+                                    </select>
+                                    <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: startDate">
+                                    <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: endDate">
+                                    <button class="btn btn-sm btn-primary" data-bind="click: function() { $parent.reloadMonthlyTrendPanel(projectTypeId); }" title="Filtrele">
+                                        <i class="bi bi-filter"></i>
+                                    </button>
+                                    <!-- /ko -->
+                                    <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { $parent.exportChartToPdf('monthlyChartCard_' + projectTypeId, projectTypeName + '_Aylik_Trend'); }" title="PDF İndir">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-success" data-bind="click: function() { $parent.exportMonthlyTrendPanelToExcel(projectTypeId); }" title="Excel İndir">
+                                        <i class="bi bi-file-earmark-excel"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div style="position: relative; height: 280px;">
-                            <canvas id="monthlyChart"></canvas>
+                        <div class="card-body">
+                            <!-- Survey summary cards -->
+                            <!-- ko if: panelType === 'survey' && summary -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-6 col-md-3">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.ProjectCount", "Proje")</small>
+                                        <strong data-bind="text: summary.projectCount"></strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.TotalInvitations", "Davetiye")</small>
+                                        <strong data-bind="text: summary.totalInvitations"></strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.ResponseRate", "Yanıt Oranı")</small>
+                                        <strong data-bind="text: summary.responseRate + '%'"></strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</small>
+                                        <strong data-bind="text: summary.averageScore"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <!-- Enneagram summary cards -->
+                            <!-- ko if: panelType === 'enneagram' && summary -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-6 col-md-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.ProjectCount", "Proje")</small>
+                                        <strong data-bind="text: summary.projectCount"></strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.TotalResponses", "Toplam Yanıt")</small>
+                                        <strong data-bind="text: summary.totalResponses"></strong>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <div class="border rounded p-2 text-center">
+                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.DominantType", "Baskın Tip")</small>
+                                        <strong data-bind="text: summary.dominantType"></strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <!-- Enneagram: two charts side by side -->
+                            <!-- ko if: panelType === 'enneagram' -->
+                            <div class="row g-3">
+                                <div class="col-12 col-md-7">
+                                    <div style="position: relative; height: 280px;">
+                                        <canvas data-bind="attr: { id: 'monthlyChart_' + projectTypeId }"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-5">
+                                    <div style="position: relative; height: 280px;">
+                                        <canvas data-bind="attr: { id: 'enneagramDistChart_' + projectTypeId }"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+
+                            <!-- Default / Survey: single chart -->
+                            <!-- ko if: panelType !== 'enneagram' -->
+                            <div style="position: relative; height: 280px;">
+                                <canvas data-bind="attr: { id: 'monthlyChart_' + projectTypeId }"></canvas>
+                            </div>
+                            <!-- /ko -->
                         </div>
                     </div>
                 </div>
             </div>
+            <!-- /ko -->
         </div>
 
         <!-- Score Distribution by Project Type -->

@@ -8623,9 +8623,6 @@
   <LocaleResource Name="Checklist.SelectScoringMethod">
     <Value>Puanlama Yöntemi Seçin</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Type.BankMysteryShopping">
-    <Value>Banka Gizli Müşteri</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Type.Enneagram">
     <Value>Enneagram</Value>
   </LocaleResource>

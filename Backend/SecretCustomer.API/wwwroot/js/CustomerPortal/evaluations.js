@@ -35,7 +35,11 @@ function EvaluationsViewModel() {
         projectName: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
-        selectedDateRangeType: ko.observable(null)
+        selectedDateRangeType: ko.observable(null),
+        // Değerlendirme Tarihi (CreatedAt) filter
+        controlStartDate: ko.observable(''),
+        controlEndDate: ko.observable(''),
+        selectedControlDateRangeType: ko.observable(null)
     };
 
     // Status labels for display
@@ -63,6 +67,12 @@ function EvaluationsViewModel() {
     self.evalTempFilter.endDate.subscribe(function() {
         if (self._evalManualDateChange) self.evalTempFilter.selectedDateRangeType(null);
     });
+    self.evalTempFilter.controlStartDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedControlDateRangeType(null);
+    });
+    self.evalTempFilter.controlEndDate.subscribe(function() {
+        if (self._evalManualDateChange) self.evalTempFilter.selectedControlDateRangeType(null);
+    });
 
     // Can add filter check
     self.evalCanAddFilter = ko.computed(function() {
@@ -74,6 +84,7 @@ function EvaluationsViewModel() {
             case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
             case 'project': return self.evalTempFilter.projectName();
             case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
+            case 'controlDate': return self.evalTempFilter.controlStartDate() || self.evalTempFilter.controlEndDate();
             default: return false;
         }
     });
@@ -127,6 +138,47 @@ function EvaluationsViewModel() {
         if (startDate) self.evalTempFilter.startDate(self._evalFormatDate(startDate));
         if (endDate) self.evalTempFilter.endDate(self._evalFormatDate(endDate));
         self.evalTempFilter.selectedDateRangeType(range);
+        self._evalManualDateChange = true;
+    };
+
+    // Set temp control date range (quick select for Değerlendirme Tarihi)
+    self.evalSetTempControlDateRange = function(range) {
+        self._evalManualDateChange = false;
+        var today = new Date();
+        var startDate, endDate;
+
+        switch (range) {
+            case 'today':
+                startDate = endDate = today;
+                break;
+            case 'yesterday':
+                startDate = endDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
+                break;
+            case 'thisWeek':
+                var dayOfWeek = today.getDay();
+                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                startDate = new Date(today.getFullYear(), today.getMonth(), diff);
+                endDate = today;
+                break;
+            case 'lastWeek':
+                var dayOfWeek = today.getDay();
+                var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+                startDate = new Date(today.getFullYear(), today.getMonth(), diff - 7);
+                endDate = new Date(today.getFullYear(), today.getMonth(), diff - 1);
+                break;
+            case 'thisMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                endDate = today;
+                break;
+            case 'lastMonth':
+                startDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                endDate = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+        }
+
+        if (startDate) self.evalTempFilter.controlStartDate(self._evalFormatDate(startDate));
+        if (endDate) self.evalTempFilter.controlEndDate(self._evalFormatDate(endDate));
+        self.evalTempFilter.selectedControlDateRangeType(range);
         self._evalManualDateChange = true;
     };
 
@@ -186,7 +238,7 @@ function EvaluationsViewModel() {
                 var startDate = self.evalTempFilter.startDate();
                 var endDate = self.evalTempFilter.endDate();
                 if (!startDate && !endDate) return;
-                filter.label = 'Tarih';
+                filter.label = 'Çağrı Tarihi';
                 filter.value = { start: startDate, end: endDate };
                 if (startDate && endDate) {
                     filter.displayValue = startDate + ' - ' + endDate;
@@ -198,6 +250,24 @@ function EvaluationsViewModel() {
                 self.evalTempFilter.startDate('');
                 self.evalTempFilter.endDate('');
                 self.evalTempFilter.selectedDateRangeType(null);
+                break;
+
+            case 'controlDate':
+                var controlStartDate = self.evalTempFilter.controlStartDate();
+                var controlEndDate = self.evalTempFilter.controlEndDate();
+                if (!controlStartDate && !controlEndDate) return;
+                filter.label = 'Değerlendirme Tarihi';
+                filter.value = { start: controlStartDate, end: controlEndDate };
+                if (controlStartDate && controlEndDate) {
+                    filter.displayValue = controlStartDate + ' - ' + controlEndDate;
+                } else if (controlStartDate) {
+                    filter.displayValue = controlStartDate + ' sonrası';
+                } else {
+                    filter.displayValue = controlEndDate + ' öncesi';
+                }
+                self.evalTempFilter.controlStartDate('');
+                self.evalTempFilter.controlEndDate('');
+                self.evalTempFilter.selectedControlDateRangeType(null);
                 break;
         }
 
@@ -221,6 +291,9 @@ function EvaluationsViewModel() {
         self.evalTempFilter.startDate('');
         self.evalTempFilter.endDate('');
         self.evalTempFilter.selectedDateRangeType(null);
+        self.evalTempFilter.controlStartDate('');
+        self.evalTempFilter.controlEndDate('');
+        self.evalTempFilter.selectedControlDateRangeType(null);
     };
 
     // List Data
@@ -451,20 +524,38 @@ function EvaluationsViewModel() {
                         break;
 
                     case 'dateRange':
-                        var dateField = e.createdAt;
-                        if (dateField) {
-                            var evalDate = new Date(dateField);
-                            evalDate.setHours(0, 0, 0, 0);
-                            if (f.value.start) {
-                                var fromDate = new Date(f.value.start);
-                                fromDate.setHours(0, 0, 0, 0);
-                                if (evalDate < fromDate) return false;
-                            }
-                            if (f.value.end) {
-                                var toDate = new Date(f.value.end);
-                                toDate.setHours(23, 59, 59, 999);
-                                if (evalDate > toDate) return false;
-                            }
+                        // Çağrı Tarihi filtresi (sadece callDate kullan)
+                        var callDateField = e.callDate;
+                        if (!callDateField) return false;
+                        var evalDate = new Date(callDateField);
+                        evalDate.setHours(0, 0, 0, 0);
+                        if (f.value.start) {
+                            var fromDate = new Date(f.value.start);
+                            fromDate.setHours(0, 0, 0, 0);
+                            if (evalDate < fromDate) return false;
+                        }
+                        if (f.value.end) {
+                            var toDate = new Date(f.value.end);
+                            toDate.setHours(23, 59, 59, 999);
+                            if (evalDate > toDate) return false;
+                        }
+                        break;
+
+                    case 'controlDate':
+                        // Değerlendirme Tarihi filtresi (createdAt kullan)
+                        var controlDateField = e.createdAt;
+                        if (!controlDateField) return false;
+                        var controlDate = new Date(controlDateField);
+                        controlDate.setHours(0, 0, 0, 0);
+                        if (f.value.start) {
+                            var cFromDate = new Date(f.value.start);
+                            cFromDate.setHours(0, 0, 0, 0);
+                            if (controlDate < cFromDate) return false;
+                        }
+                        if (f.value.end) {
+                            var cToDate = new Date(f.value.end);
+                            cToDate.setHours(23, 59, 59, 999);
+                            if (controlDate > cToDate) return false;
                         }
                         break;
                 }

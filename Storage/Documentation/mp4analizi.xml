@@ -12,7 +12,6 @@
       <TamamlananSonIs>
         - GBF (Gizli Banka Formu) Modülü TAMAMLANDI:
           * BankVisitScenario enum eklendi (13 senaryo tipi)
-          * BankMysteryShopping ChecklistType eklendi
           * BankMysteryShop VisitType eklendi
           * BankVisitDetails entity oluşturuldu (50+ alan):
             - Senaryo bilgileri (senaryo tipi, tamamlanma, çapraz satış)

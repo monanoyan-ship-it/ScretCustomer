@@ -15,7 +15,8 @@ public interface ICustomerPortalDataService
 
     // ===== DASHBOARD =====
     Task<object> GetDashboardStatsAsync(int customerId, List<int>? allowedPersonnelIds);
-    Task<object> GetMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate);
+    Task<object> GetMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, int? projectTypeId, DateTime? startDate, DateTime? endDate);
+    Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate);
     Task<object> GetQuestionGroupTrendAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? projectIds, DateTime? startDate, DateTime? endDate);
     Task<object> GetQuestionTrendAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? projectIds, string? groupName, DateTime? startDate, DateTime? endDate);
     Task<object> GetScoreDistributionAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate);

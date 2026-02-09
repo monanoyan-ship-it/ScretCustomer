@@ -8628,9 +8628,6 @@
   <LocaleResource Name="Checklist.SelectScoringMethod">
     <Value>Select Scoring Method</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Type.BankMysteryShopping">
-    <Value>Bank Mystery Shopping</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Type.Enneagram">
     <Value>Enneagram</Value>
   </LocaleResource>

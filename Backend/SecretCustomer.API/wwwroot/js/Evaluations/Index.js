@@ -52,8 +52,8 @@ function EvaluationsViewModel() {
         search: 'Arama',
         personnel: 'Temsilci',
         project: 'Proje',
-        dateRange: 'Tarih',
-        controlDate: 'Kontrol Tarihi'
+        dateRange: 'Çağrı Tarihi',
+        controlDate: 'Değerlendirme Tarihi'
     };
 
     self.evalStatusLabels = {
@@ -594,10 +594,10 @@ function EvaluationsViewModel() {
             // Proje filtresi
             if (projectName && e.projectName !== projectName) return false;
 
-            // Tarih filtreleri (callDate, completedAt veya createdAt kullan)
+            // Çağrı Tarihi filtresi (sadece callDate kullan)
             if (dateFrom || dateTo) {
-                var dateStr = e.callDate || e.completedAt || e.createdAt;
-                if (!dateStr) return false; // Tarihi olmayan kayıtları filtrele
+                var dateStr = e.callDate;
+                if (!dateStr) return false; // CallDate olmayan kayıtları filtrele
 
                 var evalDate = new Date(dateStr);
                 evalDate.setHours(0, 0, 0, 0);
