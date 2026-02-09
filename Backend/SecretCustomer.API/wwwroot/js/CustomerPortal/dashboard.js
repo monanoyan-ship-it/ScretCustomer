@@ -1,13 +1,16 @@
 function CustomerDashboardViewModel() {
     var self = this;
 
+    // Non-scoring ChecklistType IDs (for score distribution filter)
+    var nonScoringTypeIds = [5, 7]; // Survey, Enneagram
+
     // State
     self.isLoading = ko.observable(true);
     self.stats = ko.observable({});
     self.recentEvaluations = ko.observableArray([]);
 
     // Charts
-    self.monthlyChart = null;
+    self.monthlyTrendCharts = {};
     self.scoreDistributionCharts = {};
 
     // Helper functions
@@ -26,17 +29,13 @@ function CustomerDashboardViewModel() {
         }
     };
 
+    // Monthly trend by type
+    self.monthlyTrendByType = ko.observableArray([]);
+    self.isMonthlyTrendLoading = ko.observable(false);
+
     // Chart data
-    self.monthlyTrendData = null;
     self.scoreDistributionByType = ko.observableArray([]);
     self.isScoreDistLoading = ko.observable(false);
-
-    // Monthly trend filters
-    self.monthlyTrendProjectId = ko.observable(null);
-    self.monthlyTrendProjects = ko.observableArray([]);
-    self.monthlyTrendStartDate = ko.observable('');
-    self.monthlyTrendEndDate = ko.observable('');
-    self.monthlyTrendDateRange = ko.observable('');
 
     // Score distribution filters
     self.scoreDistProjectId = ko.observable(null);
@@ -94,7 +93,6 @@ function CustomerDashboardViewModel() {
         endObs(end);
     }
 
-    self.monthlyTrendDateRange.subscribe(function(val) { applyDateRange(val, self.monthlyTrendStartDate, self.monthlyTrendEndDate); });
     self.scoreDistDateRange.subscribe(function(val) { applyDateRange(val, self.scoreDistStartDate, self.scoreDistEndDate); });
 
     // Score distribution modal state
@@ -146,16 +144,11 @@ function CustomerDashboardViewModel() {
             customerApiFetch('/api/customer/portal/evaluations/recent?count=5').then(function(r) {
                 if (!r.ok) throw new Error('Recent evaluations API error: ' + r.status);
                 return r.json();
-            }),
-            customerApiFetch('/api/customer/portal/dashboard/monthly-trend').then(function(r) {
-                if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
-                return r.json();
             })
         ])
         .then(function(results) {
             var stats = results[0];
             var evaluations = results[1];
-            self.monthlyTrendData = results[2];
 
             self.stats({
                 totalEvaluations: stats.totalEvaluations || 0,
@@ -168,12 +161,8 @@ function CustomerDashboardViewModel() {
 
             self.isLoading(false);
 
-            // Initialize charts after data is loaded
-            setTimeout(function() {
-                self.initCharts();
-            }, 100);
-
-            // Score distribution ayrı yüklenir (proje tipine göre)
+            // Load monthly trend by type and score distribution separately
+            self.loadMonthlyTrendByType();
             self.loadScoreDistribution();
         })
         .catch(function(error) {
@@ -182,104 +171,457 @@ function CustomerDashboardViewModel() {
         });
     };
 
-    // Initialize charts
-    self.initCharts = function() {
-        // Prepare monthly trend data
-        var monthLabels = [];
-        var scoreData = [];
-        var countData = [];
-        var yellowCardData = [];
-        var redCardData = [];
+    // Load monthly trend by project type
+    self.loadMonthlyTrendByType = function() {
+        self.isMonthlyTrendLoading(true);
 
-        if (self.monthlyTrendData && self.monthlyTrendData.length > 0) {
-            self.monthlyTrendData.forEach(function(item) {
-                monthLabels.push(item.month);
-                scoreData.push(item.averageScore);
-                countData.push(item.count);
-                yellowCardData.push(item.yellowCardCount || 0);
-                redCardData.push(item.redCardCount || 0);
+        customerApiFetch('/api/customer/portal/dashboard/monthly-trend-by-type')
+            .then(function(r) {
+                if (!r.ok) throw new Error('Monthly trend by type API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                // Her item'a KO observable'lar ekle
+                (data || []).forEach(function(item) {
+                    item.selectedProjectId = ko.observable(null);
+                    item.dateRange = ko.observable('');
+                    item.startDate = ko.observable('');
+                    item.endDate = ko.observable('');
+                    item.trendData = item.trend;
+
+                    // dateRange değişince tarih alanlarını güncelle
+                    item.dateRange.subscribe(function(val) {
+                        applyDateRange(val, item.startDate, item.endDate);
+                    });
+                });
+
+                self.monthlyTrendByType(data || []);
+                self.isMonthlyTrendLoading(false);
+
+                // Knockout foreach render ettikten sonra chart'ları oluştur
+                setTimeout(function() {
+                    self.initMonthlyTrendCharts();
+                }, 150);
+            })
+            .catch(function(error) {
+                console.error('Monthly trend by type load error:', error);
+                self.isMonthlyTrendLoading(false);
             });
+    };
+
+    // Initialize all monthly trend charts
+    self.initMonthlyTrendCharts = function() {
+        // Mevcut chart'ları temizle
+        Object.keys(self.monthlyTrendCharts).forEach(function(key) {
+            if (self.monthlyTrendCharts[key]) {
+                self.monthlyTrendCharts[key].destroy();
+            }
+        });
+        self.monthlyTrendCharts = {};
+
+        var types = self.monthlyTrendByType();
+        if (!types || types.length === 0) return;
+
+        types.forEach(function(item) {
+            self.renderMonthlyTrendChart(item);
+        });
+    };
+
+    // Render a single monthly trend chart (dispatcher)
+    self.renderMonthlyTrendChart = function(panelItem) {
+        var projectTypeId = panelItem.projectTypeId;
+        var panelType = panelItem.panelType || 'scoreTrend';
+
+        // Destroy existing charts for this panel
+        if (self.monthlyTrendCharts[projectTypeId]) {
+            self.monthlyTrendCharts[projectTypeId].destroy();
+            self.monthlyTrendCharts[projectTypeId] = null;
+        }
+        if (self.monthlyTrendCharts[projectTypeId + '_dist']) {
+            self.monthlyTrendCharts[projectTypeId + '_dist'].destroy();
+            self.monthlyTrendCharts[projectTypeId + '_dist'] = null;
         }
 
-        // Monthly trend chart - only if we have data
-        var monthlyCtx = document.getElementById('monthlyChart');
-        if (monthlyCtx && monthLabels.length > 0) {
-            // Destroy existing chart if any
-            if (self.monthlyChart) {
-                self.monthlyChart.destroy();
-                self.monthlyChart = null;
+        switch (panelType) {
+            case 'scoreTrend':
+                self.renderScoreTrendChart(projectTypeId, panelItem.trendData);
+                break;
+            case 'scoreTrendNoCards':
+                self.renderScoreTrendNoCardsChart(projectTypeId, panelItem.trendData);
+                break;
+            case 'survey':
+                self.renderSurveyChart(projectTypeId, panelItem.trendData, panelItem.summary);
+                break;
+            case 'enneagram':
+                self.renderEnneagramChart(projectTypeId, panelItem.typeTrend || panelItem.trendData, panelItem.distribution, panelItem.summary);
+                break;
+            default:
+                self.renderScoreTrendChart(projectTypeId, panelItem.trendData);
+                break;
+        }
+    };
+
+    // Score Trend Chart (Çağrı, Fiziksel, Gizli Müşteri) - Line, 4 dataset, dual y-axis
+    self.renderScoreTrendChart = function(projectTypeId, trendData) {
+        var ctx = document.getElementById('monthlyChart_' + projectTypeId);
+        if (!ctx) return;
+
+        var labels = [], scoreData = [], countData = [], yellowData = [], redData = [];
+        (trendData || []).forEach(function(item) {
+            labels.push(item.month);
+            scoreData.push(item.averageScore);
+            countData.push(item.count);
+            yellowData.push(item.yellowCardCount || 0);
+            redData.push(item.redCardCount || 0);
+        });
+        if (labels.length === 0) return;
+
+        self.monthlyTrendCharts[projectTypeId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ortalama Puan',
+                    data: scoreData,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Değerlendirme Sayısı',
+                    data: countData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }, {
+                    label: 'Sarı Kart',
+                    data: yellowData,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }, {
+                    label: 'Kırmızı Kart',
+                    data: redData,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'transparent',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: false, min: 0, max: 100, title: { display: true, text: 'Puan' } },
+                    y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Adet' } }
+                }
             }
-            self.monthlyChart = new Chart(monthlyCtx, {
-                type: 'line',
+        });
+    };
+
+    // Score Trend No Cards (Online Değerlendirme) - Line, 2 dataset, dual y-axis
+    self.renderScoreTrendNoCardsChart = function(projectTypeId, trendData) {
+        var ctx = document.getElementById('monthlyChart_' + projectTypeId);
+        if (!ctx) return;
+
+        var labels = [], scoreData = [], countData = [];
+        (trendData || []).forEach(function(item) {
+            labels.push(item.month);
+            scoreData.push(item.averageScore);
+            countData.push(item.count);
+        });
+        if (labels.length === 0) return;
+
+        self.monthlyTrendCharts[projectTypeId] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Ortalama Puan',
+                    data: scoreData,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Değerlendirme Sayısı',
+                    data: countData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: false, min: 0, max: 100, title: { display: true, text: 'Puan' } },
+                    y1: { position: 'right', beginAtZero: true, grid: { drawOnChartArea: false }, title: { display: true, text: 'Adet' } }
+                }
+            }
+        });
+    };
+
+    // Survey Chart - Mixed: Bar (yanıt sayısı) + Line (ortalama puan), çift Y ekseni
+    self.renderSurveyChart = function(projectTypeId, trendData, summary) {
+        var ctx = document.getElementById('monthlyChart_' + projectTypeId);
+        if (!ctx) return;
+
+        var labels = [], responseData = [], scoreData = [];
+        (trendData || []).forEach(function(item) {
+            labels.push(item.month);
+            responseData.push(item.responseCount);
+            scoreData.push(item.averageScore);
+        });
+        if (labels.length === 0) return;
+
+        self.monthlyTrendCharts[projectTypeId] = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Yanıt Sayısı',
+                    data: responseData,
+                    backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                    borderColor: '#6c757d',
+                    borderWidth: 1,
+                    yAxisID: 'y',
+                    order: 2
+                }, {
+                    label: 'Ortalama Puan (%)',
+                    data: scoreData,
+                    type: 'line',
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#198754',
+                    yAxisID: 'y1',
+                    order: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Yanıt' } },
+                    y1: { beginAtZero: false, min: 0, max: 100, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'Puan (%)' } }
+                }
+            }
+        });
+    };
+
+    // Enneagram Chart - Multi-Line (aylık tip puanları) + Doughnut (kişilik dağılımı)
+    self.renderEnneagramChart = function(projectTypeId, typeTrendData, distribution, summary) {
+        var distColors = [
+            '#6f42c1', '#0d6efd', '#198754', '#dc3545', '#ffc107',
+            '#20c997', '#fd7e14', '#0dcaf0', '#d63384', '#6c757d'
+        ];
+
+        // Multi-line trend chart (kişilik tipi bazlı aylık puanlar)
+        var trendCtx = document.getElementById('monthlyChart_' + projectTypeId);
+        if (trendCtx && typeTrendData && typeTrendData.length > 0) {
+            var labels = [];
+            // Tip isimlerini ilk veri noktasından al
+            var typeNames = [];
+            if (typeTrendData[0] && typeTrendData[0].types) {
+                typeNames = Object.keys(typeTrendData[0].types);
+            }
+
+            typeTrendData.forEach(function(item) { labels.push(item.month); });
+
+            var datasets = [];
+            typeNames.forEach(function(typeName, idx) {
+                var data = typeTrendData.map(function(item) {
+                    return item.types && item.types[typeName] != null ? item.types[typeName] : null;
+                });
+                datasets.push({
+                    label: typeName,
+                    data: data,
+                    borderColor: distColors[idx % distColors.length],
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointRadius: 3,
+                    borderWidth: 2,
+                    spanGaps: true
+                });
+            });
+
+            if (datasets.length > 0) {
+                self.monthlyTrendCharts[projectTypeId] = new Chart(trendCtx, {
+                    type: 'line',
+                    data: { labels: labels, datasets: datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } },
+                        scales: {
+                            y: { beginAtZero: false, min: 0, max: 100, title: { display: true, text: 'Puan (%)' } }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Distribution doughnut chart (aynı)
+        var distCtx = document.getElementById('enneagramDistChart_' + projectTypeId);
+        if (distCtx && distribution && distribution.length > 0) {
+            var distLabels = [], distData = [];
+            distribution.forEach(function(d) {
+                distLabels.push(d.personalityType);
+                distData.push(d.averagePercentage);
+            });
+
+            self.monthlyTrendCharts[projectTypeId + '_dist'] = new Chart(distCtx, {
+                type: 'doughnut',
                 data: {
-                    labels: monthLabels,
+                    labels: distLabels,
                     datasets: [{
-                        label: 'Ortalama Puan',
-                        data: scoreData,
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }, {
-                        label: 'Değerlendirme Sayısı',
-                        data: countData,
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'transparent',
-                        borderDash: [5, 5],
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }, {
-                        label: 'Sarı Kart',
-                        data: yellowCardData,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }, {
-                        label: 'Kırmızı Kart',
-                        data: redCardData,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y1'
+                        data: distData,
+                        backgroundColor: distColors.slice(0, distLabels.length)
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 0,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Puan'
-                            }
-                        },
-                        y1: {
-                            position: 'right',
-                            beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Adet'
-                            }
-                        }
+                        legend: { position: 'bottom', labels: { boxWidth: 12 } }
                     }
                 }
             });
         }
+    };
 
+    // Reload a single monthly trend panel (filter button click)
+    self.reloadMonthlyTrendPanel = function(projectTypeId) {
+        // Find the panel item
+        var panels = self.monthlyTrendByType();
+        var panel = null;
+        for (var i = 0; i < panels.length; i++) {
+            if (panels[i].projectTypeId === projectTypeId) {
+                panel = panels[i];
+                break;
+            }
+        }
+        if (!panel) return;
+
+        var panelType = panel.panelType || 'scoreTrend';
+
+        // Enneagram ve survey panelleri özel veri yapısı gerektirir (typeTrend, averageScore)
+        // Bu yüzden by-type endpoint'ini kullanıyoruz
+        if (panelType === 'enneagram' || panelType === 'survey') {
+            var byTypeUrl = '/api/customer/portal/dashboard/monthly-trend-by-type';
+            var byTypeParams = [];
+            if (panel.startDate()) byTypeParams.push('startDate=' + panel.startDate());
+            if (panel.endDate()) byTypeParams.push('endDate=' + panel.endDate());
+            if (byTypeParams.length > 0) byTypeUrl += '?' + byTypeParams.join('&');
+
+            customerApiFetch(byTypeUrl)
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Monthly trend by-type API error: ' + r.status);
+                    return r.json();
+                })
+                .then(function(allPanels) {
+                    // İlgili panel verisini bul
+                    var found = null;
+                    (allPanels || []).forEach(function(p) {
+                        if (p.projectTypeId === projectTypeId) found = p;
+                    });
+                    if (found) {
+                        panel.trendData = found.trend;
+                        if (found.typeTrend) panel.typeTrend = found.typeTrend;
+                        if (found.distribution) panel.distribution = found.distribution;
+                        if (found.summary) panel.summary = found.summary;
+                    }
+                    self.renderMonthlyTrendChart(panel);
+                })
+                .catch(function(error) {
+                    console.error('Monthly trend panel reload error:', error);
+                });
+        } else {
+            var url = '/api/customer/portal/dashboard/monthly-trend';
+            var params = ['projectTypeId=' + projectTypeId];
+            if (panel.selectedProjectId()) params.push('projectId=' + panel.selectedProjectId());
+            if (panel.startDate()) params.push('startDate=' + panel.startDate());
+            if (panel.endDate()) params.push('endDate=' + panel.endDate());
+            url += '?' + params.join('&');
+
+            customerApiFetch(url)
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
+                    return r.json();
+                })
+                .then(function(data) {
+                    panel.trendData = data;
+                    self.renderMonthlyTrendChart(panel);
+                })
+                .catch(function(error) {
+                    console.error('Monthly trend panel reload error:', error);
+                });
+        }
+    };
+
+    // Export monthly trend panel to Excel
+    self.exportMonthlyTrendPanelToExcel = function(projectTypeId) {
+        var elementId = 'monthlyChartCard_' + projectTypeId;
+        var element = document.getElementById(elementId);
+        if (!element) {
+            toastr.error('Grafik bulunamadi');
+            return;
+        }
+
+        var canvas = element.querySelector('canvas');
+        if (!canvas) {
+            toastr.error('Grafik canvas bulunamadi');
+            return;
+        }
+
+        toastr.info('Excel olusturuluyor...');
+
+        // Find the panel data
+        var panels = self.monthlyTrendByType();
+        var panel = null;
+        for (var i = 0; i < panels.length; i++) {
+            if (panels[i].projectTypeId === projectTypeId) {
+                panel = panels[i];
+                break;
+            }
+        }
+
+        var chartImage = canvas.toDataURL('image/png', 1.0);
+        var headerEl = element.querySelector('.card-header h6');
+        var chartTitle = headerEl ? headerEl.textContent.trim() : 'Aylik_Trend';
+        var dataObj = panel ? panel.trendData : [];
+
+        var requestBody = {
+            chartType: 'monthly-trend',
+            chartImage: chartImage,
+            chartTitle: chartTitle,
+            dataJson: JSON.stringify(dataObj)
+        };
+
+        var filename = (panel ? panel.projectTypeName : 'Trend') + '_Aylik_Trend';
+        customerApiDownloadPost(
+            '/api/customer/portal/dashboard/charts/export',
+            requestBody,
+            filename + '_' + new Date().toISOString().split('T')[0] + '.xlsx'
+        ).then(function() {
+            toastr.success('Excel indirildi');
+        }).catch(function(error) {
+            console.error('Excel export error:', error);
+            toastr.error('Excel olusturulurken hata olustu');
+        });
     };
 
     // Initialize score distribution charts (proje tipine göre)
@@ -466,8 +808,7 @@ function CustomerDashboardViewModel() {
             })
             .then(function(data) {
                 self.questionTrendProjects(data.projects || []);
-                // Aynı projeleri Aylık Trend ve Puan Dağılımı için de kullan
-                self.monthlyTrendProjects(data.projects || []);
+                // Aynı projeleri Puan Dağılımı için de kullan
                 self.scoreDistProjects(data.projects || []);
                 self.questionTrendLabels(data.monthLabels || []);
                 self.questionTrendData(data.groupTrends || []);
@@ -577,131 +918,6 @@ function CustomerDashboardViewModel() {
         });
     };
 
-    // Watch for monthly trend project change
-    self.monthlyTrendProjectId.subscribe(function() {
-        self.loadMonthlyTrend();
-    });
-
-    // Load monthly trend with project + date filter
-    self.loadMonthlyTrend = function() {
-        var url = '/api/customer/portal/dashboard/monthly-trend';
-        var params = [];
-        if (self.monthlyTrendProjectId()) params.push('projectId=' + self.monthlyTrendProjectId());
-        if (self.monthlyTrendStartDate()) params.push('startDate=' + self.monthlyTrendStartDate());
-        if (self.monthlyTrendEndDate()) params.push('endDate=' + self.monthlyTrendEndDate());
-        if (params.length > 0) url += '?' + params.join('&');
-
-        customerApiFetch(url)
-            .then(function(r) {
-                if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
-                return r.json();
-            })
-            .then(function(data) {
-                self.monthlyTrendData = data;
-                self.updateMonthlyChart();
-            })
-            .catch(function(error) {
-                console.error('Monthly trend load error:', error);
-            });
-    };
-
-    // Update monthly chart with new data
-    self.updateMonthlyChart = function() {
-        var monthLabels = [];
-        var scoreData = [];
-        var countData = [];
-        var yellowCardData = [];
-        var redCardData = [];
-
-        if (self.monthlyTrendData && self.monthlyTrendData.length > 0) {
-            self.monthlyTrendData.forEach(function(item) {
-                monthLabels.push(item.month);
-                scoreData.push(item.averageScore);
-                countData.push(item.count);
-                yellowCardData.push(item.yellowCardCount || 0);
-                redCardData.push(item.redCardCount || 0);
-            });
-        }
-
-        // Destroy existing chart if any
-        if (self.monthlyChart) {
-            self.monthlyChart.destroy();
-            self.monthlyChart = null;
-        }
-
-        var monthlyCtx = document.getElementById('monthlyChart');
-        if (monthlyCtx && monthLabels.length > 0) {
-            self.monthlyChart = new Chart(monthlyCtx, {
-                type: 'line',
-                data: {
-                    labels: monthLabels,
-                    datasets: [{
-                        label: 'Ortalama Puan',
-                        data: scoreData,
-                        borderColor: '#198754',
-                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }, {
-                        label: 'Değerlendirme Sayısı',
-                        data: countData,
-                        borderColor: '#0d6efd',
-                        backgroundColor: 'transparent',
-                        borderDash: [5, 5],
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }, {
-                        label: 'Sarı Kart',
-                        data: yellowCardData,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }, {
-                        label: 'Kırmızı Kart',
-                        data: redCardData,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        tension: 0.4,
-                        yAxisID: 'y1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 0,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Puan'
-                            }
-                        },
-                        y1: {
-                            position: 'right',
-                            beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false
-                            },
-                            title: {
-                                display: true,
-                                text: 'Adet'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-    };
 
     // Load score distribution with filters (proje tipine göre)
     self.loadScoreDistribution = function() {
@@ -729,7 +945,11 @@ function CustomerDashboardViewModel() {
                 return r.json();
             })
             .then(function(data) {
-                self.scoreDistributionByType(data || []);
+                // Puansız tipleri filtrele (Anket, Enneagram)
+                var filteredData = (data || []).filter(function(item) {
+                    return nonScoringTypeIds.indexOf(item.projectTypeId) === -1;
+                });
+                self.scoreDistributionByType(filteredData);
                 self.isScoreDistLoading(false);
                 // Knockout foreach render ettikten sonra chart'ları oluştur
                 setTimeout(function() {
@@ -824,7 +1044,7 @@ function CustomerDashboardViewModel() {
         var dataObj;
         switch (chartType) {
             case 'monthly-trend':
-                dataObj = self.monthlyTrendData || [];
+                dataObj = [];
                 break;
             case 'score-distribution':
                 dataObj = self.scoreDistributionByType() || [];

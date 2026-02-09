@@ -336,13 +336,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 .CountAsync();
         }
 
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Project)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(e.Project!.ProjectTypeId));
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (allowedPersonnelIds != null)
         {
@@ -370,7 +368,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         };
     }
 
-    public async Task<object> GetMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate)
+    public async Task<object> GetMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, int? projectTypeId, DateTime? startDate, DateTime? endDate)
     {
         var now = DateTime.UtcNow;
         var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -378,13 +376,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : defaultStartDate;
 
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(e.Project!.ProjectTypeId) &&
                         e.CreatedAt >= effectiveStartDate);
 
         if (endDate.HasValue)
@@ -396,6 +393,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (projectId.HasValue)
         {
             evaluationsQuery = evaluationsQuery.Where(e => e.ProjectId == projectId.Value);
+        }
+
+        if (projectTypeId.HasValue)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e => e.Project!.Checklist!.ChecklistTypeId == projectTypeId.Value);
         }
 
         if (allowedPersonnelIds != null)
@@ -442,6 +444,364 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         return monthlyData;
     }
 
+    public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate)
+    {
+        var now = DateTime.UtcNow;
+        var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
+        var effectiveStartDate = startDate.HasValue
+            ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
+            : defaultStartDate;
+
+        var evaluationsQuery = _context.Evaluations
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
+            .Where(e => e.Project != null &&
+                        e.Project.CustomerId == customerId &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.CreatedAt >= effectiveStartDate);
+
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+        }
+
+        if (allowedPersonnelIds != null)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e =>
+                e.EvaluatedCustomerPersonnelId.HasValue &&
+                allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        var evaluations = await evaluationsQuery.ToListAsync();
+
+        // ChecklistType'a göre grupla
+        var groupedByType = evaluations
+            .Where(e => e.Project?.Checklist != null)
+            .GroupBy(e => e.Project!.Checklist!.ChecklistTypeId)
+            .ToList();
+
+        // Her ChecklistType için proje listesi
+        var projectsByType = evaluations
+            .Where(e => e.Project?.Checklist != null)
+            .Select(e => new { e.Project!.Checklist!.ChecklistTypeId, e.ProjectId, e.Project.Name })
+            .Distinct()
+            .GroupBy(p => p.ChecklistTypeId)
+            .ToDictionary(g => g.Key, g => g.Select(p => new { id = p.ProjectId, name = p.Name }).DistinctBy(p => p.id).OrderBy(p => p.name).Select(p => (object)p).ToList());
+
+        var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var loopEnd = endDate.HasValue
+            ? DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Utc)
+            : now;
+        var monthCount = ((loopEnd.Year - loopStart.Year) * 12) + loopEnd.Month - loopStart.Month + 1;
+        if (monthCount < 1) monthCount = 1;
+        if (monthCount > 36) monthCount = 36;
+
+        var result = new List<object>();
+
+        foreach (var group in groupedByType.OrderBy(g => g.Key))
+        {
+            var checklistType = ChecklistTypes.GetById(group.Key);
+            if (checklistType == null) continue;
+
+            var projects = projectsByType.ContainsKey(group.Key)
+                ? projectsByType[group.Key]
+                : new List<object>();
+
+            object panel;
+            switch (group.Key)
+            {
+                case ChecklistTypes.Ids.CallPerformance:
+                case ChecklistTypes.Ids.PhysicalAudit:
+                case ChecklistTypes.Ids.MysteryShopping:
+                    panel = BuildScoreTrendPanel(group.Key, checklistType, projects, group.ToList(), loopStart, monthCount);
+                    break;
+                case ChecklistTypes.Ids.OnlineEvaluation:
+                    panel = BuildScoreTrendNoCardsPanel(group.Key, checklistType, projects, group.ToList(), loopStart, monthCount);
+                    break;
+                case ChecklistTypes.Ids.Survey:
+                    panel = await BuildSurveyPanelAsync(customerId, checklistType, projects, group.ToList(), loopStart, monthCount);
+                    break;
+                case ChecklistTypes.Ids.Enneagram:
+                    panel = await BuildEnneagramPanelAsync(customerId, checklistType, projects, group.ToList(), loopStart, monthCount);
+                    break;
+                default:
+                    panel = BuildScoreTrendPanel(group.Key, checklistType, projects, group.ToList(), loopStart, monthCount);
+                    break;
+            }
+
+            result.Add(panel);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Puanlı + Kartlı panel (Çağrı, Fiziksel, Gizli Müşteri)
+    /// </summary>
+    private object BuildScoreTrendPanel(int typeId, TypeItem checklistType, List<object> projects, List<Evaluation> evals, DateTime loopStart, int monthCount)
+    {
+        var trend = BuildMonthlyTrend(evals, loopStart, monthCount, includeScore: true, includeCards: true);
+        return new
+        {
+            projectTypeId = typeId,
+            projectTypeName = checklistType.Description ?? checklistType.SystemName,
+            projectTypeIcon = checklistType.Icon ?? "bi-folder",
+            panelType = "scoreTrend",
+            projects,
+            trend
+        };
+    }
+
+    /// <summary>
+    /// Puanlı + Kartsız panel (Online Değerlendirme)
+    /// </summary>
+    private object BuildScoreTrendNoCardsPanel(int typeId, TypeItem checklistType, List<object> projects, List<Evaluation> evals, DateTime loopStart, int monthCount)
+    {
+        var trend = BuildMonthlyTrend(evals, loopStart, monthCount, includeScore: true, includeCards: false);
+        return new
+        {
+            projectTypeId = typeId,
+            projectTypeName = checklistType.Description ?? checklistType.SystemName,
+            projectTypeIcon = checklistType.Icon ?? "bi-folder",
+            panelType = "scoreTrendNoCards",
+            projects,
+            trend
+        };
+    }
+
+    /// <summary>
+    /// Anket paneli - yanıt trendi + özet kartlar
+    /// </summary>
+    private async Task<object> BuildSurveyPanelAsync(int customerId, TypeItem checklistType, List<object> projects, List<Evaluation> evals, DateTime loopStart, int monthCount)
+    {
+        // Anket projelerinin ID'lerini al
+        var surveyProjectIds = evals.Select(e => e.ProjectId).Distinct().ToList();
+
+        // Davetiye sayıları (internal + external)
+        var internalInvCount = await _context.SurveyInvitations
+            .Where(si => surveyProjectIds.Contains(si.ProjectId))
+            .CountAsync();
+
+        var externalInvCount = await _context.SurveyExternalInvitations
+            .Where(si => surveyProjectIds.Contains(si.ProjectId))
+            .CountAsync();
+
+        var totalInvitations = internalInvCount + externalInvCount;
+        var totalResponses = evals.Count;
+        var responseRate = totalInvitations > 0 ? Math.Round((decimal)totalResponses / totalInvitations * 100, 1) : 0m;
+
+        // Ortalama puan
+        var withScore = evals.Where(e => e.ScorePercentage.HasValue).ToList();
+        var averageScore = withScore.Any() ? Math.Round((double)withScore.Average(e => (double)e.ScorePercentage!.Value), 1) : 0.0;
+
+        // Aylık yanıt trendi (yanıt sayısı + ortalama puan)
+        var trend = new List<object>();
+        for (int i = 0; i < monthCount; i++)
+        {
+            var monthStart = loopStart.AddMonths(i);
+            var monthEnd = monthStart.AddMonths(1);
+            var monthEvals = evals.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var monthWithScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
+            var monthAvgScore = monthWithScore.Any()
+                ? Math.Round((double)monthWithScore.Average(e => (double)e.ScorePercentage!.Value), 1)
+                : (double?)null;
+
+            trend.Add(new
+            {
+                month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
+                year = monthStart.Year,
+                responseCount = monthEvals.Count,
+                averageScore = monthAvgScore
+            });
+        }
+
+        return new
+        {
+            projectTypeId = ChecklistTypes.Ids.Survey,
+            projectTypeName = checklistType.Description ?? checklistType.SystemName,
+            projectTypeIcon = checklistType.Icon ?? "bi-folder",
+            panelType = "survey",
+            projects,
+            summary = new
+            {
+                projectCount = surveyProjectIds.Count,
+                totalInvitations,
+                totalResponses,
+                responseRate,
+                averageScore
+            },
+            trend
+        };
+    }
+
+    /// <summary>
+    /// Enneagram paneli - yanıt trendi + kişilik dağılımı
+    /// </summary>
+    private async Task<object> BuildEnneagramPanelAsync(int customerId, TypeItem checklistType, List<object> projects, List<Evaluation> evals, DateTime loopStart, int monthCount)
+    {
+        var projectIds = evals.Select(e => e.ProjectId).Distinct().ToList();
+
+        // Kişilik dağılımı hesapla - answers + subcriteria gerekiyor, lazy load
+        var evalIds = evals.Select(e => e.Id).ToList();
+        var evalsWithAnswers = await _context.Evaluations
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => evalIds.Contains(e.Id))
+            .ToListAsync();
+
+        // Genel kişilik dağılımı hesapla
+        var personalityScores = CalculatePersonalityScores(evalsWithAnswers);
+
+        var distribution = personalityScores
+            .Select(kvp => new
+            {
+                personalityType = kvp.Key,
+                averagePercentage = kvp.Value.Any() ? Math.Round((double)kvp.Value.Average(), 1) : 0.0,
+                responseCount = kvp.Value.Count
+            })
+            .OrderByDescending(d => d.averagePercentage)
+            .ToList();
+
+        var dominantType = distribution.FirstOrDefault()?.personalityType;
+
+        // Tüm kişilik tiplerini topla (sıralama tutarlı olsun)
+        var allTypes = distribution.Select(d => d.personalityType).ToList();
+
+        // Aylık yanıt trendi + tip bazlı puan trendi
+        var trend = new List<object>();
+        var typeTrend = new List<object>();
+        for (int i = 0; i < monthCount; i++)
+        {
+            var monthStart = loopStart.AddMonths(i);
+            var monthEnd = monthStart.AddMonths(1);
+            var monthEvals = evals.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var monthLabel = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR"));
+
+            trend.Add(new
+            {
+                month = monthLabel,
+                year = monthStart.Year,
+                responseCount = monthEvals.Count
+            });
+
+            // Aylık kişilik tipi puanları
+            var monthEvalIds = monthEvals.Select(e => e.Id).ToHashSet();
+            var monthEvalsWithAnswers = evalsWithAnswers.Where(e => monthEvalIds.Contains(e.Id)).ToList();
+            var monthScores = CalculatePersonalityScores(monthEvalsWithAnswers);
+            var types = new Dictionary<string, double?>();
+            foreach (var t in allTypes)
+            {
+                types[t] = monthScores.ContainsKey(t) && monthScores[t].Any()
+                    ? Math.Round((double)monthScores[t].Average(), 1)
+                    : (double?)null;
+            }
+            typeTrend.Add(new { month = monthLabel, year = monthStart.Year, types });
+        }
+
+        return new
+        {
+            projectTypeId = ChecklistTypes.Ids.Enneagram,
+            projectTypeName = checklistType.Description ?? checklistType.SystemName,
+            projectTypeIcon = checklistType.Icon ?? "bi-folder",
+            panelType = "enneagram",
+            projects,
+            summary = new
+            {
+                totalResponses = evals.Count,
+                dominantType = dominantType ?? "-",
+                projectCount = projectIds.Count
+            },
+            trend,
+            distribution,
+            typeTrend
+        };
+    }
+
+    /// <summary>
+    /// Enneagram kişilik tipi puanlarını hesapla (GroupName bazlı)
+    /// </summary>
+    private static Dictionary<string, List<decimal>> CalculatePersonalityScores(List<Evaluation> evalsWithAnswers)
+    {
+        var scores = new Dictionary<string, List<decimal>>();
+        foreach (var eval in evalsWithAnswers)
+        {
+            var groupedAnswers = eval.Answers
+                .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName))
+                .GroupBy(a => a.Question.GroupName!);
+
+            foreach (var group in groupedAnswers)
+            {
+                var totalPoints = 0;
+                var questionCount = 0;
+
+                foreach (var answer in group)
+                {
+                    var selectedPoints = answer.SubCriteriaSelections
+                        .Select(sc => sc.SubCriteria?.WeightPoints ?? 0)
+                        .DefaultIfEmpty(0)
+                        .Max();
+
+                    totalPoints += (int)selectedPoints;
+                    questionCount++;
+                }
+
+                var maxPoints = questionCount * 5;
+                if (maxPoints == 0) maxPoints = 50;
+                var percentage = maxPoints > 0 ? (decimal)totalPoints / maxPoints * 100 : 0;
+
+                if (!scores.ContainsKey(group.Key))
+                    scores[group.Key] = new List<decimal>();
+                scores[group.Key].Add(percentage);
+            }
+        }
+        return scores;
+    }
+
+    /// <summary>
+    /// Ortak aylık trend builder
+    /// </summary>
+    private List<object> BuildMonthlyTrend(List<Evaluation> evals, DateTime loopStart, int monthCount, bool includeScore, bool includeCards)
+    {
+        var monthlyData = new List<object>();
+        for (int i = 0; i < monthCount; i++)
+        {
+            var monthStart = loopStart.AddMonths(i);
+            var monthEnd = monthStart.AddMonths(1);
+
+            var monthEvals = evals.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
+            var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
+
+            if (includeCards)
+            {
+                monthlyData.Add(new
+                {
+                    month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
+                    year = monthStart.Year,
+                    count = monthEvals.Count,
+                    averageScore = Math.Round(avgScore, 1),
+                    yellowCardCount = monthEvals.Sum(e => e.YellowCardCount),
+                    redCardCount = monthEvals.Sum(e => e.RedCardCount)
+                });
+            }
+            else
+            {
+                monthlyData.Add(new
+                {
+                    month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
+                    year = monthStart.Year,
+                    count = monthEvals.Count,
+                    averageScore = Math.Round(avgScore, 1)
+                });
+            }
+        }
+        return monthlyData;
+    }
+
     public async Task<object> GetQuestionGroupTrendAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? projectIds, DateTime? startDate, DateTime? endDate)
     {
         var now = DateTime.UtcNow;
@@ -449,10 +809,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted &&
-                        !excludedProjectTypes.Contains(p.ProjectTypeId))
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
             .Select(p => new { p.Id, p.Name })
             .OrderBy(p => p.Name)
             .ToListAsync();
@@ -464,7 +822,6 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(a => a.Evaluation.Project != null &&
                         a.Evaluation.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(a.Evaluation.Project!.ProjectTypeId) &&
                         a.Evaluation.CreatedAt >= effectiveStartDate &&
                         a.Question.GroupName != null &&
                         a.Question.GroupName != "" &&
@@ -560,7 +917,6 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var answersQuery = _context.Answers
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.Project)
@@ -568,7 +924,6 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(a => a.Evaluation.Project != null &&
                         a.Evaluation.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(a.Evaluation.Project!.ProjectTypeId) &&
                         a.Evaluation.CreatedAt >= effectiveStartDate &&
                         a.EarnedPoints.HasValue &&
                         a.Question.WeightPoints > 0 &&
@@ -691,13 +1046,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetScoreDistributionAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate)
     {
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(e.Project!.ProjectTypeId));
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (projectId.HasValue)
         {
@@ -725,12 +1079,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var scores = await evaluationsQuery
             .Select(e => new
             {
-                ProjectTypeId = e.Project!.ProjectTypeId,
+                ChecklistTypeId = e.Project!.Checklist!.ChecklistTypeId,
                 Score = e.ScorePercentage ?? 0
             })
             .ToListAsync();
 
-        var groupedByType = scores.GroupBy(s => s.ProjectTypeId).ToList();
+        var groupedByType = scores.GroupBy(s => s.ChecklistTypeId).ToList();
         if (groupedByType.Count == 0)
             return new List<object>();
 
@@ -741,16 +1095,16 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == g.Key);
             var successThreshold = threshold?.SuccessThreshold ?? 80m;
             var warningThreshold = threshold?.WarningThreshold ?? 60m;
-            var projectType = ProjectTypes.GetById(g.Key);
+            var checklistType = ChecklistTypes.GetById(g.Key);
 
             var typeScores = g.Select(s => s.Score).ToList();
 
             return new
             {
                 projectTypeId = g.Key,
-                projectTypeName = threshold?.ProjectTypeName ?? projectType?.Description ?? "Bilinmeyen",
-                projectTypeIcon = threshold?.ProjectTypeIcon ?? projectType?.Icon ?? "bi-folder",
-                projectTypeColor = threshold?.ProjectTypeColor ?? projectType?.CssClass ?? "bg-secondary",
+                projectTypeName = threshold?.ProjectTypeName ?? checklistType?.Description ?? "Bilinmeyen",
+                projectTypeIcon = threshold?.ProjectTypeIcon ?? checklistType?.Icon ?? "bi-folder",
+                projectTypeColor = threshold?.ProjectTypeColor ?? checklistType?.CssClass ?? "bg-secondary",
                 successThreshold,
                 warningThreshold,
                 success = typeScores.Count(s => s >= successThreshold),
@@ -767,16 +1121,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object?> GetScoreDistributionEvaluationsAsync(int customerId, List<int>? allowedPersonnelIds, string category, int projectTypeId, DateTime? startDate, DateTime? endDate, int page, int pageSize)
     {
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(e.Project!.ProjectTypeId));
+                        e.Project.Checklist!.ChecklistTypeId == projectTypeId &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (startDate.HasValue)
         {
@@ -842,16 +1195,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<(byte[] FileContent, string FileName)?> ExportScoreDistributionEvaluationsAsync(int customerId, List<int>? allowedPersonnelIds, string category, int projectTypeId, DateTime? startDate, DateTime? endDate)
     {
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
         var evaluationsQuery = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.Project.ProjectTypeId == projectTypeId &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !excludedProjectTypes.Contains(e.Project!.ProjectTypeId));
+                        e.Project.Checklist!.ChecklistTypeId == projectTypeId &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (startDate.HasValue)
         {
