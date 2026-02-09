@@ -207,42 +207,35 @@ public class FieldWorkerService : IFieldWorkerService
     {
         // Atamayı bul
         var assignment = await _context.Assignments
-            .Include(a => a.Project)
             .FirstOrDefaultAsync(a => a.Id == assignmentId && a.AssignedUserId == userId && !a.IsDeleted);
 
         if (assignment == null)
             return new List<FieldWorkerDealerDto>();
 
-        // Bu atama için zaten ziyaret edilmiş bayileri bul (projeye göre)
-        var visitedDealerIds = await _context.Evaluations
-            .Where(e => e.ProjectId == assignment.ProjectId && e.CustomerDealerId != null && !e.IsDeleted)
-            .Select(e => e.CustomerDealerId!.Value)
-            .Distinct()
+        // AssignmentCustomerDealers üzerinden atamaya eklenmiş ve henüz ziyaret edilmemiş bayileri getir
+        var dealers = await _context.Set<AssignmentCustomerDealer>()
+            .Include(acd => acd.CustomerDealer)
+                .ThenInclude(d => d.Customer)
+            .Where(acd => acd.AssignmentId == assignmentId && acd.EvaluationId == null)
+            .Where(acd => acd.CustomerDealer.IsActive)
+            .OrderBy(acd => acd.CustomerDealer.Name)
             .ToListAsync();
 
-        // Projenin müşterisinin bayilerini getir (ziyaret edilmemişler)
-        var dealers = await _context.CustomerDealers
-            .Include(d => d.Customer)
-            .Where(d => d.CustomerId == assignment.Project.CustomerId && d.IsActive)
-            .Where(d => !visitedDealerIds.Contains(d.Id))
-            .OrderBy(d => d.Name)
-            .ToListAsync();
-
-        return dealers.Select(d => new FieldWorkerDealerDto
+        return dealers.Select(acd => new FieldWorkerDealerDto
         {
-            Id = d.Id,
-            Code = d.Code,
-            Name = d.Name,
-            Address = d.Address,
-            City = d.City,
-            District = d.District,
-            Latitude = d.Latitude,
-            Longitude = d.Longitude,
-            Phone = d.Phone,
-            ContactPerson = d.ContactPerson,
-            DealerTypeId = d.DealerTypeId,
-            CustomerId = d.CustomerId,
-            CustomerName = d.Customer?.CompanyName ?? "",
+            Id = acd.CustomerDealer.Id,
+            Code = acd.CustomerDealer.Code,
+            Name = acd.CustomerDealer.Name,
+            Address = acd.CustomerDealer.Address,
+            City = acd.CustomerDealer.City,
+            District = acd.CustomerDealer.District,
+            Latitude = acd.CustomerDealer.Latitude,
+            Longitude = acd.CustomerDealer.Longitude,
+            Phone = acd.CustomerDealer.Phone,
+            ContactPerson = acd.CustomerDealer.ContactPerson,
+            DealerTypeId = acd.CustomerDealer.DealerTypeId,
+            CustomerId = acd.CustomerDealer.CustomerId,
+            CustomerName = acd.CustomerDealer.Customer?.CompanyName ?? "",
             VisitCount = 0,
             LastVisitDate = null,
             LastVisitScore = null
@@ -251,63 +244,44 @@ public class FieldWorkerService : IFieldWorkerService
 
     public async Task<List<PendingDealerDto>> GetPendingDealersAsync(int userId)
     {
-        // Kullanıcının aktif atamalarını al
-        var assignments = await _context.Assignments
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Customer)
-            .Include(a => a.Checklist)
-            .Where(a => a.AssignedUserId == userId && !a.IsDeleted && !a.IsCompleted)
+        // Kullanıcının aktif atamalarındaki henüz ziyaret edilmemiş bayileri getir
+        var pendingDealers = await _context.Set<AssignmentCustomerDealer>()
+            .Include(acd => acd.Assignment)
+                .ThenInclude(a => a.Project)
+                    .ThenInclude(p => p.Customer)
+            .Include(acd => acd.Assignment)
+                .ThenInclude(a => a.Checklist)
+            .Include(acd => acd.CustomerDealer)
+            .Where(acd => acd.Assignment.AssignedUserId == userId
+                       && !acd.Assignment.IsDeleted
+                       && !acd.Assignment.IsCompleted
+                       && acd.EvaluationId == null
+                       && acd.CustomerDealer.IsActive)
+            .OrderBy(acd => acd.CustomerDealer.City)
+            .ThenBy(acd => acd.CustomerDealer.Name)
             .ToListAsync();
 
-        if (!assignments.Any())
-            return new List<PendingDealerDto>();
-
-        var result = new List<PendingDealerDto>();
-
-        foreach (var assignment in assignments)
+        return pendingDealers.Select(acd => new PendingDealerDto
         {
-            // Bu proje için ziyaret edilmiş bayi ID'leri
-            var visitedDealerIds = await _context.Evaluations
-                .Where(e => e.ProjectId == assignment.ProjectId && e.CustomerDealerId != null && !e.IsDeleted)
-                .Select(e => e.CustomerDealerId!.Value)
-                .Distinct()
-                .ToListAsync();
-
-            // Projenin müşterisinin ziyaret edilmemiş bayileri
-            var pendingDealers = await _context.CustomerDealers
-                .Where(d => d.CustomerId == assignment.Project.CustomerId && d.IsActive)
-                .Where(d => !visitedDealerIds.Contains(d.Id))
-                .OrderBy(d => d.City)
-                .ThenBy(d => d.Name)
-                .ToListAsync();
-
-            foreach (var dealer in pendingDealers)
-            {
-                result.Add(new PendingDealerDto
-                {
-                    DealerId = dealer.Id,
-                    DealerCode = dealer.Code,
-                    DealerName = dealer.Name,
-                    Address = dealer.Address,
-                    City = dealer.City,
-                    District = dealer.District,
-                    Phone = dealer.Phone,
-                    ContactPerson = dealer.ContactPerson,
-                    Latitude = dealer.Latitude,
-                    Longitude = dealer.Longitude,
-                    AssignmentId = assignment.Id,
-                    ProjectId = assignment.ProjectId,
-                    ProjectName = assignment.Project?.Name ?? "",
-                    CustomerName = assignment.Project?.Customer?.CompanyName ?? "",
-                    ChecklistId = assignment.ChecklistId,
-                    ChecklistName = assignment.Checklist?.Name ?? "",
-                    ProjectStartDate = assignment.Project?.StartDate,
-                    ProjectEndDate = assignment.Project?.EndDate
-                });
-            }
-        }
-
-        return result;
+            DealerId = acd.CustomerDealer.Id,
+            DealerCode = acd.CustomerDealer.Code,
+            DealerName = acd.CustomerDealer.Name,
+            Address = acd.CustomerDealer.Address,
+            City = acd.CustomerDealer.City,
+            District = acd.CustomerDealer.District,
+            Phone = acd.CustomerDealer.Phone,
+            ContactPerson = acd.CustomerDealer.ContactPerson,
+            Latitude = acd.CustomerDealer.Latitude,
+            Longitude = acd.CustomerDealer.Longitude,
+            AssignmentId = acd.AssignmentId,
+            ProjectId = acd.Assignment.ProjectId,
+            ProjectName = acd.Assignment.Project?.Name ?? "",
+            CustomerName = acd.Assignment.Project?.Customer?.CompanyName ?? "",
+            ChecklistId = acd.Assignment.ChecklistId,
+            ChecklistName = acd.Assignment.Checklist?.Name ?? "",
+            ProjectStartDate = acd.Assignment.Project?.StartDate,
+            ProjectEndDate = acd.Assignment.Project?.EndDate
+        }).ToList();
     }
 
     public async Task<PagedVisitResult> GetVisitsAsync(int userId, VisitFilterDto filter)
@@ -470,6 +444,8 @@ public class FieldWorkerService : IFieldWorkerService
             evaluation = new Evaluation
             {
                 ProjectId = assignment.ProjectId,
+                ChecklistId = assignment.ChecklistId,
+                AssignmentId = assignment.Id,
                 VisitId = visitId,
                 EvaluatorId = userId,
                 StatusId = EvaluationStatuses.Ids.InProgress,
@@ -557,6 +533,20 @@ public class FieldWorkerService : IFieldWorkerService
         }
 
         await _context.SaveChangesAsync();
+
+        // AssignmentCustomerDealer.EvaluationId güncelle (taslak veya tamamlandı fark etmez)
+        if (dto.CustomerDealerId > 0)
+        {
+            var assignmentDealer = await _context.Set<AssignmentCustomerDealer>()
+                .FirstOrDefaultAsync(acd => acd.AssignmentId == dto.AssignmentId
+                                         && acd.CustomerDealerId == dto.CustomerDealerId);
+            if (assignmentDealer != null)
+            {
+                assignmentDealer.EvaluationId = evaluation.Id;
+                await _context.SaveChangesAsync();
+            }
+        }
+
         return evaluation.Id;
     }
 

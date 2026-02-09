@@ -351,6 +351,31 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<PersonnelRequest>()
             .HasIndex(pr => pr.EvaluationId);
 
+        // ===== Approval İlişkileri =====
+        modelBuilder.Entity<Approval>()
+            .HasOne(a => a.RequestedByUser)
+            .WithMany()
+            .HasForeignKey(a => a.RequestedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Approval>()
+            .HasOne(a => a.RequestedByCustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(a => a.RequestedByCustomerPersonnelId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Approval>()
+            .HasOne(a => a.ApproverUser)
+            .WithMany()
+            .HasForeignKey(a => a.ApproverUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Approval>()
+            .HasOne(a => a.ApprovedByUser)
+            .WithMany()
+            .HasForeignKey(a => a.ApprovedByUserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // ===== CustomerDealer İlişkileri =====
         modelBuilder.Entity<CustomerDealer>()
             .HasOne(d => d.Customer)
@@ -379,7 +404,7 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<AssignmentCustomerDealer>()
             .HasOne(acd => acd.Evaluation)
-            .WithMany()
+            .WithMany(e => e.AssignmentCustomerDealers)
             .HasForeignKey(acd => acd.EvaluationId)
             .OnDelete(DeleteBehavior.SetNull);
 
@@ -388,6 +413,20 @@ public class ApplicationDbContext : DbContext
             .HasIndex(acd => acd.AssignmentId);
         modelBuilder.Entity<AssignmentCustomerDealer>()
             .HasIndex(acd => acd.CustomerDealerId);
+
+        // ===== Evaluation - Checklist İlişkisi =====
+        modelBuilder.Entity<Evaluation>()
+            .HasOne(e => e.Checklist)
+            .WithMany()
+            .HasForeignKey(e => e.ChecklistId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ===== Evaluation - Assignment İlişkisi =====
+        modelBuilder.Entity<Evaluation>()
+            .HasOne(e => e.Assignment)
+            .WithMany(a => a.Evaluations)
+            .HasForeignKey(e => e.AssignmentId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // ===== Evaluation - CustomerDealer İlişkisi =====
         modelBuilder.Entity<Evaluation>()

@@ -16,6 +16,18 @@ public class Evaluation : BaseEntity
     public Project Project { get; set; } = null!;
 
     /// <summary>
+    /// Değerlendirmenin ait olduğu checklist (zorunlu)
+    /// </summary>
+    public int ChecklistId { get; set; }
+    public Checklist Checklist { get; set; } = null!;
+
+    /// <summary>
+    /// Değerlendirmenin ait olduğu atama (nullable - survey/enneagram için boş kalabilir)
+    /// </summary>
+    public int? AssignmentId { get; set; }
+    public Assignment? Assignment { get; set; }
+
+    /// <summary>
     /// Hangi döneme ait (opsiyonel - dönem olmadan da değerlendirme yapılabilir)
     /// </summary>
     public int? AssignmentPeriodId { get; set; }
@@ -196,4 +208,5 @@ public class Evaluation : BaseEntity
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<EvaluationAttachment> Attachments { get; set; } = new List<EvaluationAttachment>();
+    public ICollection<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; } = new List<AssignmentCustomerDealer>();
 }

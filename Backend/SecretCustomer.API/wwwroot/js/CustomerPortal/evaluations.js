@@ -629,7 +629,7 @@ function EvaluationsViewModel() {
 
     self.startEvaluation = function(assignment) {
         // scoringMethod'a göre doğru popup'ı aç (isInternal=true ile)
-        self.openEvaluationPopup(assignment.projectId, null, assignment.scoringMethod);
+        self.openEvaluationPopup(assignment.id, null, assignment.scoringMethod);
     };
 
     self.continueEvaluation = function(evaluation) {
@@ -638,7 +638,7 @@ function EvaluationsViewModel() {
     };
 
     // Değerlendirme popup'ı aç (scoringMethod'a göre farklı URL, isInternal=true)
-    self.openEvaluationPopup = function(projectId, evaluationId, scoringMethod) {
+    self.openEvaluationPopup = function(assignmentId, evaluationId, scoringMethod) {
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;
@@ -652,7 +652,7 @@ function EvaluationsViewModel() {
         }
 
         var url = baseUrl;
-        if (projectId) url += 'projectId=' + projectId + '&';
+        if (assignmentId) url += 'assignmentId=' + assignmentId + '&';
         if (evaluationId) url += 'evaluationId=' + evaluationId + '&';
         url += 'isInternal=true';
 
@@ -1209,6 +1209,7 @@ function EvaluationsViewModel() {
 
         return {
             projectId: self.formData().projectId,
+            assignmentId: self.formData().assignmentId || null,
             evaluationId: self.formData().evaluationId || null,
             assignmentPeriodId: self.selectedPeriodId() || null,
             answers: answers,
@@ -1270,14 +1271,14 @@ function EvaluationsViewModel() {
                 resolve(false);
                 return;
             }
-            var projectId = self.formData() ? self.formData().projectId : null;
+            var assignmentId = self.formData() ? self.formData().assignmentId : null;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!projectId) {
+            if (!assignmentId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&projectId=' + projectId;
+                      '&assignmentId=' + assignmentId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }

@@ -24,8 +24,14 @@
 </head>
 <body>
     <div class="d-flex">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="customer-sidebar-overlay" id="customer-sidebar-overlay" onclick="toggleCustomerSidebar()"></div>
+
         <!-- Customer Sidebar -->
-        <nav class="customer-sidebar">
+        <nav class="customer-sidebar" id="customer-sidebar">
+            <!-- Close Button (Mobile) -->
+            <button class="btn btn-close btn-close-white position-absolute d-lg-none" style="top: 10px; right: 10px; z-index: 10;" onclick="toggleCustomerSidebar()"></button>
+
             <div class="brand">
                 <i class="bi bi-building fs-2"></i>
                 <h5 class="mt-2 mb-0">@Html.T("CustomerPortal.Title", "Müşteri Portalı")</h5>
@@ -257,7 +263,13 @@
 
             <!-- Top Bar -->
             <div class="customer-topbar" id="customer-topbar">
-                <h4 class="mb-0">@ViewData["Title"]</h4>
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Hamburger Menu Button (Mobile) -->
+                    <button class="btn btn-outline-secondary d-lg-none" type="button" onclick="toggleCustomerSidebar()">
+                        <i class="bi bi-list fs-4"></i>
+                    </button>
+                    <h4 class="mb-0">@ViewData["Title"]</h4>
+                </div>
                 <div class="d-flex align-items-center gap-3">
                     <!-- Language Selector -->
                     <div class="dropdown">
@@ -697,6 +709,21 @@
                 ko.applyBindings(new CustomerTopbarViewModel(), topbar);
             }
         });
+    </script>
+
+    <!-- Sidebar Toggle -->
+    <script>
+        function toggleCustomerSidebar() {
+            var sidebar = document.getElementById('customer-sidebar');
+            var overlay = document.getElementById('customer-sidebar-overlay');
+            if (sidebar.classList.contains('sidebar-open')) {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('active');
+            } else {
+                sidebar.classList.add('sidebar-open');
+                overlay.classList.add('active');
+            }
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)

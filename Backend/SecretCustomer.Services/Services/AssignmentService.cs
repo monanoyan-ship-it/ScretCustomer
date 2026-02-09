@@ -268,7 +268,9 @@ public class AssignmentService : IAssignmentService
                 EvaluationScore = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.ScorePercentage).FirstOrDefault(),
                 YellowCardCount = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.YellowCardCount).FirstOrDefault(),
                 RedCardCount = a.Project.Evaluations.Where(e => !e.IsDeleted).OrderByDescending(e => e.CreatedAt).Select(e => e.RedCardCount).FirstOrDefault(),
-                EvaluationCount = a.Project.Evaluations.Count(e => !e.IsDeleted)
+                EvaluationCount = a.Project.Evaluations.Count(e => !e.IsDeleted &&
+                    ((e.EvaluatorId != null && e.EvaluatorId == a.AssignedUserId) ||
+                     (e.EvaluatorCustomerPersonnelId != null && e.EvaluatorCustomerPersonnelId == a.AssignedCustomerPersonnelId)))
             })
             .ToListAsync();
     }
@@ -947,7 +949,10 @@ public class AssignmentService : IAssignmentService
             EvaluationScore = evaluation?.ScorePercentage,
             YellowCardCount = evaluation?.YellowCardCount ?? 0,
             RedCardCount = evaluation?.RedCardCount ?? 0,
-            EvaluationCount = assignment.Project?.Evaluations?.Count ?? 0
+            EvaluationCount = assignment.Project?.Evaluations?
+                .Count(e => !e.IsDeleted &&
+                    ((e.EvaluatorId != null && e.EvaluatorId == assignment.AssignedUserId) ||
+                     (e.EvaluatorCustomerPersonnelId != null && e.EvaluatorCustomerPersonnelId == assignment.AssignedCustomerPersonnelId))) ?? 0
         };
     }
 

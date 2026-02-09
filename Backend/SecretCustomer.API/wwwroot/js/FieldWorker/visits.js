@@ -55,7 +55,7 @@ function FieldWorkerVisitsViewModel() {
 
     // Start new visit from assignment - popup olarak aç
     self.startNewVisit = function(assignment) {
-        var url = '/FieldWorker/VisitPopup?projectId=' + assignment.projectId;
+        var url = '/FieldWorker/VisitPopup?assignmentId=' + assignment.id;
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;

@@ -373,6 +373,7 @@ public class EvaluationService : IEvaluationService
         var evaluation = new Evaluation
         {
             ProjectId = projectId,
+            ChecklistId = project.ChecklistId,
             EvaluatorId = evaluatorId,
             StatusId = EvaluationStatuses.Ids.InProgress,
             StartedAt = DateTime.UtcNow,
@@ -392,6 +393,8 @@ public class EvaluationService : IEvaluationService
         var evaluation = new Evaluation
         {
             ProjectId = dto.ProjectId,
+            ChecklistId = project.ChecklistId,
+            AssignmentId = dto.AssignmentId > 0 ? dto.AssignmentId : null,
             AssignmentPeriodId = dto.AssignmentPeriodId,
             // User mı CustomerPersonnel mı olduğunu ayır
             EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -451,20 +454,28 @@ public class EvaluationService : IEvaluationService
         return await MapToDtoAsync(evaluation);
     }
 
-    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(int projectId)
+    public async Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId)
     {
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-                .ThenInclude(c => c.CustomerOrganization)
-            .Include(p => p.Checklist)
-                .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
-                    .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        // Assignment üzerinden projeyi bul
+        var assignment = await _context.Assignments
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Customer)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Organization)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Checklist)
+                    .ThenInclude(c => c.CustomerOrganization)
+            .Include(a => a.Project)
+                .ThenInclude(p => p.Checklist)
+                    .ThenInclude(c => c.Questions.Where(q => !q.IsDeleted))
+                        .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
+            .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
 
-        if (project == null)
+        if (assignment?.Project == null)
             return null;
+
+        var project = assignment.Project;
+        var projectId = project.Id;
 
         // Not: Her "Ekle" dediğinde yeni evaluation oluşturulacak
         // Mevcut evaluationlar sadece düzenleme endpoint'inden yüklenir
@@ -532,6 +543,7 @@ public class EvaluationService : IEvaluationService
         return new EvaluationFormDto
         {
             ProjectId = projectId,
+            AssignmentId = assignmentId,
             EvaluationId = null, // Yeni evaluation oluşturulacak
             Status = "New",
             ProjectName = project.Name ?? "",
@@ -687,6 +699,8 @@ public class EvaluationService : IEvaluationService
             evaluation = new Evaluation
             {
                 ProjectId = dto.ProjectId,
+                ChecklistId = project.ChecklistId,
+                AssignmentId = dto.AssignmentId > 0 ? dto.AssignmentId : null,
                 AssignmentPeriodId = dto.AssignmentPeriodId,
                 // User mı CustomerPersonnel mı olduğunu ayır
                 EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
@@ -787,6 +801,19 @@ public class EvaluationService : IEvaluationService
         }
 
         await _context.SaveChangesAsync();
+
+        // AssignmentCustomerDealer.EvaluationId güncelle (taslak veya tamamlandı fark etmez)
+        if (dto.AssignmentId.HasValue && dto.AssignmentId.Value > 0 && dto.CustomerDealerId.HasValue && dto.CustomerDealerId.Value > 0)
+        {
+            var assignmentDealer = await _context.Set<AssignmentCustomerDealer>()
+                .FirstOrDefaultAsync(acd => acd.AssignmentId == dto.AssignmentId.Value
+                                         && acd.CustomerDealerId == dto.CustomerDealerId.Value);
+            if (assignmentDealer != null)
+            {
+                assignmentDealer.EvaluationId = evaluation.Id;
+                await _context.SaveChangesAsync();
+            }
+        }
 
         // "Her Kayıtta" bildirim gönder (tamamlandıysa)
         if (targetStatusId == EvaluationStatuses.Ids.Completed)

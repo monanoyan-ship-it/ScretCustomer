@@ -412,8 +412,8 @@ var EvaluationPopupViewModel = function() {
         self.resetFormFields();
 
         var url = '';
-        if (config.projectId) {
-            url = '/api/evaluations/form/' + config.projectId;
+        if (config.assignmentId) {
+            url = '/api/evaluations/form/' + config.assignmentId;
         } else if (config.evaluationId) {
             url = '/api/evaluations/form/edit/' + config.evaluationId;
         } else {
@@ -718,6 +718,7 @@ var EvaluationPopupViewModel = function() {
 
         return {
             projectId: self.formData().projectId,
+            assignmentId: self.formData().assignmentId || null,
             evaluationId: self.formData().evaluationId || null,
             assignmentPeriodId: self.selectedPeriodId() || null,
             evaluatorId: evaluatorId,
@@ -787,14 +788,14 @@ var EvaluationPopupViewModel = function() {
                 resolve(false);
                 return;
             }
-            var projectId = self.formData() ? self.formData().projectId : null;
+            var assignmentId = config.assignmentId;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!projectId) {
+            if (!assignmentId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&projectId=' + projectId;
+                      '&assignmentId=' + assignmentId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }

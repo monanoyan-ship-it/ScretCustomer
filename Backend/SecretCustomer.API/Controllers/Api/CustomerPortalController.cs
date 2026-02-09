@@ -2488,7 +2488,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
         var result = await _cpDataService.GetStaffTrainingsAsync(customerId.Value, allowedPersonnelIds);
-        return Ok(new { trainings = result });
+        return Ok(result);
     }
 
     /// <summary>

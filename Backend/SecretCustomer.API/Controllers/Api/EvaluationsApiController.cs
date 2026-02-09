@@ -845,6 +845,7 @@ public class EvaluationsApiController : BaseApiController
             var referenceNumber = $"REV-{year}-{count:D4}";
 
             // 4. Approval kaydı oluştur
+            var userType = User.FindFirst("UserType")?.Value;
             var approval = new Approval
             {
                 ReferenceNumber = referenceNumber,
@@ -853,8 +854,9 @@ public class EvaluationsApiController : BaseApiController
                 Title = $"Taslağa Alma Talebi - Değerlendirme #{id}",
                 Description = dto?.Reason ?? "Neden belirtilmedi",
                 RelatedEntityId = id,
-                RelatedEntityType = "EvaluationRevert", // Taslağa alma talebi olduğunu belirtmek için
-                RequestedByUserId = userId,
+                RelatedEntityType = "EvaluationRevert",
+                RequestedByUserId = userType == "CustomerPersonnel" ? null : userId,
+                RequestedByCustomerPersonnelId = userType == "CustomerPersonnel" ? userId : null,
                 RequestedAt = DateTime.UtcNow,
                 PriorityId = NotificationPriorities.Ids.Normal
             };

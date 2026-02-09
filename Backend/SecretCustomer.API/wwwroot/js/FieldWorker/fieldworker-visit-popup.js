@@ -413,11 +413,11 @@ var FieldWorkerVisitPopupViewModel = function() {
     // ========================
 
     self.loadDealers = function() {
-        if (!config.projectId) return;
+        if (!config.assignmentId) return;
 
         self.isLoadingDealers(true);
         // projectId ile çağır - ziyaret edilmiş bayileri hariç tutar
-        fetch('/api/fieldworker/dealers-for-assignment?projectId=' + config.projectId, { credentials: 'include' })
+        fetch('/api/fieldworker/dealers-for-assignment?assignmentId=' + config.assignmentId, { credentials: 'include' })
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.availableDealers(data || []);
@@ -448,8 +448,8 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.resetFormFields();
 
         var url = '';
-        if (config.projectId) {
-            url = '/api/evaluations/form/' + config.projectId;
+        if (config.assignmentId) {
+            url = '/api/evaluations/form/' + config.assignmentId;
         } else if (config.evaluationId) {
             url = '/api/evaluations/form/edit/' + config.evaluationId;
         } else {
@@ -748,7 +748,7 @@ var FieldWorkerVisitPopupViewModel = function() {
 
         // CreateVisitDto formatında döndür
         return {
-            projectId: self.formData().projectId,
+            assignmentId: config.assignmentId,
             evaluationId: self.formData().evaluationId || null,
             customerDealerId: self.selectedDealerId() ? parseInt(self.selectedDealerId()) : 0,
             controlDate: self.callDate() || null,
@@ -776,8 +776,8 @@ var FieldWorkerVisitPopupViewModel = function() {
         if (!self.callDate()) {
             errors.push(T('FieldWorker.VisitDateRequired', 'Ziyaret Tarihi zorunludur'));
         }
-        if (!self.callTime()) {
-            errors.push(T('FieldWorker.VisitTimeRequired', 'Ziyaret Saati zorunludur'));
+        if (!self.callTime() || self.callTime().indexOf('_') >= 0 || !/^\d{2}:\d{2}$/.test(self.callTime())) {
+            errors.push(T('FieldWorker.VisitTimeRequired', 'Ziyaret Saati zorunludur (SS:DD formatında giriniz)'));
         }
 
         return errors;
@@ -794,14 +794,14 @@ var FieldWorkerVisitPopupViewModel = function() {
                 resolve(false);
                 return;
             }
-            var projectId = self.formData() ? self.formData().projectId : null;
+            var assignmentId = config.assignmentId;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!projectId) {
+            if (!assignmentId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&projectId=' + projectId;
+                      '&assignmentId=' + assignmentId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }

@@ -47,7 +47,7 @@ function FieldWorkerDashboardViewModel() {
 
     // Ziyaret popup'ını aç
     self.startVisit = function(dealer) {
-        var url = '/FieldWorker/VisitPopup?projectId=' + dealer.projectId + '&dealerId=' + dealer.dealerId;
+        var url = '/FieldWorker/VisitPopup?assignmentId=' + dealer.assignmentId + '&dealerId=' + dealer.dealerId;
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;

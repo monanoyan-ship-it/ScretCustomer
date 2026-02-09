@@ -43,14 +43,24 @@ public class Approval : BaseEntity
     public string? RelatedEntityType { get; set; }
 
     /// <summary>
-    /// Talep eden kullanıcı ID
+    /// Talep eden kullanıcı ID (Users tablosu - admin/evaluator)
     /// </summary>
-    public int RequestedByUserId { get; set; }
+    public int? RequestedByUserId { get; set; }
 
     /// <summary>
     /// Talep eden kullanıcı
     /// </summary>
-    public User RequestedByUser { get; set; } = null!;
+    public User? RequestedByUser { get; set; }
+
+    /// <summary>
+    /// Talep eden müşteri personeli ID (CustomerPersonnel tablosu)
+    /// </summary>
+    public int? RequestedByCustomerPersonnelId { get; set; }
+
+    /// <summary>
+    /// Talep eden müşteri personeli
+    /// </summary>
+    public CustomerPersonnel? RequestedByCustomerPersonnel { get; set; }
 
     /// <summary>
     /// Onaylayacak kullanıcı ID

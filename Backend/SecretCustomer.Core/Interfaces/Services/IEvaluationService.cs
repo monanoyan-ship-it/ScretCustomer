@@ -37,8 +37,9 @@ public interface IEvaluationService
 
     /// <summary>
     /// Değerlendirme formunu yükle (checklist bilgileriyle birlikte)
+    /// assignmentId üzerinden projeyi ve checklist'i bulur
     /// </summary>
-    Task<EvaluationFormDto?> GetEvaluationFormAsync(int projectId);
+    Task<EvaluationFormDto?> GetEvaluationFormAsync(int assignmentId);
 
     /// <summary>
     /// Mevcut değerlendirmeyi yükle (düzenleme için)
@@ -89,6 +90,7 @@ public interface IEvaluationService
 public class EvaluationFormDto
 {
     public int ProjectId { get; set; }
+    public int? AssignmentId { get; set; }
     public int? EvaluationId { get; set; }
     public string Status { get; set; } = "New";
 

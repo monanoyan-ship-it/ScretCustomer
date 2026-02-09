@@ -8,6 +8,11 @@ public class SubmitEvaluationDto
     public int ProjectId { get; set; }
 
     /// <summary>
+    /// Atama ID - AssignmentCustomerDealer.EvaluationId güncellemesi için
+    /// </summary>
+    public int? AssignmentId { get; set; }
+
+    /// <summary>
     /// Mevcut değerlendirme ID (taslak güncelleme için)
     /// </summary>
     public int? EvaluationId { get; set; }
@@ -181,6 +186,8 @@ public class StartEvaluationDto
 {
     [Required]
     public int ProjectId { get; set; }
+
+    public int? AssignmentId { get; set; }
 
     /// <summary>
     /// Değerlendirmenin ait olduğu dönem

@@ -50,6 +50,7 @@ public class ApprovalsApiController : BaseApiController
     {
         var query = _context.Approvals
             .Include(a => a.RequestedByUser)
+            .Include(a => a.RequestedByCustomerPersonnel)
             .Include(a => a.ApproverUser)
             .Include(a => a.ApprovedByUser)
             .AsQueryable();
@@ -92,7 +93,7 @@ public class ApprovalsApiController : BaseApiController
 
         // Çoklu RequestedByUserIds filtresi
         if (filter.RequestedByUserIds?.Any() == true)
-            query = query.Where(a => filter.RequestedByUserIds.Contains(a.RequestedByUserId));
+            query = query.Where(a => a.RequestedByUserId.HasValue && filter.RequestedByUserIds.Contains(a.RequestedByUserId.Value));
 
         // Çoklu ApproverUserIds filtresi
         if (filter.ApproverUserIds?.Any() == true)
@@ -141,7 +142,9 @@ public class ApprovalsApiController : BaseApiController
             "approvaltype" => isAscending ? query.OrderBy(a => a.ApprovalTypeId) : query.OrderByDescending(a => a.ApprovalTypeId),
             "status" => isAscending ? query.OrderBy(a => a.StatusId) : query.OrderByDescending(a => a.StatusId),
             "title" => isAscending ? query.OrderBy(a => a.Title) : query.OrderByDescending(a => a.Title),
-            "requestedbyusername" => isAscending ? query.OrderBy(a => a.RequestedByUser.FirstName) : query.OrderByDescending(a => a.RequestedByUser.FirstName),
+            "requestedbyusername" => isAscending
+                ? query.OrderBy(a => a.RequestedByUser != null ? a.RequestedByUser.FirstName : a.RequestedByCustomerPersonnel != null ? a.RequestedByCustomerPersonnel.FirstName : "")
+                : query.OrderByDescending(a => a.RequestedByUser != null ? a.RequestedByUser.FirstName : a.RequestedByCustomerPersonnel != null ? a.RequestedByCustomerPersonnel.FirstName : ""),
             "requestedat" => isAscending ? query.OrderBy(a => a.RequestedAt) : query.OrderByDescending(a => a.RequestedAt),
             "priority" => isAscending ? query.OrderBy(a => a.PriorityId) : query.OrderByDescending(a => a.PriorityId),
             _ => query.OrderByDescending(a => a.RequestedAt)
@@ -157,7 +160,11 @@ public class ApprovalsApiController : BaseApiController
                 ApprovalType = ApprovalTypes.GetById(a.ApprovalTypeId)!.SystemName,
                 Status = ApprovalStatuses.GetById(a.StatusId)!.SystemName,
                 Title = a.Title,
-                RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
+                RequestedByUserName = a.RequestedByUser != null
+                        ? a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName
+                        : a.RequestedByCustomerPersonnel != null
+                            ? a.RequestedByCustomerPersonnel.FirstName + " " + a.RequestedByCustomerPersonnel.LastName
+                            : "-",
                 RequestedAt = a.RequestedAt,
                 DueDate = a.DueDate,
                 Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,
@@ -179,6 +186,7 @@ public class ApprovalsApiController : BaseApiController
 
         var approvals = await _context.Approvals
             .Include(a => a.RequestedByUser)
+            .Include(a => a.RequestedByCustomerPersonnel)
             .Where(a => a.ApproverUserId == userId && a.StatusId == ApprovalStatuses.Ids.Pending)
             .OrderByDescending(a => a.PriorityId)
             .ThenBy(a => a.DueDate)
@@ -189,7 +197,11 @@ public class ApprovalsApiController : BaseApiController
                 ApprovalType = ApprovalTypes.GetById(a.ApprovalTypeId)!.SystemName,
                 Status = ApprovalStatuses.GetById(a.StatusId)!.SystemName,
                 Title = a.Title,
-                RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
+                RequestedByUserName = a.RequestedByUser != null
+                        ? a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName
+                        : a.RequestedByCustomerPersonnel != null
+                            ? a.RequestedByCustomerPersonnel.FirstName + " " + a.RequestedByCustomerPersonnel.LastName
+                            : "-",
                 RequestedAt = a.RequestedAt,
                 DueDate = a.DueDate,
                 Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,
@@ -209,6 +221,7 @@ public class ApprovalsApiController : BaseApiController
     {
         var approval = await _context.Approvals
             .Include(a => a.RequestedByUser)
+            .Include(a => a.RequestedByCustomerPersonnel)
             .Include(a => a.ApproverUser)
             .Include(a => a.ApprovedByUser)
             .FirstOrDefaultAsync(a => a.Id == id);
@@ -227,7 +240,11 @@ public class ApprovalsApiController : BaseApiController
             RelatedEntityId = approval.RelatedEntityId,
             RelatedEntityType = approval.RelatedEntityType,
             RequestedByUserId = approval.RequestedByUserId,
-            RequestedByUserName = $"{approval.RequestedByUser.FirstName} {approval.RequestedByUser.LastName}",
+            RequestedByUserName = approval.RequestedByUser != null
+                ? $"{approval.RequestedByUser.FirstName} {approval.RequestedByUser.LastName}"
+                : approval.RequestedByCustomerPersonnel != null
+                    ? $"{approval.RequestedByCustomerPersonnel.FirstName} {approval.RequestedByCustomerPersonnel.LastName}"
+                    : "-",
             ApproverUserId = approval.ApproverUserId,
             ApproverUserName = approval.ApproverUser != null ? $"{approval.ApproverUser.FirstName} {approval.ApproverUser.LastName}" : null,
             ApprovedByUserId = approval.ApprovedByUserId,
@@ -251,6 +268,9 @@ public class ApprovalsApiController : BaseApiController
     [HttpPost]
     public async Task<IActionResult> CreateApproval([FromBody] CreateApprovalDto dto)
     {
+        var currentUserId = GetCurrentUserId();
+        var userType = User.FindFirst("UserType")?.Value;
+
         var approval = new Approval
         {
             ReferenceNumber = await GenerateApprovalNumber(),
@@ -260,7 +280,8 @@ public class ApprovalsApiController : BaseApiController
             Description = dto.Description,
             RelatedEntityId = dto.RelatedEntityId,
             RelatedEntityType = dto.RelatedEntityType,
-            RequestedByUserId = GetCurrentUserId(),
+            RequestedByUserId = userType == "CustomerPersonnel" ? null : currentUserId,
+            RequestedByCustomerPersonnelId = userType == "CustomerPersonnel" ? currentUserId : null,
             ApproverUserId = dto.ApproverUserId,
             RequestedAt = DateTime.UtcNow,
             DueDate = dto.DueDate,
@@ -282,7 +303,7 @@ public class ApprovalsApiController : BaseApiController
                 Title = "Yeni Onay Talebi",
                 Message = $"{approval.Title} için onay talebiniz var.",
                 RecipientUserId = dto.ApproverUserId.Value,
-                SenderUserId = GetCurrentUserId(),
+                SenderUserId = userType == "CustomerPersonnel" ? null : currentUserId,
                 RelatedEntityId = approval.Id,
                 RelatedEntityType = "Approval",
                 ActionUrl = $"/Approvals/Detail/{approval.Id}"
@@ -347,21 +368,24 @@ public class ApprovalsApiController : BaseApiController
             }
         }
 
-        // Notify requester
-        var notification = new Notification
+        // Notify requester (only if requester is a User, not CustomerPersonnel)
+        if (approval.RequestedByUserId.HasValue)
         {
-            NotificationTypeId = dto.Approved ? NotificationTypes.Ids.Success : NotificationTypes.Ids.Warning,
-            ChannelId = NotificationChannels.Ids.InApp,
-            PriorityId = NotificationPriorities.Ids.Normal,
-            Title = dto.Approved ? "Onay Kabul Edildi" : "Onay Reddedildi",
-            Message = $"{approval.Title} için onay talebiniz {(dto.Approved ? "kabul edildi" : "reddedildi")}.",
-            RecipientUserId = approval.RequestedByUserId,
-            SenderUserId = userId,
-            RelatedEntityId = approval.Id,
-            RelatedEntityType = "Approval",
-            ActionUrl = $"/Approvals/Detail/{approval.Id}"
-        };
-        _context.Notifications.Add(notification);
+            var notification = new Notification
+            {
+                NotificationTypeId = dto.Approved ? NotificationTypes.Ids.Success : NotificationTypes.Ids.Warning,
+                ChannelId = NotificationChannels.Ids.InApp,
+                PriorityId = NotificationPriorities.Ids.Normal,
+                Title = dto.Approved ? "Onay Kabul Edildi" : "Onay Reddedildi",
+                Message = $"{approval.Title} için onay talebiniz {(dto.Approved ? "kabul edildi" : "reddedildi")}.",
+                RecipientUserId = approval.RequestedByUserId.Value,
+                SenderUserId = userId,
+                RelatedEntityId = approval.Id,
+                RelatedEntityType = "Approval",
+                ActionUrl = $"/Approvals/Detail/{approval.Id}"
+            };
+            _context.Notifications.Add(notification);
+        }
 
         await _context.SaveChangesAsync();
 
@@ -384,7 +408,12 @@ public class ApprovalsApiController : BaseApiController
         if (approval == null)
             return NotFound();
 
-        if (approval.RequestedByUserId != GetCurrentUserId())
+        var cancelUserId = GetCurrentUserId();
+        var cancelUserType = User.FindFirst("UserType")?.Value;
+        var isOwner = cancelUserType == "CustomerPersonnel"
+            ? approval.RequestedByCustomerPersonnelId == cancelUserId
+            : approval.RequestedByUserId == cancelUserId;
+        if (!isOwner)
             return Forbid();
 
         if (approval.StatusId != ApprovalStatuses.Ids.Pending)
@@ -421,6 +450,7 @@ public class ApprovalsApiController : BaseApiController
             TodayApprovals = await _context.Approvals.CountAsync(a => a.RequestedAt.Date == today),
             RecentApprovals = await _context.Approvals
                 .Include(a => a.RequestedByUser)
+                .Include(a => a.RequestedByCustomerPersonnel)
                 .OrderByDescending(a => a.RequestedAt)
                 .Take(5)
                 .Select(a => new ApprovalListDto
@@ -430,7 +460,11 @@ public class ApprovalsApiController : BaseApiController
                     ApprovalType = ApprovalTypes.GetById(a.ApprovalTypeId)!.SystemName,
                     Status = ApprovalStatuses.GetById(a.StatusId)!.SystemName,
                     Title = a.Title,
-                    RequestedByUserName = a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName,
+                    RequestedByUserName = a.RequestedByUser != null
+                        ? a.RequestedByUser.FirstName + " " + a.RequestedByUser.LastName
+                        : a.RequestedByCustomerPersonnel != null
+                            ? a.RequestedByCustomerPersonnel.FirstName + " " + a.RequestedByCustomerPersonnel.LastName
+                            : "-",
                     RequestedAt = a.RequestedAt,
                     DueDate = a.DueDate,
                     Priority = NotificationPriorities.GetById(a.PriorityId)!.SystemName,

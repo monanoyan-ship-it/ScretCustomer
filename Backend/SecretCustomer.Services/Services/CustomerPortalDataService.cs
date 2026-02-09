@@ -1104,12 +1104,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         var projects = await projectsQuery.ToListAsync();
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
+
         var evalQuery = _context.Evaluations
-            .Include(e => e.Project)
+            .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
+                && e.StatusId == EvaluationStatuses.Ids.Completed
+                && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
         // İç/Dış dinleme filtresi
         if (isInternal == true)
@@ -1167,12 +1170,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
+
         var query = _context.Evaluations
-            .Include(e => e.Project)
+            .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
+                && e.StatusId == EvaluationStatuses.Ids.Completed
+                && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
         // İç/Dış dinleme filtresi
         if (isInternal == true)
@@ -1234,8 +1240,10 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
+
         var query = _context.Evaluations
-            .Include(e => e.Project)
+            .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatedPersonnel)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
                 && e.CreatedAt >= start
@@ -1243,7 +1251,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && e.ScorePercentage.HasValue
                 && e.ScorePercentage >= minScore
-                && e.ScorePercentage < maxScore);
+                && e.ScorePercentage < maxScore
+                && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
         // İç/Dış dinleme filtresi
         if (isInternal == true)
@@ -1293,12 +1302,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (end.Kind == DateTimeKind.Unspecified)
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
+
         var query = _context.Evaluations
-            .Include(e => e.Project)
+            .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
                 && e.CreatedAt >= start
                 && e.CreatedAt <= end
-                && e.StatusId == EvaluationStatuses.Ids.Completed);
+                && e.StatusId == EvaluationStatuses.Ids.Completed
+                && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
         // İç/Dış dinleme filtresi
         if (isInternal == true)

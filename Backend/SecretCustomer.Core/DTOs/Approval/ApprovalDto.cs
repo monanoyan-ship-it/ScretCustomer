@@ -15,7 +15,7 @@ public class ApprovalDto
     public string? Description { get; set; }
     public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
-    public int RequestedByUserId { get; set; }
+    public int? RequestedByUserId { get; set; }
     public string? RequestedByUserName { get; set; }
     public int? ApproverUserId { get; set; }
     public string? ApproverUserName { get; set; }

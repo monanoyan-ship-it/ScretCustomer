@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260209034341_AddRequestedByCustomerPersonnelToApproval")]
+    partial class AddRequestedByCustomerPersonnelToApproval
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1535,9 +1538,6 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AssignmentId")
-                        .HasColumnType("integer");
-
                     b.Property<int?>("AssignmentPeriodId")
                         .HasColumnType("integer");
 
@@ -1549,9 +1549,6 @@ namespace SecretCustomer.Data.Migrations
 
                     b.Property<string>("CallTime")
                         .HasColumnType("text");
-
-                    b.Property<int>("ChecklistId")
-                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("CompletedAt")
                         .HasColumnType("timestamp without time zone");
@@ -1647,11 +1644,7 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AssignmentId");
-
                     b.HasIndex("AssignmentPeriodId");
-
-                    b.HasIndex("ChecklistId");
 
                     b.HasIndex("CustomerDealerId");
 
@@ -4210,7 +4203,7 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("SecretCustomer.Core.Entities.Evaluation", "Evaluation")
-                        .WithMany("AssignmentCustomerDealers")
+                        .WithMany()
                         .HasForeignKey("EvaluationId")
                         .OnDelete(DeleteBehavior.SetNull);
 
@@ -4449,20 +4442,9 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.Assignment", "Assignment")
-                        .WithMany("Evaluations")
-                        .HasForeignKey("AssignmentId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("SecretCustomer.Core.Entities.AssignmentPeriod", "AssignmentPeriod")
                         .WithMany("Evaluations")
                         .HasForeignKey("AssignmentPeriodId");
-
-                    b.HasOne("SecretCustomer.Core.Entities.Checklist", "Checklist")
-                        .WithMany()
-                        .HasForeignKey("ChecklistId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
 
                     b.HasOne("SecretCustomer.Core.Entities.CustomerDealer", "CustomerDealer")
                         .WithMany("Evaluations")
@@ -4498,11 +4480,7 @@ namespace SecretCustomer.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Assignment");
-
                     b.Navigation("AssignmentPeriod");
-
-                    b.Navigation("Checklist");
 
                     b.Navigation("CustomerDealer");
 
@@ -5096,8 +5074,6 @@ namespace SecretCustomer.Data.Migrations
                 {
                     b.Navigation("AssignmentCustomerDealers");
 
-                    b.Navigation("Evaluations");
-
                     b.Navigation("Periods");
                 });
 
@@ -5163,8 +5139,6 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.Evaluation", b =>
                 {
                     b.Navigation("Answers");
-
-                    b.Navigation("AssignmentCustomerDealers");
 
                     b.Navigation("Attachments");
                 });
