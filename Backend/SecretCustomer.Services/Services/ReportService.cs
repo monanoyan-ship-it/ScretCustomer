@@ -513,6 +513,7 @@ public class ReportService : IReportService
                     AnswerText = a.AnswerText,
                     EarnedPoints = a.EarnedPoints,
                     QuestionMaxPoints = a.Question.WeightPoints,
+                    WeightPoints = a.Question.WeightPoints,
                     PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName
                 }).ToList(),
 

@@ -4220,7 +4220,7 @@
     <Value>İç Dinleme Listesi</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
-    <Value>Dış Dinlemeler</Value>
+    <Value>Dış Değerlendirmeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
     <Value>Dinleme Bulunamadı</Value>
@@ -4238,7 +4238,7 @@
     <Value>Proje, dinlenen, organizasyon...</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.List">
-    <Value>Dış Dinleme Listesi</Value>
+    <Value>Dış Değerlendirme Listesi</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluations.Evaluator">
     <Value>Dinleyen</Value>

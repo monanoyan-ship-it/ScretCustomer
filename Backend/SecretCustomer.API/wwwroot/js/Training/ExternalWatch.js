@@ -15,6 +15,7 @@
         self.videoPlayer = null;
         self.lastSavedTime = 0;
         self.saveInterval = null;
+        self.videoSrc = ko.observable('');
 
         // Quiz State
         self.quizStatus = ko.observable(null);
@@ -45,6 +46,7 @@
                 method: 'GET',
                 success: function (data) {
                     self.videoInfo(data);
+                    self.videoSrc(data.videoStreamUrl || '');
                     self.isLoading(false);
 
                     // Quiz durumunu yukle

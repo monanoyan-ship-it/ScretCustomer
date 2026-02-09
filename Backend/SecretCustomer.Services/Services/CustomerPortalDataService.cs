@@ -1146,7 +1146,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 projectCode = p.Code ?? "",
                 projectName = p.Name,
                 evaluationCount = projectEvals.Count,
-                averageScore = projectEvals.Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
+                averageScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
                 minScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
                 maxScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0
             };
@@ -1417,10 +1417,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         List<int>? organizationIds, List<string>? callIds)
     {
         // Anket ve Enneagram checklist tipleri hariç (kendi raporları var)
-        var excludedProjectTypes = new[] { ProjectTypes.Ids.OnlineSurvey };
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
 
         var query = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
@@ -1428,7 +1429,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.Project != null &&
                        e.Project.CustomerId == customerId &&
                        e.EvaluatorCustomerPersonnelId != null &&
-                       !excludedProjectTypes.Contains(e.Project!.ProjectTypeId)); // Anket/Enneagram hariç
+                       !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId)); // Anket/Enneagram hariç
 
         // Rol bazlı filtreleme (İç Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar
@@ -1593,8 +1594,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         List<int>? projectIds, List<string>? personnelNames, List<int>? organizationIds,
         List<string>? callIds, decimal? minScore, decimal? maxScore)
     {
+        // Anket ve Enneagram checklist tipleri hariç (kendi raporları var)
+        var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
+
         var query = _context.Evaluations
             .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Include(e => e.EvaluatedOrganization)
@@ -1602,7 +1607,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.Project != null &&
                        e.Project.CustomerId == customerId &&
                        e.EvaluatorId != null &&
-                       e.StatusId == EvaluationStatuses.Ids.Completed);
+                       e.StatusId == EvaluationStatuses.Ids.Completed &&
+                       !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId)); // Anket/Enneagram hariç
 
         // Rol bazlı filtreleme (Dış Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar

@@ -23,6 +23,12 @@ Bu dosya projedeki standart pattern'leri tanımlar. **YENİ BİR ÖZELLİK EKLEN
 - "Yaptım" demeden önce MUTLAKA kontrol et
 - Bir şeyi "her yerde düzelttim" diyorsan, grep ile kontrol et
 
+### KOD TAŞIRKEN / KOPYALARKEN
+- **Kullanıcı "kopyala" diyorsa FONKSİYONU BİREBİR KOPYALA, yeniden yazma**
+- Yorumlayarak yazınca bug üretiyorsun (örn: `.Any()` guard'ını yanlış yazdın, canlıya gidecek kodda runtime hatası çıktı)
+- Orijinal kodu oku → birebir kopyala → sadece gerekli namespace/dependency değişikliklerini yap
+- **"Aynısını yazdım" deme, GERÇEKTEN aynısını yazdığından emin ol**
+
 ---
 
 ## 1. View/JavaScript Yapısı (SPA Modal Pattern)

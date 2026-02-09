@@ -172,6 +172,7 @@ public class EvaluationAnswerDto
     public string? AnswerText { get; set; }
     public decimal? EarnedPoints { get; set; }
     public decimal? QuestionMaxPoints { get; set; }
+    public decimal WeightPoints { get; set; }
     public string? PenaltyType { get; set; }
 }
 

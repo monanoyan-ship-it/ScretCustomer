@@ -286,13 +286,19 @@ function ChecklistViewModel() {
                     params.push('customerOrganizationId=' + filter.value);
                     break;
                 case 'searchText':
-                    params.push('search=' + encodeURIComponent(filter.value));
+                    params.push('searchText=' + encodeURIComponent(filter.value));
                     break;
                 case 'isActive':
                     params.push('isActive=' + filter.value);
                     break;
             }
         });
+
+        // Doğrudan input'tan gelen arama (chip eklenmeden)
+        var directSearch = (self.searchText() || '').trim();
+        if (directSearch && !self.activeFilters().some(function(f) { return f.type === 'searchText'; })) {
+            params.push('searchText=' + encodeURIComponent(directSearch));
+        }
 
         return params;
     };
