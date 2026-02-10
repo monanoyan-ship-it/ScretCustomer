@@ -1,15 +1,15 @@
-@{
-    ViewData["Title"] = @Html.T("Report.Title", "Raporlar");
+﻿@{
+    ViewData["Title"] = @Html.T("Common.Reports", "Raporlar");
 }
 
 <div id="reports-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-earmark-bar-graph"></i> @Html.T("Report.Title", "Raporlar")</h2>
+        <h2><i class="bi bi-file-earmark-bar-graph"></i> @Html.T("Common.Reports", "Raporlar")</h2>
         <div class="btn-group">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
@@ -36,7 +36,7 @@
                         <div class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
                                 <option value="">@Html.T("Common.SelectFilter", "Filtre Secin...")</option>
-                                <option value="project">@Html.T("Report.Project", "Proje")</option>
+                                <option value="project">@Html.T("Common.Project", "Proje")</option>
                                 <option value="branch">@Html.T("Report.Branch", "Sube/Organizasyon")</option>
                                 <option value="evaluator">@Html.T("Report.Evaluator", "Degerlendirici")</option>
                                 <option value="checklist">@Html.T("Report.Checklist", "Kontrol Listesi")</option>
@@ -65,9 +65,9 @@
                         <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
                                 <option value="">@Html.T("Common.Select", "Secin...")</option>
-                                <option value="Completed">@Html.T("Report.Status.Completed", "Tamamlandi")</option>
-                                <option value="Draft">@Html.T("Report.Status.Draft", "Taslak")</option>
-                                <option value="InProgress">@Html.T("Report.Status.InProgress", "Devam Eden")</option>
+                                <option value="Completed">@Html.T("Status.Completed", "Tamamlandi")</option>
+                                <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
+                                <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Eden")</option>
                             </select>
                         </div>
                         <!-- Date Range -->
@@ -138,7 +138,7 @@
         <div class="col-md-2">
             <div class="card bg-warning text-dark h-100">
                 <div class="card-body py-2">
-                    <h6 class="text-dark-50 mb-0">@Html.T("Report.Pending", "Bekleyen")</h6>
+                    <h6 class="text-dark-50 mb-0">@Html.T("Common.Status.Pending", "Bekleyen")</h6>
                     <h3 class="mb-0" data-bind="text: pendingEvaluations"></h3>
                 </div>
             </div>
@@ -205,7 +205,7 @@
                 <table class="table table-hover table-striped mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th>@Html.T("Report.Project", "Proje")</th>
+                            <th>@Html.T("Common.Project", "Proje")</th>
                             <th>@Html.T("Report.Branch", "Sube")</th>
                             <th>@Html.T("Report.Evaluator", "Degerlendirici")</th>
                             <th>@Html.T("Report.Date", "Tarih")</th>
@@ -270,7 +270,7 @@
             <nav>
                 <ul class="pagination mb-0">
                     <li class="page-item" data-bind="css: { disabled: !paginationInfo().hasPreviousPage }">
-                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Pagination.Previous", "Onceki")</a>
+                        <a class="page-link" href="#" data-bind="click: previousPage">@Html.T("Common.Previous", "Onceki")</a>
                     </li>
                     <!-- ko foreach: pageNumbers -->
                     <li class="page-item" data-bind="css: { active: $data === $parent.page() }">
@@ -299,7 +299,7 @@
                         <div class="col-md-6">
                             <h6 class="border-bottom pb-2">@Html.T("Report.GeneralInfo", "Genel Bilgiler")</h6>
                             <dl class="row mb-0">
-                                <dt class="col-sm-4">@Html.T("Report.Project", "Proje"):</dt>
+                                <dt class="col-sm-4">@Html.T("Common.Project", "Proje"):</dt>
                                 <dd class="col-sm-8" data-bind="text: projectName"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Checklist", "Kontrol Listesi"):</dt>
                                 <dd class="col-sm-8" data-bind="text: checklistName"></dd>
@@ -339,7 +339,7 @@
                                             <th style="width: 15%;">@Html.T("Evaluation.Group", "Grup")</th>
                                             <th style="width: 35%;">@Html.T("Report.Question", "Soru")</th>
                                             <th class="text-center" style="width: 15%;">@Html.T("Report.Score", "Puan")</th>
-                                            <th style="width: 35%;">@Html.T("Report.Note", "Not")</th>
+                                            <th style="width: 35%;">@Html.T("Common.Note", "Not")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: $data.answers || []">

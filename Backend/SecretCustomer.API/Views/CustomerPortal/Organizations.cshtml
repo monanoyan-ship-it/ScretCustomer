@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = @Html.T("CustomerPortal.Organizations.Title", "Organizasyonlar");
     Layout = "_CustomerLayout";
 }
@@ -17,7 +17,7 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">
-                    <i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Organizations.MonthlyTrend", "Gelişim Trendi")
+                    <i class="bi bi-graph-up me-2"></i>@Html.T("CustomerPortal.Report.MonthlyTrend", "Gelişim Trendi")
                 </h5>
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-light text-success" data-bind="text: periodTypeText"></span>
@@ -101,7 +101,7 @@
                                     <th>@Html.T("Common.Name", "Ad")</th>
                                     <th>@Html.T("Common.Code", "Kod")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.Organizations.PersonnelCount", "Personel")</th>
-                                    <th class="text-center">@Html.T("CustomerPortal.Organizations.EvaluationCount", "Dinleme")</th>
+                                    <th class="text-center">@Html.T("CustomerPortal.Supervisors.EvaluationCount", "Dinleme")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.Organizations.AverageScore", "Ort. Puan")</th>
                                 </tr>
                             </thead>

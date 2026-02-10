@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Listenings.Title", "Dinlemeler");
 }
 
@@ -11,7 +11,7 @@
             </button>
             <!-- Raporlar Button -->
             <button class="btn btn-outline-success" data-bind="click: openReportsModal, disable: isExporting">
-                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-spreadsheet me-1"></i> @Html.T("Listenings.Reports", "Raporlar")</span>
+                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-spreadsheet me-1"></i> @Html.T("Common.Reports", "Raporlar")</span>
                 <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
             </button>
         </div>
@@ -79,9 +79,9 @@
                         <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
                                 <option value="">@Html.T("Common.Select", "Seçin...")</option>
-                                <option value="Completed">@Html.T("Evaluation.Status.Completed", "Tamamlandı")</option>
+                                <option value="Completed">@Html.T("Status.Completed", "Tamamlandı")</option>
                                 <option value="InProgress">@Html.T("Evaluation.Status.InProgress", "Devam Ediyor")</option>
-                                <option value="Draft">@Html.T("Evaluation.Status.Draft", "Taslak")</option>
+                                <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             </select>
                         </div>
                         <!-- Evaluation Source -->
@@ -325,7 +325,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
                             </div>
@@ -341,7 +341,7 @@
                                 <div class="card text-center bg-warning">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: yellowCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.YellowCard", "Sarı Kart")</small>
+                                        <small>@Html.T("Report.Yellow", "Sarı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -349,7 +349,7 @@
                                 <div class="card text-center bg-danger text-white">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: redCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.RedCard", "Kırmızı Kart")</small>
+                                        <small>@Html.T("Report.Red", "Kırmızı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -373,7 +373,7 @@
                                                 <td data-bind="text: organizationName || '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
+                                                <th>@Html.T("Report.Evaluated", "Değerlendirilen")</th>
                                                 <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
@@ -389,12 +389,12 @@
                             <div class="col-md-4">
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Call.CallInfo", "Çağrı Bilgileri")</h6>
                                     </div>
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
                                             <tr>
-                                                <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
+                                                <th style="width: 40%;">@Html.T("Common.CallId", "Çağrı ID")</th>
                                                 <td>
                                                     <!-- ko if: callId -->
                                                     <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
@@ -406,12 +406,12 @@
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
+                                                <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                                 <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
                                             <!-- ko if: callTime -->
                                             <tr>
-                                                <th>@Html.T("Evaluation.CallTime", "Çağrı Saati")</th>
+                                                <th>@Html.T("Report.CallTime", "Çağrı Saati")</th>
                                                 <td data-bind="text: callTime"></td>
                                             </tr>
                                             <!-- /ko -->
@@ -475,9 +475,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th style="width: 28%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
@@ -686,7 +686,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title">
-                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>@Html.T("Listenings.Reports", "Raporlar")
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>@Html.T("Common.Reports", "Raporlar")
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bind="click: closeReportsModal"></button>
                 </div>
@@ -701,7 +701,7 @@
                                 <i class="bi bi-telephone fs-4 text-primary"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-0">@Html.T("Listenings.Report.CallAudit", "Çağrı Denetleme Raporu")</h6>
+                                <h6 class="mb-0">@Html.T("Report.Sheet.CallAudit", "Çağrı Denetleme Raporu")</h6>
                                 <small class="text-muted">@Html.T("Listenings.Report.CallAuditDesc", "Proje, değerlendiren, temsilci, çağrı no, tarih, süre, yorum ve puan bilgileri")</small>
                             </div>
                             <div>
@@ -748,7 +748,7 @@
                                 <i class="bi bi-bar-chart-steps fs-4 text-warning"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-0">@Html.T("Listenings.Report.QuestionGroupAverage", "Soru Grubu Ortalama Raporu")</h6>
+                                <h6 class="mb-0">@Html.T("Report.QuestionGroupAverage", "Soru Grubu Ortalama Raporu")</h6>
                                 <small class="text-muted">@Html.T("Listenings.Report.QuestionGroupAverageDesc", "Proje, dönem ve soru grubu bazında ortalama puanlar")</small>
                             </div>
                             <div>
@@ -763,7 +763,7 @@
                                 <i class="bi bi-building fs-4 text-danger"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-0">@Html.T("Listenings.Report.CustomerEvaluation", "Müşteri Değerlendirme Raporu")</h6>
+                                <h6 class="mb-0">@Html.T("Report.CustomerEvaluation", "Müşteri Değerlendirme Raporu")</h6>
                                 <small class="text-muted">@Html.T("Listenings.Report.CustomerEvaluationDesc", "Firma, departman, kişi ve tüm değerlendirme detayları")</small>
                             </div>
                             <div>
@@ -778,7 +778,7 @@
                                 <i class="bi bi-graph-up-arrow fs-4 text-success"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h6 class="mb-0">@Html.T("Listenings.Report.ProjectPerformance", "Proje Performans Raporu")</h6>
+                                <h6 class="mb-0">@Html.T("Report.ProjectPerformance", "Proje Performans Raporu")</h6>
                                 <small class="text-muted">@Html.T("Listenings.Report.ProjectPerformanceDesc", "Dönem bazında proje ortalama puanları ve sıralaması")</small>
                             </div>
                             <div>

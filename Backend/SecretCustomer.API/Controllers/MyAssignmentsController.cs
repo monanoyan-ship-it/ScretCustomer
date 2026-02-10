@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Interfaces.Services;
 using System.Security.Claims;
@@ -39,7 +39,7 @@ public class MyAssignmentsController : Controller
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading my assignments");
-            TempData["ErrorMessage"] = await _localizationService.GetResourceAsync("Mvc.MyAssignments.LoadError");
+            TempData["ErrorMessage"] = await _localizationService.GetResourceAsync("Assignment.LoadError");
             return View(new List<Core.DTOs.Assignment.AssignmentDto>());
         }
     }

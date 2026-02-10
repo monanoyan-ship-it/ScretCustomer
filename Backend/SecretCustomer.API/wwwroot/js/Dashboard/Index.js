@@ -1,4 +1,4 @@
-// Dashboard ViewModel with Chart.js Integration
+﻿// Dashboard ViewModel with Chart.js Integration
 function DashboardViewModel() {
     var self = this;
 
@@ -172,7 +172,7 @@ function DashboardViewModel() {
                 labels: labels,
                 datasets: [
                     {
-                        label: T('Dashboard.AverageScore', 'Ortalama Puan (%)'),
+                        label: T('Dealer.AverageScore', 'Ortalama Puan (%)'),
                         data: scores,
                         borderColor: 'rgb(75, 192, 192)',
                         backgroundColor: 'rgba(75, 192, 192, 0.1)',
@@ -535,7 +535,7 @@ function DashboardViewModel() {
 
 // Translation keys
 var TRANSLATION_KEYS = [
-    'Dashboard.AverageScore',
+    'Dealer.AverageScore',
     'Dashboard.EvaluationCount',
     'Dashboard.Score',
     'Dashboard.Evaluation',

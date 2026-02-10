@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.AI;
 using SecretCustomer.Core.DTOs.Report;
@@ -156,7 +156,7 @@ public class ReportsApiController : BaseApiController
         {
             var result = await _reportService.GetEvaluationDetailAsync(evaluationId);
             if (result == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
 
             return Ok(result);
         }
@@ -177,7 +177,7 @@ public class ReportsApiController : BaseApiController
         {
             var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId);
             if (result == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
 
             return File(result.FileContent, result.ContentType, result.FileName);
         }
@@ -306,7 +306,7 @@ public class ReportsApiController : BaseApiController
         {
             var result = await _reportService.ExportVisitEvaluationDetailToExcelAsync(evaluationId);
             if (result == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
 
             return File(result.FileContent, result.ContentType, result.FileName);
         }

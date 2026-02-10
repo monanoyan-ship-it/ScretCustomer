@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,7 +63,7 @@ public class AccountController : Controller
 
             if (result == null)
             {
-                ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.InvalidCredentials"));
+                ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Auth.InvalidCredentials"));
                 return View(model);
             }
 
@@ -133,7 +133,7 @@ public class AccountController : Controller
             await _auditLogService.LogLoginAsync(0, model.Username, false, "Geçersiz kullanıcı adı veya şifre");
 
             _logger.LogWarning("Failed login attempt for user {Username}", model.Username);
-            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.InvalidCredentials"));
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Auth.InvalidCredentials"));
             return View(model);
         }
         catch (Exception ex)

@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = @Html.T("Report.DealerReportCard", "Şube Karnesi");
 }
 
@@ -9,7 +9,7 @@
         <div class="btn-group" data-bind="visible: report()">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel İndir")
                 </span>
                 <span data-bind="visible: isExporting">
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "İndiriliyor...")
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
-                        <label class="form-label small mb-1">@Html.T("Report.Project", "Proje")</label>
+                        <label class="form-label small mb-1">@Html.T("Common.Project", "Proje")</label>
                         <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçin...'"></select>
                     </div>
 
@@ -332,7 +332,7 @@
                                 <th>@Html.T("Report.Date", "Tarih")</th>
                                 <th>Denetlenen</th>
                                 <th>Kontrol Tarihi</th>
-                                <th>@Html.T("Report.Project", "Proje")</th>
+                                <th>@Html.T("Common.Project", "Proje")</th>
                                 <th>@Html.T("Report.Checklist", "Kontrol Listesi")</th>
                                 <th>@Html.T("Report.Evaluator", "Değerlendirici")</th>
                                 <th class="text-center">@Html.T("Report.Score", "Puan")</th>
@@ -394,7 +394,7 @@
                         <div class="col-md-6">
                             <h6 class="border-bottom pb-2">@Html.T("Report.GeneralInfo", "Genel Bilgiler")</h6>
                             <dl class="row mb-0">
-                                <dt class="col-sm-4">@Html.T("Report.Project", "Proje"):</dt>
+                                <dt class="col-sm-4">@Html.T("Common.Project", "Proje"):</dt>
                                 <dd class="col-sm-8" data-bind="text: projectName"></dd>
                                 <dt class="col-sm-4">@Html.T("Report.Checklist", "Kontrol Listesi"):</dt>
                                 <dd class="col-sm-8" data-bind="text: checklistName"></dd>
@@ -433,7 +433,7 @@
                                             <th style="width: 15%;">@Html.T("Evaluation.Group", "Grup")</th>
                                             <th style="width: 35%;">@Html.T("Report.Question", "Soru")</th>
                                             <th class="text-center" style="width: 15%;">@Html.T("Report.Score", "Puan")</th>
-                                            <th style="width: 35%;">@Html.T("Report.Note", "Not")</th>
+                                            <th style="width: 35%;">@Html.T("Common.Note", "Not")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: $data.answers || []">

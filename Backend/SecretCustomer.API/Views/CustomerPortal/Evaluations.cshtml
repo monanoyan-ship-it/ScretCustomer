@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("Evaluation.Title", "Değerlendirmeler");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Evaluations", "Değerlendirmeler");
     Layout = "_CustomerLayout";
 }
 
@@ -16,7 +16,7 @@
     <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'assignments' }, click: function() { activeTab('assignments'); }" href="#">
-                <i class="bi bi-clipboard-check"></i> @Html.T("Evaluation.Assignments", "Atamalar")
+                <i class="bi bi-clipboard-check"></i> @Html.T("Assignment.Title", "Atamalar")
                 <span class="badge bg-primary" data-bind="text: activeAssignments().length"></span>
             </a>
         </li>
@@ -40,7 +40,7 @@
         <div class="mb-3">
             <div class="input-group" style="max-width: 400px;">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchAssignments", "Proje veya kontrol listesi ara...")">
+                <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'" placeholder="@Html.T("Evaluation.SearchExpired", "Proje veya kontrol listesi ara...")">
             </div>
         </div>
 
@@ -90,7 +90,7 @@
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="btn btn-sm btn-success" data-bind="click: $parent.startEvaluation">
-                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Evaluation.Add", "Ekle")
+                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.Add", "Ekle")
                                     </button>
                                     <button class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.showProjectFiles" title="@Html.T("Project.Files", "Proje Dosyaları")">
                                         <i class="bi bi-folder2-open"></i>
@@ -117,7 +117,7 @@
                         <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
                         <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
-                        <option value="dateRange">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</option>
+                        <option value="dateRange">@Html.T("Report.CallDate", "Çağrı Tarihi")</option>
                         <option value="controlDate">@Html.T("Evaluation.EvaluationDate", "Değerlendirme Tarihi")</option>
                     </select>
 
@@ -250,11 +250,11 @@
                     <thead class="table-light">
                         <tr>
                             <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('callId'); }, css: evaluationsSorting.getSortClass('callId')">
-                                @Html.T("Evaluation.CallId", "Çağrı ID")
+                                @Html.T("Common.CallId", "Çağrı ID")
                                 <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('callId')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('callDate'); }, css: evaluationsSorting.getSortClass('callDate')">
-                                @Html.T("Evaluation.CallDate", "Çağrı Tarihi")
+                                @Html.T("Report.CallDate", "Çağrı Tarihi")
                                 <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('callDate')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('duration'); }, css: evaluationsSorting.getSortClass('duration')">
@@ -274,7 +274,7 @@
                                 <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('scorePercentage')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('yellowCardCount'); }, css: evaluationsSorting.getSortClass('yellowCardCount')">
-                                @Html.T("Evaluation.Penalty", "Ceza")
+                                @Html.T("Report.Penalty", "Ceza")
                                 <i class="bi sort-icon" data-bind="css: evaluationsSorting.getSortIcon('yellowCardCount')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { evaluationsSorting.toggleSort('status'); }, css: evaluationsSorting.getSortClass('status')">
@@ -322,10 +322,10 @@
                             </td>
                             <td>
                                 <!-- ko if: status === 'Completed' -->
-                                <span class="badge bg-success">@Html.T("Evaluation.Status.Completed", "Tamamlandı")</span>
+                                <span class="badge bg-success">@Html.T("Status.Completed", "Tamamlandı")</span>
                                 <!-- /ko -->
                                 <!-- ko if: status === 'Draft' -->
-                                <span class="badge bg-secondary">@Html.T("Evaluation.Status.Draft", "Taslak")</span>
+                                <span class="badge bg-secondary">@Html.T("Common.Status.Draft", "Taslak")</span>
                                 <!-- /ko -->
                                 <!-- ko if: status === 'InProgress' -->
                                 <span class="badge bg-info">@Html.T("Evaluation.Status.InProgress", "Devam")</span>
@@ -413,7 +413,7 @@
                             <td>
                                 <div class="d-flex gap-1">
                                     <button class="btn btn-sm btn-warning" data-bind="click: $parent.startEvaluation">
-                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Evaluation.Add", "Ekle")
+                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.Add", "Ekle")
                                     </button>
                                     <button class="btn btn-sm btn-outline-secondary" data-bind="click: $parent.showProjectFiles" title="@Html.T("Project.Files", "Proje Dosyaları")">
                                         <i class="bi bi-folder2-open"></i>
@@ -466,7 +466,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
                             </div>
@@ -482,7 +482,7 @@
                                 <div class="card text-center bg-warning">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: yellowCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.YellowCard", "Sarı Kart")</small>
+                                        <small>@Html.T("Report.Yellow", "Sarı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -490,7 +490,7 @@
                                 <div class="card text-center bg-danger text-white">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: redCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.RedCard", "Kırmızı Kart")</small>
+                                        <small>@Html.T("Report.Red", "Kırmızı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -514,7 +514,7 @@
                                                 <td data-bind="text: organizationName || '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
+                                                <th>@Html.T("Report.Evaluated", "Değerlendirilen")</th>
                                                 <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
@@ -530,21 +530,21 @@
                             <div class="col-md-4">
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Call.CallInfo", "Çağrı Bilgileri")</h6>
                                     </div>
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
                                             <tr>
-                                                <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
+                                                <th style="width: 40%;">@Html.T("Common.CallId", "Çağrı ID")</th>
                                                 <td><call-id params="value: callId"></call-id></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
+                                                <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                                 <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
                                             <!-- ko if: callTime -->
                                             <tr>
-                                                <th>@Html.T("Evaluation.CallTime", "Çağrı Saati")</th>
+                                                <th>@Html.T("Report.CallTime", "Çağrı Saati")</th>
                                                 <td data-bind="text: callTime"></td>
                                             </tr>
                                             <!-- /ko -->
@@ -620,9 +620,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 18%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 25%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 9%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 9%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th style="width: 25%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 9%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 9%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center" style="width: 9%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
@@ -714,7 +714,7 @@
                     <!-- Loading -->
                     <div data-bind="visible: isFormLoading" class="text-center py-5">
                         <div class="spinner-border text-success"></div>
-                        <p class="mt-2">@Html.T("Evaluation.FormLoading", "Form yükleniyor...")</p>
+                        <p class="mt-2">@Html.T("Form.Loading", "Form yükleniyor...")</p>
                     </div>
 
                     <!-- Error Message -->
@@ -791,15 +791,15 @@
                                                 <span class="fw-bold" data-bind="text: evaluatedPersonnelName || dealerName || '-'"></span>
                                             </div>
                                             <div class="col-6">
-                                                <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
+                                                <small class="text-muted d-block">@Html.T("Common.CallId", "Çağrı ID")</small>
                                                 <call-id params="value: callId"></call-id>
                                             </div>
                                             <div class="col-6">
-                                                <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>
+                                                <small class="text-muted d-block">@Html.T("Report.CallDate", "Çağrı Tarihi")</small>
                                                 <span class="fw-bold" data-bind="text: callDate"></span>
                                             </div>
                                             <div class="col-3">
-                                                <small class="text-muted d-block">@Html.T("Evaluation.CallTime", "Çağrı Saati")</small>
+                                                <small class="text-muted d-block">@Html.T("Report.CallTime", "Çağrı Saati")</small>
                                                 <span class="fw-bold" data-bind="text: callTime"></span>
                                             </div>
                                             <div class="col-3">
@@ -836,9 +836,9 @@
                                                 <thead class="table-light sticky-top">
                                                     <tr>
                                                         <th style="width: 18%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                        <th style="width: 37%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                        <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                        <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                        <th style="width: 37%;">@Html.T("Report.Question", "Soru")</th>
+                                                        <th class="text-center" style="width: 15%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                        <th class="text-center" style="width: 15%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                         <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                     </tr>
                                                 </thead>
@@ -931,7 +931,7 @@
                                                     <div class="d-flex align-items-center gap-3">
                                                         <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? '@Html.T("Evaluation.PeriodOpen", "Aktif")' : '@Html.T("Evaluation.PeriodClosed", "Kapalı")'"></span>
                                                         <span class="text-muted">
-                                                            @Html.T("Evaluation.Completed", "Tamamlanan"): <strong data-bind="text: completedCount"></strong> / <span data-bind="text: targetCount"></span>
+                                                            @Html.T("Status.Completed", "Tamamlanan"): <strong data-bind="text: completedCount"></strong> / <span data-bind="text: targetCount"></span>
                                                         </span>
                                                         <div class="progress flex-grow-1" style="height: 8px; max-width: 150px;">
                                                             <div class="progress-bar bg-success" data-bind="style: { width: (targetCount > 0 ? (completedCount / targetCount * 100) : 0) + '%' }"></div>
@@ -948,20 +948,20 @@
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                            <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Call.CallInfo", "Çağrı Bilgileri")</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-3">
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.CallId", "Çağrı ID")</label>
+                                                    <label class="form-label">@Html.T("Common.CallId", "Çağrı ID")</label>
                                                     <input type="text" class="form-control" data-bind="value: callId" placeholder="@Html.T("Evaluation.CallIdPlaceholder", "Çağrı numarası")">
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.CallDate", "Çağrı Tarihi") <span class="text-danger">*</span></label>
+                                                    <label class="form-label">@Html.T("Report.CallDate", "Çağrı Tarihi") <span class="text-danger">*</span></label>
                                                     <input type="date" class="form-control" data-bind="value: callDate" required>
                                                 </div>
                                                 <div class="col-md-4">
-                                                    <label class="form-label">@Html.T("Evaluation.CallTime", "Çağrı Saati") <span class="text-danger">*</span></label>
+                                                    <label class="form-label">@Html.T("Report.CallTime", "Çağrı Saati") <span class="text-danger">*</span></label>
                                                     <input type="text" class="form-control time-mask" data-bind="value: callTime" placeholder="__:__" required>
                                                 </div>
                                                 <div class="col-md-4">
@@ -994,7 +994,7 @@
                                 <div class="col-md-6">
                                     <div class="card">
                                         <div class="card-header bg-light">
-                                            <h6 class="mb-0"><i class="bi bi-person"></i> @Html.T("Evaluation.EvaluatedPersonnel", "Değerlendirilen Personel")</h6>
+                                            <h6 class="mb-0"><i class="bi bi-person"></i> @Html.T("Report.EvaluatedPersonnel", "Değerlendirilen Personel")</h6>
                                         </div>
                                         <div class="card-body">
                                             <div class="row g-3">
@@ -1096,10 +1096,10 @@
                                             <div class="col-auto">
                                                 <!-- Uygulanan Kartlar -->
                                                 <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCountCalc() > 0">
-                                                    <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
+                                                    <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Report.Yellow", "Sarı")
                                                 </span>
                                                 <span class="badge bg-danger" data-bind="visible: redCardCountCalc() > 0">
-                                                    <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Evaluation.Red", "Kırmızı")
+                                                    <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Report.Red", "Kırmızı")
                                                 </span>
                                             </div>
                                         </div>
@@ -1128,7 +1128,7 @@
                                             </h5>
                                             <div>
                                                 <span class="badge bg-white text-dark">
-                                                    @Html.T("Evaluation.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                    @Html.T("Checklist.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                 </span>
                                             </div>
                                         </div>
@@ -1152,7 +1152,7 @@
                                                                 <div class="mt-1">
                                                                     <!-- ko if: scoringType === 'Scored' && penaltyType === 'None' -->
                                                                     <span class="badge bg-success">
-                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
+                                                                        @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
                                                                         @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span>
                                                                     </span>
                                                                     <!-- /ko -->
@@ -1161,14 +1161,14 @@
                                                                     <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'YellowCard' -->
                                                                     <span class="badge bg-warning text-dark">
-                                                                        @Html.T("Evaluation.YellowCard", "Sarı Kart") |
-                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                                        @Html.T("Report.Yellow", "Sarı Kart") |
+                                                                        @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                                     </span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: penaltyType === 'RedCard' -->
                                                                     <span class="badge bg-danger">
-                                                                        @Html.T("Evaluation.RedCard", "Kırmızı Kart") |
-                                                                        @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                                        @Html.T("Report.Red", "Kırmızı Kart") |
+                                                                        @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                                     </span>
                                                                     <!-- /ko -->
                                                                     <!-- ko if: isRequired -->
@@ -1281,7 +1281,7 @@
                                                         <div data-bind="with: $root.getAnswer(id, isRequired)">
                                                             <!-- ko if: $parent.scoringType === 'Scored' && ($root.formData() && ($root.formData().checklistType === 'PhysicalAudit' || $root.formData().checklistType === 'Survey')) -->
                                                             <div class="mb-2">
-                                                                <label class="form-label small">@Html.T("Evaluation.GivenPoints", "Verilen Puan")</label>
+                                                                <label class="form-label small">@Html.T("Report.GivenPoints", "Verilen Puan")</label>
                                                                 <input type="number" class="form-control form-control-sm"
                                                                        data-bind="value: givenPoints, attr: { max: $parent.maxPoints }"
                                                                        step="0.5" min="0">

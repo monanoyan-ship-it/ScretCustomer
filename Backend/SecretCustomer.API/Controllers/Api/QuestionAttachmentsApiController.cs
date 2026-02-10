@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Question;
@@ -177,7 +177,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading file for question {QuestionId}", questionId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileUploadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
 
@@ -207,7 +207,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading attachment {AttachmentId}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDownloadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
 
@@ -245,7 +245,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting attachment {AttachmentId}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
 

@@ -1,10 +1,10 @@
-@{
-    ViewData["Title"] = Html.T("Checklist.Title", "Kontrol Listeleri");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Checklists", "Kontrol Listeleri");
 }
 
 <div id="checklists-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>@Html.T("Checklist.Title", "Kontrol Listeleri")</h2>
+        <h2>@Html.T("Menu.Checklists", "Kontrol Listeleri")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
             <i class="bi bi-plus-circle"></i> @Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi")
         </button>
@@ -135,7 +135,7 @@
                     <thead class="table-dark">
                         <tr>
                             <th>#</th>
-                            <th>@Html.T("Checklist.QuestionText", "Soru")</th>
+                            <th>@Html.T("Excel.QuestionText", "Soru")</th>
                             <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
                             <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
                             <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
@@ -206,7 +206,7 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-arrow-up-circle fs-2 me-3"></i>
                             <div>
-                                <strong>@Html.T("ScoringMethod.Maximum", "Maksimum")</strong>
+                                <strong>@Html.T("Common.Max", "Maksimum")</strong>
                                 <br />
                                 <small class="text-muted">@Html.T("ScoringMethod.MaximumDescription", "Klasik puanlama - 0 ile maksimum puan arasında değerlendirme yapılır")</small>
                             </div>

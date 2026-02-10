@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Profile.Title", "Profilim").ToString();
 }
 
@@ -47,7 +47,7 @@
 
                     <div class="text-start">
                         <div class="mb-3">
-                            <small class="text-muted d-block">@Html.T("Login.Email", "E-posta")</small>
+                            <small class="text-muted d-block">@Html.T("Common.Email", "E-posta")</small>
                             <span data-bind="text: profile().email || '-'"></span>
                         </div>
                         <div class="mb-3">
@@ -86,7 +86,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">@Html.T("Login.Email", "E-posta")</label>
+                                <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                                 <input type="email" class="form-control" data-bind="value: editForm.email">
                             </div>
                             <div class="col-md-6 mb-3">
@@ -145,7 +145,7 @@
                                 </button>
                             </div>
                             <small class="text-danger" data-bind="visible: passwordForm.newPassword() && passwordForm.confirmPassword() && passwordForm.newPassword() !== passwordForm.confirmPassword()">
-                                @Html.T("Profile.PasswordsNotMatch", "Şifreler eşleşmiyor")
+                                @Html.T("Profile.PasswordMismatch", "Şifreler eşleşmiyor")
                             </small>
                         </div>
                         <div class="text-end">
@@ -154,7 +154,7 @@
                                     <i class="bi bi-key me-1"></i>@Html.T("Account.ResetPasswordButton", "Şifreyi Değiştir")
                                 </span>
                                 <span data-bind="visible: isChangingPassword">
-                                    <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Profile.ChangingPassword", "Değiştiriliyor...")
+                                    <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("User.Changing", "Değiştiriliyor...")
                                 </span>
                             </button>
                         </div>

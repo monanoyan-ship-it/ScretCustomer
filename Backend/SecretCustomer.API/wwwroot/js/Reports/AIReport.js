@@ -1,4 +1,4 @@
-// AI Report ViewModel
+﻿// AI Report ViewModel
 function AIReportViewModel() {
     var self = this;
 
@@ -132,7 +132,7 @@ function AIReportViewModel() {
         if (!self.lastReport()) return;
 
         navigator.clipboard.writeText(self.lastReport()).then(function() {
-            toastr.success(T('AIReport.CopySuccess', 'Rapor panoya kopyalandı!'));
+            toastr.success(T('Common.CopiedToClipboard', 'Rapor panoya kopyalandı!'));
         }).catch(function(err) {
             toastr.error(T('AIReport.CopyError', 'Kopyalama başarısız.') + ': ' + err);
         });
@@ -171,7 +171,7 @@ var TRANSLATION_KEYS = [
     'AIReport.GenerateError',
     'AIReport.PreviewReady',
     'AIReport.DataCollectError',
-    'AIReport.CopySuccess',
+    'Common.CopiedToClipboard',
     'AIReport.CopyError',
     'AIReport.DownloadSuccess',
     'AIReport.Seconds',

@@ -1,4 +1,4 @@
-// UserRequests Index ViewModel
+﻿// UserRequests Index ViewModel
 // Taslaga alma talepleri + Personel talepleri yonetimi (Admin)
 // Tab yapisi ile iki talep turunu ayni sayfada yonetir
 
@@ -235,7 +235,7 @@ function UserRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DraftRequest.ApproveError', 'Onay islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.ApproveError', 'Onay islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -252,7 +252,7 @@ function UserRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DraftRequest.RejectError', 'Red islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.RejectError', 'Red islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -352,7 +352,7 @@ function UserRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('PersonnelRequest.ApproveError', 'Onay islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.ApproveError', 'Onay islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -420,7 +420,7 @@ function UserRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('PersonnelRequest.RejectError', 'Red islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.RejectError', 'Red islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -430,12 +430,12 @@ function UserRequestsViewModel() {
         // Personnel uses int (0=Pending, 1=Approved, 2=Rejected)
         // Draft uses string (Pending, Approved, Rejected)
         var statusMap = {
-            0: T('Approval.Status.Pending', 'Beklemede'),
-            1: T('Approval.Status.Approved', 'Onaylandi'),
-            2: T('Approval.Status.Rejected', 'Reddedildi'),
-            'Pending': T('Approval.Status.Pending', 'Beklemede'),
-            'Approved': T('Approval.Status.Approved', 'Onaylandi'),
-            'Rejected': T('Approval.Status.Rejected', 'Reddedildi'),
+            0: T('Project.Pending', 'Beklemede'),
+            1: T('Status.Approved', 'Onaylandi'),
+            2: T('Status.Rejected', 'Reddedildi'),
+            'Pending': T('Project.Pending', 'Beklemede'),
+            'Approved': T('Status.Approved', 'Onaylandi'),
+            'Rejected': T('Status.Rejected', 'Reddedildi'),
             'Cancelled': T('Approval.Status.Cancelled', 'Iptal')
         };
         return statusMap[status] || status;
@@ -490,23 +490,23 @@ var TRANSLATION_KEYS = [
     'DraftRequest.ConfirmApprove',
     'DraftRequest.ConfirmReject',
     'DraftRequest.ApproveSuccess',
-    'DraftRequest.ApproveError',
+    'Approval.ApproveError',
     'DraftRequest.RejectSuccess',
-    'DraftRequest.RejectError',
+    'Approval.RejectError',
     'DraftRequest.NoEvaluationLinked',
     'PersonnelRequest.LoadError',
     'PersonnelRequest.ApproveSuccess',
-    'PersonnelRequest.ApproveError',
+    'Approval.ApproveError',
     'PersonnelRequest.RejectSuccess',
-    'PersonnelRequest.RejectError',
+    'Approval.RejectError',
     'PersonnelRequest.UsernameRequired',
     'PersonnelRequest.RejectReasonRequired',
     'PersonnelRequest.NoEvaluationLinked',
     'Approval.Approve',
     'Approval.Reject',
-    'Approval.Status.Pending',
-    'Approval.Status.Approved',
-    'Approval.Status.Rejected',
+    'Project.Pending',
+    'Status.Approved',
+    'Status.Rejected',
     'Approval.Status.Cancelled'
 ];
 

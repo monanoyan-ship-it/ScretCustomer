@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Assignment;
 using SecretCustomer.Core.Enums;
@@ -48,7 +48,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignments");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.LoadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
 
@@ -63,7 +63,7 @@ public class AssignmentsApiController : BaseApiController
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -76,7 +76,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.LoadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
 
@@ -91,7 +91,7 @@ public class AssignmentsApiController : BaseApiController
             var assignment = await _assignmentService.GetDetailByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -120,7 +120,7 @@ public class AssignmentsApiController : BaseApiController
             var assignment = await _assignmentService.GetByUniqueLinkAsync(uniqueLink);
             if (assignment == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             return Ok(assignment);
@@ -128,7 +128,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading assignment by link {UniqueLink}", uniqueLink);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.LoadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
 
@@ -198,7 +198,7 @@ public class AssignmentsApiController : BaseApiController
             var result = await _assignmentService.DeleteAsync(id);
             if (!result)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             return NoContent();
@@ -206,7 +206,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting assignment {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.DeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.DeleteError"), ex));
         }
     }
 
@@ -273,7 +273,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading user assignments");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.LoadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
 
@@ -330,7 +330,7 @@ public class AssignmentsApiController : BaseApiController
             var assignment = await _assignmentService.GetByIdAsync(id);
             if (assignment == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             if (!await IsAuthorizedForAssignment(assignment))
@@ -502,7 +502,7 @@ public class AssignmentsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading project summaries");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectSummaryError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.SummaryLoadError"), ex));
         }
     }
 

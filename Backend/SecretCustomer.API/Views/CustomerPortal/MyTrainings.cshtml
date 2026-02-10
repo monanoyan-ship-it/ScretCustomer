@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("CustomerPortal.MyTrainings.Title", "Egitimlerim");
+﻿@{
+    ViewData["Title"] = Html.T("CustomerPortal.Menu.MyTrainings", "Egitimlerim");
     Layout = "_CustomerLayout";
 }
 
@@ -33,7 +33,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("MyTrainings.Pending", "Bekleyen")</h6>
+                            <h6 class="mb-0">@Html.T("Common.Status.Pending", "Bekleyen")</h6>
                             <h3 class="mb-0" data-bind="text: stats().pending"></h3>
                         </div>
                         <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
@@ -46,7 +46,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("MyTrainings.InProgress", "Devam Eden")</h6>
+                            <h6 class="mb-0">@Html.T("Common.Status.InProgress", "Devam Eden")</h6>
                             <h3 class="mb-0" data-bind="text: stats().inProgress"></h3>
                         </div>
                         <i class="bi bi-play-circle fs-1 opacity-50"></i>
@@ -96,7 +96,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("MyTrainings.StatusPending", "Bekliyor")</span>
                         <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("MyTrainings.StatusInProgress", "Izleniyor")</span>
-                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("MyTrainings.StatusCompleted", "Tamamlandi")</span>
+                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Status.Completed", "Tamamlandi")</span>
                         <span data-bind="visible: isOverdue && !isCompleted" class="badge bg-danger ms-2">@Html.T("MyTrainings.Overdue", "Geciken")</span>
                     </div>
                     <div class="card-body">

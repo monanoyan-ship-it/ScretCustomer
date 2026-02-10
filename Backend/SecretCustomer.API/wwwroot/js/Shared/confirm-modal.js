@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Shared Confirmation Modal Helper
  * Usage: showConfirmModal(options)
  *
@@ -24,7 +24,7 @@ function showConfirmModal(options) {
     // Set modal content with localization fallback
     document.getElementById('confirmModalHeader').className = 'modal-header ' + headerClass;
     document.getElementById('confirmModalIcon').className = 'bi ' + icon + ' me-2';
-    document.getElementById('confirmModalTitle').textContent = options.title || T('Confirm.Title', 'Onay');
+    document.getElementById('confirmModalTitle').textContent = options.title || T('Common.Confirmation', 'Onay');
     document.getElementById('confirmModalMessage').innerHTML = options.message || T('Confirm.Message', 'Bu işlemi onaylıyor musunuz?');
     document.getElementById('confirmModalBtn').className = 'btn ' + btnClass;
     document.getElementById('confirmModalBtnIcon').className = 'bi ' + (options.confirmIcon || 'bi-check') + ' me-1';
@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // Shortcut functions for common cases
 function showDeleteConfirm(itemName, onConfirm) {
     var message = itemName
-        ? itemName + ' ' + T('Confirm.DeleteMessage', 'silinecek. Bu işlemi onaylıyor musunuz?')
-        : T('Confirm.DeleteMessage', 'Bu kaydı silmek istediğinizden emin misiniz?');
+        ? itemName + ' ' + T('Common.DeleteConfirmationMessage', 'silinecek. Bu işlemi onaylıyor musunuz?')
+        : T('Common.DeleteConfirmationMessage', 'Bu kaydı silmek istediğinizden emin misiniz?');
 
     showConfirmModal({
-        title: T('Confirm.DeleteTitle', 'Silme Onayı'),
+        title: T('Common.DeleteConfirmation', 'Silme Onayı'),
         message: message,
         type: 'danger',
-        confirmText: T('Confirm.YesDelete', 'Evet, Sil'),
+        confirmText: T('Common.YesDelete', 'Evet, Sil'),
         confirmIcon: 'bi-trash',
         onConfirm: onConfirm
     });

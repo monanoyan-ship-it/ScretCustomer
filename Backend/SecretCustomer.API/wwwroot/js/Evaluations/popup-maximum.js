@@ -1,4 +1,4 @@
-// Maximum Evaluation Popup ViewModel
+﻿// Maximum Evaluation Popup ViewModel
 // Index.js modal formatından birebir alındı
 
 var EvaluationPopupViewModel = function() {
@@ -537,7 +537,7 @@ var EvaluationPopupViewModel = function() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                toastr.error(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.FormLoadError', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -901,7 +901,7 @@ var EvaluationPopupViewModel = function() {
             })
             .catch(function(error) {
                 console.error('Draft save error:', error);
-                toastr.error(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.DraftSaveError', 'Taslak kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSavingForm(false);
@@ -1059,7 +1059,7 @@ var EvaluationPopupViewModel = function() {
         })
         .catch(function(error) {
             console.error('Submit error:', error);
-            toastr.error(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
+            toastr.error(T('Evaluation.SubmitError', 'Değerlendirme gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);
@@ -1102,7 +1102,7 @@ var TRANSLATION_KEYS = [
     'Evaluation.DetailsLoadError',
     'Evaluation.InvalidParams',
     'Evaluation.FormLoadError',
-    'Evaluation.FormLoadErrorMessage',
+    'Evaluation.FormLoadError',
     'Evaluation.PersonnelRequired',
     'Evaluation.NewPersonnelFirstNameRequired',
     'Evaluation.NewPersonnelLastNameRequired',
@@ -1112,10 +1112,10 @@ var TRANSLATION_KEYS = [
     'Evaluation.ValidationError',
     'Evaluation.DraftSaveError',
     'Evaluation.DraftSaved',
-    'Evaluation.DraftSaveErrorMessage',
+    'Evaluation.DraftSaveError',
     'Evaluation.SubmitError',
     'Evaluation.SubmitSuccess',
-    'Evaluation.SubmitErrorMessage',
+    'Evaluation.SubmitError',
     'Evaluation.CallIdExists',
     'Evaluation.FilesSelected',
     'Evaluation.FileDeleted',
@@ -1123,7 +1123,7 @@ var TRANSLATION_KEYS = [
     'Evaluation.FileUploadError',
     'Evaluation.ConfirmDeleteAttachment',
     'Common.Delete',
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
     'Common.Confirm'
 ];

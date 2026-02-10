@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Enums;
@@ -75,7 +75,7 @@ public class DashboardApiController : BaseApiController
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.NotFound")));
             }
 
             var evaluations = await _dashboardService.GetRepresentativeDashboardAsync(userId);
@@ -99,7 +99,7 @@ public class DashboardApiController : BaseApiController
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.NotFound")));
             }
 
             var scorecard = await _dashboardService.GetScorecardAsync(userId);

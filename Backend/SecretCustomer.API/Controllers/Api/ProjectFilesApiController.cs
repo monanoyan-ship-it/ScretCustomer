@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Project;
@@ -179,7 +179,7 @@ public class ProjectFilesApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error uploading file for project {ProjectId}", projectId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileUploadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
 
@@ -236,7 +236,7 @@ public class ProjectFilesApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error downloading project file {FileId}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDownloadError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
 
@@ -274,7 +274,7 @@ public class ProjectFilesApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting project file {FileId}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileDeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
 

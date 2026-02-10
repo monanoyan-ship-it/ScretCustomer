@@ -1,4 +1,4 @@
-// Projects Index ViewModel - Consolidated
+﻿// Projects Index ViewModel - Consolidated
 // Pattern: Single Index.cshtml + Index.js with modals
 
 // Team Member ViewModel
@@ -1254,7 +1254,7 @@ function ProjectsViewModel() {
         }
 
         showConfirmModal({
-            title: T('Survey.RetryFailedTitle', 'Başarısız Davetiyeleri Yeniden Gönder'),
+            title: T('Project.RetryFailed', 'Başarısız Davetiyeleri Yeniden Gönder'),
             message: T('Survey.RetryFailedConfirm', 'Toplam ') + stats.failed + T('Survey.RetryFailedConfirm2', ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?'),
             confirmText: T('Common.Send', 'Gönder'),
             confirmClass: 'btn-primary',
@@ -1405,7 +1405,7 @@ function ProjectsViewModel() {
         }
 
         showConfirmModal({
-            title: T('Survey.RetryFailedTitle', 'Başarısız Davetiyeleri Yeniden Gönder'),
+            title: T('Project.RetryFailed', 'Başarısız Davetiyeleri Yeniden Gönder'),
             message: T('Survey.RetryFailedConfirm', 'Toplam ') + stats.failed + T('Survey.RetryFailedConfirm2', ' başarısız davetiye yeniden gönderilecek. Devam etmek istiyor musunuz?'),
             confirmText: T('Common.Send', 'Gönder'),
             confirmClass: 'btn-primary',
@@ -1460,12 +1460,12 @@ function ProjectsViewModel() {
         }
 
         var filter = self.externalReminderFilter();
-        var filterText = filter === 'all' ? T('Survey.FilterAll', 'tümüne') :
+        var filterText = filter === 'all' ? T('Common.All', 'tümüne') :
                          filter === 'completed' ? T('Survey.FilterCompleted', 'tamamlamış olanlara') :
                          T('Survey.FilterNotCompleted', 'tamamlamamış olanlara');
 
         showConfirmModal({
-            title: T('Survey.SendReminderTitle', 'Hatırlatma Gönder'),
+            title: T('Project.SendReminder', 'Hatırlatma Gönder'),
             message: T('Survey.SendReminderConfirm', 'Seçilen filtreye göre (') + filterText + T('Survey.SendReminderConfirm2', ') hatırlatma göndermek istediğinize emin misiniz?'),
             confirmText: T('Common.Send', 'Gönder'),
             confirmClass: 'btn-primary',
@@ -1609,7 +1609,7 @@ function ProjectsViewModel() {
 
         // Confirmation
         showConfirmModal({
-            title: T('Survey.SendInvitationsTitle', 'Anket Davetiyesi Gönder'),
+            title: T('Project.SendInvitations', 'Anket Davetiyesi Gönder'),
             message: T('Survey.SendInvitationsConfirm', 'Toplam ') + stats.withEmail + T('Survey.SendInvitationsConfirm2', ' kişiye anket davetiyesi gönderilecek. Devam etmek istiyor musunuz?'),
             confirmText: T('Common.Send', 'Gönder'),
             confirmClass: 'btn-primary',

@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using NPOI.XWPF.UserModel;
 using SecretCustomer.Core.DTOs.Auth;
@@ -869,26 +869,26 @@ public class ReportService : IReportService
         var result = await GetEvaluationsAsync(filter);
 
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Evaluations", defaultValue: "Değerlendirmeler"));
+        var worksheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Menu.Evaluations", defaultValue: "Değerlendirmeler"));
 
         // Headers
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.ProjectCode", defaultValue: "Proje Kodu"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Evaluator", defaultValue: "Değerlendirici"),
             await _localizationService.GetResourceAsync("Report.EvaluatedPersonnel", defaultValue: "Değerlendirilen Personel"),
             await _localizationService.GetResourceAsync("Report.EvaluationDate", defaultValue: "Değerlendirme Tarihi"),
             await _localizationService.GetResourceAsync("Report.CompletedDate", defaultValue: "Tamamlanma Tarihi"),
-            await _localizationService.GetResourceAsync("Report.DueDate", defaultValue: "Son Tarih"),
+            await _localizationService.GetResourceAsync("Common.DueDate", defaultValue: "Son Tarih"),
             await _localizationService.GetResourceAsync("Report.Score", defaultValue: "Puan"),
             await _localizationService.GetResourceAsync("Report.MaxScore", defaultValue: "Maks Puan"),
             await _localizationService.GetResourceAsync("Report.Percentage", defaultValue: "Yüzde"),
             await _localizationService.GetResourceAsync("Report.YellowCard", defaultValue: "Sarı Kart"),
             await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart"),
-            await _localizationService.GetResourceAsync("Report.Status", defaultValue: "Durum"),
-            await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"),
+            await _localizationService.GetResourceAsync("Common.Status", defaultValue: "Durum"),
+            await _localizationService.GetResourceAsync("Common.CallId", defaultValue: "Çağrı ID"),
             await _localizationService.GetResourceAsync("Report.CallDate", defaultValue: "Çağrı Tarihi"),
             await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre (dk)"),
             await _localizationService.GetResourceAsync("Report.Comment", defaultValue: "Yorum")
@@ -1486,10 +1486,10 @@ public class ReportService : IReportService
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
-            await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"),
+            await _localizationService.GetResourceAsync("Common.CallId", defaultValue: "Çağrı ID"),
             await _localizationService.GetResourceAsync("Report.CallTime", defaultValue: "Çağrı Saati"),
             await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Organization", defaultValue: "Organizasyon"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
@@ -1504,7 +1504,7 @@ public class ReportService : IReportService
         }
 
         headersList.Add(await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Denetlenen"));
-        headersList.Add(await _localizationService.GetResourceAsync("Report.Note", defaultValue: "Not"));
+        headersList.Add(await _localizationService.GetResourceAsync("Common.Note", defaultValue: "Not"));
 
         var headers = headersList.ToArray();
 
@@ -3119,8 +3119,8 @@ public class ReportService : IReportService
         using var workbook = new XLWorkbook();
 
         // Summary sheet
-        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Summary", defaultValue: "Özet"));
-        summarySheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.SuggestionsReport", defaultValue: "ÖNERİLER RAPORU");
+        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Summary", defaultValue: "Özet"));
+        summarySheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.Suggestions", defaultValue: "ÖNERİLER RAPORU");
         summarySheet.Cell(1, 1).Style.Font.Bold = true;
         summarySheet.Cell(1, 1).Style.Font.FontSize = 16;
 
@@ -3152,7 +3152,7 @@ public class ReportService : IReportService
         var headersList = new List<string>
         {
             await _localizationService.GetResourceAsync("Report.Date", defaultValue: "Tarih"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi"),
             await _localizationService.GetResourceAsync("Report.Section", defaultValue: "Bölüm"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
@@ -3169,7 +3169,7 @@ public class ReportService : IReportService
         }
 
         headersList.Add(await _localizationService.GetResourceAsync("Report.Personnel", defaultValue: "Personel"));
-        headersList.Add(await _localizationService.GetResourceAsync("Report.CallId", defaultValue: "Çağrı ID"));
+        headersList.Add(await _localizationService.GetResourceAsync("Common.CallId", defaultValue: "Çağrı ID"));
         headersList.Add(await _localizationService.GetResourceAsync("Report.Penalty", defaultValue: "Ceza"));
 
         var headers = headersList.ToArray();
@@ -3213,7 +3213,7 @@ public class ReportService : IReportService
         ExcelHelper.ApplyLongTextColumnStyles(detailsSheet, callIdColumns: new[] { callIdCol }, noteColumns: new[] { 6, 7 });
 
         // Top Questions sheet
-        var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.TopSuggestedQuestions", defaultValue: "Top Önerilen Sorular"));
+        var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.TopSuggestedQuestions", defaultValue: "Top Önerilen Sorular"));
         questionsSheet.Cell(1, 1).Value = await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru");
         questionsSheet.Cell(1, 1).Style.Font.Bold = true;
         questionsSheet.Cell(1, 2).Value = await _localizationService.GetResourceAsync("Report.Checklist", defaultValue: "Kontrol Listesi");
@@ -3267,7 +3267,7 @@ public class ReportService : IReportService
         // Headers - Kullanıcının istediği sütunlar
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.EvaluatorName", defaultValue: "Değerlendirme Yapan"),
             await _localizationService.GetResourceAsync("Report.Person", defaultValue: "Kişi"),
             await _localizationService.GetResourceAsync("Report.CallNo", defaultValue: "Çağrı No"),
@@ -3509,7 +3509,7 @@ public class ReportService : IReportService
 
         // Headers
         var headers = new[] {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Kontrol Grubu"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
@@ -3545,7 +3545,7 @@ public class ReportService : IReportService
 
         // Headers for Sheet 2
         var headers2 = new[] {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Soru Grubu"),
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
@@ -3738,7 +3738,7 @@ public class ReportService : IReportService
         var headers = new[]
         {
             await _localizationService.GetResourceAsync("Report.Company", defaultValue: "Firma"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Değerlendirilen"),
             await _localizationService.GetResourceAsync("Report.Person", defaultValue: "Kişi"),
             await _localizationService.GetResourceAsync("Report.Department", defaultValue: "Departman"),
@@ -3988,7 +3988,7 @@ public class ReportService : IReportService
         // Headers
         var headers = new[] {
             await _localizationService.GetResourceAsync("Report.PeriodMonth", defaultValue: "Periyot (Ay)"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
             await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
@@ -4157,7 +4157,7 @@ public class ReportService : IReportService
         // Headers
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Representative", defaultValue: "Müşteri Temsilcisi"),
             await _localizationService.GetResourceAsync("Report.Department", defaultValue: "Departman"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
@@ -4224,7 +4224,7 @@ public class ReportService : IReportService
         {
             await _localizationService.GetResourceAsync("Report.Representative", defaultValue: "Müşteri Temsilcisi"),
             await _localizationService.GetResourceAsync("Report.Department", defaultValue: "Departman"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.PeriodMonth", defaultValue: "Periyot (Ay)"),
             await _localizationService.GetResourceAsync("Report.Suggestion", defaultValue: "Öneri"),
@@ -4362,7 +4362,7 @@ public class ReportService : IReportService
         // Headers
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Representative", defaultValue: "Müşteri Temsilcisi"),
             await _localizationService.GetResourceAsync("Report.ControlQuestion", defaultValue: "Kontrol Sorusu"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
@@ -4441,7 +4441,7 @@ public class ReportService : IReportService
         // Headers
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Kontrol Grubu"),
             await _localizationService.GetResourceAsync("Report.ControlQuestion", defaultValue: "Kontrol Sorusu"),
             await _localizationService.GetResourceAsync("Report.Representative", defaultValue: "Müşteri Temsilcisi"),
@@ -4747,7 +4747,7 @@ public class ReportService : IReportService
         using var workbook = new XLWorkbook();
 
         // Summary sheet
-        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Sheet.Summary", defaultValue: "Özet"));
+        var summarySheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.Summary", defaultValue: "Özet"));
         summarySheet.Cell(1, 1).Value = results.ProjectName;
         summarySheet.Cell(1, 1).Style.Font.Bold = true;
         summarySheet.Cell(1, 1).Style.Font.FontSize = 16;
@@ -7209,7 +7209,7 @@ public class ReportService : IReportService
         // Headers - Ziyaret denetleme sütunları (CallId, Duration, Dinleme Tarihi/Saati kaldırıldı)
         var headers = new[]
         {
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.EvaluatorName", defaultValue: "Denetleyen"),
             await _localizationService.GetResourceAsync("Report.Dealer", defaultValue: "Bayi"),
             await _localizationService.GetResourceAsync("Report.Person", defaultValue: "Denetlenen"),
@@ -7401,7 +7401,7 @@ public class ReportService : IReportService
         var headers = new[]
         {
             await _localizationService.GetResourceAsync("Report.Company", defaultValue: "Firma"),
-            await _localizationService.GetResourceAsync("Report.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
             await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Değerlendirilen"),
             await _localizationService.GetResourceAsync("Report.Dealer", defaultValue: "Bayi"),
             await _localizationService.GetResourceAsync("Report.Person", defaultValue: "Denetlenen"),

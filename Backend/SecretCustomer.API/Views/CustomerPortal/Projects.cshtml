@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = @Html.T("CustomerPortal.Projects.Title", "Projeler");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.Projects", "Projeler");
     Layout = "_CustomerLayout";
 }
 
@@ -41,7 +41,7 @@
                                 <th>@Html.T("Common.City", "Şehir")</th>
                                 <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                 <th class="text-center">@Html.T("CustomerPortal.Project.EvaluationCount", "Değerlendirme")</th>
-                                <th class="text-center">@Html.T("CustomerPortal.Project.AverageScore", "Ort. Puan")</th>
+                                <th class="text-center">@Html.T("Dealer.AverageScore", "Ort. Puan")</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: projects">

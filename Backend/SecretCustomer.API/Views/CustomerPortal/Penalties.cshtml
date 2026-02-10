@@ -1,16 +1,16 @@
-@{
+﻿@{
     Layout = "_CustomerLayout";
-    ViewData["Title"] = @Html.T("Report.PenaltyReport", "Cezali KL Raporu");
+    ViewData["Title"] = @Html.T("Menu.PenaltyReport", "Cezali KL Raporu");
 }
 
 <div id="penalties-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-card-checklist text-danger"></i> @Html.T("Report.PenaltyReport", "Cezali KL Raporu")</h2>
+        <h2><i class="bi bi-card-checklist text-danger"></i> @Html.T("Menu.PenaltyReport", "Cezali KL Raporu")</h2>
         <div class="btn-group">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
@@ -47,7 +47,7 @@
                     <label class="form-label mb-1">@Html.T("Common.FilterType", "Filtre Tipi")</label>
                     <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
                         <option value="">@Html.T("Common.SelectFilter", "Filtre Seç...")</option>
-                        <option value="project">@Html.T("Report.Project", "Proje")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="organization">@Html.T("Report.Organization", "Organizasyon")</option>
                         <option value="penaltyType">@Html.T("Report.PenaltyType", "Ceza Tipi")</option>
                         <option value="dateRange">@Html.T("Report.DateRange", "Tarih Aralığı")</option>
@@ -57,7 +57,7 @@
                 <!-- Dynamic Filter Value Input -->
                 <!-- Project -->
                 <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
-                    <label class="form-label mb-1">@Html.T("Report.Project", "Proje")</label>
+                    <label class="form-label mb-1">@Html.T("Common.Project", "Proje")</label>
                     <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                 </div>
 
@@ -419,12 +419,12 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="row g-3">
                                             <div class="col-md-3">
-                                                <small class="text-muted d-block">@Html.T("Evaluation.Project", "Proje")</small>
+                                                <small class="text-muted d-block">@Html.T("Common.Project", "Proje")</small>
                                                 <strong data-bind="text: projectName || '-'"></strong>
                                             </div>
                                             <div class="col-md-3">
@@ -464,10 +464,10 @@
                                     <table class="table table-hover mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th style="width: 50%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center">@Html.T("Evaluation.Answer", "Cevap")</th>
+                                                <th style="width: 50%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center">@Html.T("Common.Answer", "Cevap")</th>
                                                 <th class="text-center">@Html.T("Evaluation.Score", "Puan")</th>
-                                                <th>@Html.T("Evaluation.Note", "Not")</th>
+                                                <th>@Html.T("Common.Note", "Not")</th>
                                             </tr>
                                         </thead>
                                         <tbody data-bind="foreach: answers || []">
@@ -511,7 +511,7 @@
                         <!-- General Notes -->
                         <div class="card mt-3" data-bind="visible: notes">
                             <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>@Html.T("Evaluation.GeneralNotes", "Genel Notlar")</h6>
+                                <h6 class="mb-0"><i class="bi bi-chat-left-text me-2"></i>@Html.T("Form.GeneralNotes", "Genel Notlar")</h6>
                             </div>
                             <div class="card-body">
                                 <p class="mb-0" data-bind="text: notes"></p>

@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Profile.Title", "Profil");
     Layout = "_CustomerLayout";
 }
@@ -26,13 +26,13 @@
                                 <input type="text" class="form-control" data-bind="value: firstName" required>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">@Html.T("Profile.LastName", "Soyad") <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" data-bind="value: lastName" required>
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">@Html.T("Profile.Email", "E-posta")</label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                             <input type="email" class="form-control" data-bind="value: email" placeholder="ornek@email.com">
                         </div>
 

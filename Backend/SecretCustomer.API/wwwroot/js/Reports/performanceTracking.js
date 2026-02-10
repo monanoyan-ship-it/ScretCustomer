@@ -1,4 +1,4 @@
-// Performance Tracking Report ViewModel
+﻿// Performance Tracking Report ViewModel
 function PerformanceTrackingViewModel() {
     var self = this;
 
@@ -146,7 +146,7 @@ function PerformanceTrackingViewModel() {
             var item = self.projects().find(function(p) { return p.id == id; });
             if (!item) return;
             filter.value = id;
-            filter.label = T('Report.Project', 'Proje');
+            filter.label = T('Common.Project', 'Proje');
             filter.displayValue = item.name;
             self.tempFilter.projectId(null);
         } else if (type === 'dateRange') {
@@ -286,7 +286,7 @@ var TRANSLATION_KEYS = [
     'Report.LoadError',
     'Report.Customer',
     'Report.Evaluator',
-    'Report.Project',
+    'Common.Project',
     'Common.DateRange'
 ];
 

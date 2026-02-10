@@ -1,4 +1,4 @@
-// FieldWorker Visit Popup ViewModel
+﻿// FieldWorker Visit Popup ViewModel
 // popup-maximum.js'den kopyalandı - şube seçimi eklendi
 
 var FieldWorkerVisitPopupViewModel = function() {
@@ -576,7 +576,7 @@ var FieldWorkerVisitPopupViewModel = function() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                toastr.error(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.FormLoadError', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -1075,7 +1075,7 @@ var TRANSLATION_KEYS = [
     'Evaluation.DetailsLoadError',
     'Evaluation.InvalidParams',
     'Evaluation.FormLoadError',
-    'Evaluation.FormLoadErrorMessage',
+    'Evaluation.FormLoadError',
     'Evaluation.PersonnelRequired',
     'Evaluation.NewPersonnelFirstNameRequired',
     'Evaluation.NewPersonnelLastNameRequired',
@@ -1085,10 +1085,10 @@ var TRANSLATION_KEYS = [
     'Evaluation.ValidationError',
     'Evaluation.DraftSaveError',
     'Evaluation.DraftSaved',
-    'Evaluation.DraftSaveErrorMessage',
+    'Evaluation.DraftSaveError',
     'Evaluation.SubmitError',
     'Evaluation.SubmitSuccess',
-    'Evaluation.SubmitErrorMessage',
+    'Evaluation.SubmitError',
     'Evaluation.CallIdExists',
     'Evaluation.FilesSelected',
     'Evaluation.FileDeleted',
@@ -1096,7 +1096,7 @@ var TRANSLATION_KEYS = [
     'Evaluation.FileUploadError',
     'Evaluation.ConfirmDeleteAttachment',
     'Common.Delete',
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
     'Common.Confirm'
 ];

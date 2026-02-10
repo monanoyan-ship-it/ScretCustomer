@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("CustomerOrganization.Title", "Müşteri Organizasyonları");
 }
 
@@ -518,14 +518,14 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Common.Department", "Departman")</label>
-                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("CustomerPersonnel.DepartmentPlaceholder", "Kalite Kontrol")" />
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("ProjectType.QualityControl", "Kalite Kontrol")" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Common.Title", "Ünvan")</label>
-                            <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("CustomerPersonnel.TitlePlaceholder", "Kalite Müdürü")" />
+                            <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("Customer.TitlePlaceholder", "Kalite Müdürü")" />
                         </div>
                         <div class="col-md-6 mb-3 d-flex align-items-end">
                             <div class="form-check">
@@ -537,7 +537,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Common.Notes", "Notlar")</label>
-                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="@Html.T("CustomerPersonnel.NotesPlaceholder", "Personel hakkında notlar...")"></textarea>
+                        <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="@Html.T("Personnel.NotesPlaceholder", "Personel hakkında notlar...")"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">

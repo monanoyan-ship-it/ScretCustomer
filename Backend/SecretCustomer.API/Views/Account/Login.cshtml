@@ -1,6 +1,6 @@
-@model LoginViewModel
+﻿@model LoginViewModel
 @{
-    ViewData["Title"] = Html.T("Account.Login", "Giriş Yap").ToString();
+    ViewData["Title"] = Html.T("Login.Title", "Giriş Yap").ToString();
     Layout = "_Layout";
 }
 
@@ -31,12 +31,12 @@
                     <input type="hidden" asp-for="ReturnUrl" />
 
                     <button type="submit" class="btn btn-primary w-100 mb-3">
-                        <i class="bi bi-box-arrow-in-right"></i> @Html.T("Account.Login", "Giriş Yap")
+                        <i class="bi bi-box-arrow-in-right"></i> @Html.T("Login.Title", "Giriş Yap")
                     </button>
 
                     <div class="text-center">
                         <a asp-action="ForgotPassword" class="text-decoration-none">
-                            <i class="bi bi-key me-1"></i>@Html.T("Account.ForgotPassword", "Şifremi Unuttum")
+                            <i class="bi bi-key me-1"></i>@Html.T("Login.ForgotPassword", "Şifremi Unuttum")
                         </a>
                     </div>
                 </form>

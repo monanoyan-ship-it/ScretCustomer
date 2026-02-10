@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.Interfaces.Services;
@@ -81,7 +81,7 @@ public class CustomerPersonnelApiController : BaseApiController
             var personnel = await _personnelService.GetByIdAsync(id);
             if (personnel == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.NotFound")));
             }
 
             return Ok(personnel);
@@ -125,7 +125,7 @@ public class CustomerPersonnelApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating personnel");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.CreateError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.CreateError"), ex));
         }
     }
 
@@ -161,7 +161,7 @@ public class CustomerPersonnelApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating personnel {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.UpdateError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.UpdateError"), ex));
         }
     }
 
@@ -181,7 +181,7 @@ public class CustomerPersonnelApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting personnel {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.DeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Personnel.DeleteError"), ex));
         }
     }
 
@@ -203,7 +203,7 @@ public class CustomerPersonnelApiController : BaseApiController
         try
         {
             await _personnelService.ChangePasswordAsync(id, dto);
-            return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordChangeSuccess") });
+            return Ok(new { message = await _localizationService.GetResourceAsync("Api.User.PasswordChangeSuccess") });
         }
         catch (KeyNotFoundException ex)
         {
@@ -303,7 +303,7 @@ public class CustomerPersonnelApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error resetting password for personnel {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordResetError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Account.PasswordResetError"), ex));
         }
     }
 }

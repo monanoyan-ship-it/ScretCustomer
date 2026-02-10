@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = @Html.T("SupportRequest.Title", "Destek Talepleri");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.SupportRequests", "Destek Talepleri");
 }
 
 <div id="support-requests-app">
@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h4 class="mb-0">
             <i class="bi bi-chat-left-dots text-primary me-2"></i>
-            @Html.T("SupportRequest.Title", "Destek Talepleri")
+            @Html.T("Menu.SupportRequests", "Destek Talepleri")
         </h4>
         <button class="btn btn-outline-secondary" data-bind="click: refresh">
             <i class="bi bi-arrow-clockwise"></i>
@@ -20,7 +20,7 @@
             <div class="card bg-warning text-dark h-100">
                 <div class="card-body py-2 text-center">
                     <h3 class="mb-0" data-bind="text: statusCounts().pending || 0">0</h3>
-                    <small>@Html.T("SupportRequestStatus.Pending", "Beklemede")</small>
+                    <small>@Html.T("Project.Pending", "Beklemede")</small>
                 </div>
             </div>
         </div>
@@ -57,7 +57,7 @@
                 <div class="col-md-3">
                     <select class="form-select form-select-sm" data-bind="value: filter.statusId">
                         <option value="">@Html.T("Common.AllStatuses", "Tum Durumlar")</option>
-                        <option value="1">@Html.T("SupportRequestStatus.Pending", "Beklemede")</option>
+                        <option value="1">@Html.T("Project.Pending", "Beklemede")</option>
                         <option value="2">@Html.T("SupportRequestStatus.InProgress", "Inceleniyor")</option>
                         <option value="3">@Html.T("SupportRequestStatus.Resolved", "Cevaplandi")</option>
                         <option value="4">@Html.T("SupportRequestStatus.Closed", "Kapatildi")</option>
@@ -67,7 +67,7 @@
                     <select class="form-select form-select-sm" data-bind="value: filter.senderType">
                         <option value="">@Html.T("Common.AllSenders", "Tum Gondericiler")</option>
                         <option value="User">@Html.T("SupportRequest.SystemUser", "Sistem Kullanicisi")</option>
-                        <option value="CustomerPersonnel">@Html.T("SupportRequest.CustomerPersonnel", "Musteri Personeli")</option>
+                        <option value="CustomerPersonnel">@Html.T("Menu.CustomerPersonnel", "Musteri Personeli")</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -101,8 +101,8 @@
                     <tr>
                         <th style="width: 50px">#</th>
                         <th>@Html.T("SupportRequest.Sender", "Gonderen")</th>
-                        <th>@Html.T("SupportRequest.Message", "Mesaj")</th>
-                        <th style="width: 120px">@Html.T("SupportRequest.Status", "Durum")</th>
+                        <th>@Html.T("AuditLog.Message", "Mesaj")</th>
+                        <th style="width: 120px">@Html.T("Common.Status", "Durum")</th>
                         <th style="width: 140px">@Html.T("Common.Date", "Tarih")</th>
                         <th style="width: 100px" class="text-center">@Html.T("Common.Actions", "Islemler")</th>
                     </tr>
@@ -174,7 +174,7 @@
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="bi bi-chat-left-dots me-2"></i>
-                    @Html.T("SupportRequest.Detail", "Talep Detayi") #<span data-bind="text: id"></span>
+                    @Html.T("DealerRequest.Detail", "Talep Detayi") #<span data-bind="text: id"></span>
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -249,7 +249,7 @@
                 <div class="btn-group me-auto">
                     <!-- ko if: statusId() !== 4 -->
                     <button class="btn btn-outline-secondary btn-sm" data-bind="click: function() { $parent.updateStatus(4); }">
-                        <i class="bi bi-x-circle me-1"></i> @Html.T("SupportRequest.Close", "Kapat")
+                        <i class="bi bi-x-circle me-1"></i> @Html.T("Common.Close", "Kapat")
                     </button>
                     <!-- /ko -->
                     <!-- ko if: statusId() === 4 -->

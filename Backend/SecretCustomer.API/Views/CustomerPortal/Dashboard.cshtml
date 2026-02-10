@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = @Html.T("CustomerPortal.Dashboard.Title", "Dashboard");
+﻿@{
+    ViewData["Title"] = @Html.T("CustomerPortal.Menu.Dashboard", "Dashboard");
     Layout = "_CustomerLayout";
 }
 
@@ -20,7 +20,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.TotalEvaluations", "Toplam Değerlendirme")</small>
+                                <small class="text-muted">@Html.T("Dashboard.TotalEvaluations", "Toplam Değerlendirme")</small>
                                 <h3 class="mb-0 mt-1" data-bind="text: stats().totalEvaluations || 0"></h3>
                             </div>
                             <div class="bg-success bg-opacity-10 rounded-circle p-2">
@@ -35,7 +35,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</small>
+                                <small class="text-muted">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                                 <h3 class="mb-0 mt-1" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h3>
                             </div>
                             <div class="bg-primary bg-opacity-10 rounded-circle p-2">
@@ -65,7 +65,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <small class="text-muted">@Html.T("CustomerPortal.Dashboard.ThisMonth", "Bu Ay")</small>
+                                <small class="text-muted">@Html.T("Common.ThisMonth", "Bu Ay")</small>
                                 <h3 class="mb-0 mt-1" data-bind="text: stats().thisMonthEvaluations || 0"></h3>
                             </div>
                             <div class="bg-warning bg-opacity-10 rounded-circle p-2">
@@ -107,7 +107,7 @@
                                     <small class="text-muted ms-1">@Html.T("CustomerPortal.Dashboard.EnneagramTrend", "Kişilik Analizi")</small>
                                     <!-- /ko -->
                                     <!-- ko if: panelType !== 'survey' && panelType !== 'enneagram' -->
-                                    <small class="text-muted ms-1">@Html.T("CustomerPortal.Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</small>
+                                    <small class="text-muted ms-1">@Html.T("Dashboard.MonthlyTrend", "Aylık Değerlendirme Trendi")</small>
                                     <!-- /ko -->
                                 </h6>
                                 <div class="d-flex gap-1 align-items-center flex-wrap">
@@ -164,7 +164,7 @@
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <div class="border rounded p-2 text-center">
-                                        <small class="text-muted d-block">@Html.T("CustomerPortal.Dashboard.AverageScore", "Ortalama Puan")</small>
+                                        <small class="text-muted d-block">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                                         <strong data-bind="text: summary.averageScore"></strong>
                                     </div>
                                 </div>
@@ -230,7 +230,7 @@
                 <div class="card border-0 shadow-sm" id="scoreDistributionCard">
                     <div class="card-header bg-white border-0 py-2">
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Dashboard.ScoreDistribution", "Puan Dağılımı")</h6>
+                            <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("Dashboard.ScoreDistribution", "Puan Dağılımı")</h6>
                             <div class="d-flex gap-1">
                                 <button class="btn btn-sm btn-outline-secondary py-0 px-1" type="button" data-bs-toggle="collapse" data-bs-target="#scoreDistributionFilter">
                                     <i class="bi bi-funnel"></i>
@@ -377,7 +377,7 @@
                         <!-- No Data -->
                         <div data-bind="visible: !isQuestionTrendLoading() && questionTrendData().length === 0" class="text-center text-muted py-4">
                             <i class="bi bi-bar-chart fs-1"></i>
-                            <p class="mt-2">@Html.T("CustomerPortal.Dashboard.NoQuestionData", "Soru bazlı veri bulunamadı.")</p>
+                            <p class="mt-2">@Html.T("Report.NoQuestionData", "Soru bazlı veri bulunamadı.")</p>
                         </div>
                         <!-- Chart -->
                         <div data-bind="visible: !isQuestionTrendLoading() && questionTrendData().length > 0">
@@ -393,7 +393,7 @@
         <!-- Recent Evaluations -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 py-2 d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("CustomerPortal.Dashboard.RecentEvaluations", "Son Değerlendirmeler")</h6>
+                <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("Report.RecentEvaluations", "Son Değerlendirmeler")</h6>
                 <a href="/CustomerPortal/ExternalEvaluations" class="btn btn-sm btn-outline-success py-1">
                     @Html.T("Common.ViewAll", "Tümünü Gör") <i class="bi bi-arrow-right"></i>
                 </a>

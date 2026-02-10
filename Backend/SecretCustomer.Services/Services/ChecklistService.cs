@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Checklist;
 using SecretCustomer.Core.DTOs.Report;
@@ -562,19 +562,19 @@ public class ChecklistService : IChecklistService
         var sheetName = await _localizationService.GetResourceAsync("Common.Checklist");
         var checklistInfoTitle = await _localizationService.GetResourceAsync("Excel.ChecklistInfo");
         var nameLabel = await _localizationService.GetResourceAsync("Excel.Name");
-        var codeLabel = await _localizationService.GetResourceAsync("Excel.Code");
+        var codeLabel = await _localizationService.GetResourceAsync("Common.Code");
         var customerLabel = await _localizationService.GetResourceAsync("Common.Customer");
         var generalLabel = await _localizationService.GetResourceAsync("Excel.General");
         var organizationLabel = await _localizationService.GetResourceAsync("Common.Organization");
         var descriptionLabel = await _localizationService.GetResourceAsync("Excel.Description");
         var questionsTitle = await _localizationService.GetResourceAsync("Excel.Questions");
         var orderLabel = await _localizationService.GetResourceAsync("Excel.QuestionNumber");
-        var groupLabel = await _localizationService.GetResourceAsync("Checklist.GroupName");
+        var groupLabel = await _localizationService.GetResourceAsync("Report.GroupName");
         var questionLabel = await _localizationService.GetResourceAsync("Excel.QuestionText");
         var maxPointsLabel = await _localizationService.GetResourceAsync("Excel.MaxPoints");
         var weightLabel = await _localizationService.GetResourceAsync("Excel.Weight");
         var scoringTypeLabel = await _localizationService.GetResourceAsync("Excel.QuestionType");
-        var penaltyTypeLabel = await _localizationService.GetResourceAsync("Question.PenaltyType");
+        var penaltyTypeLabel = await _localizationService.GetResourceAsync("Report.PenaltyType");
 
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add(sheetName);

@@ -1,4 +1,4 @@
-@model IEnumerable<SecretCustomer.Core.DTOs.Assignment.AssignmentDto>
+﻿@model IEnumerable<SecretCustomer.Core.DTOs.Assignment.AssignmentDto>
 @{
     ViewData["Title"] = @Html.T("Menu.MyTasks", "Görevlerim");
     var fieldWorkerName = ViewData["FieldWorkerName"] as string ?? Html.T("Role.FieldWorker", "Saha Çalışanı").ToString();
@@ -15,7 +15,7 @@
         <div>
             <span class="badge bg-primary fs-6">@Html.T("Common.Total", "Toplam"): @Model.Count()</span>
             <span class="badge bg-success fs-6">@Html.T("Status.Completed", "Tamamlanan"): @Model.Count(a => a.IsCompleted)</span>
-            <span class="badge bg-warning fs-6">@Html.T("Status.Pending", "Bekleyen"): @Model.Count(a => !a.IsCompleted)</span>
+            <span class="badge bg-warning fs-6">@Html.T("Common.Status.Pending", "Bekleyen"): @Model.Count(a => !a.IsCompleted)</span>
         </div>
     </div>
 

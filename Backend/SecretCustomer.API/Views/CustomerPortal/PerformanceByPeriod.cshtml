@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_CustomerLayout";
     ViewData["Title"] = @Html.T("Report.PerformanceByPeriod", "Donem Bazli Basari Tablosu");
 }
@@ -10,7 +10,7 @@
         <div class="btn-group" data-bind="visible: hasData()">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
@@ -47,7 +47,7 @@
                     <label class="form-label">@Html.T("Common.FilterType", "Filtre Tipi")</label>
                     <select class="form-select" data-bind="value: selectedFilterType">
                         <option value="">@Html.T("Common.SelectFilterType", "Filtre tipi seçin...")</option>
-                        <option value="project">@Html.T("Report.Project", "Proje")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="organization">@Html.T("Report.Organization", "Organizasyon")</option>
                         <option value="dateRange">@Html.T("Report.DateRange", "Tarih Aralığı")</option>
                     </select>
@@ -56,15 +56,15 @@
                 <!-- Dynamic Filter Value -->
                 <!-- ko if: selectedFilterType() === 'project' -->
                 <div class="col-md-4">
-                    <label class="form-label">@Html.T("Report.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectProject", "Proje Seçin")'"></select>
+                    <label class="form-label">@Html.T("Common.Project", "Proje")</label>
+                    <select class="form-select" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.SelectProject", "Proje Seçin")'"></select>
                 </div>
                 <!-- /ko -->
 
                 <!-- ko if: selectedFilterType() === 'organization' -->
                 <div class="col-md-4">
                     <label class="form-label">@Html.T("Report.Organization", "Organizasyon")</label>
-                    <select class="form-select" data-bind="value: tempFilter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Report.SelectOrganization", "Organizasyon Seçin")'"></select>
+                    <select class="form-select" data-bind="value: tempFilter.organizationId, options: organizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.SelectOrganization", "Organizasyon Seçin")'"></select>
                 </div>
                 <!-- /ko -->
 
@@ -80,10 +80,10 @@
                 <div class="col-md-4">
                     <label class="form-label">@Html.T("Report.Shortcuts", "Kısayollar")</label>
                     <div class="btn-group btn-group-sm w-100" role="group">
-                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('thisMonth'); }">@Html.T("Report.ThisMonth", "Bu Ay")</button>
-                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('lastMonth'); }">@Html.T("Report.LastMonth", "Geçen Ay")</button>
-                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('last3Months'); }">@Html.T("Report.Last3Months", "Son 3 Ay")</button>
-                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('last6Months'); }">@Html.T("Report.Last6Months", "Son 6 Ay")</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('lastMonth'); }">@Html.T("Common.LastMonth", "Geçen Ay")</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('last3Months'); }">@Html.T("Common.Last3Months", "Son 3 Ay")</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { setDateShortcut('last6Months'); }">@Html.T("Common.Last6Months", "Son 6 Ay")</button>
                     </div>
                 </div>
                 <!-- /ko -->

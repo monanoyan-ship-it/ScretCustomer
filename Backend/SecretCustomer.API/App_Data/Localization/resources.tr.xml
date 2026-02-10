@@ -263,9 +263,6 @@
   <LocaleResource Name="Common.ConfirmMessage">
     <Value>Bu işlemi onaylıyor musunuz?</Value>
   </LocaleResource>
-  <LocaleResource Name="Layout.AppTitle">
-    <Value>NCAcademy</Value>
-  </LocaleResource>
   <LocaleResource Name="Layout.ViewingAs">
     <Value>olarak görüntüleniyor</Value>
   </LocaleResource>
@@ -304,12 +301,6 @@
   </LocaleResource>
   <LocaleResource Name="Permission.AllCategories">
     <Value>Tüm Kategoriler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Permission.Code">
-    <Value>Kod</Value>
-  </LocaleResource>
-  <LocaleResource Name="Permission.Category">
-    <Value>Kategori</Value>
   </LocaleResource>
   <LocaleResource Name="Permission.NoPermissionsFound">
     <Value>Yetki bulunamadı.</Value>
@@ -368,9 +359,6 @@
   <LocaleResource Name="Permission.RevokePermission">
     <Value>Yetkiyi Kaldır (Override)</Value>
   </LocaleResource>
-  <LocaleResource Name="Permission.Note">
-    <Value>Not</Value>
-  </LocaleResource>
   <LocaleResource Name="Organization.Title">
     <Value>Organizasyon Yönetimi</Value>
   </LocaleResource>
@@ -407,17 +395,11 @@
   <LocaleResource Name="Organization.UnitType.Division">
     <Value>Bölüm</Value>
   </LocaleResource>
-  <LocaleResource Name="Organization.UnitType.Team">
-    <Value>Takım</Value>
-  </LocaleResource>
   <LocaleResource Name="Organization.UnitType.Unit">
     <Value>Birim</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.UnitName">
     <Value>Birim Adı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Organization.Code">
-    <Value>Kod</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.Type">
     <Value>Tip</Value>
@@ -451,9 +433,6 @@
   </LocaleResource>
   <LocaleResource Name="Organization.DescriptionPlaceholder">
     <Value>Birim açıklaması...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Organization.Order">
-    <Value>Sıra</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.NoParent">
     <Value>Yok (Kök Birim)</Value>
@@ -542,9 +521,6 @@
   <LocaleResource Name="Delegation.Reason.BusinessTrip">
     <Value>İş Seyahati</Value>
   </LocaleResource>
-  <LocaleResource Name="Delegation.Reason.Training">
-    <Value>Eğitim</Value>
-  </LocaleResource>
   <LocaleResource Name="Delegation.Notes">
     <Value>Notlar</Value>
   </LocaleResource>
@@ -569,15 +545,6 @@
   <LocaleResource Name="Profile.CurrentPassword">
     <Value>Mevcut Şifre</Value>
   </LocaleResource>
-  <LocaleResource Name="Profile.PasswordsNotMatch">
-    <Value>Şifreler eşleşmiyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="Profile.ChangingPassword">
-    <Value>Değiştiriliyor...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Account.Login">
-    <Value>Giriş Yap</Value>
-  </LocaleResource>
   <LocaleResource Name="Account.Username">
     <Value>Kullanıcı Adı</Value>
   </LocaleResource>
@@ -589,12 +556,6 @@
   </LocaleResource>
   <LocaleResource Name="Account.PasswordPlaceholder">
     <Value>Şifrenizi girin</Value>
-  </LocaleResource>
-  <LocaleResource Name="Account.ForgotPassword">
-    <Value>Şifremi Unuttum</Value>
-  </LocaleResource>
-  <LocaleResource Name="Account.ForgotPasswordTitle">
-    <Value>Şifremi Unuttum</Value>
   </LocaleResource>
   <LocaleResource Name="Account.ForgotPasswordDescription">
     <Value>E-posta adresinizi girin, şifre sıfırlama bağlantısı göndereceğiz.</Value>
@@ -650,9 +611,6 @@
   <LocaleResource Name="Login.Title">
     <Value>Giriş Yap</Value>
   </LocaleResource>
-  <LocaleResource Name="Login.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
   <LocaleResource Name="Login.Password">
     <Value>Şifre</Value>
   </LocaleResource>
@@ -661,9 +619,6 @@
   </LocaleResource>
   <LocaleResource Name="Login.ForgotPassword">
     <Value>Şifremi Unuttum</Value>
-  </LocaleResource>
-  <LocaleResource Name="Login.LoginButton">
-    <Value>Giriş Yap</Value>
   </LocaleResource>
   <LocaleResource Name="Login.InvalidCredentials">
     <Value>E-posta veya şifre hatalı</Value>
@@ -674,9 +629,6 @@
   <LocaleResource Name="Login.Welcome">
     <Value>Hoş Geldiniz</Value>
   </LocaleResource>
-  <LocaleResource Name="Login.Logout">
-    <Value>Çıkış Yap</Value>
-  </LocaleResource>
   <LocaleResource Name="Menu.Dashboard">
     <Value>Ana Sayfa</Value>
   </LocaleResource>
@@ -686,9 +638,6 @@
   <LocaleResource Name="Menu.Projects">
     <Value>Projeler</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.Branches">
-    <Value>Şubeler</Value>
-  </LocaleResource>
   <LocaleResource Name="Menu.Personnel">
     <Value>Personel</Value>
   </LocaleResource>
@@ -697,12 +646,6 @@
   </LocaleResource>
   <LocaleResource Name="Menu.Evaluations">
     <Value>Değerlendirmeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Menu.Reports">
-    <Value>Raporlar</Value>
-  </LocaleResource>
-  <LocaleResource Name="Menu.Settings">
-    <Value>Ayarlar</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Users">
     <Value>Kullanıcılar</Value>
@@ -733,9 +676,6 @@
   </LocaleResource>
   <LocaleResource Name="Menu.Languages">
     <Value>Diller</Value>
-  </LocaleResource>
-  <LocaleResource Name="Menu.SystemSettings">
-    <Value>Sistem Ayarları</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.FieldWorkers">
     <Value>Saha Çalışanları</Value>
@@ -770,12 +710,6 @@
   <LocaleResource Name="Menu.PersonnelReportCard">
     <Value>Temsilci Karnesi</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.SuggestionsReport">
-    <Value>Öneriler Raporu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Menu.MyProfile">
-    <Value>Profilim</Value>
-  </LocaleResource>
   <LocaleResource Name="Menu.Definitions">
     <Value>Tanımlar</Value>
   </LocaleResource>
@@ -790,9 +724,6 @@
   </LocaleResource>
   <LocaleResource Name="Menu.Activities">
     <Value>Aktiviteler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Menu.ReportsMenu">
-    <Value>Raporlar</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.SystemMenu">
     <Value>Sistem</Value>
@@ -812,9 +743,6 @@
   <LocaleResource Name="VisitDetails.SectorList">
     <Value>Sektör Listesi</Value>
   </LocaleResource>
-  <LocaleResource Name="VisitDetails.FieldDefinitionList">
-    <Value>Alan Tanımları</Value>
-  </LocaleResource>
   <LocaleResource Name="VisitDetails.NewSector">
     <Value>Yeni Sektör</Value>
   </LocaleResource>
@@ -832,9 +760,6 @@
   </LocaleResource>
   <LocaleResource Name="VisitDetails.FieldType">
     <Value>Alan Tipi</Value>
-  </LocaleResource>
-  <LocaleResource Name="VisitDetails.Category">
-    <Value>Kategori</Value>
   </LocaleResource>
   <LocaleResource Name="VisitDetails.Required">
     <Value>Zorunlu</Value>
@@ -890,12 +815,6 @@
   <LocaleResource Name="VisitDetails.FieldType.Decimal">
     <Value>Ondalık Sayı</Value>
   </LocaleResource>
-  <LocaleResource Name="VisitDetails.FieldType.Bool">
-    <Value>Evet/Hayır</Value>
-  </LocaleResource>
-  <LocaleResource Name="VisitDetails.FieldType.String">
-    <Value>Metin</Value>
-  </LocaleResource>
   <LocaleResource Name="VisitDetails.FieldType.DateTime">
     <Value>Tarih/Saat</Value>
   </LocaleResource>
@@ -950,14 +869,8 @@
   <LocaleResource Name="Dashboard.Title">
     <Value>Ana Sayfa</Value>
   </LocaleResource>
-  <LocaleResource Name="Dashboard.Welcome">
-    <Value>Hoş Geldiniz</Value>
-  </LocaleResource>
   <LocaleResource Name="Dashboard.TotalEvaluations">
     <Value>Toplam Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="Dashboard.AverageScore">
-    <Value>Ortalama Puan</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.ActiveProjects">
     <Value>Aktif Proje</Value>
@@ -971,9 +884,6 @@
   <LocaleResource Name="Dashboard.ScoreDistribution">
     <Value>Puan Dağılımı</Value>
   </LocaleResource>
-  <LocaleResource Name="Dashboard.RecentEvaluations">
-    <Value>Son Değerlendirmeler</Value>
-  </LocaleResource>
   <LocaleResource Name="Dashboard.TopPerformers">
     <Value>En İyi Performans</Value>
   </LocaleResource>
@@ -982,12 +892,6 @@
   </LocaleResource>
   <LocaleResource Name="Dashboard.PersonalScorecard">
     <Value>Kişisel Performans Kartı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Dashboard.ThisMonth">
-    <Value>Bu Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="Dashboard.LastMonth">
-    <Value>Geçen Ay</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Evaluation">
     <Value>Değerlendirme</Value>
@@ -1037,17 +941,8 @@
   <LocaleResource Name="Customer.CustomerName">
     <Value>Müşteri Adı</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.ContactPerson">
-    <Value>İletişim Kişisi</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.Phone">
     <Value>Telefon</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.Address">
-    <Value>Adres</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.TaxNumber">
     <Value>Vergi Numarası</Value>
@@ -1076,9 +971,6 @@
   <LocaleResource Name="Customer.Personnel">
     <Value>Personel</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.Project">
-    <Value>Proje</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.Contract">
     <Value>Sözleşme</Value>
   </LocaleResource>
@@ -1096,9 +988,6 @@
   </LocaleResource>
   <LocaleResource Name="Customer.CustomerPersonnel">
     <Value>Müşteri Personelleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.ResetPassword">
-    <Value>Şifre Sıfırla</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.PasswordMinLength">
     <Value>En az 6 karakter olmalıdır</Value>
@@ -1136,23 +1025,14 @@
   <LocaleResource Name="Customer.Role.Supervisor">
     <Value>Takım Lideri</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.Role.Operator">
-    <Value>Müşteri Operatörü</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.Department">
     <Value>Departman</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.DepartmentPlaceholder">
-    <Value>Kalite Kontrol</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.JobTitle">
     <Value>Ünvan</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.TitlePlaceholder">
     <Value>Kalite Müdürü</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.Title">
-    <Value>Saha Çalışanları</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.NewFieldWorker">
     <Value>Yeni Saha Çalışanı</Value>
@@ -1168,15 +1048,6 @@
   </LocaleResource>
   <LocaleResource Name="FieldWorker.FirstName">
     <Value>Ad</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.FirstNamePlaceholder">
-    <Value>Ahmet</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.LastName">
-    <Value>Soyad</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.LastNamePlaceholder">
-    <Value>Yılmaz</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.Username">
     <Value>Kullanıcı Adı</Value>
@@ -1196,14 +1067,8 @@
   <LocaleResource Name="FieldWorker.PhonePlaceholder">
     <Value>+90 555 123 45 67</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
   <LocaleResource Name="FieldWorker.EmailPlaceholder">
     <Value>ahmet@example.com</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.Address">
-    <Value>Adres</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.AddressPlaceholder">
     <Value>Tam adres bilgisi...</Value>
@@ -1211,17 +1076,11 @@
   <LocaleResource Name="FieldWorker.Notes">
     <Value>Notlar</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.NotesPlaceholder">
-    <Value>Ek notlar...</Value>
-  </LocaleResource>
   <LocaleResource Name="Personnel.Title">
     <Value>Personel Yönetimi</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.NewPersonnel">
     <Value>Yeni Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="Personnel.EditPersonnel">
-    <Value>Personel Düzenle</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.NoPersonnel">
     <Value>Henüz personel kaydı bulunmamaktadır.</Value>
@@ -1271,14 +1130,8 @@
   <LocaleResource Name="Personnel.FirstName">
     <Value>Ad</Value>
   </LocaleResource>
-  <LocaleResource Name="Personnel.LastName">
-    <Value>Soyad</Value>
-  </LocaleResource>
   <LocaleResource Name="Personnel.Gender">
     <Value>Cinsiyet</Value>
-  </LocaleResource>
-  <LocaleResource Name="Personnel.Gender.NotSpecified">
-    <Value>Belirtilmemiş</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Gender.Male">
     <Value>Erkek</Value>
@@ -1304,17 +1157,8 @@
   <LocaleResource Name="Personnel.DepartmentPlaceholder">
     <Value>Müşteri Hizmetleri</Value>
   </LocaleResource>
-  <LocaleResource Name="Personnel.ContactInfo">
-    <Value>İletişim Bilgileri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Personnel.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
   <LocaleResource Name="Personnel.EmailPlaceholder">
     <Value>ornek@email.com</Value>
-  </LocaleResource>
-  <LocaleResource Name="Personnel.Other">
-    <Value>Diğer</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Notes">
     <Value>Notlar</Value>
@@ -1346,14 +1190,8 @@
   <LocaleResource Name="Project.EndDate">
     <Value>Bitiş Tarihi</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Status">
-    <Value>Durum</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Active">
     <Value>Aktif</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Completed">
-    <Value>Tamamlandı</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Pending">
     <Value>Beklemede</Value>
@@ -1376,23 +1214,11 @@
   <LocaleResource Name="Project.Loading">
     <Value>Projeler yükleniyor...</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Projects">
-    <Value>Projeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.NoProjects">
-    <Value>Proje bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Code">
-    <Value>Kod</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Type">
     <Value>Tip</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Progress">
     <Value>İlerleme</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Dates">
-    <Value>Tarihler</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Team">
     <Value>Takım</Value>
@@ -1403,29 +1229,17 @@
   <LocaleResource Name="Project.Task">
     <Value>görev</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Person">
-    <Value>Kişi</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Branch">
     <Value>Şube</Value>
   </LocaleResource>
   <LocaleResource Name="Project.NoDescription">
     <Value>Açıklama yok</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Start">
-    <Value>Başlat</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Pause">
     <Value>Duraklat</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Complete">
-    <Value>Tamamla</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Cancel">
     <Value>İptal Et</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Status.Draft">
-    <Value>Taslak</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Status.Planned">
     <Value>Planlandı</Value>
@@ -1433,35 +1247,14 @@
   <LocaleResource Name="Project.Status.Active">
     <Value>Aktif</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Status.Paused">
-    <Value>Duraklatıldı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Status.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Status.Cancelled">
-    <Value>İptal Edildi</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Type.MysteryShopping">
     <Value>Gizli Müşteri</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Type.CallAuditing">
     <Value>Çağrı Denetimi</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Type.PhysicalAudit">
-    <Value>Fiziksel Denetim</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Type.OnlineSurvey">
-    <Value>Online Anket</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Type.CustomerSatisfaction">
-    <Value>Müşteri Memnuniyeti</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Type.TrainingEvaluation">
     <Value>Eğitim Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Type.QualityControl">
-    <Value>Kalite Kontrol</Value>
   </LocaleResource>
   <LocaleResource Name="Project.BasicInfo">
     <Value>Temel Bilgiler</Value>
@@ -1492,9 +1285,6 @@
   </LocaleResource>
   <LocaleResource Name="Project.Assignment.Phone">
     <Value>Telefon</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Assignment.Online">
-    <Value>Online</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Checklist">
     <Value>Kontrol Listesi</Value>
@@ -1535,20 +1325,8 @@
   <LocaleResource Name="Project.MinScoreThreshold">
     <Value>Min. Puan Eşiği (%)</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Priority">
-    <Value>Öncelik</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Priority.Normal">
-    <Value>Normal</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Priority.Low">
-    <Value>Düşük</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Priority.Medium">
     <Value>Orta</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Priority.High">
-    <Value>Yüksek</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Priority.Critical">
     <Value>Kritik</Value>
@@ -1574,9 +1352,6 @@
   <LocaleResource Name="Project.User">
     <Value>Kullanıcı...</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.Role.Evaluator">
-    <Value>Değerlendirici</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Role.Manager">
     <Value>Yönetici</Value>
   </LocaleResource>
@@ -1594,9 +1369,6 @@
   </LocaleResource>
   <LocaleResource Name="Project.AddAllBranches">
     <Value>Tüm Şubeleri Ekle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.AverageScore">
-    <Value>Ortalama Puan</Value>
   </LocaleResource>
   <LocaleResource Name="Project.PenaltyCards">
     <Value>Ceza Kartları</Value>
@@ -1658,17 +1430,11 @@
   <LocaleResource Name="Branch.AddressPlaceholder">
     <Value>Şube adresi...</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Title">
-    <Value>Kontrol Listeleri</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.NewChecklist">
     <Value>Yeni Kontrol Listesi</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.EditChecklist">
     <Value>Kontrol Listesi Düzenle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.ChecklistName">
-    <Value>Kontrol Listesi Adı</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Sections">
     <Value>Bölümler</Value>
@@ -1694,17 +1460,11 @@
   <LocaleResource Name="Checklist.Clone">
     <Value>Klonla</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Step1.GeneralInfo">
-    <Value>Genel Bilgiler</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Step2.ChecklistItems">
     <Value>Kontrol Listesi</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Step3.AuditSettings">
     <Value>Denetim Ayarları</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.Step4.Summary">
-    <Value>Özet</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.NamePlaceholder">
     <Value>Örn: Çağrı Performans Değerlendirmesi</Value>
@@ -1718,17 +1478,11 @@
   <LocaleResource Name="Checklist.TemplateName">
     <Value>Şablon Adı</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.TemplateNamePlaceholder">
-    <Value>Çağrı Performans</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Type">
     <Value>K.L. Tipi</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Type.CallPerformance">
     <Value>Çağrı Performans</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.Type.PhysicalAudit">
-    <Value>Fiziksel Denetim</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Type.MysteryShopping">
     <Value>Gizli Müşteri</Value>
@@ -1736,17 +1490,8 @@
   <LocaleResource Name="Checklist.Type.OnlineEvaluation">
     <Value>Online Değerlendirme</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Type.Survey">
-    <Value>Anket</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.ScoringMethod">
     <Value>Puanlama Yöntemi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.ScoringMethod.Maximum">
-    <Value>Maksimum</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.ScoringMethod.Average">
-    <Value>Ortalama</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoringMethod.WeightedAverage">
     <Value>Ağırlıklı Ortalama</Value>
@@ -1790,9 +1535,6 @@
   <LocaleResource Name="Checklist.GroupType.Penalty">
     <Value>Cezalı</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Weight">
-    <Value>Ağırlık</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.WeightPoints">
     <Value>Ağırlık Puanı</Value>
   </LocaleResource>
@@ -1802,14 +1544,8 @@
   <LocaleResource Name="Checklist.MaxPoints">
     <Value>Maks Puan</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.Question">
-    <Value>Soru</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.NoQuestionsInGroup">
     <Value>Bu grupta henüz soru bulunmamaktadır.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.QuestionText">
-    <Value>Soru Metni</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.QuestionTextPlaceholder">
     <Value>Soru metni</Value>
@@ -1823,17 +1559,8 @@
   <LocaleResource Name="Checklist.QuestionType.Star">
     <Value>Yıldız (1-5)</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.QuestionType.MultipleChoice">
-    <Value>Çoktan Seçmeli</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.QuestionType.Text">
-    <Value>Metin</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.Scoring">
     <Value>Puanlama</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.PenaltyType">
-    <Value>Ceza Tipi</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.PenaltyType.None">
     <Value>Yok</Value>
@@ -1846,9 +1573,6 @@
   </LocaleResource>
   <LocaleResource Name="Checklist.PenaltyValue">
     <Value>Ceza Değeri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.Order">
-    <Value>Sıra</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.RecommendedNote">
     <Value>Önerilen Açıklama</Value>
@@ -1910,12 +1634,6 @@
   <LocaleResource Name="Checklist.GroupAndQuestionSummary">
     <Value>Grup ve Soru Özeti</Value>
   </LocaleResource>
-  <LocaleResource Name="Checklist.GroupName">
-    <Value>Grup Adı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.QuestionCount">
-    <Value>Soru Sayısı</Value>
-  </LocaleResource>
   <!-- Excel Export -->
   <LocaleResource Name="Excel.PersonnelList">
     <Value>Personel Listesi</Value>
@@ -1934,9 +1652,6 @@
   </LocaleResource>
   <LocaleResource Name="Excel.Name">
     <Value>Ad</Value>
-  </LocaleResource>
-  <LocaleResource Name="Excel.Code">
-    <Value>Kod</Value>
   </LocaleResource>
   <LocaleResource Name="Excel.Description">
     <Value>Açıklama</Value>
@@ -1965,15 +1680,6 @@
   <LocaleResource Name="Excel.Weight">
     <Value>Ağırlık</Value>
   </LocaleResource>
-  <LocaleResource Name="Excel.Yes">
-    <Value>Evet</Value>
-  </LocaleResource>
-  <LocaleResource Name="Excel.No">
-    <Value>Hayır</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Title">
-    <Value>Değerlendirmeler</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.NewEvaluation">
     <Value>Yeni Değerlendirme</Value>
   </LocaleResource>
@@ -1995,18 +1701,6 @@
   <LocaleResource Name="Evaluation.Date">
     <Value>Tarih</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Status">
-    <Value>Durum</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Cancelled">
-    <Value>İptal Edildi</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.Notes">
     <Value>Notlar</Value>
   </LocaleResource>
@@ -2015,9 +1709,6 @@
   </LocaleResource>
   <LocaleResource Name="Evaluation.SaveAsDraft">
     <Value>Taslak Kaydet</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Complete">
-    <Value>Tamamla</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.RevertToDraft">
     <Value>Taslağa Çevir</Value>
@@ -2040,12 +1731,6 @@
   <LocaleResource Name="Evaluation.NoDraftEvaluations">
     <Value>Taslak değerlendirme bulunmamaktadır.</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.YellowCard">
-    <Value>Sarı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.RedCard">
-    <Value>Kırmızı</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.TempScore">
     <Value>Geçici Puan</Value>
   </LocaleResource>
@@ -2054,12 +1739,6 @@
   </LocaleResource>
   <LocaleResource Name="Evaluation.AddListening">
     <Value>Değerlendirme Ekle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Add">
-    <Value>Ekle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Title">
-    <Value>Toplantılar</Value>
   </LocaleResource>
   <LocaleResource Name="Meeting.NewMeeting">
     <Value>Yeni Toplantı</Value>
@@ -2070,9 +1749,6 @@
   <LocaleResource Name="Meeting.Today">
     <Value>Bugün</Value>
   </LocaleResource>
-  <LocaleResource Name="Meeting.Upcoming">
-    <Value>Yaklaşan</Value>
-  </LocaleResource>
   <LocaleResource Name="Meeting.MeetingType">
     <Value>Toplantı Tipi</Value>
   </LocaleResource>
@@ -2082,41 +1758,17 @@
   <LocaleResource Name="Meeting.Type.General">
     <Value>Genel</Value>
   </LocaleResource>
-  <LocaleResource Name="Meeting.Type.Project">
-    <Value>Proje</Value>
-  </LocaleResource>
   <LocaleResource Name="Meeting.Type.Evaluation">
     <Value>Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Type.Training">
-    <Value>Eğitim</Value>
   </LocaleResource>
   <LocaleResource Name="Meeting.Type.Customer">
     <Value>Müşteri</Value>
   </LocaleResource>
-  <LocaleResource Name="Meeting.Type.KickOff">
-    <Value>Kick-off</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Type.Closing">
-    <Value>Kapanış</Value>
-  </LocaleResource>
   <LocaleResource Name="Meeting.Status.Planned">
     <Value>Planlandı</Value>
   </LocaleResource>
-  <LocaleResource Name="Meeting.Status.Approved">
-    <Value>Onaylandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Status.InProgress">
-    <Value>Devam Ediyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Status.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
   <LocaleResource Name="Meeting.Status.Cancelled">
     <Value>İptal</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.Status.Postponed">
-    <Value>Ertelendi</Value>
   </LocaleResource>
   <LocaleResource Name="Meeting.Online">
     <Value>Online</Value>
@@ -2202,9 +1854,6 @@
   <LocaleResource Name="Meeting.NoParticipantsYet">
     <Value>Henüz katılımcı eklenmedi.</Value>
   </LocaleResource>
-  <LocaleResource Name="Meeting.NoParticipantsYet2">
-    <Value>Henüz katılımcı yok.</Value>
-  </LocaleResource>
   <LocaleResource Name="Meeting.SelectUser">
     <Value>Kullanıcı seçin</Value>
   </LocaleResource>
@@ -2283,12 +1932,6 @@
   <LocaleResource Name="Call.Type.Outbound">
     <Value>Giden</Value>
   </LocaleResource>
-  <LocaleResource Name="Call.Type.Internal">
-    <Value>Dahili</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Type.Conference">
-    <Value>Konferans</Value>
-  </LocaleResource>
   <LocaleResource Name="Call.Type.MysteryCall">
     <Value>Gizli Müşteri</Value>
   </LocaleResource>
@@ -2303,18 +1946,6 @@
   </LocaleResource>
   <LocaleResource Name="Call.Status.Scheduled">
     <Value>Planlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Status.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Status.InProgress">
-    <Value>Devam Ediyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Status.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Status.Missed">
-    <Value>Cevapsız</Value>
   </LocaleResource>
   <LocaleResource Name="Call.Status.Cancelled">
     <Value>İptal</Value>
@@ -2354,18 +1985,6 @@
   </LocaleResource>
   <LocaleResource Name="Call.Priority">
     <Value>Öncelik</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Priority.Low">
-    <Value>Düşük</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Priority.Normal">
-    <Value>Normal</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Priority.High">
-    <Value>Yüksek</Value>
-  </LocaleResource>
-  <LocaleResource Name="Call.Priority.Urgent">
-    <Value>Acil</Value>
   </LocaleResource>
   <LocaleResource Name="Call.ScheduledDate">
     <Value>Planlanan Tarih</Value>
@@ -2439,9 +2058,6 @@
   <LocaleResource Name="Call.Waiting">
     <Value>Bekliyor</Value>
   </LocaleResource>
-  <LocaleResource Name="Call.Note">
-    <Value>Not</Value>
-  </LocaleResource>
   <LocaleResource Name="Call.CallRecording">
     <Value>Çağrı Kaydı</Value>
   </LocaleResource>
@@ -2460,9 +2076,6 @@
   <LocaleResource Name="Training.Title">
     <Value>Eğitim Yönetimi</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Trainings">
-    <Value>Eğitimler</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.NewTraining">
     <Value>Yeni Eğitim</Value>
   </LocaleResource>
@@ -2472,26 +2085,11 @@
   <LocaleResource Name="Training.Info">
     <Value>Eğitim Bilgileri</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Code">
-    <Value>Kod</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.Type">
     <Value>Tip</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Category">
-    <Value>Kategori</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Duration">
-    <Value>Süre (dakika)</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.Trainer">
     <Value>Eğitmen</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Participant">
-    <Value>Katılımcı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Participants">
-    <Value>Katılımcılar</Value>
   </LocaleResource>
   <LocaleResource Name="Training.Certificate">
     <Value>Sertifika</Value>
@@ -2504,12 +2102,6 @@
   </LocaleResource>
   <LocaleResource Name="Training.Mandatory">
     <Value>Zorunlu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Start">
-    <Value>Başlat</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Complete">
-    <Value>Tamamla</Value>
   </LocaleResource>
   <LocaleResource Name="Training.DateLocation">
     <Value>Tarih ve Konum</Value>
@@ -2561,9 +2153,6 @@
   </LocaleResource>
   <LocaleResource Name="Training.Currency">
     <Value>Para Birimi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.TagsPlaceholder">
-    <Value>Virgülle ayırın</Value>
   </LocaleResource>
   <LocaleResource Name="Training.Score">
     <Value>Puan</Value>
@@ -2622,9 +2211,6 @@
   <LocaleResource Name="Training.Type.InPerson">
     <Value>Yüz Yüze</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Type.Online">
-    <Value>Online</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.Type.Hybrid">
     <Value>Hibrit</Value>
   </LocaleResource>
@@ -2643,38 +2229,14 @@
   <LocaleResource Name="Training.Type.Certification">
     <Value>Sertifika</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Status.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.Status.Planned">
     <Value>Planlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Status.Approved">
-    <Value>Onaylandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Status.InProgress">
-    <Value>Devam Ediyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Status.Completed">
-    <Value>Tamamlandı</Value>
   </LocaleResource>
   <LocaleResource Name="Training.Status.Cancelled">
     <Value>İptal</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.Status.Postponed">
-    <Value>Ertelendi</Value>
-  </LocaleResource>
   <LocaleResource Name="Training.Category.General">
     <Value>Genel</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Category.Technical">
-    <Value>Teknik</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Category.Sales">
-    <Value>Satış</Value>
-  </LocaleResource>
-  <LocaleResource Name="Training.Category.CustomerService">
-    <Value>Müşteri Hizmetleri</Value>
   </LocaleResource>
   <LocaleResource Name="Training.Category.Management">
     <Value>Yönetim</Value>
@@ -2712,20 +2274,11 @@
   <LocaleResource Name="Training.ParticipantStatus.Completed">
     <Value>Tamamladı</Value>
   </LocaleResource>
-  <LocaleResource Name="Training.ParticipantStatus.Failed">
-    <Value>Başarısız</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Title">
-    <Value>Raporlar</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.DateRange">
     <Value>Tarih Aralığı</Value>
   </LocaleResource>
   <LocaleResource Name="Report.GenerateReport">
     <Value>Rapor Oluştur</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.ExportExcel">
-    <Value>Excel'e Aktar</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExportPDF">
     <Value>PDF'e Aktar</Value>
@@ -2757,9 +2310,6 @@
   <LocaleResource Name="Report.Suggestions">
     <Value>Öneriler Raporu</Value>
   </LocaleResource>
-  <LocaleResource Name="User.Title">
-    <Value>Kullanıcılar</Value>
-  </LocaleResource>
   <LocaleResource Name="User.NewUser">
     <Value>Yeni Kullanıcı</Value>
   </LocaleResource>
@@ -2768,9 +2318,6 @@
   </LocaleResource>
   <LocaleResource Name="User.FullName">
     <Value>Ad Soyad</Value>
-  </LocaleResource>
-  <LocaleResource Name="User.Email">
-    <Value>E-posta</Value>
   </LocaleResource>
   <LocaleResource Name="User.Role">
     <Value>Rol</Value>
@@ -2804,9 +2351,6 @@
   </LocaleResource>
   <LocaleResource Name="User.FirstName">
     <Value>Ad</Value>
-  </LocaleResource>
-  <LocaleResource Name="User.LastName">
-    <Value>Soyad</Value>
   </LocaleResource>
   <LocaleResource Name="User.FirstNamePlaceholder">
     <Value>Ahmet</Value>
@@ -2847,9 +2391,6 @@
   <LocaleResource Name="Pagination.Last">
     <Value>Son</Value>
   </LocaleResource>
-  <LocaleResource Name="Pagination.Previous">
-    <Value>Önceki</Value>
-  </LocaleResource>
   <LocaleResource Name="Pagination.Next">
     <Value>Sonraki</Value>
   </LocaleResource>
@@ -2876,9 +2417,6 @@
   </LocaleResource>
   <LocaleResource Name="Validation.MaxLength">
     <Value>En fazla {0} karakter olabilir</Value>
-  </LocaleResource>
-  <LocaleResource Name="Validation.PasswordMismatch">
-    <Value>Şifreler eşleşmiyor</Value>
   </LocaleResource>
   <LocaleResource Name="Validation.InvalidFormat">
     <Value>Geçersiz format</Value>
@@ -2910,20 +2448,11 @@
   <LocaleResource Name="Message.SessionExpired">
     <Value>Oturumunuz sona erdi. Lütfen tekrar giriş yapın.</Value>
   </LocaleResource>
-  <LocaleResource Name="Settings.Title">
-    <Value>Sistem Ayarları</Value>
-  </LocaleResource>
   <LocaleResource Name="Settings.General">
     <Value>Genel</Value>
   </LocaleResource>
   <LocaleResource Name="Settings.Security">
     <Value>Güvenlik</Value>
-  </LocaleResource>
-  <LocaleResource Name="Settings.Notifications">
-    <Value>Bildirimler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Settings.Email">
-    <Value>E-posta</Value>
   </LocaleResource>
   <LocaleResource Name="Settings.Language">
     <Value>Dil</Value>
@@ -2933,9 +2462,6 @@
   </LocaleResource>
   <LocaleResource Name="Settings.DemoMode">
     <Value>Demo Modu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.Title">
-    <Value>Diller</Value>
   </LocaleResource>
   <LocaleResource Name="Language.NewLanguage">
     <Value>Yeni Dil</Value>
@@ -2951,9 +2477,6 @@
   </LocaleResource>
   <LocaleResource Name="Language.SeoCode">
     <Value>SEO Kodu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.IsDefault">
-    <Value>Varsayılan</Value>
   </LocaleResource>
   <LocaleResource Name="Language.RTL">
     <Value>Sağdan Sola</Value>
@@ -3003,9 +2526,6 @@
   <LocaleResource Name="CustomerPortal.AdminLogin">
     <Value>Admin Girişi</Value>
   </LocaleResource>
-  <LocaleResource Name="Status.Pending">
-    <Value>Bekleyen</Value>
-  </LocaleResource>
   <LocaleResource Name="Status.InProgress">
     <Value>Devam Ediyor</Value>
   </LocaleResource>
@@ -3017,9 +2537,6 @@
   </LocaleResource>
   <LocaleResource Name="Status.Expired">
     <Value>Süresi Doldu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Status.Draft">
-    <Value>Taslak</Value>
   </LocaleResource>
   <LocaleResource Name="Status.Approved">
     <Value>Onaylandı</Value>
@@ -3036,12 +2553,6 @@
   <LocaleResource Name="Status.Waiting">
     <Value>Bekliyor</Value>
   </LocaleResource>
-  <LocaleResource Name="Status.Missed">
-    <Value>Cevapsız</Value>
-  </LocaleResource>
-  <LocaleResource Name="Status.Callback">
-    <Value>Geri Arama</Value>
-  </LocaleResource>
   <LocaleResource Name="Status.Overdue">
     <Value>Gecikmiş</Value>
   </LocaleResource>
@@ -3056,9 +2567,6 @@
   </LocaleResource>
   <LocaleResource Name="Role.TeamLeader">
     <Value>Takım Lideri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Role.Evaluator">
-    <Value>Değerlendirici</Value>
   </LocaleResource>
   <LocaleResource Name="Role.QualitySpecialist">
     <Value>Kalite Uzmanı</Value>
@@ -3083,41 +2591,8 @@
     <Value>Saha Çalışanı Değerlendirmesi</Value>
   </LocaleResource>
   <!-- TypeDefinitions - Assignment Statuses -->
-  <LocaleResource Name="AssignmentStatus.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
-  <LocaleResource Name="AssignmentStatus.InProgress">
-    <Value>Devam Ediyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="AssignmentStatus.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="AssignmentStatus.Expired">
-    <Value>Süresi Doldu</Value>
-  </LocaleResource>
-  <LocaleResource Name="AssignmentStatus.Cancelled">
-    <Value>İptal Edildi</Value>
-  </LocaleResource>
   <!-- TypeDefinitions - Evaluation Statuses -->
-  <LocaleResource Name="EvaluationStatus.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
-  <LocaleResource Name="EvaluationStatus.InProgress">
-    <Value>Devam Ediyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="EvaluationStatus.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="EvaluationStatus.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
-  <LocaleResource Name="EvaluationStatus.Cancelled">
-    <Value>İptal Edildi</Value>
-  </LocaleResource>
   <!-- TypeDefinitions - Project Statuses -->
-  <LocaleResource Name="ProjectStatus.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
   <LocaleResource Name="ProjectStatus.Planned">
     <Value>Planlandı</Value>
   </LocaleResource>
@@ -3126,12 +2601,6 @@
   </LocaleResource>
   <LocaleResource Name="ProjectStatus.Paused">
     <Value>Duraklatıldı</Value>
-  </LocaleResource>
-  <LocaleResource Name="ProjectStatus.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="ProjectStatus.Cancelled">
-    <Value>İptal Edildi</Value>
   </LocaleResource>
   <!-- TypeDefinitions - Project Types -->
   <LocaleResource Name="ProjectType.MysteryShopping">
@@ -3178,9 +2647,6 @@
   <LocaleResource Name="DateRange.Today">
     <Value>Bugün</Value>
   </LocaleResource>
-  <LocaleResource Name="DateRange.Yesterday">
-    <Value>Dün</Value>
-  </LocaleResource>
   <LocaleResource Name="DateRange.Last7Days">
     <Value>Son 7 Gün</Value>
   </LocaleResource>
@@ -3190,20 +2656,8 @@
   <LocaleResource Name="DateRange.ThisWeek">
     <Value>Bu Hafta</Value>
   </LocaleResource>
-  <LocaleResource Name="DateRange.LastWeek">
-    <Value>Geçen Hafta</Value>
-  </LocaleResource>
-  <LocaleResource Name="DateRange.ThisMonth">
-    <Value>Bu Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="DateRange.LastMonth">
-    <Value>Geçen Ay</Value>
-  </LocaleResource>
   <LocaleResource Name="DateRange.ThisQuarter">
     <Value>Bu Çeyrek</Value>
-  </LocaleResource>
-  <LocaleResource Name="DateRange.ThisYear">
-    <Value>Bu Yıl</Value>
   </LocaleResource>
   <LocaleResource Name="Role.CustomerRepresentative">
     <Value>Müşteri Temsilcisi</Value>
@@ -3244,20 +2698,8 @@
   <LocaleResource Name="Common.Unknown">
     <Value>Bilinmiyor</Value>
   </LocaleResource>
-  <LocaleResource Name="Confirm.Title">
-    <Value>Onay</Value>
-  </LocaleResource>
   <LocaleResource Name="Confirm.Message">
     <Value>Bu işlemi onaylıyor musunuz?</Value>
-  </LocaleResource>
-  <LocaleResource Name="Confirm.DeleteTitle">
-    <Value>Silme Onayı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Confirm.DeleteMessage">
-    <Value>Bu kaydı silmek istediğinizden emin misiniz?</Value>
-  </LocaleResource>
-  <LocaleResource Name="Confirm.YesDelete">
-    <Value>Evet, Sil</Value>
   </LocaleResource>
   <LocaleResource Name="Confirm.CancelTitle">
     <Value>İptal Onayı</Value>
@@ -3268,9 +2710,6 @@
   <LocaleResource Name="Confirm.YesCancel">
     <Value>Evet, İptal Et</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.Assignments">
-    <Value>Atamalar</Value>
-  </LocaleResource>
   <LocaleResource Name="Approval.Title">
     <Value>Onay Yönetimi</Value>
   </LocaleResource>
@@ -3280,14 +2719,8 @@
   <LocaleResource Name="Approval.MyPendingRequests">
     <Value>Onayımı Bekleyen Talepler</Value>
   </LocaleResource>
-  <LocaleResource Name="Approval.Reference">
-    <Value>Referans</Value>
-  </LocaleResource>
   <LocaleResource Name="Approval.RequestedBy">
     <Value>Talep Eden</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Priority">
-    <Value>Öncelik</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Approved">
     <Value>Onaylanan</Value>
@@ -3337,9 +2770,6 @@
   <LocaleResource Name="Approval.RequestDate">
     <Value>Talep Tarihi</Value>
   </LocaleResource>
-  <LocaleResource Name="Approval.DueDate">
-    <Value>Son Tarih</Value>
-  </LocaleResource>
   <LocaleResource Name="Approval.ResponseDate">
     <Value>Yanıt Tarihi</Value>
   </LocaleResource>
@@ -3388,29 +2818,11 @@
   <LocaleResource Name="Approval.Type.Assignment">
     <Value>Atama</Value>
   </LocaleResource>
-  <LocaleResource Name="Approval.Type.Project">
-    <Value>Proje</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Type.Meeting">
-    <Value>Toplantı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Type.Training">
-    <Value>Eğitim</Value>
-  </LocaleResource>
   <LocaleResource Name="Approval.Type.Delegation">
     <Value>Vekalet</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Type.General">
     <Value>Genel</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Status.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Status.Approved">
-    <Value>Onaylandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Approval.Status.Rejected">
-    <Value>Reddedildi</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.Status.Cancelled">
     <Value>İptal</Value>
@@ -3426,9 +2838,6 @@
   </LocaleResource>
   <LocaleResource Name="Priority.Urgent">
     <Value>Acil</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Title">
-    <Value>Bildirimler</Value>
   </LocaleResource>
   <LocaleResource Name="Notification.MarkAllAsRead">
     <Value>Tümünü Okundu İşaretle</Value>
@@ -3454,26 +2863,11 @@
   <LocaleResource Name="Notification.Type.Success">
     <Value>Başarılı</Value>
   </LocaleResource>
-  <LocaleResource Name="Notification.Type.Warning">
-    <Value>Uyarı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Type.Error">
-    <Value>Hata</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Type.ApprovalRequest">
-    <Value>Onay Talebi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Type.Assignment">
-    <Value>Atama</Value>
-  </LocaleResource>
   <LocaleResource Name="Notification.Type.MeetingInvite">
     <Value>Toplantı Daveti</Value>
   </LocaleResource>
   <LocaleResource Name="Notification.Type.TrainingInvite">
     <Value>Eğitim Daveti</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Type.Reminder">
-    <Value>Hatırlatma</Value>
   </LocaleResource>
   <LocaleResource Name="Notification.Type.System">
     <Value>Sistem</Value>
@@ -3492,9 +2886,6 @@
   </LocaleResource>
   <LocaleResource Name="Notification.Settings.InApp">
     <Value>Uygulama İçi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.Settings.Email">
-    <Value>E-posta</Value>
   </LocaleResource>
   <LocaleResource Name="Notification.Settings.SMS">
     <Value>SMS</Value>
@@ -3646,9 +3037,6 @@
   <LocaleResource Name="Report.DetailedExcel">
     <Value>Detaylı Excel</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Project">
-    <Value>Proje</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.Branch">
     <Value>Şube</Value>
   </LocaleResource>
@@ -3657,9 +3045,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.Checklist">
     <Value>Kontrol Listesi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Region">
-    <Value>Bölge</Value>
   </LocaleResource>
   <LocaleResource Name="Report.AllProjects">
     <Value>Tüm Projeler</Value>
@@ -3679,15 +3064,6 @@
   <LocaleResource Name="Report.AllStatuses">
     <Value>Tüm Durumlar</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Status.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Status.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Status.InProgress">
-    <Value>Devam Eden</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.StartDate">
     <Value>Başlangıç Tarihi</Value>
   </LocaleResource>
@@ -3699,9 +3075,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.Completed">
     <Value>Tamamlanan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Pending">
-    <Value>Bekleyen</Value>
   </LocaleResource>
   <LocaleResource Name="Report.AverageScore">
     <Value>Ort. Puan</Value>
@@ -3745,17 +3118,8 @@
   <LocaleResource Name="Report.Question">
     <Value>Soru</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Answer">
-    <Value>Cevap</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Note">
-    <Value>Not</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.GeneralComment">
     <Value>Genel Yorum</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.PenaltyReport">
-    <Value>Cezalı KL Raporu</Value>
   </LocaleResource>
   <LocaleResource Name="Report.PenaltyType">
     <Value>Ceza Tipi</Value>
@@ -3795,9 +3159,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.ProjectBranch">
     <Value>Proje / Şube</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.PersonnelReportCard">
-    <Value>Temsilci Karnesi</Value>
   </LocaleResource>
   <LocaleResource Name="Report.PrintPdf">
     <Value>PDF Yazdır</Value>
@@ -3859,9 +3220,6 @@
   <LocaleResource Name="Report.SelectPersonnelToViewReport">
     <Value>Karne görmek için bir temsilci seçin.</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.SuggestionsReport">
-    <Value>Öneriler Raporu</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.TextSearch">
     <Value>Metin Arama</Value>
   </LocaleResource>
@@ -3922,17 +3280,11 @@
   <LocaleResource Name="Common.Home">
     <Value>Ana Sayfa</Value>
   </LocaleResource>
-  <LocaleResource Name="ExcelTemplate.Title">
-    <Value>Excel Şablonları</Value>
-  </LocaleResource>
   <LocaleResource Name="ExcelTemplate.NewTemplate">
     <Value>Yeni Şablon</Value>
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.NoRecords">
     <Value>Henüz Excel şablonu bulunmamaktadır.</Value>
-  </LocaleResource>
-  <LocaleResource Name="ExcelTemplate.TemplateName">
-    <Value>Şablon Adı</Value>
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.EntityType">
     <Value>Varlık Tipi (Tablo)</Value>
@@ -4006,20 +3358,11 @@
   <LocaleResource Name="ExcelTemplate.Type.Date">
     <Value>Tarih</Value>
   </LocaleResource>
-  <LocaleResource Name="ExcelTemplate.Type.Boolean">
-    <Value>Evet/Hayır</Value>
-  </LocaleResource>
-  <LocaleResource Name="ExcelTemplate.Type.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
   <LocaleResource Name="ExcelTemplate.Type.Phone">
     <Value>Telefon</Value>
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.Type.Dropdown">
     <Value>Seçim Listesi</Value>
-  </LocaleResource>
-  <LocaleResource Name="ExcelTemplate.Order">
-    <Value>Sıra</Value>
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.SampleValue">
     <Value>Örnek Değer</Value>
@@ -4048,17 +3391,11 @@
   <LocaleResource Name="ExcelTemplate.UploadAndProcess">
     <Value>Dosyayı Yükle ve İşle</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Title">
-    <Value>Müşteri Personeli</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Department">
     <Value>Departman</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Supervisor">
     <Value>Süpervizör</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.JobTitle">
-    <Value>Ünvan</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NewPersonnel">
     <Value>Yeni Personel</Value>
@@ -4069,20 +3406,11 @@
   <LocaleResource Name="CustomerPersonnel.TaskCount">
     <Value>Görev Sayısı</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.ResetPassword">
-    <Value>Şifre Sıfırla</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NewCustomerPersonnel">
     <Value>Yeni Müşteri Personeli</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.EditCustomerPersonnel">
     <Value>Müşteri Personeli Düzenle</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.PasswordChangeHint">
-    <Value>Şifre (Değiştirmek için doldurun)</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.PasswordKeepHint">
-    <Value>Boş bırakırsanız mevcut şifre değişmez</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Role.Manager">
     <Value>Müşteri Yöneticisi</Value>
@@ -4093,15 +3421,6 @@
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
     <Value>Operatör</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.DepartmentPlaceholder">
-    <Value>Kalite Kontrol</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.TitlePlaceholder">
-    <Value>Kalite Müdürü</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.NotesPlaceholder">
-    <Value>Personel hakkında notlar...</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ResetPasswordInfo">
     <Value>Admin olarak personelin şifresini sıfırlayabilirsiniz.</Value>
   </LocaleResource>
@@ -4111,20 +3430,11 @@
   <LocaleResource Name="CustomerPersonnel.MinChars">
     <Value>En az 6 karakter</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.PasswordMinLength">
-    <Value>En az 6 karakter olmalıdır</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ConfirmPassword">
     <Value>Yeni Şifre (Tekrar)</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ConfirmPasswordPlaceholder">
     <Value>Yeni şifrenizi tekrar girin</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPersonnel.Resetting">
-    <Value>Sıfırlanıyor...</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Branch.Title">
-    <Value>Şubeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Branch.NotFound">
     <Value>Şube Bulunamadı</Value>
@@ -4138,17 +3448,11 @@
   <LocaleResource Name="CustomerPortal.Branch.AverageScore">
     <Value>Ort. Puan</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Projects.Title">
-    <Value>Projeler</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Projects.NotFound">
     <Value>Proje Bulunamadı</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Projects.NoRecords">
     <Value>Firmanıza tanımlı proje bulunmuyor.</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Projects">
-    <Value>Projeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Organizations">
     <Value>Organizasyonlar</Value>
@@ -4174,14 +3478,8 @@
   <LocaleResource Name="CustomerPortal.Organizations.PersonnelCount">
     <Value>Personel</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Organizations.EvaluationCount">
-    <Value>Dinleme</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.AverageScore">
     <Value>Ort. Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Supervisors.Title">
-    <Value>Süpervizörler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.NotFound">
     <Value>Süpervizör Bulunamadı</Value>
@@ -4210,29 +3508,14 @@
   <LocaleResource Name="CustomerPortal.InternalEvaluations.TotalCount">
     <Value>Toplam Dinleme</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.InternalEvaluations.AverageScore">
-    <Value>Ortalama Puan</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.InternalEvaluations.SearchPlaceholder">
     <Value>Proje, dinleyen, dinlenen, organizasyon...</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.InternalEvaluations.List">
     <Value>İç Dinleme Listesi</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ExternalEvaluations.Title">
-    <Value>Dış Değerlendirmeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ExternalEvaluations.NotFound">
-    <Value>Dinleme Bulunamadı</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.NoRecords">
     <Value>Dış dinleme kaydı bulunmuyor.</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ExternalEvaluations.TotalCount">
-    <Value>Toplam Dinleme</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ExternalEvaluations.AverageScore">
-    <Value>Ortalama Puan</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.SearchPlaceholder">
     <Value>Proje, dinlenen, organizasyon...</Value>
@@ -4249,17 +3532,11 @@
   <LocaleResource Name="CustomerPortal.Evaluations.Organization">
     <Value>Organizasyon</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Evaluations.CallDate">
-    <Value>Çağrı Tarihi</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluations.CallTime">
     <Value>Saat</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluations.Duration">
     <Value>Süre</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.SavedFilters">
-    <Value>Kayıtlı Filtreler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.SaveFilter">
     <Value>Filtreyi Kaydet</Value>
@@ -4273,35 +3550,8 @@
   <LocaleResource Name="CustomerPortal.SelectedFilters">
     <Value>Seçilen Filtreler</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.Title">
-    <Value>Dashboard</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.TotalEvaluations">
-    <Value>Toplam Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.AverageScore">
-    <Value>Ortalama Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.BranchCount">
-    <Value>Şube Sayısı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.ThisMonth">
-    <Value>Bu Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.MonthlyTrend">
-    <Value>Aylık Değerlendirme Trendi</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.ScoreDistribution">
-    <Value>Puan Dağılımı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.RecentEvaluations">
-    <Value>Son Değerlendirmeler</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.NoEvaluations">
     <Value>Henüz değerlendirme bulunmuyor.</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Evaluation.Title">
-    <Value>Değerlendirmeler</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluation.NotFound">
     <Value>Değerlendirme Bulunamadı</Value>
@@ -4309,20 +3559,8 @@
   <LocaleResource Name="CustomerPortal.Evaluation.NoRecords">
     <Value>Henüz değerlendirme kaydı bulunmuyor.</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.Title">
-    <Value>Raporlar</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.TotalEvaluations">
-    <Value>Toplam Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.AverageScore">
-    <Value>Ortalama Puan</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Report.BranchCount">
     <Value>Şube Sayısı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.ScoreDistribution">
-    <Value>Puan Dağılımı</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Report.MonthlyTrend">
     <Value>Aylık Trend</Value>
@@ -4335,18 +3573,6 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Dashboard">
     <Value>Dashboard</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Evaluations">
-    <Value>Değerlendirmeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Branches">
-    <Value>Şubeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Reports">
-    <Value>Raporlar</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Logout">
-    <Value>Çıkış Yap</Value>
   </LocaleResource>
   <LocaleResource Name="Form.Title">
     <Value>Değerlendirme Formu</Value>
@@ -4365,12 +3591,6 @@
   </LocaleResource>
   <LocaleResource Name="Form.Points">
     <Value>puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Form.Yes">
-    <Value>Evet</Value>
-  </LocaleResource>
-  <LocaleResource Name="Form.No">
-    <Value>Hayır</Value>
   </LocaleResource>
   <LocaleResource Name="Form.NA">
     <Value>N/A</Value>
@@ -4438,12 +3658,6 @@
   <LocaleResource Name="Auth.ImpersonationEndError">
     <Value>Müşteri olarak görüntüleme sonlandırılırken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Assignment.LoadError">
-    <Value>Atamalar yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Assignment.NotFound">
-    <Value>Atama bulunamadı.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Assignment.DetailLoadError">
     <Value>Atama detayı yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -4458,9 +3672,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.Assignment.UpdateError">
     <Value>Atama güncellenirken bir hata oluştu:</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Assignment.DeleteError">
-    <Value>Atama silinirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Assignment.FilterError">
     <Value>Atamalar filtrelenirken bir hata oluştu.</Value>
@@ -4495,9 +3706,6 @@
   <LocaleResource Name="Api.Assignment.SummaryLoadError">
     <Value>Atama özeti yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Assignment.ProjectSummaryError">
-    <Value>Proje özetleri yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Assignment.BranchSummaryError">
     <Value>Şube özetleri yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -4507,26 +3715,11 @@
   <LocaleResource Name="Api.Assignment.UpcomingLoadError">
     <Value>Yaklaşan atamalar yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Assignment.QRCodeError">
-    <Value>QR kod oluşturulurken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Assignment.ProjectNotActive">
     <Value>Proje aktif olmadığı için atama yapılamaz.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.LoadListError">
-    <Value>Değerlendirmeler yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Evaluation.LoadError">
     <Value>Değerlendirme yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.NotFound">
-    <Value>Değerlendirme bulunamadı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.UserNotFound">
-    <Value>Kullanıcı bilgisi bulunamadı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.AssignmentNotFound">
-    <Value>Atama bulunamadı.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Evaluation.FormLoadError">
     <Value>Değerlendirme formu yüklenirken bir hata oluştu.</Value>
@@ -4537,20 +3730,8 @@
   <LocaleResource Name="Api.Evaluation.ProjectNotActive">
     <Value>Proje aktif olmadığı için değerlendirme başlatılamaz.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.SubmitSuccess">
-    <Value>Değerlendirme başarıyla tamamlandı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.SubmitError">
-    <Value>Değerlendirme gönderilirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Evaluation.PersonnelRequired">
     <Value>Değerlendirilen personel seçimi zorunludur.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.DraftSaveSuccess">
-    <Value>Taslak başarıyla kaydedildi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Evaluation.DraftSaveError">
-    <Value>Taslak kaydedilirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Evaluation.DraftUpdateSuccess">
     <Value>Taslak başarıyla güncellendi.</Value>
@@ -4639,9 +3820,6 @@
   <LocaleResource Name="Api.Branch.NotFound">
     <Value>Şube bulunamadı.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Branch.LoadListError">
-    <Value>Şubeler yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Branch.LoadError">
     <Value>Şube yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -4653,9 +3831,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.Branch.UpdateError">
     <Value>Şube güncellenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Branch.DeleteError">
-    <Value>Şube silinirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Checklist.NotFound">
     <Value>Kontrol listesi bulunamadı.</Value>
@@ -4681,9 +3856,6 @@
   <LocaleResource Name="Api.Customer.NotFound">
     <Value>Müşteri bulunamadı.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Customer.LoadListError">
-    <Value>Müşteriler yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Customer.LoadError">
     <Value>Müşteri yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -4696,38 +3868,17 @@
   <LocaleResource Name="Api.Customer.UpdateError">
     <Value>Müşteri güncellenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Customer.DeleteError">
-    <Value>Müşteri silinirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.NotFound">
-    <Value>Personel bulunamadı.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.CustomerPersonnel.LoadListError">
     <Value>Müşteri personelleri yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.CustomerPersonnel.LoadError">
     <Value>Personel yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.CreateError">
-    <Value>Personel oluşturulurken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.UpdateError">
-    <Value>Personel güncellenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.DeleteError">
-    <Value>Personel silinirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.PasswordChangeSuccess">
-    <Value>Şifre başarıyla değiştirildi.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.CustomerPersonnel.PasswordChangeError">
     <Value>Şifre değiştirilirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.CustomerPersonnel.PasswordResetSuccess">
     <Value>Şifre başarıyla sıfırlandı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPersonnel.PasswordResetError">
-    <Value>Şifre sıfırlanırken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.FieldWorker.NotFound">
     <Value>Saha çalışanı bulunamadı.</Value>
@@ -4762,20 +3913,11 @@
   <LocaleResource Name="Api.Personnel.UpdateError">
     <Value>Personel güncellenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Personnel.DeleteSuccess">
-    <Value>Personel başarıyla silindi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Personnel.DeleteError">
-    <Value>Personel silinirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Personnel.CheckError">
     <Value>Kontrol sırasında bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.User.NotFound">
     <Value>Kullanıcı bulunamadı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.User.LoadListError">
-    <Value>Kullanıcılar yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.User.LoadError">
     <Value>Kullanıcı yüklenirken bir hata oluştu.</Value>
@@ -4788,9 +3930,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.User.UpdateError">
     <Value>Kullanıcı güncellenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.User.DeleteError">
-    <Value>Kullanıcı silinirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.User.IdMismatch">
     <Value>Kullanıcı ID uyuşmuyor.</Value>
@@ -4879,9 +4018,6 @@
   <LocaleResource Name="Api.Meeting.UpdateSuccess">
     <Value>Toplantı başarıyla güncellendi.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Meeting.DeleteSuccess">
-    <Value>Toplantı başarıyla silindi.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Meeting.StartSuccess">
     <Value>Toplantı başlatıldı.</Value>
   </LocaleResource>
@@ -4935,9 +4071,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.Call.UpdateSuccess">
     <Value>Çağrı başarıyla güncellendi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Call.DeleteSuccess">
-    <Value>Çağrı başarıyla silindi.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Call.StartSuccess">
     <Value>Çağrı başlatıldı.</Value>
@@ -5008,9 +4141,6 @@
   <LocaleResource Name="Api.Report.SuggestionsExportError">
     <Value>Öneriler raporu Excel dosyası oluşturulurken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Common.UserNotFound">
-    <Value>Kullanıcı bulunamadı.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Dashboard.LoadError">
     <Value>Dashboard yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -5041,9 +4171,6 @@
   <LocaleResource Name="Api.Language.UpdateSuccess">
     <Value>Dil güncellendi.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Language.DeleteSuccess">
-    <Value>Dil silindi.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Language.AlreadySeeded">
     <Value>Diller zaten mevcut.</Value>
   </LocaleResource>
@@ -5055,12 +4182,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.Language.ChangeSuccess">
     <Value>Dil değiştirildi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Resource.SaveSuccess">
-    <Value>Kaynak kaydedildi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Resource.DeleteSuccess">
-    <Value>Kaynak silindi.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Resource.DeleteAllSuccess">
     <Value>{0} çeviri kaynağı silindi.</Value>
@@ -5107,9 +4228,6 @@
   <LocaleResource Name="Api.VisitDetail.SectorUpdateError">
     <Value>Sektör güncellenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.VisitDetail.SectorDeleteSuccess">
-    <Value>Sektör silindi.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.VisitDetail.SectorDeleteError">
     <Value>Sektör silinirken bir hata oluştu.</Value>
   </LocaleResource>
@@ -5127,9 +4245,6 @@
   </LocaleResource>
   <LocaleResource Name="Api.VisitDetail.FieldUpdateError">
     <Value>Alan tanımı güncellenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.VisitDetail.FieldDeleteSuccess">
-    <Value>Alan tanımı silindi.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.VisitDetail.FieldDeleteError">
     <Value>Alan tanımı silinirken bir hata oluştu.</Value>
@@ -5170,17 +4285,8 @@
   <LocaleResource Name="Api.Common.FileTypeNotSupported">
     <Value>Bu dosya türü desteklenmiyor.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Common.FileUploadError">
-    <Value>Dosya yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Common.FileNotFoundOnServer">
     <Value>Dosya sunucuda bulunamadı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Common.FileDownloadError">
-    <Value>Dosya indirilirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.Common.FileDeleteError">
-    <Value>Dosya silinirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Question.NotFound">
     <Value>Soru bulunamadı.</Value>
@@ -5254,35 +4360,17 @@
   <LocaleResource Name="Api.CustomerVisit.CancelError">
     <Value>Ziyaret iptal edilirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.CustomerVisit.DeleteSuccess">
-    <Value>Ziyaret silindi.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.CustomerVisit.DeleteError">
     <Value>Ziyaret silinirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.CustomerPortalAuth.UsernamePasswordRequired">
-    <Value>Kullanıcı adı ve şifre gereklidir.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPortalAuth.InvalidCredentials">
-    <Value>Geçersiz kullanıcı adı veya şifre.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPortalAuth.LoginError">
-    <Value>Giriş sırasında bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.CustomerPortalAuth.CustomerPersonnelOnly">
     <Value>Bu endpoint sadece müşteri personeli için geçerlidir.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Api.CustomerPortalAuth.LogoutSuccess">
-    <Value>Çıkış başarılı.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.CustomerPortal.CustomerNotFound">
     <Value>Müşteri bilgisi bulunamadı.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.CustomerPortal.CustomerNotFoundTokenInvalid">
     <Value>Müşteri bilgisi bulunamadı. Token geçersiz veya eksik.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Mvc.Account.InvalidCredentials">
-    <Value>Geçersiz kullanıcı adı veya şifre.</Value>
   </LocaleResource>
   <LocaleResource Name="Mvc.Account.LoginError">
     <Value>Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.</Value>
@@ -5292,9 +4380,6 @@
   </LocaleResource>
   <LocaleResource Name="Mvc.MyAssignments.FieldWorkerNotFound">
     <Value>Saha çalışanı kaydınız bulunamadı. Lütfen sistem yöneticisi ile iletişime geçin.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Mvc.MyAssignments.LoadError">
-    <Value>Atamalar yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Common.User">
     <Value>Kullanıcı</Value>
@@ -5308,20 +4393,11 @@
   <LocaleResource Name="AuditLog.LogType">
     <Value>Log Türü</Value>
   </LocaleResource>
-  <LocaleResource Name="AuditLog.Category">
-    <Value>Kategori</Value>
-  </LocaleResource>
   <LocaleResource Name="AuditLog.UserId">
     <Value>Kullanıcı ID</Value>
   </LocaleResource>
   <LocaleResource Name="AuditLog.TotalLogs">
     <Value>Toplam Log</Value>
-  </LocaleResource>
-  <LocaleResource Name="AuditLog.Errors">
-    <Value>Hatalar</Value>
-  </LocaleResource>
-  <LocaleResource Name="AuditLog.Warnings">
-    <Value>Uyarılar</Value>
   </LocaleResource>
   <LocaleResource Name="AuditLog.SuccessfulLogins">
     <Value>Başarılı Girişler</Value>
@@ -5340,9 +4416,6 @@
   </LocaleResource>
   <LocaleResource Name="AuditLog.LogDetail">
     <Value>Log Detayı</Value>
-  </LocaleResource>
-  <LocaleResource Name="AuditLog.Details">
-    <Value>Detaylar</Value>
   </LocaleResource>
   <LocaleResource Name="AuditLog.Table">
     <Value>Tablo</Value>
@@ -5425,12 +4498,6 @@
   <LocaleResource Name="Common.Day.Sunday">
     <Value>Pazar</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Status.Completed">
-    <Value>Tamamlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Status.Draft">
-    <Value>Taslak</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.Status.InProgress">
     <Value>Devam</Value>
   </LocaleResource>
@@ -5454,9 +4521,6 @@
   </LocaleResource>
   <LocaleResource Name="Customer.ContractEnd">
     <Value>Sözleşme Bitiş</Value>
-  </LocaleResource>
-  <LocaleResource Name="Import.Title">
-    <Value>Veri İçe Aktarma</Value>
   </LocaleResource>
   <LocaleResource Name="Import.PersonnelImport">
     <Value>Personel İçe Aktarma</Value>
@@ -5491,9 +4555,6 @@
   <LocaleResource Name="Import.UpdateExistingNote">
     <Value>İşaretlenmezse, mevcut kullanıcı adları atlanır</Value>
   </LocaleResource>
-  <LocaleResource Name="Import.Import">
-    <Value>İçe Aktar</Value>
-  </LocaleResource>
   <LocaleResource Name="Import.Processing">
     <Value>İşleniyor...</Value>
   </LocaleResource>
@@ -5520,9 +4581,6 @@
   </LocaleResource>
   <LocaleResource Name="Import.Skipped">
     <Value>Atlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="Import.Error">
-    <Value>Hata</Value>
   </LocaleResource>
   <LocaleResource Name="Import.Errors">
     <Value>Hatalar</Value>
@@ -5562,9 +4620,6 @@
   </LocaleResource>
   <LocaleResource Name="Import.Failed">
     <Value>İçe aktarma başarısız.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.Import">
-    <Value>İçe Aktar</Value>
   </LocaleResource>
   <LocaleResource Name="Language.ImportXmlTitle">
     <Value>XML İçe Aktarma</Value>
@@ -5608,9 +4663,6 @@
   <LocaleResource Name="Validation.AllFieldsRequired">
     <Value>Lütfen tüm alanları doldurun.</Value>
   </LocaleResource>
-  <LocaleResource Name="Account.LoginError">
-    <Value>Giriş sırasında bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Account.LoginFailed">
     <Value>Giriş başarısız. Lütfen bilgilerinizi kontrol edin.</Value>
   </LocaleResource>
@@ -5631,9 +4683,6 @@
   </LocaleResource>
   <LocaleResource Name="Account.ProfileUpdateError">
     <Value>Profil güncellenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Account.ProfileUpdated">
-    <Value>Profil bilgileriniz başarıyla güncellendi.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.BulkCreateError">
     <Value>Toplu atama oluşturulurken bir hata oluştu.</Value>
@@ -5667,9 +4716,6 @@
   </LocaleResource>
   <LocaleResource Name="Assignment.LoadError">
     <Value>Atamalar yüklenirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Assignment.MyTasks">
-    <Value>Görevlerim</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.NotFound">
     <Value>Atama bulunamadı.</Value>
@@ -5797,9 +4843,6 @@
   <LocaleResource Name="Dashboard.LoadError">
     <Value>Dashboard verileri yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="Dashboard.WelcomeFieldWorker">
-    <Value>Hoş geldiniz! Atamalarınızı görmek için soldaki menüden Görevlerim seçeneğine tıklayabilirsiniz.</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.AnswerAllRequired">
     <Value>Lütfen tüm zorunlu soruları cevaplayın.</Value>
   </LocaleResource>
@@ -5842,12 +4885,6 @@
   <LocaleResource Name="Evaluation.DurationRequired">
     <Value>Süre zorunludur</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.DraftSaveErrorMessage">
-    <Value>Taslak kaydedilirken bir hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.SubmitErrorMessage">
-    <Value>Değerlendirme gönderilirken bir hata oluştu.</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.NotFound">
     <Value>Değerlendirme bulunamadı.</Value>
   </LocaleResource>
@@ -5859,9 +4896,6 @@
   </LocaleResource>
   <LocaleResource Name="Evaluation.RevertRequestFailed">
     <Value>Taslağa döndürme işlemi başarısız oldu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.FormLoadErrorMessage">
-    <Value>Form yüklenirken bir hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="File.DetailedEvaluations">
     <Value>Detayli_Degerlendirmeler</Value>
@@ -5881,23 +4915,14 @@
   <LocaleResource Name="Impersonation.Description">
     <Value>Bu özellik, seçilen müşterinin görünümüne geçmenizi sağlar. Gerçekleştirdiğiniz işlemler kayıt altına alınır.</Value>
   </LocaleResource>
-  <LocaleResource Name="Impersonation.Exit">
-    <Value>Çıkış</Value>
-  </LocaleResource>
   <LocaleResource Name="Impersonation.LoadError">
     <Value>Müşteri listesi yüklenemedi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Impersonation.SelectCustomer">
-    <Value>Müşteri Seçin</Value>
   </LocaleResource>
   <LocaleResource Name="Impersonation.SelectCustomerPlaceholder">
     <Value>Müşteri Seçin...</Value>
   </LocaleResource>
   <LocaleResource Name="Impersonation.SelectError">
     <Value>Lütfen bir müşteri seçin.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Impersonation.Start">
-    <Value>Görüntülemeyi Başlat</Value>
   </LocaleResource>
   <LocaleResource Name="Impersonation.ViewingAs">
     <Value>olarak görüntülüyor</Value>
@@ -5913,12 +4938,6 @@
   </LocaleResource>
   <LocaleResource Name="Language.ImportConfirmMessage">
     <Value>için XML dosyasından çevirileri içe aktarmak istiyor musunuz?</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ImportConfirmTitle">
-    <Value>XML İçe Aktarma</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ImportError">
-    <Value>İçe aktarma sırasında hata oluştu.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.Importing">
     <Value>İçe Aktarılıyor...</Value>
@@ -5940,12 +4959,6 @@
   </LocaleResource>
   <LocaleResource Name="Language.CacheClearError">
     <Value>Cache temizlenirken hata oluştu.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ResourceDeleteSuccess">
-    <Value>Kaynak silindi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Language.ResourceSaveSuccess">
-    <Value>Kaynak kaydedildi.</Value>
   </LocaleResource>
   <LocaleResource Name="Language.SaveError">
     <Value>Kayıt sırasında hata oluştu.</Value>
@@ -5976,9 +4989,6 @@
   </LocaleResource>
   <LocaleResource Name="Meeting.TypeKickoff">
     <Value>Kick-off</Value>
-  </LocaleResource>
-  <LocaleResource Name="Meeting.TypeProject">
-    <Value>Proje</Value>
   </LocaleResource>
   <LocaleResource Name="Meeting.TypeTraining">
     <Value>Eğitim</Value>
@@ -6034,9 +5044,6 @@
   <LocaleResource Name="Notification.TypeApprovalRequest">
     <Value>Onay Talebi</Value>
   </LocaleResource>
-  <LocaleResource Name="Notification.TypeError">
-    <Value>Hata</Value>
-  </LocaleResource>
   <LocaleResource Name="Notification.TypeInfo">
     <Value>Bilgi</Value>
   </LocaleResource>
@@ -6057,9 +5064,6 @@
   </LocaleResource>
   <LocaleResource Name="Notification.TypeTrainingInvite">
     <Value>Eğitim Daveti</Value>
-  </LocaleResource>
-  <LocaleResource Name="Notification.TypeWarning">
-    <Value>Uyarı</Value>
   </LocaleResource>
   <LocaleResource Name="Penalty.RedCard">
     <Value>Kırmızı Kart</Value>
@@ -6203,15 +5207,6 @@
   <LocaleResource Name="Menu.UserRequests">
     <Value>Kullanıcı Talepleri</Value>
   </LocaleResource>
-  <LocaleResource Name="UserRequest.DraftRequests">
-    <Value>Taslağa Alma Talepleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="UserRequest.PersonnelRequests">
-    <Value>Personel Talepleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="PersonnelRequest.AllRequests">
-    <Value>Personel Talepleri</Value>
-  </LocaleResource>
   <LocaleResource Name="PersonnelRequest.Name">
     <Value>Ad Soyad</Value>
   </LocaleResource>
@@ -6242,14 +5237,8 @@
   <LocaleResource Name="PersonnelRequest.ApproveSuccess">
     <Value>Personel talebi onaylandı ve kullanıcı oluşturuldu.</Value>
   </LocaleResource>
-  <LocaleResource Name="PersonnelRequest.ApproveError">
-    <Value>Onay işlemi başarısız</Value>
-  </LocaleResource>
   <LocaleResource Name="PersonnelRequest.RejectSuccess">
     <Value>Personel talebi reddedildi. İlgili değerlendirme taslağa alındı.</Value>
-  </LocaleResource>
-  <LocaleResource Name="PersonnelRequest.RejectError">
-    <Value>Red işlemi başarısız</Value>
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.UsernameRequired">
     <Value>Kullanıcı adı zorunludur</Value>
@@ -6275,14 +5264,8 @@
   <LocaleResource Name="DraftRequest.ApproveSuccess">
     <Value>Talep onaylandı. Değerlendirme taslak durumuna alındı.</Value>
   </LocaleResource>
-  <LocaleResource Name="DraftRequest.ApproveError">
-    <Value>Onay işlemi başarısız</Value>
-  </LocaleResource>
   <LocaleResource Name="DraftRequest.RejectSuccess">
     <Value>Talep reddedildi.</Value>
-  </LocaleResource>
-  <LocaleResource Name="DraftRequest.RejectError">
-    <Value>Red işlemi başarısız</Value>
   </LocaleResource>
   <LocaleResource Name="Common.SelectOptional">
     <Value>Seçiniz (opsiyonel)</Value>
@@ -6308,17 +5291,8 @@
   <LocaleResource Name="Button.Cancel">
     <Value>İptal</Value>
   </LocaleResource>
-  <LocaleResource Name="Button.Close">
-    <Value>Kapat</Value>
-  </LocaleResource>
   <LocaleResource Name="Button.CopyLink">
     <Value>Link Kopyala</Value>
-  </LocaleResource>
-  <LocaleResource Name="Button.Delete">
-    <Value>Sil</Value>
-  </LocaleResource>
-  <LocaleResource Name="Button.Detail">
-    <Value>Detay</Value>
   </LocaleResource>
   <LocaleResource Name="Button.More">
     <Value>Daha Fazla</Value>
@@ -6352,32 +5326,14 @@
   </LocaleResource>
 
   <!-- Evaluation -->
-  <LocaleResource Name="Evaluation.Answer">
-    <Value>Cevap</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.Answers">
     <Value>Verilen Cevaplar</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Assignments">
-    <Value>Atamalar</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.BackToForm">
     <Value>Geri Dön</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.CallDate">
-    <Value>Çağrı Tarihi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.CallId">
-    <Value>Çağrı ID</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.CallIdPlaceholder">
     <Value>Çağrı ID giriniz</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.CallInfo">
-    <Value>Çağrı Bilgileri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.CallTime">
-    <Value>Çağrı Saati</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.CompletedAt">
     <Value>Tamamlanma</Value>
@@ -6409,14 +5365,8 @@
   <LocaleResource Name="Evaluation.Earned">
     <Value>Kazanılan</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Evaluated">
-    <Value>Değerlendirilen</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.EvaluatedPerson">
     <Value>Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.EvaluatedPersonnel">
-    <Value>Değerlendirilen Personel</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.EvaluationComment">
     <Value>Denetim Yorumu</Value>
@@ -6436,12 +5386,6 @@
   <LocaleResource Name="Evaluation.ExpiredAssignments">
     <Value>Tarihi Geçmiş</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.FormLoading">
-    <Value>Form yükleniyor...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.GivenPoints">
-    <Value>Verilen Puan</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.ListeningsVisits">
     <Value>Dinlemeler/Ziyaretler</Value>
   </LocaleResource>
@@ -6460,26 +5404,14 @@
   <LocaleResource Name="Evaluation.Overdue">
     <Value>Gecikme</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Penalty">
-    <Value>Ceza</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.Period">
     <Value>Dönem</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.PeriodClosed">
     <Value>Dönem Kapandı</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Points">
-    <Value>puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Question">
-    <Value>Soru</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.RawScore">
     <Value>Ham Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Red">
-    <Value>Kırmızı</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.RedCards">
     <Value>Kırmızı Kart</Value>
@@ -6508,9 +5440,6 @@
   <LocaleResource Name="Evaluation.ScoredWeight">
     <Value>Soru Ağırlığı</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.SearchAssignments">
-    <Value>Proje veya kontrol listesi ara...</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.SearchExpired">
     <Value>Proje veya kontrol listesi ara...</Value>
   </LocaleResource>
@@ -6538,23 +5467,11 @@
   <LocaleResource Name="Evaluation.Summary">
     <Value>Değerlendirme Özeti</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.TotalScore">
-    <Value>Toplam Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.TotalWeight">
-    <Value>Toplam Ağırlık</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.Unscored">
     <Value>Puansız</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Weight">
-    <Value>Ağırlık</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.WriteYourAnswer">
     <Value>Cevabınızı yazın...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Yellow">
-    <Value>Sarı</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.YellowCards">
     <Value>Sarı Kart</Value>
@@ -6567,26 +5484,14 @@
   <LocaleResource Name="Import.AllCustomers">
     <Value>Tüm Müşteriler</Value>
   </LocaleResource>
-  <LocaleResource Name="Import.Checklist.GroupName">
-    <Value>Grup Adı</Value>
-  </LocaleResource>
   <LocaleResource Name="Import.Checklist.MaxPoints">
     <Value>Max Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Import.Checklist.PenaltyType">
-    <Value>Ceza Tipi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Import.Checklist.QuestionText">
-    <Value>Soru Metni</Value>
   </LocaleResource>
   <LocaleResource Name="Import.Checklist.ScoringType">
     <Value>Puanlama Tipi</Value>
   </LocaleResource>
   <LocaleResource Name="Import.Checklist.SubCriteria">
     <Value>Alt Kriterler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Import.Checklist.WeightPoints">
-    <Value>Ağırlık</Value>
   </LocaleResource>
   <LocaleResource Name="Import.ChecklistDescription">
     <Value>Açıklama</Value>
@@ -6626,12 +5531,6 @@
   <LocaleResource Name="InternalAssignments.CreateAssignments">
     <Value>Atamaları Oluştur</Value>
   </LocaleResource>
-  <LocaleResource Name="InternalAssignments.Created">
-    <Value>Oluşturuldu</Value>
-  </LocaleResource>
-  <LocaleResource Name="InternalAssignments.Errors">
-    <Value>Hatalar</Value>
-  </LocaleResource>
   <LocaleResource Name="InternalAssignments.Failed">
     <Value>Hatalı</Value>
   </LocaleResource>
@@ -6659,21 +5558,6 @@
   <LocaleResource Name="InternalAssignments.SelectCustomerFirst">
     <Value>Önce müşteri seçin</Value>
   </LocaleResource>
-  <LocaleResource Name="InternalAssignments.SelectionType">
-    <Value>Seçim Tipi</Value>
-  </LocaleResource>
-  <LocaleResource Name="InternalAssignments.SelectPersonnel">
-    <Value>Personel Seçin</Value>
-  </LocaleResource>
-  <LocaleResource Name="InternalAssignments.SelectRole">
-    <Value>Rol Seçin</Value>
-  </LocaleResource>
-  <LocaleResource Name="InternalAssignments.Skipped">
-    <Value>Atlandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="InternalAssignments.Title">
-    <Value>İç Değerlendirme Atamaları</Value>
-  </LocaleResource>
 
   <!-- Menu -->
   <LocaleResource Name="Menu.InternalAssignments">
@@ -6684,17 +5568,11 @@
   <LocaleResource Name="Profile.ConfirmPassword">
     <Value>Yeni Şifre (Tekrar)</Value>
   </LocaleResource>
-  <LocaleResource Name="Profile.Email">
-    <Value>E-posta</Value>
-  </LocaleResource>
   <LocaleResource Name="Profile.FirstName">
     <Value>Ad</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.Info">
     <Value>Profil Bilgileri</Value>
-  </LocaleResource>
-  <LocaleResource Name="Profile.LastName">
-    <Value>Soyad</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.NewPassword">
     <Value>Yeni Şifre</Value>
@@ -6731,9 +5609,6 @@
   <LocaleResource Name="Project.UploadDate">
     <Value>Yüklenme Tarihi</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.UploadFile">
-    <Value>Dosya Yükle</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.Uploading">
     <Value>Yükleniyor...</Value>
   </LocaleResource>
@@ -6749,9 +5624,6 @@
   </LocaleResource>
 
   <!-- Customer Excel Export -->
-  <LocaleResource Name="Customer.ExportToExcel">
-    <Value>Excel'e Aktar</Value>
-  </LocaleResource>
 
   <!-- Auto-generated missing translations -->
   <LocaleResource Name="Account.MustChangePassword">
@@ -6885,9 +5757,6 @@
   </LocaleResource>
   <LocaleResource Name="Button.Reopen">
     <Value>Yeniden Aç</Value>
-  </LocaleResource>
-  <LocaleResource Name="Button.Save">
-    <Value>Kaydet</Value>
   </LocaleResource>
   <LocaleResource Name="Card.Red">
     <Value>Kırmızı Kart</Value>
@@ -7757,14 +6626,8 @@
   <LocaleResource Name="Listenings.SavedFilters">
     <Value>Kayıtlı Filtreler</Value>
   </LocaleResource>
-  <LocaleResource Name="Listenings.Reports">
-    <Value>Raporlar</Value>
-  </LocaleResource>
   <LocaleResource Name="Listenings.ReportsDescription">
     <Value>Mevcut filtrelere göre rapor oluşturun.</Value>
-  </LocaleResource>
-  <LocaleResource Name="Listenings.Report.CallAudit">
-    <Value>Çağrı Denetleme Raporu</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Report.CallAuditDesc">
     <Value>Proje, değerlendiren, temsilci, çağrı no, tarih, süre, yorum ve puan bilgileri</Value>
@@ -7794,14 +6657,8 @@
     <Value>Müşteri İç Değerlendirmeleri</Value>
   </LocaleResource>
   <!-- Report Export Headers -->
-  <LocaleResource Name="Report.Sheet.Summary">
-    <Value>Özet</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.Sheet.SuggestionsList">
     <Value>Öneriler Listesi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Sheet.TopSuggestedQuestions">
-    <Value>En Çok Öneri Yazılan Sorular</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Sheet.CallAudit">
     <Value>Çağrı Denetleme Raporu</Value>
@@ -7829,9 +6686,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.Percentage">
     <Value>Yüzde</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.CallId">
-    <Value>Çağrı ID</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Penalty">
     <Value>Ceza</Value>
@@ -7881,9 +6735,6 @@
   <LocaleResource Name="Report.EvaluationCount">
     <Value>Dinleme Sayısı</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Sheet.Evaluations">
-    <Value>Değerlendirmeler</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.Sheet.QuestionGroupAverage">
     <Value>Soru Grubu Ortalama</Value>
   </LocaleResource>
@@ -7911,14 +6762,8 @@
   <LocaleResource Name="Report.CompletedDate">
     <Value>Tamamlanma Tarihi</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.DueDate">
-    <Value>Son Tarih</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.MaxScore">
     <Value>Maks Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Status">
-    <Value>Durum</Value>
   </LocaleResource>
   <LocaleResource Name="Report.CallDate">
     <Value>Çağrı Tarihi</Value>
@@ -7974,23 +6819,14 @@
   <LocaleResource Name="Menu.PerformanceTracking">
     <Value>Performans Takibi</Value>
   </LocaleResource>
-  <LocaleResource Name="Setting.PerformanceSettings">
-    <Value>Performans Ayarları</Value>
-  </LocaleResource>
   <LocaleResource Name="Setting.PerformanceSettingsInfo">
     <Value>Her proje tipi için günlük, haftalık, aylık ve yıllık değerlendirme hedefleri belirleyebilirsiniz. Bu hedefler Performans Takibi raporunda kullanılacaktır.</Value>
   </LocaleResource>
   <LocaleResource Name="Setting.Targets">
     <Value>Hedefler</Value>
   </LocaleResource>
-  <LocaleResource Name="Setting.DailyTarget">
-    <Value>Günlük</Value>
-  </LocaleResource>
   <LocaleResource Name="Setting.WeeklyTarget">
     <Value>Haftalık</Value>
-  </LocaleResource>
-  <LocaleResource Name="Setting.MonthlyTarget">
-    <Value>Aylık</Value>
   </LocaleResource>
   <LocaleResource Name="Setting.YearlyTarget">
     <Value>Yıllık</Value>
@@ -8019,20 +6855,11 @@
   <LocaleResource Name="Common.SaveAll">
     <Value>Tümünü Kaydet</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.PerformanceTracking">
-    <Value>Performans Takibi</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.TodayEvaluations">
     <Value>Bugün</Value>
   </LocaleResource>
   <LocaleResource Name="Report.WeekEvaluations">
     <Value>Bu Hafta</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.MonthEvaluations">
-    <Value>Bu Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.YearEvaluations">
-    <Value>Bu Yıl</Value>
   </LocaleResource>
   <LocaleResource Name="Report.EvaluatorPerformance">
     <Value>Dinleyici Performansı</Value>
@@ -8045,15 +6872,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.Today">
     <Value>Bugün</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Week">
-    <Value>Hafta</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Month">
-    <Value>Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Year">
-    <Value>Yıl</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Total">
     <Value>Toplam</Value>
@@ -8097,18 +6915,12 @@
   <LocaleResource Name="Report.ScoreDetail">
     <Value>Puan Detayı</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.ViewScoreDetail">
-    <Value>Puan Detayı</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.AnswerDistribution">
     <Value>Cevap Dağılımı</Value>
   </LocaleResource>
 
   <!-- Support Request / Destek Talepleri -->
   <LocaleResource Name="Menu.SupportRequests">
-    <Value>Destek Talepleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="SupportRequest.Title">
     <Value>Destek Talepleri</Value>
   </LocaleResource>
   <LocaleResource Name="SupportRequest.SendRequest">
@@ -8138,9 +6950,6 @@
   <LocaleResource Name="SupportRequest.NoRequestsYet">
     <Value>Henüz destek talebi göndermediniz.</Value>
   </LocaleResource>
-  <LocaleResource Name="SupportRequest.Detail">
-    <Value>Talep Detayı</Value>
-  </LocaleResource>
   <LocaleResource Name="SupportRequest.AdminResponse">
     <Value>Admin Cevabı</Value>
   </LocaleResource>
@@ -8150,20 +6959,11 @@
   <LocaleResource Name="SupportRequest.Sender">
     <Value>Gönderen</Value>
   </LocaleResource>
-  <LocaleResource Name="SupportRequest.Message">
-    <Value>Mesaj</Value>
-  </LocaleResource>
-  <LocaleResource Name="SupportRequest.Status">
-    <Value>Durum</Value>
-  </LocaleResource>
   <LocaleResource Name="SupportRequest.NoRequests">
     <Value>Destek talebi bulunamadı.</Value>
   </LocaleResource>
   <LocaleResource Name="SupportRequest.SystemUser">
     <Value>Sistem Kullanıcısı</Value>
-  </LocaleResource>
-  <LocaleResource Name="SupportRequest.CustomerPersonnel">
-    <Value>Müşteri Personeli</Value>
   </LocaleResource>
   <LocaleResource Name="SupportRequest.UserMessage">
     <Value>Kullanıcı Mesajı</Value>
@@ -8173,9 +6973,6 @@
   </LocaleResource>
   <LocaleResource Name="SupportRequest.ResponsePlaceholder">
     <Value>Cevabınızı yazın...</Value>
-  </LocaleResource>
-  <LocaleResource Name="SupportRequest.Close">
-    <Value>Kapat</Value>
   </LocaleResource>
   <LocaleResource Name="SupportRequest.Reopen">
     <Value>Yeniden Aç</Value>
@@ -8207,9 +7004,6 @@
   <LocaleResource Name="SupportRequest.StatusError">
     <Value>Durum güncellenirken hata oluştu.</Value>
   </LocaleResource>
-  <LocaleResource Name="SupportRequestStatus.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
   <LocaleResource Name="SupportRequestStatus.InProgress">
     <Value>İnceleniyor</Value>
   </LocaleResource>
@@ -8227,9 +7021,6 @@
   </LocaleResource>
 
   <!-- MyTrainings (CustomerPortal - Personel Eğitimleri) -->
-  <LocaleResource Name="CustomerPortal.MyTrainings.Title">
-    <Value>Eğitimlerim</Value>
-  </LocaleResource>
   <LocaleResource Name="MyTrainings.ActiveTab">
     <Value>Aktif</Value>
   </LocaleResource>
@@ -8238,12 +7029,6 @@
   </LocaleResource>
   <LocaleResource Name="MyTrainings.PastTab">
     <Value>Geçmiş</Value>
-  </LocaleResource>
-  <LocaleResource Name="MyTrainings.Pending">
-    <Value>Bekleyen</Value>
-  </LocaleResource>
-  <LocaleResource Name="MyTrainings.InProgress">
-    <Value>Devam Eden</Value>
   </LocaleResource>
   <LocaleResource Name="MyTrainings.Completed">
     <Value>Tamamlanan</Value>
@@ -8256,9 +7041,6 @@
   </LocaleResource>
   <LocaleResource Name="MyTrainings.StatusInProgress">
     <Value>İzleniyor</Value>
-  </LocaleResource>
-  <LocaleResource Name="MyTrainings.StatusCompleted">
-    <Value>Tamamlandı</Value>
   </LocaleResource>
   <LocaleResource Name="MyTrainings.DaysLeft">
     <Value>gün kaldı</Value>
@@ -8311,9 +7093,6 @@
   <LocaleResource Name="MyTrainings.WatchCountWarning">
     <Value>Bu videoyu izlemeye başladığınızda 1 izleme hakkınız kullanılacak.</Value>
   </LocaleResource>
-  <LocaleResource Name="MyTrainings.CurrentWatchCount">
-    <Value>Mevcut</Value>
-  </LocaleResource>
   <LocaleResource Name="MyTrainings.RemainingAfter">
     <Value>Kalan hak</Value>
   </LocaleResource>
@@ -8328,35 +7107,14 @@
   </LocaleResource>
 
   <!-- StaffTrainings (CustomerPortal - Personel Eğitim Takibi) -->
-  <LocaleResource Name="CustomerPortal.StaffTrainings.Title">
-    <Value>Personel Eğitimleri</Value>
-  </LocaleResource>
   <LocaleResource Name="StaffTrainings.Personnel">
     <Value>Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="StaffTrainings.Training">
-    <Value>Eğitim</Value>
-  </LocaleResource>
-  <LocaleResource Name="StaffTrainings.TotalPersonnel">
-    <Value>Toplam Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="StaffTrainings.PendingTrainings">
-    <Value>Bekleyen</Value>
   </LocaleResource>
   <LocaleResource Name="StaffTrainings.CompletedTrainings">
     <Value>Tamamlanan</Value>
   </LocaleResource>
-  <LocaleResource Name="StaffTrainings.OverdueTrainings">
-    <Value>Geciken</Value>
-  </LocaleResource>
   <LocaleResource Name="StaffTrainings.TrainingsList">
     <Value>Eğitim Listesi</Value>
-  </LocaleResource>
-  <LocaleResource Name="StaffTrainings.Progress">
-    <Value>İlerleme</Value>
-  </LocaleResource>
-  <LocaleResource Name="StaffTrainings.DueDate">
-    <Value>Son Tarih</Value>
   </LocaleResource>
   <LocaleResource Name="StaffTrainings.CompletedAt">
     <Value>Tamamlama</Value>
@@ -8368,9 +7126,6 @@
   <!-- TrainingVideos (Admin - Video Yönetimi) -->
   <LocaleResource Name="TrainingVideo.Title">
     <Value>Eğitim Videoları</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingVideo.Assignments">
-    <Value>Atamalar</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingVideo.Upload">
     <Value>Video Yükle</Value>
@@ -8387,17 +7142,11 @@
   <LocaleResource Name="TrainingVideo.Duration">
     <Value>Süre</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingVideo.Scopes">
-    <Value>Kapsam</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingVideo.NoVideos">
     <Value>Henüz eğitim videosu bulunmuyor.</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingVideo.UploadFirst">
     <Value>İlk Videoyu Yükle</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingVideo.UploadVideo">
-    <Value>Video Yükle</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingVideo.VideoFile">
     <Value>Video Dosyası</Value>
@@ -8414,9 +7163,6 @@
   <LocaleResource Name="TrainingVideo.ScopeQuestionGroup">
     <Value>Soru Grubu</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingVideo.ScopeQuestion">
-    <Value>Soru</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingVideo.NoScopesSelected">
     <Value>Henüz kapsam eklenmedi.</Value>
   </LocaleResource>
@@ -8425,9 +7171,6 @@
   </LocaleResource>
   <LocaleResource Name="TrainingVideo.EditVideo">
     <Value>Video Düzenle</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingVideo.BrowserNotSupported">
-    <Value>Tarayıcınız video oynatmayı desteklemiyor.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.MyTrainings">
     <Value>Eğitimlerim</Value>
@@ -8464,9 +7207,6 @@
   <LocaleResource Name="AIReport.CopyError">
     <Value>Kopyalama hatası</Value>
   </LocaleResource>
-  <LocaleResource Name="AIReport.CopySuccess">
-    <Value>Panoya kopyalandı</Value>
-  </LocaleResource>
   <LocaleResource Name="AIReport.CustomerLoadError">
     <Value>Müşteri yüklenirken hata oluştu</Value>
   </LocaleResource>
@@ -8500,9 +7240,6 @@
   <LocaleResource Name="Api.Profile.PasswordChanged">
     <Value>Şifre başarıyla değiştirildi</Value>
   </LocaleResource>
-  <LocaleResource Name="Api.Profile.PasswordMismatch">
-    <Value>Şifreler eşleşmiyor</Value>
-  </LocaleResource>
   <LocaleResource Name="Api.Profile.PasswordTooShort">
     <Value>Şifre çok kısa</Value>
   </LocaleResource>
@@ -8532,9 +7269,6 @@
   </LocaleResource>
   <LocaleResource Name="Assignment.AssignedBranches">
     <Value>Atanan Şubeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Assignment.Branches">
-    <Value>Şubeler</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.BranchesSelected">
     <Value>şube seçildi</Value>
@@ -8572,9 +7306,6 @@
   <LocaleResource Name="AuditLogs.Title">
     <Value>Denetim Logları</Value>
   </LocaleResource>
-  <LocaleResource Name="Button.Remove">
-    <Value>Kaldır</Value>
-  </LocaleResource>
   <LocaleResource Name="Checklist.AddOption">
     <Value>Seçenek Ekle</Value>
   </LocaleResource>
@@ -8604,9 +7335,6 @@
   </LocaleResource>
   <LocaleResource Name="Checklist.OptionPointsHelp">
     <Value>Bu seçenek için verilecek puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Checklist.Options">
-    <Value>Seçenekler</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.OptionsHelp">
     <Value>Değerlendirmede kullanılacak seçenekleri tanımlayın</Value>
@@ -8670,9 +7398,6 @@
   </LocaleResource>
   <LocaleResource Name="Common.Details">
     <Value>Detaylar</Value>
-  </LocaleResource>
-  <LocaleResource Name="Common.ExportToExcel">
-    <Value>Excel'e Aktar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.FilterType">
     <Value>Filtre Tipi</Value>
@@ -8797,17 +7522,8 @@
   <LocaleResource Name="Customer.CodePlaceholder">
     <Value>Müşteri kodu giriniz...</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.DailyQuota">
-    <Value>Günlük Kota</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.Dealers">
-    <Value>Bayiler</Value>
-  </LocaleResource>
   <LocaleResource Name="Customer.EvaluationNotification">
     <Value>Değerlendirme Bildirimi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.MonthlyQuota">
-    <Value>Aylık Kota</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NotificationEmails">
     <Value>Bildirim E-postaları</Value>
@@ -8821,15 +7537,6 @@
   <LocaleResource Name="Customer.NotificationTemplate">
     <Value>Bildirim Şablonu</Value>
   </LocaleResource>
-  <LocaleResource Name="Customer.TargetsAndQuotas">
-    <Value>Hedefler ve Kotalar</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.TotalTarget">
-    <Value>Toplam Hedef</Value>
-  </LocaleResource>
-  <LocaleResource Name="Customer.WeeklyQuota">
-    <Value>Haftalık Kota</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.AdminViewing">
     <Value>Admin olarak görüntüleniyor</Value>
   </LocaleResource>
@@ -8838,9 +7545,6 @@
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.ChangeCustomer">
     <Value>Müşteri Değiştir</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Dashboard.NoQuestionData">
-    <Value>Soru verisi bulunamadı</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.QuestionGroups">
     <Value>Soru Grupları</Value>
@@ -8851,9 +7555,6 @@
   <LocaleResource Name="CustomerPortal.Dashboard.Questions">
     <Value>Sorular</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.EnneagramResults">
-    <Value>Enneagram Sonuçları</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.ExternalEvaluations.Loading">
     <Value>Yükleniyor...</Value>
   </LocaleResource>
@@ -8863,17 +7564,11 @@
   <LocaleResource Name="CustomerPortal.InternalReports.Title">
     <Value>İç Raporlar</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.EnneagramResults">
-    <Value>Enneagram Sonuçları</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.ExternalReports">
     <Value>Dış Değerlendirme Raporları</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.InternalReports">
     <Value>İç Değerlendirme Raporları</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Management">
-    <Value>Yönetim</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.MyPerformance">
     <Value>Performansım</Value>
@@ -8881,35 +7576,11 @@
   <LocaleResource Name="CustomerPortal.Menu.Penalties">
     <Value>Cezalar</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.PerformanceByPeriod">
-    <Value>Dönem Bazlı Performans</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.PersonnelReportCard">
     <Value>Personel Karnesi</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.ReportsGroup">
-    <Value>Raporlar</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.Suggestions">
-    <Value>Öneriler</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.SurveyResults">
-    <Value>Anket Sonuçları</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.AverageScore">
-    <Value>Ortalama Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.CallDate">
-    <Value>Çağrı Tarihi</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.CallId">
-    <Value>Çağrı ID</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.CallInfo">
     <Value>Çağrı Bilgisi</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.CallTime">
-    <Value>Çağrı Saati</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Cards">
     <Value>Kartlar</Value>
@@ -8917,26 +7588,14 @@
   <LocaleResource Name="CustomerPortal.MyPerformance.Checklist">
     <Value>Kontrol Listesi</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.Comment">
-    <Value>Yorum</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Duration">
     <Value>Süre</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.EvaluationCount">
     <Value>Değerlendirme Sayısı</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.EvaluationDate">
-    <Value>Değerlendirme Tarihi</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.EvaluationDetail">
     <Value>Değerlendirme Detayı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.EvaluationInfo">
-    <Value>Değerlendirme Bilgisi</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.GroupPerformance">
-    <Value>Grup Performansı</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.MonthlyPerformance">
     <Value>Aylık Performans</Value>
@@ -8953,29 +7612,14 @@
   <LocaleResource Name="CustomerPortal.MyPerformance.Period">
     <Value>Dönem</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.Project">
-    <Value>Proje</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.RedCard">
     <Value>Kırmızı Kart</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Score">
     <Value>Puan</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.Strengths">
-    <Value>Güçlü Yönler</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.StrengthsWeaknesses">
-    <Value>Güçlü ve Zayıf Yönler</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.ThisMonthScore">
     <Value>Bu Ay Puanı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.Title">
-    <Value>Performansım</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.MyPerformance.TotalEvaluations">
-    <Value>Toplam Değerlendirme</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Weaknesses">
     <Value>Zayıf Yönler</Value>
@@ -8983,17 +7627,8 @@
   <LocaleResource Name="CustomerPortal.MyPerformance.YellowCard">
     <Value>Sarı Kart</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.NoCustomerSelected">
-    <Value>Müşteri seçilmedi</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Organizations.MonthlyTrend">
-    <Value>Aylık Trend</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.NoChartData">
     <Value>Grafik verisi bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Project.AverageScore">
-    <Value>Ortalama Puan</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Project.EvaluationCount">
     <Value>Değerlendirme Sayısı</Value>
@@ -9001,26 +7636,8 @@
   <LocaleResource Name="CustomerPortal.Projects.List">
     <Value>Proje Listesi</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.ProjectCount">
-    <Value>Proje Sayısı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Report.ProjectPerformance">
-    <Value>Proje Performansı</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Supervisors.MonthlyTrend">
-    <Value>Aylık Trend</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Supervisors.OverallAverage">
-    <Value>Genel Ortalama</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.TeamSize">
     <Value>Takım Büyüklüğü</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Supervisors.TotalEvaluations">
-    <Value>Toplam Değerlendirme</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.SurveyResults">
-    <Value>Anket Sonuçları</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.CustomerTrend">
     <Value>Müşteri Trendi</Value>
@@ -9067,14 +7684,8 @@
   <LocaleResource Name="Dealer.Dealer">
     <Value>Bayi</Value>
   </LocaleResource>
-  <LocaleResource Name="Dealer.District">
-    <Value>İlçe</Value>
-  </LocaleResource>
   <LocaleResource Name="Dealer.EditDealer">
     <Value>Bayi Düzenle</Value>
-  </LocaleResource>
-  <LocaleResource Name="Dealer.Email">
-    <Value>E-posta</Value>
   </LocaleResource>
   <LocaleResource Name="Dealer.Latitude">
     <Value>Enlem</Value>
@@ -9157,17 +7768,8 @@
   <LocaleResource Name="DealerRequest.Info">
     <Value>Talep Bilgisi</Value>
   </LocaleResource>
-  <LocaleResource Name="DealerRequest.LoadError">
-    <Value>Talepler yüklenirken hata oluştu</Value>
-  </LocaleResource>
-  <LocaleResource Name="DealerRequest.NewDealer">
-    <Value>Yeni Bayi</Value>
-  </LocaleResource>
   <LocaleResource Name="DealerRequest.NewPersonnel">
     <Value>Yeni Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="DealerRequest.NoRecords">
-    <Value>Talep bulunamadı</Value>
   </LocaleResource>
   <LocaleResource Name="DealerRequest.ProcessedAt">
     <Value>İşlem Tarihi</Value>
@@ -9175,23 +7777,14 @@
   <LocaleResource Name="DealerRequest.ProcessedBy">
     <Value>İşleyen</Value>
   </LocaleResource>
-  <LocaleResource Name="DealerRequest.Reject">
-    <Value>Reddet</Value>
-  </LocaleResource>
   <LocaleResource Name="DealerRequest.RejectError">
     <Value>Reddetme hatası</Value>
   </LocaleResource>
   <LocaleResource Name="DealerRequest.RejectSuccess">
     <Value>Talep reddedildi</Value>
   </LocaleResource>
-  <LocaleResource Name="DealerRequest.RequestInfo">
-    <Value>Talep Bilgisi</Value>
-  </LocaleResource>
   <LocaleResource Name="DealerRequest.Type">
     <Value>Talep Tipi</Value>
-  </LocaleResource>
-  <LocaleResource Name="DealerRequest.UpdateDealer">
-    <Value>Bayi Güncelle</Value>
   </LocaleResource>
   <LocaleResource Name="DealerType.Authorized">
     <Value>Yetkili Bayi</Value>
@@ -9208,20 +7801,8 @@
   <LocaleResource Name="DraftRequest.Detail">
     <Value>Taslak Detayı</Value>
   </LocaleResource>
-  <LocaleResource Name="DraftRequest.EvaluationInfo">
-    <Value>Değerlendirme Bilgisi</Value>
-  </LocaleResource>
-  <LocaleResource Name="DraftRequest.LoadingEvaluation">
-    <Value>Değerlendirme yükleniyor...</Value>
-  </LocaleResource>
   <LocaleResource Name="DraftRequest.Reason">
     <Value>Sebep</Value>
-  </LocaleResource>
-  <LocaleResource Name="DraftRequest.RequestInfo">
-    <Value>Talep Bilgisi</Value>
-  </LocaleResource>
-  <LocaleResource Name="DraftRequest.ResponseNote">
-    <Value>Yanıt Notu</Value>
   </LocaleResource>
   <LocaleResource Name="EmailTemplate.ConfirmDelete">
     <Value>Bu şablonu silmek istediğinize emin misiniz?</Value>
@@ -9241,14 +7822,8 @@
   <LocaleResource Name="Evaluation.ConfirmDeleteAttachment">
     <Value>Bu dosyayı silmek istediğinize emin misiniz?</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.ControlDate">
-    <Value>Kontrol Tarihi</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.CurrentScore">
     <Value>Mevcut Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.DeleteError">
-    <Value>Silme hatası</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.DeleteErrorMessage">
     <Value>Değerlendirme silinirken hata oluştu</Value>
@@ -9283,14 +7858,8 @@
   <LocaleResource Name="Evaluation.FilesSelected">
     <Value>dosya seçildi</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.GeneralComment">
-    <Value>Genel Yorum</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.GeneralCommentPlaceholder">
     <Value>Genel yorumunuzu yazın...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.GeneralNotes">
-    <Value>Genel Notlar</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Id">
     <Value>Değerlendirme ID</Value>
@@ -9307,14 +7876,8 @@
   <LocaleResource Name="Evaluation.NoAttachments">
     <Value>Ek dosya yok</Value>
   </LocaleResource>
-  <LocaleResource Name="Evaluation.Note">
-    <Value>Not</Value>
-  </LocaleResource>
   <LocaleResource Name="Evaluation.OnlyDraftCanBeDeleted">
     <Value>Sadece taslak değerlendirmeler silinebilir</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Optional">
-    <Value>İsteğe Bağlı</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Organization">
     <Value>Organizasyon</Value>
@@ -9324,9 +7887,6 @@
   </LocaleResource>
   <LocaleResource Name="Evaluation.PersonnelPlaceholder">
     <Value>Personel seçin...</Value>
-  </LocaleResource>
-  <LocaleResource Name="Evaluation.Project">
-    <Value>Proje</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Questions">
     <Value>Sorular</Value>
@@ -9346,12 +7906,6 @@
   <LocaleResource Name="FieldWorker.AssignedProjects">
     <Value>Atanan Projeler</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.Assignments">
-    <Value>Atamalar</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.Comment">
-    <Value>Yorum</Value>
-  </LocaleResource>
   <LocaleResource Name="FieldWorker.CommentPlaceholder">
     <Value>Yorumunuzu yazın...</Value>
   </LocaleResource>
@@ -9360,12 +7914,6 @@
   </LocaleResource>
   <LocaleResource Name="FieldWorker.ContinueEvaluation">
     <Value>Değerlendirmeye Devam Et</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.ControlDate">
-    <Value>Kontrol Tarihi</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.ControlTime">
-    <Value>Kontrol Saati</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.CustomerRequired">
     <Value>Müşteri seçimi zorunludur</Value>
@@ -9378,9 +7926,6 @@
   </LocaleResource>
   <LocaleResource Name="FieldWorker.DealerCity">
     <Value>Bayi Şehri</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.DealerCode">
-    <Value>Bayi Kodu</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.DealerCount">
     <Value>Bayi Sayısı</Value>
@@ -9436,9 +7981,6 @@
   <LocaleResource Name="FieldWorker.LoadVisitsError">
     <Value>Ziyaretler yüklenirken hata</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.LoadingAssignments">
-    <Value>Atamalar yükleniyor...</Value>
-  </LocaleResource>
   <LocaleResource Name="FieldWorker.LoadingDealers">
     <Value>Bayiler yükleniyor...</Value>
   </LocaleResource>
@@ -9462,9 +8004,6 @@
   </LocaleResource>
   <LocaleResource Name="FieldWorker.NoDealersAvailable">
     <Value>Uygun bayi bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.NoProjects">
-    <Value>Proje bulunamadı</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.NoQuestions">
     <Value>Soru bulunamadı</Value>
@@ -9502,9 +8041,6 @@
   <LocaleResource Name="FieldWorker.SaveVisitError">
     <Value>Ziyaret kaydedilirken hata</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.SearchAssignments">
-    <Value>Atama ara...</Value>
-  </LocaleResource>
   <LocaleResource Name="FieldWorker.SearchVisits">
     <Value>Ziyaret ara...</Value>
   </LocaleResource>
@@ -9513,9 +8049,6 @@
   </LocaleResource>
   <LocaleResource Name="FieldWorker.SelectDealerPlaceholder">
     <Value>Bayi seçin...</Value>
-  </LocaleResource>
-  <LocaleResource Name="FieldWorker.SelectProjectFirst">
-    <Value>Önce proje seçin</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.StartVisit">
     <Value>Ziyaret Başlat</Value>
@@ -9574,9 +8107,6 @@
   <LocaleResource Name="FieldWorker.VisitTimeRequired">
     <Value>Ziyaret saati zorunludur</Value>
   </LocaleResource>
-  <LocaleResource Name="FieldWorker.Visits">
-    <Value>Ziyaretler</Value>
-  </LocaleResource>
   <LocaleResource Name="FieldWorker.VisitsList">
     <Value>Ziyaret Listesi</Value>
   </LocaleResource>
@@ -9601,29 +8131,17 @@
   <LocaleResource Name="Language.NoResourcesToDelete">
     <Value>Silinecek kaynak yok</Value>
   </LocaleResource>
-  <LocaleResource Name="Layout.CustomerPortal">
-    <Value>Müşteri Portalı</Value>
-  </LocaleResource>
   <LocaleResource Name="Layout.NoCustomersFound">
     <Value>Müşteri bulunamadı</Value>
   </LocaleResource>
   <LocaleResource Name="Layout.SearchCustomer">
     <Value>Müşteri Ara</Value>
   </LocaleResource>
-  <LocaleResource Name="Listenings.Report.CustomerEvaluation">
-    <Value>Müşteri Değerlendirme</Value>
-  </LocaleResource>
   <LocaleResource Name="Listenings.Report.CustomerEvaluationDesc">
     <Value>Müşteri bazlı değerlendirme raporu</Value>
   </LocaleResource>
-  <LocaleResource Name="Listenings.Report.ProjectPerformance">
-    <Value>Proje Performansı</Value>
-  </LocaleResource>
   <LocaleResource Name="Listenings.Report.ProjectPerformanceDesc">
     <Value>Proje bazlı performans raporu</Value>
-  </LocaleResource>
-  <LocaleResource Name="Listenings.Report.QuestionGroupAverage">
-    <Value>Soru Grubu Ortalaması</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Report.QuestionGroupAverageDesc">
     <Value>Soru gruplarının ortalama performansı</Value>
@@ -9655,9 +8173,6 @@
   <LocaleResource Name="Menu.TrainingVideoAssignments">
     <Value>Eğitim Video Atamaları</Value>
   </LocaleResource>
-  <LocaleResource Name="Menu.TrainingVideos">
-    <Value>Eğitim Videoları</Value>
-  </LocaleResource>
   <LocaleResource Name="MyTrainings.Quiz.Optional">
     <Value>Quiz isteğe bağlı</Value>
   </LocaleResource>
@@ -9666,9 +8181,6 @@
   </LocaleResource>
   <LocaleResource Name="MyTrainings.Quiz.Start">
     <Value>Quize Başla</Value>
-  </LocaleResource>
-  <LocaleResource Name="MyTrainings.Quiz.Title">
-    <Value>Eğitim Quizi</Value>
   </LocaleResource>
   <LocaleResource Name="MyTrainings.QuizCompleted">
     <Value>Quiz tamamlandı</Value>
@@ -9684,9 +8196,6 @@
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.CreatedPersonnel">
     <Value>Oluşturulan Personel</Value>
-  </LocaleResource>
-  <LocaleResource Name="PersonnelRequest.Detail">
-    <Value>Talep Detayı</Value>
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.KeepAsDraft">
     <Value>Taslak Olarak Tut</Value>
@@ -9705,9 +8214,6 @@
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.RejectSuccessWithPersonnel">
     <Value>Talep reddedildi, personel taslak olarak tutuldu</Value>
-  </LocaleResource>
-  <LocaleResource Name="PersonnelRequest.RequestInfo">
-    <Value>Talep Bilgisi</Value>
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.ReviewedAt">
     <Value>İnceleme Tarihi</Value>
@@ -9744,9 +8250,6 @@
   </LocaleResource>
   <LocaleResource Name="Project.EmailTemplateHint">
     <Value>Davetiye için kullanılacak şablon</Value>
-  </LocaleResource>
-  <LocaleResource Name="Project.Errors">
-    <Value>Hatalar</Value>
   </LocaleResource>
   <LocaleResource Name="Project.ExternalEmailHelp">
     <Value>Dış katılımcıların e-posta adresleri</Value>
@@ -9823,9 +8326,6 @@
   <LocaleResource Name="Project.SendReminder">
     <Value>Hatırlatma Gönder</Value>
   </LocaleResource>
-  <LocaleResource Name="Project.SendReminderBtn">
-    <Value>Hatırlatma Gönder</Value>
-  </LocaleResource>
   <LocaleResource Name="Project.SendReminderEmails">
     <Value>Hatırlatma E-postaları Gönder</Value>
   </LocaleResource>
@@ -9889,26 +8389,14 @@
   <LocaleResource Name="Question.AllowComment">
     <Value>Yoruma İzin Ver</Value>
   </LocaleResource>
-  <LocaleResource Name="Question.PenaltyType">
-    <Value>Ceza Tipi</Value>
-  </LocaleResource>
   <LocaleResource Name="Question.SelectionType">
     <Value>Seçim Tipi</Value>
   </LocaleResource>
   <LocaleResource Name="Question.ShowScoreInput">
     <Value>Puan Girişi Göster</Value>
   </LocaleResource>
-  <LocaleResource Name="QuizReports.Answer">
-    <Value>Cevap</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.Answers">
-    <Value>Cevaplar</Value>
-  </LocaleResource>
   <LocaleResource Name="QuizReports.Attempt">
     <Value>Deneme</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.AverageScore">
-    <Value>Ortalama Puan</Value>
   </LocaleResource>
   <LocaleResource Name="QuizReports.CompletedAt">
     <Value>Tamamlanma Tarihi</Value>
@@ -9919,20 +8407,11 @@
   <LocaleResource Name="QuizReports.External">
     <Value>Dış</Value>
   </LocaleResource>
-  <LocaleResource Name="QuizReports.Failed">
-    <Value>Başarısız</Value>
-  </LocaleResource>
   <LocaleResource Name="QuizReports.FailedCount">
     <Value>Başarısız Sayısı</Value>
   </LocaleResource>
   <LocaleResource Name="QuizReports.Internal">
     <Value>İç</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.NoData">
-    <Value>Veri bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.Participant">
-    <Value>Katılımcı</Value>
   </LocaleResource>
   <LocaleResource Name="QuizReports.ParticipantType">
     <Value>Katılımcı Tipi</Value>
@@ -9949,9 +8428,6 @@
   <LocaleResource Name="QuizReports.Points">
     <Value>Puan</Value>
   </LocaleResource>
-  <LocaleResource Name="QuizReports.Question">
-    <Value>Soru</Value>
-  </LocaleResource>
   <LocaleResource Name="QuizReports.Quiz">
     <Value>Quiz</Value>
   </LocaleResource>
@@ -9963,12 +8439,6 @@
   </LocaleResource>
   <LocaleResource Name="QuizReports.Score">
     <Value>Puan</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.Title">
-    <Value>Quiz Raporları</Value>
-  </LocaleResource>
-  <LocaleResource Name="QuizReports.TotalResponses">
-    <Value>Toplam Yanıt</Value>
   </LocaleResource>
   <LocaleResource Name="QuizReports.Video">
     <Value>Video</Value>
@@ -10012,9 +8482,6 @@
   <LocaleResource Name="Report.EnneagramDetail">
     <Value>Enneagram Detayı</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.EnneagramResults">
-    <Value>Enneagram Sonuçları</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.EvaluationDetails">
     <Value>Değerlendirme Detayları</Value>
   </LocaleResource>
@@ -10047,15 +8514,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.Invitations">
     <Value>Davetiyeler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Last3Months">
-    <Value>Son 3 Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.Last6Months">
-    <Value>Son 6 Ay</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.LastMonth">
-    <Value>Geçen Ay</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ListeningDate">
     <Value>Dinleme Tarihi</Value>
@@ -10113,9 +8571,6 @@
   </LocaleResource>
   <LocaleResource Name="Report.PersonalityType">
     <Value>Kişilik Tipi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.PersonnelQuestionPerformance">
-    <Value>Personel Soru Performansı</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ProjectCount">
     <Value>Proje Sayısı</Value>
@@ -10183,12 +8638,6 @@
   <LocaleResource Name="Report.SelectFromLeftPanel">
     <Value>Sol panelden seçin</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.SelectOrganization">
-    <Value>Organizasyon Seçin</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.SelectProject">
-    <Value>Proje Seçin</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.SelectedCriteria">
     <Value>Seçilen Kriterler</Value>
   </LocaleResource>
@@ -10213,14 +8662,8 @@
   <LocaleResource Name="Report.SurveyProjects">
     <Value>Anket Projeleri</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.SurveyResults">
-    <Value>Anket Sonuçları</Value>
-  </LocaleResource>
   <LocaleResource Name="Report.TargetsFromSettings">
     <Value>Ayarlardan Hedefler</Value>
-  </LocaleResource>
-  <LocaleResource Name="Report.ThisMonth">
-    <Value>Bu Ay</Value>
   </LocaleResource>
   <LocaleResource Name="Report.TopPenaltyOrganizations">
     <Value>En Çok Cezalı Organizasyonlar</Value>
@@ -10249,18 +8692,6 @@
   <LocaleResource Name="Report.YearlyTarget">
     <Value>Yıllık Hedef</Value>
   </LocaleResource>
-  <LocaleResource Name="RequestStatus.Approved">
-    <Value>Onaylandı</Value>
-  </LocaleResource>
-  <LocaleResource Name="RequestStatus.Pending">
-    <Value>Beklemede</Value>
-  </LocaleResource>
-  <LocaleResource Name="RequestStatus.Rejected">
-    <Value>Reddedildi</Value>
-  </LocaleResource>
-  <LocaleResource Name="RequestType.NewDealer">
-    <Value>Yeni Bayi</Value>
-  </LocaleResource>
   <LocaleResource Name="RequestType.NewPersonnel">
     <Value>Yeni Personel</Value>
   </LocaleResource>
@@ -10272,9 +8703,6 @@
   </LocaleResource>
   <LocaleResource Name="ScoringMethod.CriteriaTotalDescription">
     <Value>Tüm kriterlerin puanları toplanır</Value>
-  </LocaleResource>
-  <LocaleResource Name="ScoringMethod.Maximum">
-    <Value>Maksimum</Value>
   </LocaleResource>
   <LocaleResource Name="ScoringMethod.MaximumDescription">
     <Value>Maksimum puan üzerinden hesaplanır</Value>
@@ -10293,9 +8721,6 @@
   </LocaleResource>
   <LocaleResource Name="Status.Visited">
     <Value>Ziyaret Edildi</Value>
-  </LocaleResource>
-  <LocaleResource Name="Survey.FilterAll">
-    <Value>Tümü</Value>
   </LocaleResource>
   <LocaleResource Name="Survey.FilterCompleted">
     <Value>Tamamlananlar</Value>
@@ -10321,9 +8746,6 @@
   <LocaleResource Name="Survey.RetryFailedConfirm2">
     <Value>davetiye tekrar gönderilecek.</Value>
   </LocaleResource>
-  <LocaleResource Name="Survey.RetryFailedTitle">
-    <Value>Başarısızları Tekrar Dene</Value>
-  </LocaleResource>
   <LocaleResource Name="Survey.SendError">
     <Value>Gönderim hatası</Value>
   </LocaleResource>
@@ -10333,32 +8755,17 @@
   <LocaleResource Name="Survey.SendInvitationsConfirm2">
     <Value>kişiye davetiye gönderilecek.</Value>
   </LocaleResource>
-  <LocaleResource Name="Survey.SendInvitationsTitle">
-    <Value>Davetiye Gönder</Value>
-  </LocaleResource>
   <LocaleResource Name="Survey.SendReminderConfirm">
     <Value>Hatırlatma göndermek istiyor musunuz?</Value>
   </LocaleResource>
   <LocaleResource Name="Survey.SendReminderConfirm2">
     <Value>kişiye hatırlatma gönderilecek.</Value>
   </LocaleResource>
-  <LocaleResource Name="Survey.SendReminderTitle">
-    <Value>Hatırlatma Gönder</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingQuiz.AddFirstQuestion">
     <Value>İlk Soruyu Ekle</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.AddQuestion">
-    <Value>Soru Ekle</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.Attempt">
-    <Value>Deneme</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingQuiz.CompletedAt">
     <Value>Tamamlanma Tarihi</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.Create">
-    <Value>Oluştur</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingQuiz.CreateFirst">
     <Value>İlk Quizi Oluştur</Value>
@@ -10375,23 +8782,11 @@
   <LocaleResource Name="TrainingQuiz.LoadError">
     <Value>Quiz yüklenirken hata</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.MultipleChoice">
-    <Value>Çoktan Seçmeli</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingQuiz.NoQuestionsYet">
     <Value>Henüz soru yok</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingQuiz.NoQuizzes">
     <Value>Quiz bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.NoResponses">
-    <Value>Yanıt bulunamadı</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.Options">
-    <Value>Seçenekler</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.Participant">
-    <Value>Katılımcı</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingQuiz.Passed">
     <Value>Geçti</Value>
@@ -10405,12 +8800,6 @@
   <LocaleResource Name="TrainingQuiz.Percentage">
     <Value>Yüzde</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.QuestionText">
-    <Value>Soru Metni</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.QuestionType">
-    <Value>Soru Tipi</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingQuiz.Questions">
     <Value>Sorular</Value>
   </LocaleResource>
@@ -10419,9 +8808,6 @@
   </LocaleResource>
   <LocaleResource Name="TrainingQuiz.Required">
     <Value>Zorunlu</Value>
-  </LocaleResource>
-  <LocaleResource Name="TrainingQuiz.Responses">
-    <Value>Yanıtlar</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingQuiz.Score">
     <Value>Puan</Value>
@@ -10468,9 +8854,6 @@
   <LocaleResource Name="TrainingVideo.EmailsSent">
     <Value>E-postalar gönderildi</Value>
   </LocaleResource>
-  <LocaleResource Name="TrainingVideo.Quiz">
-    <Value>Quiz</Value>
-  </LocaleResource>
   <LocaleResource Name="TrainingVideo.QuizHelp">
     <Value>Video için quiz ekleyin</Value>
   </LocaleResource>
@@ -10489,21 +8872,6 @@
   <LocaleResource Name="TrainingVideo.UploadSuccess">
     <Value>Video başarıyla yüklendi</Value>
   </LocaleResource>
-  <LocaleResource Name="UserRequest.DealerRequests">
-    <Value>Bayi Talepleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ScoreThresholds.Title">
-    <Value>Puan Eşikleri</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ScoreThresholds.Success">
-    <Value>Başarılı (%)</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ScoreThresholds.Warning">
-    <Value>Orta (%)</Value>
-  </LocaleResource>
-  <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveAll">
-    <Value>Tümünü Kaydet</Value>
-  </LocaleResource>
   <LocaleResource Name="CustomerPortal.ScoreThresholds.SaveSuccess">
     <Value>Puan eşikleri başarıyla kaydedildi.</Value>
   </LocaleResource>
@@ -10516,7 +8884,394 @@
   <LocaleResource Name="CustomerPortal.ScoreThresholds.Info">
     <Value>Her proje tipi için başarı ve uyarı eşiklerini belirleyebilirsiniz. Bu eşikler raporlarda kullanılacaktır. Ayar yapılmayan proje tiplerinde global eşikler geçerli olacaktır.</Value>
   </LocaleResource>
-  <LocaleResource Name="CustomerPortal.Menu.ScoreThresholds">
-    <Value>Puan Eşikleri</Value>
+  <LocaleResource Name="Announcement.Content">
+    <Value>İçerik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.ContentRequired">
+    <Value>İçerik zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Create">
+    <Value>Yeni Duyuru</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.CreateError">
+    <Value>Duyuru oluşturulurken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.CreateFirst">
+    <Value>İlk Duyuruyu Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.CreateSuccess">
+    <Value>Duyuru oluşturuldu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.DeleteError">
+    <Value>Duyuru silinirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.DeleteSuccess">
+    <Value>Duyuru silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Edit">
+    <Value>Duyuru Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.ExpiryDate">
+    <Value>Bitiş Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.ExpiryDateHelp">
+    <Value>Boş bırakılırsa süresiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.FieldTitle">
+    <Value>Başlık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.LoadError">
+    <Value>Duyurular yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.NoRecords">
+    <Value>Henüz duyuru bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Pinned">
+    <Value>Sabit</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Priority">
+    <Value>Öncelik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.PublishDate">
+    <Value>Yayın Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.SearchPlaceholder">
+    <Value>Başlık ara...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Summary">
+    <Value>Özet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.SummaryPlaceholder">
+    <Value>Dashboard için kısa özet (opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.TargetRoles">
+    <Value>Hedef Roller</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.TargetRolesHelp">
+    <Value>Virgülle ayırın: Admin,QualitySpecialist</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.TargetRolesPlaceholder">
+    <Value>Boş = Herkes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.Title">
+    <Value>Duyurular</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.TitleRequired">
+    <Value>Başlık zorunludur.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.UpdateError">
+    <Value>Duyuru güncellenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Announcement.UpdateSuccess">
+    <Value>Duyuru güncellendi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.Important">
+    <Value>Önemli</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.Info">
+    <Value>Bilgi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.News">
+    <Value>Haber</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.Success">
+    <Value>Başarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.System">
+    <Value>Sistem</Value>
+  </LocaleResource>
+  <LocaleResource Name="AnnouncementType.Warning">
+    <Value>Uyarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.ProjectCode">
+    <Value>Proje Kodu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.AddRule">
+    <Value>Kural Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DayOfMonth">
+    <Value>Ayın Günü</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DayOfWeek">
+    <Value>Gün</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NoNotificationRules">
+    <Value>Henüz bildirim kuralı eklenmedi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.NotificationRules">
+    <Value>Bildirim Kuralları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.Rule">
+    <Value>Kural</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.SendToPersonnel">
+    <Value>Personelin kendi e-postasına da gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.TokenExpirationDays">
+    <Value>Link Süresi (gün)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.DominantType">
+    <Value>Baskın Tip</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.EnneagramTrend">
+    <Value>Kişilik Analizi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.NoScoreData">
+    <Value>Puan dağılımı verisi bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.NoTrendData">
+    <Value>Aylık trend verisi bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.ProjectCount">
+    <Value>Proje</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.ResponseRate">
+    <Value>Yanıt Oranı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.SurveyTrend">
+    <Value>Anket Yanıt Trendi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.TotalInvitations">
+    <Value>Davetiye</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Dashboard.TotalResponses">
+    <Value>Toplam Yanıt</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Evaluations.AuditDate">
+    <Value>Denetlenen Tarih</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.Menu.DealerReportCard">
+    <Value>Şube Karnesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Answer">
+    <Value>Cevap</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Answers">
+    <Value>Cevaplar</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Company">
+    <Value>Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Earned">
+    <Value>Kazanilan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Evaluated">
+    <Value>Degerlendirilen</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Group">
+    <Value>Grup</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Notes">
+    <Value>Notlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Organization">
+    <Value>Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Personnel">
+    <Value>Temsilci</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Question">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.TotalScore">
+    <Value>Toplam Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPortal.MyPerformance.Weight">
+    <Value>Agirlik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Dealer">
+    <Value>Bayi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationDate">
+    <Value>Değerlendirme Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.VisitId">
+    <Value>Ziyaret ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.VisitInfo">
+    <Value>Ziyaret Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.ConfirmDeleteVisit">
+    <Value>Bu taslak ziyareti silmek istediğinizden emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.ControlInfo">
+    <Value>Kontrol Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.DeleteVisitError">
+    <Value>Ziyaret silinirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.NoEvaluationData">
+    <Value>Değerlendirme verisi bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="FieldWorker.VisitDeleted">
+    <Value>Taslak ziyaret başarıyla silindi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.CallDateRange">
+    <Value>Çağrı Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.CreatedAtRange">
+    <Value>Kayıt Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.DealerReportCard">
+    <Value>Şube Karnesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notifications.MarkAllRead">
+    <Value>Tümünü Oku</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notifications.Title">
+    <Value>Bildirimler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Notifications.ViewAll">
+    <Value>Tümünü Gör</Value>
+  </LocaleResource>
+  <LocaleResource Name="Priority.Highest">
+    <Value>En Yüksek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Priority.Lowest">
+    <Value>En Düşük</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.CallSystemUrl">
+    <Value>Çağrı Sistemi URL</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.CallSystemUrlHelp">
+    <Value>Çağrı ID'sine tıklandığında yönlendirilecek URL. {CallId} yazdığınız yere gerçek çağrı ID'si yazılır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.CompanySettings">
+    <Value>Firma Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.Example">
+    <Value>Örnek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Profile.SaveCompanySettings">
+    <Value>Firma Ayarlarını Kaydet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Dealer">
+    <Value>şube</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DealerHierarchyHint">
+    <Value>Müşteri seçince o müşterinin şubeleri filtrelenir.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DealerReportCard">
+    <Value>Şube Karnesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DealerSelection">
+    <Value>Şube Seçimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Dealers">
+    <Value>Şubeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExportPdf">
+    <Value>PDF İndir</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoDealerFound">
+    <Value>Şube bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluationsForDealer">
+    <Value>Bu şube için değerlendirme bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectDealerFromLeftPanel">
+    <Value>Sol panelden bir şube seçerek karnesini görüntüleyebilirsiniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectDealerToViewReport">
+    <Value>Karne görmek için bir şube seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingVideo.NoQuiz">
+    <Value>Anket secilmedi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.ActiveFiltersNote">
+    <Value>Aktif filtreler rapora uygulanacaktır:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Cards">
+    <Value>Kartlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.ControlDate">
+    <Value>Kontrol Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.ControlTime">
+    <Value>Saat</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Dealer">
+    <Value>Bayi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Detail">
+    <Value>Ziyaret Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.EvaluationSource">
+    <Value>Değerlendirme Kaynağı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Evaluator">
+    <Value>Denetleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.NoAttachments">
+    <Value>Bu ziyarette ekli dosya bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.NoRecords">
+    <Value>Kayıt bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Period">
+    <Value>Dönem</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Personnel">
+    <Value>Denetlenen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.DetailedExcel">
+    <Value>Detaylı Excel (Soru-Cevaplar)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.DetailedExcelDesc">
+    <Value>Tüm soru ve cevapları içeren detaylı rapor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.GeneralExcel">
+    <Value>Genel Excel Export</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.GeneralExcelDesc">
+    <Value>Tüm dinleme kayıtlarının özet bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.MT">
+    <Value>MT Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.MTDesc">
+    <Value>Başarı, gelişim alanı, süreç analizi ve endeks başarı (4 sheet)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.ProjectPerformance">
+    <Value>Proje Performans Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.ProjectPerformanceDesc">
+    <Value>Dönem bazında proje ortalama puanları ve sıralaması</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.QuestionGroupAverage">
+    <Value>Soru Grubu Ortalama Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.QuestionGroupAverageDesc">
+    <Value>Proje, dönem ve soru grubu bazında ortalama puanlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.VisitAudit">
+    <Value>Ziyaret Denetleme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.VisitAuditDesc">
+    <Value>Proje, denetleyen, bayi, denetlenen, kontrol tarihi/saati, yorum ve puan bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.VisitCustomerEvaluation">
+    <Value>Müşteri Ziyaret Değerlendirme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Report.VisitCustomerEvaluationDesc">
+    <Value>Firma, bayi, denetlenen, departman, kontrol tarihi/saati ve puan bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Reports">
+    <Value>Raporlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.ReportsDescription">
+    <Value>Mevcut filtrelere göre rapor oluşturun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.SavedFilters">
+    <Value>Kayıtlı Filtreler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Score">
+    <Value>Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Supervisor">
+    <Value>Yönetici</Value>
+  </LocaleResource>
+  <LocaleResource Name="Visits.Title">
+    <Value>Ziyaretler</Value>
   </LocaleResource>
 </Language>

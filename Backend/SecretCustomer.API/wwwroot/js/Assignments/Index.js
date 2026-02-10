@@ -1,4 +1,4 @@
-// ===== ViewModels =====
+﻿// ===== ViewModels =====
 
 // Assignment Edit ViewModel
 function AssignmentEditViewModel(data) {
@@ -305,7 +305,7 @@ function AssignmentsViewModel() {
     // Status display names
     self.getStatusDisplayName = function(status) {
         var statusNames = {
-            'Pending': T('Status.Pending', 'Bekleyen'),
+            'Pending': T('Common.Status.Pending', 'Bekleyen'),
             'InProgress': T('Status.InProgress', 'Devam Eden'),
             'Completed': T('Status.Completed', 'Tamamlanan'),
             'Expired': T('Status.Expired', 'Süresi Dolan'),
@@ -398,7 +398,7 @@ function AssignmentsViewModel() {
     self.allAssignableUsers = ko.computed(function() {
         var users = [];
         self.availableEvaluators().forEach(function(u) {
-            users.push({ id: u.id, displayName: u.fullName + ' (' + T('User.Title', 'Kullanıcı') + ')' });
+            users.push({ id: u.id, displayName: u.fullName + ' (' + T('Menu.Users', 'Kullanıcı') + ')' });
         });
         self.availableFieldWorkers().forEach(function(fw) {
             users.push({ id: fw.id, displayName: fw.fullName + ' (' + T('Role.FieldWorker', 'Saha Çalışanı') + ')' });
@@ -1234,7 +1234,7 @@ function AssignmentsViewModel() {
             title: T('Dealer.RemoveTitle', 'Şubeyi Çıkar'),
             message: T('Dealer.RemoveConfirm', 'Bu şubeyi atamadan çıkarmak istediğinizden emin misiniz?'),
             type: 'danger',
-            confirmText: T('Button.Remove', 'Çıkar'),
+            confirmText: T('Common.Remove', 'Çıkar'),
             confirmIcon: 'bi-trash',
             onConfirm: function() {
                 fetch('/api/assignments/' + assignmentId + '/dealers/' + customerDealerId, {
@@ -1319,7 +1319,7 @@ function AssignmentsViewModel() {
 
 // Translation keys
 var TRANSLATION_KEYS = [
-    'User.Title',
+    'Menu.Users',
     'Role.FieldWorker',
     'Message.LoadError',
     'Assignment.LoadError',
@@ -1371,11 +1371,11 @@ var TRANSLATION_KEYS = [
     'Common.Update',
     'Common.Create',
     // Confirm modal keys
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
-    'Confirm.DeleteTitle',
-    'Confirm.DeleteMessage',
-    'Confirm.YesDelete',
+    'Common.DeleteConfirmation',
+    'Common.DeleteConfirmationMessage',
+    'Common.YesDelete',
     'Common.Confirm',
     // Update Due Date keys
     'Assignment.UpdateDueDateError',

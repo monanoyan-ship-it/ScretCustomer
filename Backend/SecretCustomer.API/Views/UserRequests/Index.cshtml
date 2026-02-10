@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Menu.UserRequests", "Kullanici Talepleri").ToString();
 }
 
@@ -20,13 +20,13 @@
     <ul class="nav nav-tabs mb-4" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bind="css: { active: activeTab() === 'draft' }, click: function() { setActiveTab('draft'); }">
-                <i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("UserRequest.DraftRequests", "Taslaga Alma Talepleri")
+                <i class="bi bi-arrow-counterclockwise me-2"></i>@Html.T("DraftRequest.AllRequests", "Taslaga Alma Talepleri")
                 <span class="badge bg-warning ms-2" data-bind="text: draftCounts().pending, visible: draftCounts().pending > 0"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bind="css: { active: activeTab() === 'personnel' }, click: function() { setActiveTab('personnel'); }">
-                <i class="bi bi-person-plus me-2"></i>@Html.T("UserRequest.PersonnelRequests", "Personel Talepleri")
+                <i class="bi bi-person-plus me-2"></i>@Html.T("PersonnelRequest.Title", "Personel Talepleri")
                 <span class="badge bg-warning ms-2" data-bind="text: personnelCounts().pending, visible: personnelCounts().pending > 0"></span>
             </button>
         </li>
@@ -38,7 +38,7 @@
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
                     <h3 class="mb-0" data-bind="text: currentCounts().pending">0</h3>
-                    <small>@Html.T("Status.Pending", "Bekleyen")</small>
+                    <small>@Html.T("Common.Status.Pending", "Bekleyen")</small>
                 </div>
             </div>
         </div>
@@ -79,9 +79,9 @@
                     <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filterStatus">
                         <option value="">@Html.T("Common.All", "Tumu")</option>
-                        <option value="0">@Html.T("Approval.Status.Pending", "Beklemede")</option>
-                        <option value="1">@Html.T("Approval.Status.Approved", "Onaylandi")</option>
-                        <option value="2">@Html.T("Approval.Status.Rejected", "Reddedildi")</option>
+                        <option value="0">@Html.T("Project.Pending", "Beklemede")</option>
+                        <option value="1">@Html.T("Status.Approved", "Onaylandi")</option>
+                        <option value="2">@Html.T("Status.Rejected", "Reddedildi")</option>
                     </select>
                 </div>
                 <div class="col-md-7">
@@ -109,7 +109,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('referenceNumber'); }, css: draftSorting.getSortClass('referenceNumber')">
-                                    @Html.T("Approval.Reference", "Referans")
+                                    @Html.T("Call.Reference", "Referans")
                                     <i class="bi sort-icon" data-bind="css: draftSorting.getSortIcon('referenceNumber')"></i>
                                 </th>
                                 <th class="sortable" data-bind="click: function() { draftSorting.toggleSort('title'); }, css: draftSorting.getSortClass('title')">
@@ -173,7 +173,7 @@
     <div data-bind="visible: activeTab() === 'personnel'">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>@Html.T("PersonnelRequest.AllRequests", "Personel Talepleri")</h5>
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>@Html.T("PersonnelRequest.Title", "Personel Talepleri")</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -273,7 +273,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("User.Email", "E-posta")</label>
+                        <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                         <input type="email" class="form-control" data-bind="value: $parent.approveEmail" placeholder="kullaniciadi@temp.com" />
                         <small class="text-muted">@Html.T("PersonnelRequest.DefaultEmail", "Bos birakilirsa kullaniciadi@temp.com olarak atanir")</small>
                     </div>
@@ -303,7 +303,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content" data-bind="with: selectedPersonnelRequest">
                 <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>@Html.T("PersonnelRequest.Detail", "Personel Talebi Detayi")</h5>
+                    <h5 class="modal-title"><i class="bi bi-person-badge me-2"></i>@Html.T("DealerRequest.Detail", "Personel Talebi Detayi")</h5>
                     <button type="button" class="btn-close btn-close-white" data-bind="click: $parent.closePersonnelDetailModal"></button>
                 </div>
                 <div class="modal-body">
@@ -330,7 +330,7 @@
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h6>@Html.T("PersonnelRequest.RequestInfo", "Talep Bilgileri")</h6>
+                            <h6>@Html.T("DealerRequest.Info", "Talep Bilgileri")</h6>
                             <table class="table table-sm">
                                 <tr>
                                     <td class="text-muted">@Html.T("Approval.RequestedBy", "Talep Eden"):</td>
@@ -446,10 +446,10 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6>@Html.T("DraftRequest.RequestInfo", "Talep Bilgileri")</h6>
+                            <h6>@Html.T("DealerRequest.Info", "Talep Bilgileri")</h6>
                             <table class="table table-sm">
                                 <tr>
-                                    <td class="text-muted">@Html.T("Approval.Reference", "Referans"):</td>
+                                    <td class="text-muted">@Html.T("Call.Reference", "Referans"):</td>
                                     <td><strong data-bind="text: referenceNumber"></strong></td>
                                 </tr>
                                 <tr>
@@ -471,7 +471,7 @@
                             </table>
                         </div>
                         <div class="col-md-6">
-                            <h6>@Html.T("DraftRequest.EvaluationInfo", "Degerlendirme Bilgileri")</h6>
+                            <h6>@Html.T("FieldWorker.EvaluationInfo", "Degerlendirme Bilgileri")</h6>
                             <!-- ko if: $parent.draftEvaluationDetail() -->
                             <div data-bind="with: $parent.draftEvaluationDetail">
                                 <table class="table table-sm">
@@ -538,7 +538,7 @@
                             <div class="alert alert-secondary">
                                 <i class="bi bi-info-circle me-2"></i>
                                 <!-- ko if: relatedEntityId -->
-                                <span>@Html.T("DraftRequest.LoadingEvaluation", "Degerlendirme bilgileri yukleniyor...")</span>
+                                <span>@Html.T("FieldWorker.LoadingEvaluation", "Degerlendirme bilgileri yukleniyor...")</span>
                                 <!-- /ko -->
                                 <!-- ko ifnot: relatedEntityId -->
                                 <span>@Html.T("DraftRequest.NoEvaluationLinked", "Bu talebe bagli degerlendirme bulunamadi.")</span>
@@ -555,7 +555,7 @@
                     <!-- /ko -->
                     <!-- ko if: $parent.draftRequestDetail() && $parent.draftRequestDetail().responseNote -->
                     <div class="alert alert-info mt-3">
-                        <strong>@Html.T("DraftRequest.ResponseNote", "Yanit Notu"):</strong><br/>
+                        <strong>@Html.T("Approval.ResponseNote", "Yanit Notu"):</strong><br/>
                         <span data-bind="text: $parent.draftRequestDetail().responseNote"></span>
                     </div>
                     <!-- /ko -->

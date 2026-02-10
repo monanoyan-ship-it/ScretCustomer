@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_LayoutPopup";
     ViewData["Title"] = Html.T("Dealer.Title", "Bayi Yönetimi");
     var customerId = ViewBag.CustomerId;
@@ -196,7 +196,7 @@
                             <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">@Html.T("Dealer.District", "İlçe")</label>
+                            <label class="form-label">@Html.T("Branch.District", "İlçe")</label>
                             <input type="text" class="form-control" data-bind="value: district" placeholder="Kadıköy">
                         </div>
 
@@ -205,7 +205,7 @@
                             <input type="tel" class="form-control" data-bind="value: phone" placeholder="0216 123 4567">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">@Html.T("Dealer.Email", "E-posta")</label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                             <input type="email" class="form-control" data-bind="value: email" placeholder="info@bayi.com">
                         </div>
 

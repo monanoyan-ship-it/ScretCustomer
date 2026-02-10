@@ -1,4 +1,4 @@
-// Support Request Widget ViewModel
+﻿// Support Request Widget ViewModel
 function SupportRequestWidgetViewModel() {
     var self = this;
 
@@ -31,7 +31,7 @@ function SupportRequestWidgetViewModel() {
     // Get status text
     self.getStatusText = function(statusId) {
         switch (statusId) {
-            case 1: return self.T('SupportRequestStatus.Pending', 'Beklemede');
+            case 1: return self.T('Project.Pending', 'Beklemede');
             case 2: return self.T('SupportRequestStatus.InProgress', 'İnceleniyor');
             case 3: return self.T('SupportRequestStatus.Resolved', 'Cevaplandı');
             case 4: return self.T('SupportRequestStatus.Closed', 'Kapatıldı');
@@ -160,7 +160,7 @@ function SupportRequestWidgetViewModel() {
 
 // Translation keys for widget
 var SUPPORT_WIDGET_TRANSLATION_KEYS = [
-    'SupportRequest.Title',
+    'Menu.SupportRequests',
     'SupportRequest.SendRequest',
     'SupportRequest.New',
     'SupportRequest.MyRequests',
@@ -170,14 +170,14 @@ var SUPPORT_WIDGET_TRANSLATION_KEYS = [
     'SupportRequest.PageUrl',
     'SupportRequest.Send',
     'SupportRequest.NoRequestsYet',
-    'SupportRequest.Detail',
+    'DealerRequest.Detail',
     'SupportRequest.AdminResponse',
     'SupportRequest.WaitingResponse',
     'SupportRequest.NewResponse',
     'SupportRequest.SendSuccess',
     'SupportRequest.SendError',
     'SupportRequest.LoadError',
-    'SupportRequestStatus.Pending',
+    'Project.Pending',
     'SupportRequestStatus.InProgress',
     'SupportRequestStatus.Resolved',
     'SupportRequestStatus.Closed',

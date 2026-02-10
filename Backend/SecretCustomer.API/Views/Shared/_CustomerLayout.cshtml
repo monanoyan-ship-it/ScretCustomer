@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
@@ -70,7 +70,7 @@
                 <li class="nav-item">
                     <a class="nav-link @(currentAction == "Evaluations" ? "active" : "")" href="/CustomerPortal/Evaluations">
                         <i class="bi bi-clipboard-check"></i>
-                        @Html.T("CustomerPortal.Menu.Evaluations", "Degerlendirmeler")
+                        @Html.T("Menu.Evaluations", "Degerlendirmeler")
                     </a>
                 </li>
                 }
@@ -92,7 +92,7 @@
                     <a class="nav-link d-flex justify-content-between align-items-center @(isManagementActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#managementMenu" role="button"
                        aria-expanded="@(isManagementActive ? "true" : "false")" aria-controls="managementMenu">
-                        <span><i class="bi bi-gear"></i> @Html.T("CustomerPortal.Menu.Management", "Yonetim")</span>
+                        <span><i class="bi bi-gear"></i> @Html.T("Training.Category.Management", "Yonetim")</span>
                         <i class="bi bi-chevron-down collapse-icon"></i>
                     </a>
                     <div class="collapse @(isManagementActive ? "show" : "")" id="managementMenu">
@@ -108,7 +108,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "Projects" ? "active" : "")" href="/CustomerPortal/Projects">
                                     <i class="bi bi-folder"></i>
-                                    @Html.T("CustomerPortal.Menu.Projects", "Projeler")
+                                    @Html.T("Menu.Projects", "Projeler")
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -141,7 +141,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "ScoreThresholds" ? "active" : "")" href="/CustomerPortal/ScoreThresholds">
                                     <i class="bi bi-sliders text-info"></i>
-                                    @Html.T("CustomerPortal.Menu.ScoreThresholds", "Puan Esikleri")
+                                    @Html.T("Setting.ScoreThresholds", "Puan Esikleri")
                                 </a>
                             </li>
                             }
@@ -157,7 +157,7 @@
                     <a class="nav-link d-flex justify-content-between align-items-center @(isReportActive ? "" : "collapsed")"
                        data-bs-toggle="collapse" href="#reportsMenu" role="button"
                        aria-expanded="@(isReportActive ? "true" : "false")" aria-controls="reportsMenu">
-                        <span><i class="bi bi-bar-chart"></i> @Html.T("CustomerPortal.Menu.ReportsGroup", "Raporlar")</span>
+                        <span><i class="bi bi-bar-chart"></i> @Html.T("Common.Reports", "Raporlar")</span>
                         <i class="bi bi-chevron-down collapse-icon"></i>
                     </a>
                     <div class="collapse @(isReportActive ? "show" : "")" id="reportsMenu">
@@ -165,7 +165,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "Reports" ? "active" : "")" href="/CustomerPortal/Reports">
                                     <i class="bi bi-graph-up"></i>
-                                    @Html.T("CustomerPortal.Menu.Reports", "Genel Raporlar")
+                                    @Html.T("Common.Reports", "Genel Raporlar")
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -189,7 +189,7 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "Suggestions" ? "active" : "")" href="/CustomerPortal/Suggestions">
                                     <i class="bi bi-chat-quote text-info"></i>
-                                    @Html.T("CustomerPortal.Menu.Suggestions", "Oneriler Raporu")
+                                    @Html.T("Evaluation.Suggestions", "Oneriler Raporu")
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -207,19 +207,19 @@
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "PerformanceByPeriod" ? "active" : "")" href="/CustomerPortal/PerformanceByPeriod">
                                     <i class="bi bi-calendar3 text-success"></i>
-                                    @Html.T("CustomerPortal.Menu.PerformanceByPeriod", "Donem Bazli Basari")
+                                    @Html.T("Report.PerformanceByPeriod", "Donem Bazli Basari")
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "SurveyResults" ? "active" : "")" href="/CustomerPortal/SurveyResults">
                                     <i class="bi bi-clipboard-data text-info"></i>
-                                    @Html.T("CustomerPortal.Menu.SurveyResults", "Anket Sonuclari")
+                                    @Html.T("Menu.SurveyResults", "Anket Sonuclari")
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link @(currentAction == "EnneagramResults" ? "active" : "")" href="/CustomerPortal/EnneagramResults">
                                     <i class="bi bi-people text-purple"></i>
-                                    @Html.T("CustomerPortal.Menu.EnneagramResults", "Enneagram Sonuclari")
+                                    @Html.T("Menu.EnneagramResults", "Enneagram Sonuclari")
                                 </a>
                             </li>
                         </ul>
@@ -311,7 +311,7 @@
                             <form asp-action="Logout" asp-controller="Account" method="post" class="d-inline w-100">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="dropdown-item text-danger">
-                                    <i class="bi bi-box-arrow-left me-2"></i>@Html.T("CustomerPortal.Menu.Logout", "Çıkış Yap")
+                                    <i class="bi bi-box-arrow-left me-2"></i>@Html.T("Common.Logout", "Çıkış Yap")
                                 </button>
                             </form>
                         </li>
@@ -438,7 +438,7 @@
                             } else {
                                 // Müşteri seçilmemiş, seç diye modal aç
                                 banner.style.cssText = 'display: flex !important;';
-                                document.getElementById('admin-viewing-customer-name').textContent = '@Html.T("CustomerPortal.NoCustomerSelected", "Seçilmedi")';
+                                document.getElementById('admin-viewing-customer-name').textContent = '@Html.T("Assignment.NoCustomer", "Seçilmedi")';
                                 loadAdminCustomerList();
                             }
                         }

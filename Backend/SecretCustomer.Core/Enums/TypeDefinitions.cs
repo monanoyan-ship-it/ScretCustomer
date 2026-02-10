@@ -1,4 +1,4 @@
-namespace SecretCustomer.Core.Enums;
+﻿namespace SecretCustomer.Core.Enums;
 
 /// <summary>
 /// Code-based tip tanimlari icin base class
@@ -117,11 +117,11 @@ public static class AssignmentTypes
 // ============================================================
 public static class AssignmentStatuses
 {
-    public static readonly TypeItem Pending = new(1, "Pending", "AssignmentStatus.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
-    public static readonly TypeItem InProgress = new(2, "InProgress", "AssignmentStatus.InProgress", "Devam ediyor", "bi-play-circle", "bg-primary", 2);
-    public static readonly TypeItem Completed = new(3, "Completed", "AssignmentStatus.Completed", "Tamamlandi", "bi-check-circle", "bg-success", 3);
-    public static readonly TypeItem Expired = new(4, "Expired", "AssignmentStatus.Expired", "Suresi dolmus", "bi-clock-history", "bg-secondary", 4);
-    public static readonly TypeItem Cancelled = new(5, "Cancelled", "AssignmentStatus.Cancelled", "Iptal edildi", "bi-x-circle", "bg-danger", 5);
+    public static readonly TypeItem Pending = new(1, "Pending", "Project.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem InProgress = new(2, "InProgress", "Status.InProgress", "Devam ediyor", "bi-play-circle", "bg-primary", 2);
+    public static readonly TypeItem Completed = new(3, "Completed", "Status.Completed", "Tamamlandi", "bi-check-circle", "bg-success", 3);
+    public static readonly TypeItem Expired = new(4, "Expired", "Status.Expired", "Suresi dolmus", "bi-clock-history", "bg-secondary", 4);
+    public static readonly TypeItem Cancelled = new(5, "Cancelled", "Status.Cancelled", "Iptal edildi", "bi-x-circle", "bg-danger", 5);
 
     public static IEnumerable<TypeItem> All => new[] { Pending, InProgress, Completed, Expired, Cancelled };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -143,11 +143,11 @@ public static class AssignmentStatuses
 // ============================================================
 public static class EvaluationStatuses
 {
-    public static readonly TypeItem Pending = new(1, "Pending", "EvaluationStatus.Pending", "Beklemede - Henuz baslanmadi", "bi-clock", "bg-secondary", 1, isDefault: true);
-    public static readonly TypeItem InProgress = new(2, "InProgress", "EvaluationStatus.InProgress", "Devam ediyor - Degerlendirme yapiliyor", "bi-play-circle", "bg-primary", 2);
-    public static readonly TypeItem Completed = new(3, "Completed", "EvaluationStatus.Completed", "Tamamlandi - Degerlendirme bitti", "bi-check-circle", "bg-success", 3);
-    public static readonly TypeItem Draft = new(4, "Draft", "EvaluationStatus.Draft", "Taslak - Kaydedildi ama tamamlanmadi", "bi-file-earmark", "bg-warning text-dark", 4);
-    public static readonly TypeItem Cancelled = new(5, "Cancelled", "EvaluationStatus.Cancelled", "Iptal edildi", "bi-x-circle", "bg-danger", 5);
+    public static readonly TypeItem Pending = new(1, "Pending", "Project.Pending", "Beklemede - Henuz baslanmadi", "bi-clock", "bg-secondary", 1, isDefault: true);
+    public static readonly TypeItem InProgress = new(2, "InProgress", "Status.InProgress", "Devam ediyor - Degerlendirme yapiliyor", "bi-play-circle", "bg-primary", 2);
+    public static readonly TypeItem Completed = new(3, "Completed", "Status.Completed", "Tamamlandi - Degerlendirme bitti", "bi-check-circle", "bg-success", 3);
+    public static readonly TypeItem Draft = new(4, "Draft", "Common.Status.Draft", "Taslak - Kaydedildi ama tamamlanmadi", "bi-file-earmark", "bg-warning text-dark", 4);
+    public static readonly TypeItem Cancelled = new(5, "Cancelled", "Status.Cancelled", "Iptal edildi", "bi-x-circle", "bg-danger", 5);
 
     public static IEnumerable<TypeItem> All => new[] { Pending, InProgress, Completed, Draft, Cancelled };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -169,12 +169,12 @@ public static class EvaluationStatuses
 // ============================================================
 public static class ProjectStatuses
 {
-    public static readonly TypeItem Draft = new(1, "Draft", "ProjectStatus.Draft", "Taslak - Henuz baslatilmadi", "bi-pencil-square", "bg-secondary", 1, isDefault: true);
+    public static readonly TypeItem Draft = new(1, "Draft", "Common.Status.Draft", "Taslak - Henuz baslatilmadi", "bi-pencil-square", "bg-secondary", 1, isDefault: true);
     public static readonly TypeItem Planned = new(2, "Planned", "ProjectStatus.Planned", "Planlanmis - Baslangic tarihi bekleniyor", "bi-calendar-event", "bg-info", 2);
     public static readonly TypeItem Active = new(3, "Active", "ProjectStatus.Active", "Aktif - Devam ediyor", "bi-play-circle", "bg-success", 3);
     public static readonly TypeItem Paused = new(4, "Paused", "ProjectStatus.Paused", "Duraklatildi - Gecici olarak durduruldu", "bi-pause-circle", "bg-warning text-dark", 4);
-    public static readonly TypeItem Completed = new(5, "Completed", "ProjectStatus.Completed", "Tamamlandi - Basariyla bitti", "bi-check-circle", "bg-primary", 5);
-    public static readonly TypeItem Cancelled = new(6, "Cancelled", "ProjectStatus.Cancelled", "Iptal Edildi", "bi-x-circle", "bg-danger", 6);
+    public static readonly TypeItem Completed = new(5, "Completed", "Status.Completed", "Tamamlandi - Basariyla bitti", "bi-check-circle", "bg-primary", 5);
+    public static readonly TypeItem Cancelled = new(6, "Cancelled", "Status.Cancelled", "Iptal Edildi", "bi-x-circle", "bg-danger", 6);
 
     public static IEnumerable<TypeItem> All => new[] { Draft, Planned, Active, Paused, Completed, Cancelled };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -278,7 +278,7 @@ public static class QuestionScoringTypes
 public static class ScoringMethods
 {
     // Maksimum: Klasik puanlama - (GivenPoints / MaxPoints) * WeightPoints
-    public static readonly TypeItem Maximum = new(1, "Maximum", "ScoringMethod.Maximum", "Maksimum puan uzerinden hesaplama", "bi-arrow-up-circle", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Maximum = new(1, "Maximum", "Common.Max", "Maksimum puan uzerinden hesaplama", "bi-arrow-up-circle", "bg-primary", 1, isDefault: true);
 
     // Kriter Toplam: SESTEK tarzi - Secilen secenegin puani direkt alinir
     public static readonly TypeItem CriteriaTotal = new(4, "CriteriaTotal", "ScoringMethod.CriteriaTotal", "Kriter Toplam - Secenek puanlari toplanir", "bi-plus-circle", "bg-success", 2);
@@ -1357,15 +1357,15 @@ public static class SettingValueTypes
 public static class DateRangeTypes
 {
     public static readonly TypeItem Today = new(1, "today", "DateRange.Today", "Bugun", "bi-calendar-day", "bg-primary", 1);
-    public static readonly TypeItem Yesterday = new(2, "yesterday", "DateRange.Yesterday", "Dun", "bi-calendar-minus", "bg-secondary", 2);
+    public static readonly TypeItem Yesterday = new(2, "yesterday", "Common.Yesterday", "Dun", "bi-calendar-minus", "bg-secondary", 2);
     public static readonly TypeItem Last7Days = new(3, "last7Days", "DateRange.Last7Days", "Son 7 Gun", "bi-calendar-week", "bg-info", 3);
     public static readonly TypeItem Last30Days = new(4, "last30Days", "DateRange.Last30Days", "Son 30 Gun", "bi-calendar-month", "bg-info", 4);
     public static readonly TypeItem ThisWeek = new(5, "thisWeek", "DateRange.ThisWeek", "Bu Hafta", "bi-calendar2-week", "bg-success", 5);
-    public static readonly TypeItem LastWeek = new(6, "lastWeek", "DateRange.LastWeek", "Gecen Hafta", "bi-calendar2-week", "bg-secondary", 6);
-    public static readonly TypeItem ThisMonth = new(7, "thisMonth", "DateRange.ThisMonth", "Bu Ay", "bi-calendar3", "bg-success", 7);
-    public static readonly TypeItem LastMonth = new(8, "lastMonth", "DateRange.LastMonth", "Gecen Ay", "bi-calendar3", "bg-secondary", 8);
+    public static readonly TypeItem LastWeek = new(6, "lastWeek", "Common.LastWeek", "Gecen Hafta", "bi-calendar2-week", "bg-secondary", 6);
+    public static readonly TypeItem ThisMonth = new(7, "thisMonth", "Common.ThisMonth", "Bu Ay", "bi-calendar3", "bg-success", 7);
+    public static readonly TypeItem LastMonth = new(8, "lastMonth", "Common.LastMonth", "Gecen Ay", "bi-calendar3", "bg-secondary", 8);
     public static readonly TypeItem ThisQuarter = new(9, "thisQuarter", "DateRange.ThisQuarter", "Bu Ceyrek", "bi-calendar-range", "bg-warning text-dark", 9);
-    public static readonly TypeItem ThisYear = new(10, "thisYear", "DateRange.ThisYear", "Bu Yil", "bi-calendar4", "bg-danger", 10);
+    public static readonly TypeItem ThisYear = new(10, "thisYear", "Common.ThisYear", "Bu Yil", "bi-calendar4", "bg-danger", 10);
 
     public static IEnumerable<TypeItem> All => new[] { Today, Yesterday, Last7Days, Last30Days, ThisWeek, LastWeek, ThisMonth, LastMonth, ThisQuarter, ThisYear };
     public static TypeItem Default => Today;
@@ -1623,7 +1623,7 @@ public static class SurveyInvitationStatuses
 // ============================================================
 public static class SupportRequestStatuses
 {
-    public static readonly TypeItem Pending = new(1, "Pending", "SupportRequestStatus.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Pending = new(1, "Pending", "Project.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
     public static readonly TypeItem InProgress = new(2, "InProgress", "SupportRequestStatus.InProgress", "İnceleniyor", "bi-eye", "bg-info", 2);
     public static readonly TypeItem Resolved = new(3, "Resolved", "SupportRequestStatus.Resolved", "Cevaplandı", "bi-check-circle", "bg-success", 3);
     public static readonly TypeItem Closed = new(4, "Closed", "SupportRequestStatus.Closed", "Kapatıldı", "bi-x-circle", "bg-secondary", 4);

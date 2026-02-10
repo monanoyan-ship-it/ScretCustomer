@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Project.Title", "Proje Yönetimi");
 }
 
@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("Project.Completed", "Tamamlanan")</h6>
+                            <h6 class="mb-0">@Html.T("Status.Completed", "Tamamlanan")</h6>
                             <h3 class="mb-0" data-bind="text: stats().completed"></h3>
                         </div>
                         <i class="bi bi-check-circle fs-1 opacity-50"></i>
@@ -103,11 +103,11 @@
                             <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
                             <option value="MysteryShopping">@Html.T("Project.Type.MysteryShopping", "Gizli Müşteri")</option>
                             <option value="CallAuditing">@Html.T("Project.Type.CallAuditing", "Çağrı Denetimi")</option>
-                            <option value="PhysicalAudit">@Html.T("Project.Type.PhysicalAudit", "Fiziksel Denetim")</option>
-                            <option value="OnlineSurvey">@Html.T("Project.Type.OnlineSurvey", "Online Anket")</option>
-                            <option value="CustomerSatisfaction">@Html.T("Project.Type.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
+                            <option value="PhysicalAudit">@Html.T("ProjectType.PhysicalAudit", "Fiziksel Denetim")</option>
+                            <option value="OnlineSurvey">@Html.T("ProjectType.OnlineSurvey", "Online Anket")</option>
+                            <option value="CustomerSatisfaction">@Html.T("ProjectType.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
                             <option value="TrainingEvaluation">@Html.T("Project.Type.TrainingEvaluation", "Eğitim Değerlendirme")</option>
-                            <option value="QualityControl">@Html.T("Project.Type.QualityControl", "Kalite Kontrol")</option>
+                            <option value="QualityControl">@Html.T("ProjectType.QualityControl", "Kalite Kontrol")</option>
                         </select>
                     </div>
 
@@ -116,12 +116,12 @@
                         <label class="form-label small text-muted">@Html.T("Common.Status", "Durum")</label>
                         <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
                             <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
-                            <option value="Draft">@Html.T("Project.Status.Draft", "Taslak")</option>
+                            <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             <option value="Planned">@Html.T("Project.Status.Planned", "Planlandı")</option>
                             <option value="Active">@Html.T("Project.Status.Active", "Aktif")</option>
-                            <option value="Paused">@Html.T("Project.Status.Paused", "Duraklatıldı")</option>
-                            <option value="Completed">@Html.T("Project.Status.Completed", "Tamamlandı")</option>
-                            <option value="Cancelled">@Html.T("Project.Status.Cancelled", "İptal Edildi")</option>
+                            <option value="Paused">@Html.T("ProjectStatus.Paused", "Duraklatıldı")</option>
+                            <option value="Completed">@Html.T("Status.Completed", "Tamamlandı")</option>
+                            <option value="Cancelled">@Html.T("Status.Cancelled", "İptal Edildi")</option>
                         </select>
                     </div>
 
@@ -192,7 +192,7 @@
     <div class="card" data-bind="visible: !isLoading()">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
-                <i class="bi bi-list"></i> @Html.T("Project.Projects", "Projeler")
+                <i class="bi bi-list"></i> @Html.T("Menu.Projects", "Projeler")
                 <span class="badge bg-secondary ms-2" data-bind="text: filteredProjects().length"></span>
             </span>
             <div class="btn-group btn-group-sm">
@@ -208,7 +208,7 @@
             <!-- Empty State -->
             <div data-bind="visible: filteredProjects().length === 0" class="text-center py-5">
                 <i class="bi bi-folder-x fs-1 text-muted"></i>
-                <p class="text-muted mt-2">@Html.T("Project.NoProjects", "Proje bulunamadı")</p>
+                <p class="text-muted mt-2">@Html.T("Report.NoProjects", "Proje bulunamadı")</p>
             </div>
 
             <!-- Table View -->
@@ -217,7 +217,7 @@
                     <thead class="table-light">
                         <tr>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('code'); }, css: sorting.getSortClass('code')">
-                                @Html.T("Project.Code", "Kod")
+                                @Html.T("Common.Code", "Kod")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('code')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('name'); }, css: sorting.getSortClass('name')">
@@ -238,7 +238,7 @@
                             </th>
                             <th>@Html.T("Project.Progress", "İlerleme")</th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('startDate'); }, css: sorting.getSortClass('startDate')">
-                                @Html.T("Project.Dates", "Tarihler")
+                                @Html.T("Common.Dates", "Tarihler")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('startDate')"></i>
                             </th>
                             <th class="text-end">@Html.T("Common.Actions", "İşlemler")</th>
@@ -291,13 +291,13 @@
                                     <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: status !== 'Completed' && status !== 'Cancelled'" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, clickBubble: false, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'" title="@Html.T("Project.Start", "Başlat")">
+                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, clickBubble: false, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'" title="@Html.T("Common.Start", "Başlat")">
                                         <i class="bi bi-play"></i>
                                     </button>
                                     <button type="button" class="btn btn-outline-warning" data-bind="click: function() { $parent.pauseProject($data); }, clickBubble: false, visible: status === 'Active'" title="@Html.T("Project.Pause", "Duraklat")">
                                         <i class="bi bi-pause"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, clickBubble: false, visible: status === 'Active'" title="@Html.T("Project.Complete", "Tamamla")">
+                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, clickBubble: false, visible: status === 'Active'" title="@Html.T("Common.Complete", "Tamamla")">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
                                     <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, clickBubble: false, visible: status === 'Draft'" title="@Html.T("Common.Delete", "Sil")">
@@ -421,7 +421,7 @@
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">@Html.T("Project.Code", "Proje Kodu")</label>
+                                            <label class="form-label">@Html.T("Common.Code", "Proje Kodu")</label>
                                             <div class="input-group">
                                                 <input type="text" class="form-control" data-bind="value: code" placeholder="@Html.T("Project.Auto", "Otomatik")">
                                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: $parent.generateCode" title="@Html.T("Project.AutoCode", "Otomatik Kod")"><i class="bi bi-magic"></i></button>
@@ -461,7 +461,7 @@
                                                 <option value="InternalBranch">@Html.T("Project.Assignment.InternalBranch", "Dahili Şube")</option>
                                                 <option value="ExternalLocation">@Html.T("Project.Assignment.ExternalLocation", "Harici Lokasyon")</option>
                                                 <option value="Phone">@Html.T("Project.Assignment.Phone", "Telefon")</option>
-                                                <option value="Online">@Html.T("Project.Assignment.Online", "Online")</option>
+                                                <option value="Online">@Html.T("Meeting.Online", "Online")</option>
                                             </select>
                                         </div>
                                     </div>
@@ -550,12 +550,12 @@
                                             <input type="number" class="form-control" data-bind="value: minimumScoreThreshold" min="0" max="100">
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">@Html.T("Project.Priority", "Öncelik")</label>
+                                            <label class="form-label">@Html.T("Call.Priority", "Öncelik")</label>
                                             <select class="form-select" data-bind="value: priority">
-                                                <option value="">@Html.T("Project.Priority.Normal", "Normal")</option>
-                                                <option value="Low">@Html.T("Project.Priority.Low", "Düşük")</option>
+                                                <option value="">@Html.T("Priority.Normal", "Normal")</option>
+                                                <option value="Low">@Html.T("Priority.Low", "Düşük")</option>
                                                 <option value="Medium">@Html.T("Project.Priority.Medium", "Orta")</option>
-                                                <option value="High">@Html.T("Project.Priority.High", "Yüksek")</option>
+                                                <option value="High">@Html.T("Priority.High", "Yüksek")</option>
                                                 <option value="Critical">@Html.T("Project.Priority.Critical", "Kritik")</option>
                                             </select>
                                         </div>
@@ -595,7 +595,7 @@
                                         <li class="list-group-item d-flex align-items-center gap-2 py-2">
                                             <select class="form-select form-select-sm flex-grow-1" data-bind="value: userId, options: $parents[1].users, optionsText: 'fullName', optionsValue: 'id', optionsCaption: '@Html.T("Project.User", "Kullanıcı...")'"></select>
                                             <select class="form-select form-select-sm" style="width: 110px;" data-bind="value: role">
-                                                <option value="Evaluator">@Html.T("Project.Role.Evaluator", "Değerlendirici")</option>
+                                                <option value="Evaluator">@Html.T("User.Evaluator", "Değerlendirici")</option>
                                                 <option value="Manager">@Html.T("Project.Role.Manager", "Yönetici")</option>
                                                 <option value="Observer">@Html.T("Project.Role.Observer", "Gözlemci")</option>
                                             </select>
@@ -655,7 +655,7 @@
                             <div class="card bg-success text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0"><span data-bind="text: completedAssignments"></span>/<span data-bind="text: totalAssignments"></span></h4>
-                                    <small>@Html.T("Project.Completed", "Tamamlanan")</small>
+                                    <small>@Html.T("Status.Completed", "Tamamlanan")</small>
                                 </div>
                             </div>
                         </div>
@@ -663,7 +663,7 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body py-2 text-center">
                                     <h4 class="mb-0" data-bind="text: averageScore.toFixed(1)"></h4>
-                                    <small>@Html.T("Project.AverageScore", "Ortalama Puan")</small>
+                                    <small>@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                                 </div>
                             </div>
                         </div>
@@ -713,7 +713,7 @@
                                 <div class="card-header py-2 d-flex justify-content-between align-items-center">
                                     <span><i class="bi bi-paperclip"></i> @Html.T("Project.Files", "Proje Dosyaları") <span class="badge bg-secondary" data-bind="text: $parent.projectFiles().length"></span></span>
                                     <label class="btn btn-sm btn-outline-primary mb-0" data-bind="visible: $parent.canManageFiles()">
-                                        <i class="bi bi-upload"></i> @Html.T("Project.UploadFile", "Dosya Yükle")
+                                        <i class="bi bi-upload"></i> @Html.T("Meeting.UploadFile", "Dosya Yükle")
                                         <input type="file" class="d-none" data-bind="event: { change: function(d, e) { $parent.uploadFile(e); } }" multiple>
                                     </label>
                                 </div>
@@ -784,9 +784,9 @@
                                 <div class="card-header py-2"><i class="bi bi-toggles"></i> @Html.T("Project.StatusActions", "Durum İşlemleri")</div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
-                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'"><i class="bi bi-play-fill"></i> @Html.T("Project.Start", "Başlat")</button>
+                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'"><i class="bi bi-play-fill"></i> @Html.T("Common.Start", "Başlat")</button>
                                         <button type="button" class="btn btn-warning btn-sm" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'"><i class="bi bi-pause-fill"></i> @Html.T("Project.Pause", "Duraklat")</button>
-                                        <button type="button" class="btn btn-primary btn-sm" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'"><i class="bi bi-check-lg"></i> @Html.T("Project.Complete", "Tamamla")</button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'"><i class="bi bi-check-lg"></i> @Html.T("Common.Complete", "Tamamla")</button>
                                         <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.cancelProject($data); }"><i class="bi bi-x-lg"></i> @Html.T("Project.Cancel", "İptal Et")</button>
                                     </div>
                                 </div>
@@ -942,7 +942,7 @@
                                 <div class="col-md-3">
                                     <div class="card text-center py-2 bg-primary text-white">
                                         <h5 class="mb-0" data-bind="text: invitationStats() ? invitationStats().completed : 0"></h5>
-                                        <small>@Html.T("Project.Completed", "Tamamlandı")</small>
+                                        <small>@Html.T("Status.Completed", "Tamamlandı")</small>
                                     </div>
                                 </div>
                             </div>
@@ -962,7 +962,7 @@
                                 <!-- ko if: surveyResult() && surveyResult().errors && surveyResult().errors.length > 0 -->
                                 <hr>
                                 <small>
-                                    <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
+                                    <strong>@Html.T("Import.Errors", "Hatalar"):</strong>
                                     <ul class="mb-0" data-bind="foreach: surveyResult().errors">
                                         <li data-bind="text: $data"></li>
                                     </ul>
@@ -1027,7 +1027,7 @@
                                 <div class="col-md-3">
                                     <div class="card text-center py-2 bg-primary text-white">
                                         <h5 class="mb-0" data-bind="text: externalInvitationStats() ? externalInvitationStats().completed : 0"></h5>
-                                        <small>@Html.T("Project.Completed", "Tamamlandı")</small>
+                                        <small>@Html.T("Status.Completed", "Tamamlandı")</small>
                                     </div>
                                 </div>
                             </div>
@@ -1046,13 +1046,13 @@
                                         <label class="form-label small">@Html.T("Project.ReminderFilter", "Filtre")</label>
                                         <select class="form-select form-select-sm" data-bind="value: externalReminderFilter">
                                             <option value="notCompleted">@Html.T("Project.NotCompleted", "Tamamlanmayanlar")</option>
-                                            <option value="completed">@Html.T("Project.Completed", "Tamamlananlar")</option>
+                                            <option value="completed">@Html.T("Status.Completed", "Tamamlananlar")</option>
                                             <option value="all">@Html.T("Common.All", "Tümü")</option>
                                         </select>
                                     </div>
                                     <div class="col-md-6 text-end">
                                         <button type="button" class="btn btn-info btn-sm" data-bind="click: sendExternalReminders, disable: isExternalSendingReminder">
-                                            <span data-bind="visible: !isExternalSendingReminder()"><i class="bi bi-bell me-1"></i> @Html.T("Project.SendReminderBtn", "Hatırlatma Gönder")</span>
+                                            <span data-bind="visible: !isExternalSendingReminder()"><i class="bi bi-bell me-1"></i> @Html.T("Project.SendReminder", "Hatırlatma Gönder")</span>
                                             <span data-bind="visible: isExternalSendingReminder"><span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Project.SendingReminder", "Gönderiliyor...")</span>
                                         </button>
                                     </div>
@@ -1083,7 +1083,7 @@
                                             <th>@Html.T("Common.Name", "Ad")</th>
                                             <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                             <th class="text-center">@Html.T("Project.Opened", "Açıldı")</th>
-                                            <th class="text-center">@Html.T("Project.Completed", "Tamamlandı")</th>
+                                            <th class="text-center">@Html.T("Status.Completed", "Tamamlandı")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: externalInvitations">
@@ -1122,7 +1122,7 @@
                                 <!-- ko if: externalSendResult() && externalSendResult().errors && externalSendResult().errors.length > 0 -->
                                 <hr>
                                 <small>
-                                    <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
+                                    <strong>@Html.T("Import.Errors", "Hatalar"):</strong>
                                     <ul class="mb-0" data-bind="foreach: externalSendResult().errors">
                                         <li data-bind="text: $data"></li>
                                     </ul>
@@ -1175,7 +1175,7 @@
                                 <!-- ko if: externalUploadResult() && externalUploadResult().errors && externalUploadResult().errors.length > 0 -->
                                 <hr>
                                 <small>
-                                    <strong>@Html.T("Project.Errors", "Hatalar"):</strong>
+                                    <strong>@Html.T("Import.Errors", "Hatalar"):</strong>
                                     <ul class="mb-0" data-bind="foreach: externalUploadResult().errors">
                                         <li data-bind="text: $data"></li>
                                     </ul>

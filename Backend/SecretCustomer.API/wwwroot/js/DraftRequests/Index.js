@@ -1,4 +1,4 @@
-// DraftRequests Index ViewModel
+﻿// DraftRequests Index ViewModel
 // Taslaga alma talepleri yonetimi (Admin)
 // Uses existing Approval API with Evaluation filter
 
@@ -221,7 +221,7 @@ function DraftRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DraftRequest.ApproveError', 'Onay islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.ApproveError', 'Onay islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -240,7 +240,7 @@ function DraftRequestsViewModel() {
             self.refreshAll();
         })
         .fail(function(xhr) {
-            var message = xhr.responseJSON?.message || T('DraftRequest.RejectError', 'Red islemi basarisiz');
+            var message = xhr.responseJSON?.message || T('Approval.RejectError', 'Red islemi basarisiz');
             toastr.error(message);
         });
     };
@@ -248,9 +248,9 @@ function DraftRequestsViewModel() {
     // Helper functions
     self.getStatusText = function(status) {
         var statuses = {
-            'Pending': T('Approval.Status.Pending', 'Beklemede'),
-            'Approved': T('Approval.Status.Approved', 'Onaylandi'),
-            'Rejected': T('Approval.Status.Rejected', 'Reddedildi'),
+            'Pending': T('Project.Pending', 'Beklemede'),
+            'Approved': T('Status.Approved', 'Onaylandi'),
+            'Rejected': T('Status.Rejected', 'Reddedildi'),
             'Cancelled': T('Approval.Status.Cancelled', 'Iptal')
         };
         return statuses[status] || status;
@@ -294,17 +294,17 @@ var TRANSLATION_KEYS = [
     'DraftRequest.ConfirmApprove',
     'DraftRequest.ConfirmReject',
     'DraftRequest.ApproveSuccess',
-    'DraftRequest.ApproveError',
+    'Approval.ApproveError',
     'DraftRequest.RejectSuccess',
-    'DraftRequest.RejectError',
+    'Approval.RejectError',
     'Approval.Approve',
     'Approval.Reject',
-    'Approval.Status.Pending',
-    'Approval.Status.Approved',
-    'Approval.Status.Rejected',
+    'Project.Pending',
+    'Status.Approved',
+    'Status.Rejected',
     'Approval.Status.Cancelled',
     // Confirm modal keys
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
     'Common.Confirm'
 ];

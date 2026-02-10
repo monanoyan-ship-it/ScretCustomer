@@ -1,4 +1,4 @@
-// Customer Personnel ViewModel
+﻿// Customer Personnel ViewModel
 function CustomerPersonnelViewModel(customerId) {
     var self = this;
 
@@ -265,7 +265,8 @@ function CustomerPersonnelViewModel(customerId) {
             role: 1,
             isActive: true,
             notes: ''
-        });        self.isModalOpen(true);
+        });
+        self.isModalOpen(true);
     };
 
     // Edit personnel
@@ -284,11 +285,13 @@ function CustomerPersonnelViewModel(customerId) {
             role: personnel.role,
             isActive: personnel.isActive,
             notes: personnel.notes || ''
-        });        self.isModalOpen(true);
+        });
+        self.isModalOpen(true);
     };
 
     // Save personnel
-    self.savePersonnel = function() {        self.successMessage('');
+    self.savePersonnel = function() {
+        self.successMessage('');
 
         var personnel = self.editingPersonnel();
         if (!personnel) return;
@@ -321,7 +324,8 @@ function CustomerPersonnelViewModel(customerId) {
             return;
         }
 
-        self.isSaving(true);        // Check username/email uniqueness before saving
+        self.isSaving(true);
+        // Check username/email uniqueness before saving
         var excludeIdParam = personnel.id ? '?excludeId=' + personnel.id : '';
 
         // Check username
@@ -398,7 +402,8 @@ function CustomerPersonnelViewModel(customerId) {
     // Close modal
     self.closeModal = function() {
         self.isModalOpen(false);
-        self.editingPersonnel(null);    };
+        self.editingPersonnel(null);
+    };
 
     // Delete personnel
     self.deletePersonnel = function(personnel) {
@@ -442,7 +447,7 @@ function CustomerPersonnelViewModel(customerId) {
         }
 
         if (newPass !== confirmPass) {
-            toastr.error(T('Validation.PasswordMismatch', 'Yeni şifre ve onay eşleşmiyor.'));
+            toastr.error(T('Profile.PasswordMismatch', 'Yeni şifre ve onay eşleşmiyor.'));
             return;
         }
 
@@ -512,7 +517,7 @@ var TRANSLATION_KEYS = [
     'Personnel.DeleteError',
     'Validation.AllFieldsRequired',
     'Validation.PasswordMinLength',
-    'Validation.PasswordMismatch',
+    'Profile.PasswordMismatch',
     'Password.ResetSuccess',
     'Password.ResetError'
 ];

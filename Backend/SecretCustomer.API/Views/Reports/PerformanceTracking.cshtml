@@ -1,11 +1,11 @@
-@{
-    ViewData["Title"] = @Html.T("Report.PerformanceTracking", "Performans Takibi");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.PerformanceTracking", "Performans Takibi");
 }
 
 <div id="performance-tracking-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-graph-up text-primary"></i> @Html.T("Report.PerformanceTracking", "Performans Takibi")</h2>
+        <h2><i class="bi bi-graph-up text-primary"></i> @Html.T("Menu.PerformanceTracking", "Performans Takibi")</h2>
         <button class="btn btn-outline-primary" data-bind="click: refresh, disable: isLoading">
             <span data-bind="visible: !isLoading()">
                 <i class="bi bi-arrow-clockwise"></i> @Html.T("Common.Refresh", "Yenile")
@@ -32,7 +32,7 @@
                                 <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
                                 <option value="customer">@Html.T("Report.Customer", "Firma")</option>
                                 <option value="evaluator">@Html.T("Report.Evaluator", "Dinleyici")</option>
-                                <option value="project">@Html.T("Report.Project", "Proje")</option>
+                                <option value="project">@Html.T("Common.Project", "Proje")</option>
                                 <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
                             </select>
                         </div>
@@ -143,7 +143,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">@Html.T("Report.MonthEvaluations", "Bu Ay")</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Common.ThisMonth", "Bu Ay")</h6>
                                 <h2 class="mb-0" data-bind="text: summary().totalMonthEvaluations"></h2>
                             </div>
                             <i class="bi bi-calendar-month fs-1 opacity-50"></i>
@@ -156,7 +156,7 @@
                     <div class="card-body py-3">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-dark-50 mb-1">@Html.T("Report.YearEvaluations", "Bu Yıl")</h6>
+                                <h6 class="text-dark-50 mb-1">@Html.T("Common.ThisYear", "Bu Yıl")</h6>
                                 <h2 class="mb-0" data-bind="text: summary().totalYearEvaluations"></h2>
                             </div>
                             <i class="bi bi-calendar fs-1 opacity-50"></i>
@@ -186,9 +186,9 @@
                                     <tr>
                                         <th>@Html.T("Report.Evaluator", "Dinleyici")</th>
                                         <th class="text-center">@Html.T("Report.Today", "Bugün")</th>
-                                        <th class="text-center">@Html.T("Report.Week", "Hafta")</th>
-                                        <th class="text-center">@Html.T("Report.Month", "Ay")</th>
-                                        <th class="text-center">@Html.T("Report.Year", "Yıl")</th>
+                                        <th class="text-center">@Html.T("Common.Week", "Hafta")</th>
+                                        <th class="text-center">@Html.T("Common.Month", "Ay")</th>
+                                        <th class="text-center">@Html.T("Common.Year", "Yıl")</th>
                                         <th class="text-center">@Html.T("Report.Total", "Toplam")</th>
                                         <th class="text-center">@Html.T("Report.AvgScore", "Ort. Puan")</th>
                                     </tr>

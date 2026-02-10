@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Enums;
@@ -37,7 +37,7 @@ public class UsersApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading users");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.LoadError"), ex));
         }
     }
 
@@ -67,7 +67,7 @@ public class UsersApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading users by role");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.LoadError"), ex));
         }
     }
 
@@ -162,7 +162,7 @@ public class UsersApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting user {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.DeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.DeleteError"), ex));
         }
     }
 

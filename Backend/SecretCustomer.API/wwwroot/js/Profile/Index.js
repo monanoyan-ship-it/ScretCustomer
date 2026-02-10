@@ -1,4 +1,4 @@
-// Profile ViewModel
+﻿// Profile ViewModel
 function ProfileViewModel() {
     var self = this;
 
@@ -115,7 +115,7 @@ function ProfileViewModel() {
     self.changePassword = function() {
         // Validate
         if (self.passwordForm.newPassword() !== self.passwordForm.confirmPassword()) {
-            toastr.error(T('Validation.PasswordMismatch', 'Yeni şifreler eşleşmiyor.'));
+            toastr.error(T('Profile.PasswordMismatch', 'Yeni şifreler eşleşmiyor.'));
             return;
         }
 
@@ -196,7 +196,7 @@ var TRANSLATION_KEYS = [
     'Profile.UpdateError',
     'Profile.UpdateSuccess',
     'Profile.UpdateErrorMessage',
-    'Validation.PasswordMismatch',
+    'Profile.PasswordMismatch',
     'Validation.PasswordMinLength',
     'Account.PasswordChangeError',
     'Account.PasswordChanged',

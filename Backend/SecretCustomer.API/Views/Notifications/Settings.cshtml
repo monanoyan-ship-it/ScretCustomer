@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = @Html.T("Notification.Settings.Title", "Bildirim Ayarları");
 }
 
@@ -10,7 +10,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/">@Html.T("Common.Home", "Ana Sayfa")</a></li>
-                    <li class="breadcrumb-item"><a href="/Notifications">@Html.T("Notification.Title", "Bildirimler")</a></li>
+                    <li class="breadcrumb-item"><a href="/Notifications">@Html.T("Menu.Notifications", "Bildirimler")</a></li>
                     <li class="breadcrumb-item active">@Html.T("Common.Settings", "Ayarlar")</li>
                 </ol>
             </nav>
@@ -36,7 +36,7 @@
                         <tr>
                             <th style="width: 30%">@Html.T("Notification.Settings.NotificationType", "Bildirim Türü")</th>
                             <th class="text-center">@Html.T("Notification.Settings.InApp", "Uygulama İçi")</th>
-                            <th class="text-center">@Html.T("Notification.Settings.Email", "E-posta")</th>
+                            <th class="text-center">@Html.T("Common.Email", "E-posta")</th>
                             <th class="text-center">@Html.T("Notification.Settings.SMS", "SMS")</th>
                             <th class="text-center">@Html.T("Notification.Settings.Push", "Push")</th>
                         </tr>
@@ -99,7 +99,7 @@
                     <h6>@Html.T("Notification.Settings.Channels", "Bildirim Kanalları")</h6>
                     <ul class="list-unstyled">
                         <li><i class="fas fa-desktop text-primary me-2"></i><strong>@Html.T("Notification.Settings.InApp", "Uygulama İçi"):</strong> @Html.T("Notification.Settings.InApp.Desc", "Sistemde oturum açtığınızda gösterilir")</li>
-                        <li><i class="fas fa-envelope text-info me-2"></i><strong>@Html.T("Notification.Settings.Email", "E-posta"):</strong> @Html.T("Notification.Settings.Email.Desc", "Kayıtlı e-posta adresinize gönderilir")</li>
+                        <li><i class="fas fa-envelope text-info me-2"></i><strong>@Html.T("Common.Email", "E-posta"):</strong> @Html.T("Notification.Settings.Email.Desc", "Kayıtlı e-posta adresinize gönderilir")</li>
                         <li><i class="fas fa-sms text-success me-2"></i><strong>@Html.T("Notification.Settings.SMS", "SMS"):</strong> @Html.T("Notification.Settings.SMS.Desc", "Kayıtlı telefon numaranıza gönderilir")</li>
                         <li><i class="fas fa-mobile-alt text-warning me-2"></i><strong>@Html.T("Notification.Settings.Push", "Push"):</strong> @Html.T("Notification.Settings.Push.Desc", "Mobil cihazınıza anlık bildirim gönderilir")</li>
                     </ul>

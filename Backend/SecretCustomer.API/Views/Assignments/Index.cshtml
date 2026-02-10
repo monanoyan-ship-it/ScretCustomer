@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Assignment.Title", "Atamalar").ToString();
 }
 
@@ -30,7 +30,7 @@
                 <div class="card-body py-2 px-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0 small">@Html.T("Status.Pending", "Bekleyen")</h6>
+                            <h6 class="mb-0 small">@Html.T("Common.Status.Pending", "Bekleyen")</h6>
                             <h4 class="mb-0" data-bind="text: pendingCount"></h4>
                         </div>
                         <i class="bi bi-hourglass-split fs-3 opacity-50"></i>
@@ -123,7 +123,7 @@
                         <label class="form-label small text-muted">@Html.T("Common.Status", "Durum")</label>
                         <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
                             <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
-                            <option value="Pending">@Html.T("Status.Pending", "Bekleyen")</option>
+                            <option value="Pending">@Html.T("Common.Status.Pending", "Bekleyen")</option>
                             <option value="InProgress">@Html.T("Status.InProgress", "Devam Eden")</option>
                             <option value="Completed">@Html.T("Status.Completed", "Tamamlanan")</option>
                             <option value="Expired">@Html.T("Status.Expired", "Süresi Dolan")</option>
@@ -208,7 +208,7 @@
                                     <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('projectName')"></i>
                                 </th>
                                 <th class="sortable" data-bind="click: function() { sorting.toggleSort('checklistName'); }, css: sorting.getSortClass('checklistName')">
-                                    @Html.T("Checklist.Title", "Kontrol Listesi")
+                                    @Html.T("Menu.Checklists", "Kontrol Listesi")
                                     <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('checklistName')"></i>
                                 </th>
                                 <th class="sortable" data-bind="click: function() { sorting.toggleSort('assigneeName'); }, css: sorting.getSortClass('assigneeName')">
@@ -267,7 +267,7 @@
                                         <!-- Detail Button -->
                                         <button type="button" class="btn btn-outline-info"
                                                 data-bind="click: $parent.showDetail"
-                                                title="@Html.T("Button.Detail", "Detay")">
+                                                title="@Html.T("Common.Detail", "Detay")">
                                             <i class="bi bi-eye"></i>
                                         </button>
                                         <!-- More Actions Dropdown -->
@@ -299,7 +299,7 @@
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
                                                     <a class="dropdown-item text-danger" href="#" data-bind="click: $parent.deleteAssignment">
-                                                        <i class="bi bi-trash"></i> @Html.T("Button.Delete", "Sil")
+                                                        <i class="bi bi-trash"></i> @Html.T("Common.Delete", "Sil")
                                                     </a>
                                                 </li>
                                             </ul>
@@ -419,7 +419,7 @@
                     </div>
 
                     <div class="mb-3" data-bind="visible: $parent.selectedProjectChecklistName()">
-                        <label class="form-label">@Html.T("Checklist.Title", "Kontrol Listesi")</label>
+                        <label class="form-label">@Html.T("Menu.Checklists", "Kontrol Listesi")</label>
                         <input type="text" class="form-control" readonly data-bind="value: $parent.selectedProjectChecklistName()">
                         <small class="text-muted">@Html.T("Assignment.ChecklistAutoFilled", "Kontrol listesi proje tanımından otomatik alınır")</small>
                     </div>
@@ -449,7 +449,7 @@
                                 <div data-bind="visible: !$parent.isPhysicalAuditProject()">
                                     <div class="btn-group w-100" role="group">
                                         <input type="radio" class="btn-check" name="assignmentType" id="assignTypeUser" value="user" data-bind="checked: assignmentType">
-                                        <label class="btn btn-outline-primary" for="assignTypeUser">@Html.T("User.Title", "Kullanıcı")</label>
+                                        <label class="btn btn-outline-primary" for="assignTypeUser">@Html.T("Menu.Users", "Kullanıcı")</label>
 
                                         <input type="radio" class="btn-check" name="assignmentType" id="assignTypeExternal" value="external" data-bind="checked: assignmentType">
                                         <label class="btn btn-outline-primary" for="assignTypeExternal">@Html.T("Assignment.External", "Harici")</label>
@@ -459,7 +459,7 @@
 
                             <!-- User Selection -->
                             <div data-bind="visible: assignmentType() === 'user'">
-                                <label class="form-label">@Html.T("User.Title", "Kullanıcı")</label>
+                                <label class="form-label">@Html.T("Menu.Users", "Kullanıcı")</label>
                                 <select class="form-select" data-bind="value: assignedUserId, options: $parent.filteredEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', enable: $parent.selectedProjectForDisplay()"></select>
                                 <!-- ko ifnot: $parent.selectedProjectForDisplay() -->
                                 <small class="text-muted">@Html.T("Assignment.SelectProjectFirst", "Önce proje seçiniz")</small>
@@ -478,7 +478,7 @@
                             <!-- CustomerDealer (Şube) Selection - FieldWorker atamaları için -->
                             <div data-bind="visible: assignmentType() === 'fieldworker' && $parent.selectedProjectForDisplay()" class="mt-3">
                                 <label class="form-label">
-                                    <i class="bi bi-shop me-1"></i>@Html.T("Assignment.Branches", "Ziyaret Edilecek Şubeler")
+                                    <i class="bi bi-shop me-1"></i>@Html.T("Branch.Title", "Ziyaret Edilecek Şubeler")
                                     <span class="text-muted small">(@Html.T("Common.Optional", "İsteğe bağlı"))</span>
                                 </label>
                                 <!-- Loading state -->
@@ -583,13 +583,13 @@
                     <div class="mb-3">
                         <label class="form-label">@Html.T("Assignment.NewAssigneeType", "Yeni Atanan Kişi Türü")</label>
                         <select class="form-select" data-bind="value: newAssigneeType">
-                            <option value="user">@Html.T("User.Title", "Kullanıcı")</option>
+                            <option value="user">@Html.T("Menu.Users", "Kullanıcı")</option>
                             <option value="fieldworker">@Html.T("Role.FieldWorker", "Saha Çalışanı")</option>
                             <option value="external">@Html.T("Assignment.External", "Harici")</option>
                         </select>
                     </div>
                     <div data-bind="visible: newAssigneeType() === 'user'" class="mb-3">
-                        <label class="form-label">@Html.T("User.Title", "Kullanıcı")</label>
+                        <label class="form-label">@Html.T("Menu.Users", "Kullanıcı")</label>
                         <select class="form-select" data-bind="value: newAssignedUserId, options: $parent.availableEvaluators, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                     </div>
                     <div data-bind="visible: newAssigneeType() === 'fieldworker'" class="mb-3">
@@ -620,7 +620,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveReassign, disable: isSaving">
-                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Button.Save", "Kaydet")</span>
+                        <span data-bind="visible: !isSaving()"><i class="bi bi-check"></i> @Html.T("Common.Save", "Kaydet")</span>
                         <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
@@ -645,7 +645,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveUpdateDueDate, disable: isSavingDueDate">
-                        <span data-bind="visible: !isSavingDueDate()"><i class="bi bi-check"></i> @Html.T("Button.Save", "Kaydet")</span>
+                        <span data-bind="visible: !isSavingDueDate()"><i class="bi bi-check"></i> @Html.T("Common.Save", "Kaydet")</span>
                         <span data-bind="visible: isSavingDueDate"><span class="spinner-border spinner-border-sm"></span></span>
                     </button>
                 </div>
@@ -676,7 +676,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>@Html.T("Checklist.Title", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
+                            <strong>@Html.T("Menu.Checklists", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
                         </div>
                         <div class="col-md-6">
                             <strong>@Html.T("Assignment.Assignee", "Atanan"):</strong> <span data-bind="text: assigneeName"></span>
@@ -794,13 +794,13 @@
                                             <!-- /ko -->
                                             <!-- ko ifnot: hasEvaluation -->
                                             <span class="badge bg-warning text-dark">
-                                                <i class="bi bi-hourglass-split me-1"></i>@Html.T("Status.Pending", "Bekliyor")
+                                                <i class="bi bi-hourglass-split me-1"></i>@Html.T("Common.Status.Pending", "Bekliyor")
                                             </span>
                                             <!-- /ko -->
                                         </td>
                                         <td class="text-center">
                                             <!-- ko ifnot: hasEvaluation -->
-                                            <button type="button" class="btn btn-sm btn-outline-danger" title="@Html.T("Button.Remove", "Çıkar")"
+                                            <button type="button" class="btn btn-sm btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")"
                                                     data-bind="click: function() { $parents[1].removeDealerFromAssignment($parent.id, customerDealerId); }">
                                                 <i class="bi bi-trash"></i>
                                             </button>
@@ -876,7 +876,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                     <!-- ko with: selectedDetail -->
                     <button type="button" class="btn btn-outline-primary" data-bind="click: $parent.openAddPeriodModal">
                         <i class="bi bi-calendar-plus me-1"></i>@Html.T("Period.Add", "Dönem Ekle")
@@ -902,7 +902,7 @@
                                 <strong>@Html.T("Project.Title", "Proje"):</strong> <span data-bind="text: projectName"></span>
                             </div>
                             <div class="col-md-6">
-                                <strong>@Html.T("Checklist.Title", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
+                                <strong>@Html.T("Menu.Checklists", "Kontrol Listesi"):</strong> <span data-bind="text: checklistName"></span>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -929,7 +929,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                     <a class="btn btn-primary" data-bind="attr: { href: selectedEvaluation() ? '/form/' + selectedEvaluation().uniqueLink : '#' }" target="_blank">
                         <i class="bi bi-box-arrow-up-right"></i> @Html.T("Button.OpenForm", "Formu Aç")
                     </a>
@@ -978,7 +978,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $root.savePeriod, disable: $root.isSavingPeriod">
                         <span data-bind="visible: !$root.isSavingPeriod()">
-                            <i class="bi bi-check-circle"></i> @Html.T("Button.Save", "Kaydet")
+                            <i class="bi bi-check-circle"></i> @Html.T("Common.Save", "Kaydet")
                         </span>
                         <span data-bind="visible: $root.isSavingPeriod">
                             <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Saving", "Kaydediliyor...")
@@ -1036,7 +1036,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Button.Close", "Kapat")</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>

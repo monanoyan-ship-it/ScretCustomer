@@ -1,10 +1,10 @@
-@{
-    ViewData["Title"] = Html.T("User.Title", "Kullanıcılar");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Users", "Kullanıcılar");
 }
 
 <div id="users-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>@Html.T("User.Title", "Kullanıcılar")</h2>
+        <h2>@Html.T("Menu.Users", "Kullanıcılar")</h2>
         <!-- Sadece Sistem Kullanıcıları tabında göster -->
         <button class="btn btn-primary" data-bind="visible: activeTab() === 'users', click: createNew">
             <i class="bi bi-plus-circle"></i>
@@ -22,7 +22,7 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'customerPersonnel' }, click: function() { switchTab('customerPersonnel'); }">
-                <i class="bi bi-people me-2"></i>@Html.T("CustomerPersonnel.Title", "Müşteri Personeli")
+                <i class="bi bi-people me-2"></i>@Html.T("Menu.CustomerPersonnel", "Müşteri Personeli")
                 <span class="badge bg-info ms-2" data-bind="text: allCustomerPersonnel().length"></span>
             </a>
         </li>
@@ -71,7 +71,7 @@
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('firstName')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('email'); }, css: sorting.getSortClass('email')">
-                                @Html.T("User.Email", "E-posta")
+                                @Html.T("Common.Email", "E-posta")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('email')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('role'); }, css: sorting.getSortClass('role')">
@@ -189,7 +189,7 @@
                                 @Html.T("CustomerPersonnel.Customer", "Müşteri") <i class="bi sort-icon"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('email'); }, css: cpSorting.getSortClass('email')">
-                                @Html.T("User.Email", "E-posta") <i class="bi sort-icon"></i>
+                                @Html.T("Common.Email", "E-posta") <i class="bi sort-icon"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { cpSorting.toggleSort('role'); }, css: cpSorting.getSortClass('role')">
                                 @Html.T("User.Role", "Rol") <i class="bi sort-icon"></i>
@@ -287,13 +287,13 @@
                             <input type="text" class="form-control" data-bind="value: firstName" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: lastName" />
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("User.Email", "E-posta") <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("Common.Email", "E-posta") <span class="text-danger">*</span></label>
                         <input type="email" class="form-control" data-bind="value: email" />
                     </div>
 
@@ -363,14 +363,14 @@
                             <input type="text" class="form-control" data-bind="value: firstName" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: lastName" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.Email", "E-posta") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta") <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" data-bind="value: email" />
                         </div>
                         <div class="col-md-6 mb-3">

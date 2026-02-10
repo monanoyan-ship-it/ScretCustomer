@@ -1,10 +1,10 @@
-@{
-    ViewData["Title"] = @Html.T("ExcelTemplate.Title", "Excel Şablonları");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.ExcelTemplates", "Excel Şablonları");
 }
 
 <div id="excel-templates-app" class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-file-earmark-spreadsheet me-2"></i> @Html.T("ExcelTemplate.Title", "Excel Şablonları")</h2>
+        <h2><i class="bi bi-file-earmark-spreadsheet me-2"></i> @Html.T("Menu.ExcelTemplates", "Excel Şablonları")</h2>
         <button class="btn btn-primary" data-bind="click: createNew">
             <i class="bi bi-plus-circle"></i> @Html.T("ExcelTemplate.NewTemplate", "Yeni Şablon")
         </button>
@@ -31,7 +31,7 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>@Html.T("ExcelTemplate.TemplateName", "Şablon Adı")</th>
+                                <th>@Html.T("Checklist.TemplateName", "Şablon Adı")</th>
                                 <th>@Html.T("ExcelTemplate.EntityType", "Varlık Tipi")</th>
                                 <th>@Html.T("ExcelTemplate.ColumnCount", "Kolon Sayısı")</th>
                                 <th>@Html.T("Common.Status", "Durum")</th>
@@ -93,7 +93,7 @@
                 <div class="modal-body">
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <label class="form-label">@Html.T("ExcelTemplate.TemplateName", "Şablon Adı") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Checklist.TemplateName", "Şablon Adı") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("ExcelTemplate.TemplateNamePlaceholder", "Örn: Kullanıcı İçe Aktarma")" />
                         </div>
                         <div class="col-md-6">
@@ -168,8 +168,8 @@
                                             <option value="Text">@Html.T("ExcelTemplate.Type.Text", "Metin")</option>
                                             <option value="Number">@Html.T("ExcelTemplate.Type.Number", "Sayı")</option>
                                             <option value="Date">@Html.T("ExcelTemplate.Type.Date", "Tarih")</option>
-                                            <option value="Boolean">@Html.T("ExcelTemplate.Type.Boolean", "Evet/Hayır")</option>
-                                            <option value="Email">@Html.T("ExcelTemplate.Type.Email", "E-posta")</option>
+                                            <option value="Boolean">@Html.T("QuestionType.YesNo", "Evet/Hayır")</option>
+                                            <option value="Email">@Html.T("Common.Email", "E-posta")</option>
                                             <option value="Phone">@Html.T("ExcelTemplate.Type.Phone", "Telefon")</option>
                                             <option value="Dropdown">@Html.T("ExcelTemplate.Type.Dropdown", "Seçim Listesi")</option>
                                         </select>
@@ -178,7 +178,7 @@
 
                                 <div class="row">
                                     <div class="col-md-4 mb-2">
-                                        <label class="form-label">@Html.T("ExcelTemplate.Order", "Sıra") *</label>
+                                        <label class="form-label">@Html.T("Language.Order", "Sıra") *</label>
                                         <input type="number" class="form-control" data-bind="value: order" min="1" />
                                     </div>
                                     <div class="col-md-4 mb-2">

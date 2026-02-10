@@ -1,4 +1,4 @@
-// Visit Details Management ViewModel
+﻿// Visit Details Management ViewModel
 // Sektör ve Alan Tanımları Yönetimi
 
 function VisitDetailsViewModel() {
@@ -31,8 +31,8 @@ function VisitDetailsViewModel() {
     self.fieldTypeOptions = [
         { value: 0, name: T('VisitDetails.FieldType.Int', 'Tam Sayı') },
         { value: 1, name: T('VisitDetails.FieldType.Decimal', 'Ondalık Sayı') },
-        { value: 2, name: T('VisitDetails.FieldType.Bool', 'Evet/Hayır') },
-        { value: 3, name: T('VisitDetails.FieldType.String', 'Metin') },
+        { value: 2, name: T('QuestionType.YesNo', 'Evet/Hayır') },
+        { value: 3, name: T('ExcelTemplate.Type.Text', 'Metin') },
         { value: 4, name: T('VisitDetails.FieldType.DateTime', 'Tarih/Saat') },
         { value: 5, name: T('VisitDetails.FieldType.Rating', 'Puan (Rating)') }
     ];
@@ -92,7 +92,8 @@ function VisitDetailsViewModel() {
             });
     };
 
-    self.createSector = function() {        self.editingSector({
+    self.createSector = function() {
+        self.editingSector({
             id: null,
             code: ko.observable(''),
             name: ko.observable(''),
@@ -104,7 +105,8 @@ function VisitDetailsViewModel() {
         self.isSectorModalOpen(true);
     };
 
-    self.editSector = function(sector) {        self.editingSector({
+    self.editSector = function(sector) {
+        self.editingSector({
             id: sector.id,
             code: ko.observable(sector.code),
             name: ko.observable(sector.name),
@@ -222,7 +224,8 @@ function VisitDetailsViewModel() {
             });
     };
 
-    self.createField = function() {        self.editingField({
+    self.createField = function() {
+        self.editingField({
             id: null,
             sectorId: ko.observable(self.selectedSectorIdForFields()),
             code: ko.observable(''),
@@ -243,7 +246,8 @@ function VisitDetailsViewModel() {
         self.isFieldModalOpen(true);
     };
 
-    self.editField = function(field) {        self.editingField({
+    self.editField = function(field) {
+        self.editingField({
             id: field.id,
             sectorId: ko.observable(field.sectorId),
             code: ko.observable(field.code),
@@ -359,8 +363,8 @@ function VisitDetailsViewModel() {
 var TRANSLATION_KEYS = [
     'VisitDetails.FieldType.Int',
     'VisitDetails.FieldType.Decimal',
-    'VisitDetails.FieldType.Bool',
-    'VisitDetails.FieldType.String',
+    'QuestionType.YesNo',
+    'ExcelTemplate.Type.Text',
     'VisitDetails.FieldType.DateTime',
     'VisitDetails.FieldType.Rating',
     'VisitDetails.Category.Time',

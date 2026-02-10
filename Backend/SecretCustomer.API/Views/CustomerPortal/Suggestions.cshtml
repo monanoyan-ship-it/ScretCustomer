@@ -1,16 +1,16 @@
-@{
+﻿@{
     Layout = "_CustomerLayout";
-    ViewData["Title"] = @Html.T("Report.SuggestionsReport", "Oneriler Raporu");
+    ViewData["Title"] = @Html.T("Report.Suggestions", "Oneriler Raporu");
 }
 
 <div id="suggestions-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-chat-quote text-info"></i> @Html.T("Report.SuggestionsReport", "Oneriler Raporu")</h2>
+        <h2><i class="bi bi-chat-quote text-info"></i> @Html.T("Report.Suggestions", "Oneriler Raporu")</h2>
         <div class="btn-group">
             <button class="btn btn-success" data-bind="click: exportToExcel, disable: isExporting">
                 <span data-bind="visible: !isExporting()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel Indir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel Indir")
                 </span>
                 <span data-bind="visible: isExporting">
                     <span class="spinner-border spinner-border-sm"></span> @Html.T("Report.Downloading", "Indiriliyor...")
@@ -47,7 +47,7 @@
                     <label class="form-label mb-1">@Html.T("Common.FilterType", "Filtre Tipi")</label>
                     <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
                         <option value="">@Html.T("Common.SelectFilter", "Filtre Seç...")</option>
-                        <option value="project">@Html.T("Report.Project", "Proje")</option>
+                        <option value="project">@Html.T("Common.Project", "Proje")</option>
                         <option value="searchText">@Html.T("Report.TextSearch", "Metin Arama")</option>
                         <option value="dateRange">@Html.T("Report.DateRange", "Tarih Aralığı")</option>
                     </select>
@@ -56,7 +56,7 @@
                 <!-- Dynamic Filter Value Input -->
                 <!-- Project -->
                 <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
-                    <label class="form-label mb-1">@Html.T("Report.Project", "Proje")</label>
+                    <label class="form-label mb-1">@Html.T("Common.Project", "Proje")</label>
                     <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                 </div>
 
@@ -311,7 +311,7 @@
                                         <!-- ko if: notes -->
                                         <div class="p-2 mb-1 rounded" style="background-color: #f8f9fa; border-left: 3px solid #6c757d;">
                                             <div class="small text-muted fw-bold mb-1 d-flex justify-content-between align-items-center">
-                                                <span>@Html.T("Report.Note", "Not")</span>
+                                                <span>@Html.T("Common.Note", "Not")</span>
                                                 <!-- ko if: notes.length > 100 -->
                                                 <button type="button" class="btn btn-link btn-sm p-0 text-secondary"
                                                         data-bs-toggle="popover"
@@ -550,7 +550,7 @@
                                         <tr>
                                             <th>@Html.T("Report.Question", "Soru")</th>
                                             <th class="text-center" style="width: 80px;">@Html.T("Common.Score", "Puan")</th>
-                                            <th>@Html.T("Report.Note", "Not")</th>
+                                            <th>@Html.T("Common.Note", "Not")</th>
                                             <th>@Html.T("Report.Suggestion", "Öneri")</th>
                                         </tr>
                                     </thead>

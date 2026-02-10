@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
@@ -109,7 +109,7 @@ public class LocalizationApiController : BaseApiController
     public async Task<IActionResult> DeleteLanguage(int id)
     {
         await _localizationService.DeleteLanguageAsync(id);
-        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Language.DeleteSuccess") });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Language.DeleteSuccess") });
     }
 
     [HttpPost("languages/seed-defaults")]
@@ -205,7 +205,7 @@ public class LocalizationApiController : BaseApiController
     public async Task<IActionResult> SetResource(int languageId, [FromBody] SetResourceDto dto)
     {
         var result = await _localizationService.SetResourceAsync(languageId, dto.ResourceName, dto.ResourceValue);
-        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.SaveSuccess"), id = result.Id });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Language.ResourceSaved"), id = result.Id });
     }
 
     [HttpDelete("resources/{resourceId}")]
@@ -213,7 +213,7 @@ public class LocalizationApiController : BaseApiController
     public async Task<IActionResult> DeleteResource(int resourceId)
     {
         await _localizationService.DeleteResourceAsync(resourceId);
-        return Ok(new { message = await _localizationService.GetResourceAsync("Api.Resource.DeleteSuccess") });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Language.ResourceDeleted") });
     }
 
     [HttpDelete("resources/{languageId}/all")]

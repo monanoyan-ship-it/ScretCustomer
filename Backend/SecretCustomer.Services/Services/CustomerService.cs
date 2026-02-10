@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.DTOs.Report;
@@ -479,7 +479,7 @@ public class CustomerService : ICustomerService
         var phoneHeader = await _localizationService.GetResourceAsync("Common.Phone");
         var roleHeader = await _localizationService.GetResourceAsync("Common.Role");
         var departmentHeader = await _localizationService.GetResourceAsync("CustomerPersonnel.Department");
-        var titleHeader = await _localizationService.GetResourceAsync("CustomerPersonnel.JobTitle");
+        var titleHeader = await _localizationService.GetResourceAsync("Customer.JobTitle");
         var independentLabel = await _localizationService.GetResourceAsync("Excel.Independent");
         var poolLabel = await _localizationService.GetResourceAsync("Excel.Pool");
 

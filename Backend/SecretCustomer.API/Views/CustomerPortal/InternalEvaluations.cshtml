@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = @Html.T("CustomerPortal.InternalEvaluations.Title", "İç Değerlendirmeler");
     Layout = "_CustomerLayout";
 }
@@ -107,7 +107,7 @@
 
                     <!-- Load Filter -->
                     <button class="btn btn-outline-info btn-sm" data-bind="click: openLoadFilterModal">
-                        <i class="bi bi-bookmark"></i> @Html.T("CustomerPortal.SavedFilters", "Kayıtlı")
+                        <i class="bi bi-bookmark"></i> @Html.T("Listenings.SavedFilters", "Kayıtlı")
                     </button>
 
                     <!-- Spacer -->
@@ -170,7 +170,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body text-center">
                         <h3 class="text-primary" data-bind="text: averageScore().toFixed(1)"></h3>
-                        <small class="text-muted">@Html.T("CustomerPortal.InternalEvaluations.AverageScore", "Ortalama Puan")</small>
+                        <small class="text-muted">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                     </div>
                 </div>
             </div>
@@ -207,7 +207,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>@Html.T("Common.Id", "ID")</th>
-                                <th>@Html.T("CustomerPortal.Evaluations.CallDate", "Çağrı Tarihi")</th>
+                                <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                 <th>@Html.T("CustomerPortal.Evaluations.CallTime", "Saat")</th>
                                 <th>@Html.T("CustomerPortal.Evaluations.Duration", "Süre")</th>
                                 <th>@Html.T("Common.Project", "Proje")</th>
@@ -337,7 +337,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title"><i class="bi bi-bookmark me-2"></i>@Html.T("CustomerPortal.SavedFilters", "Kayıtlı Filtreler")</h5>
+                    <h5 class="modal-title"><i class="bi bi-bookmark me-2"></i>@Html.T("Listenings.SavedFilters", "Kayıtlı Filtreler")</h5>
                     <button type="button" class="btn-close btn-close-white" data-bind="click: closeLoadFilterModal"></button>
                 </div>
                 <div class="modal-body">
@@ -411,7 +411,7 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="progress" style="height: 25px;">
@@ -449,7 +449,7 @@
                                             </tr>
                                             <tr>
                                                 <th>
-                                                    <span data-bind="visible: projectTypeId === 2">@Html.T("Evaluation.Evaluated", "Değerlendirilen")</span>
+                                                    <span data-bind="visible: projectTypeId === 2">@Html.T("Report.Evaluated", "Değerlendirilen")</span>
                                                     <span data-bind="visible: projectTypeId !== 2">@Html.T("Evaluation.Branch", "Şube")</span>
                                                 </th>
                                                 <td>
@@ -471,7 +471,7 @@
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
                                         <!-- ko if: projectTypeId === 2 -->
-                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Call.CallInfo", "Çağrı Bilgileri")</h6>
                                         <!-- /ko -->
                                         <!-- ko ifnot: projectTypeId === 2 -->
                                         <h6 class="mb-0"><i class="bi bi-geo-alt"></i> @Html.T("Evaluation.VisitInfo", "Ziyaret Bilgileri")</h6>
@@ -481,13 +481,13 @@
                                         <table class="table table-sm mb-0">
                                             <tbody data-bind="visible: projectTypeId === 2">
                                                 <tr>
-                                                    <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
+                                                    <th style="width: 40%;">@Html.T("Common.CallId", "Çağrı ID")</th>
                                                     <td>
                                                         <call-id params="value: callId"></call-id>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
+                                                    <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                                     <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                                 </tr>
                                                 <tr>
@@ -508,7 +508,7 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>@Html.T("Evaluation.ControlDate", "Kontrol Tarihi")</th>
+                                                    <th>@Html.T("Report.ControlDate", "Kontrol Tarihi")</th>
                                                     <td data-bind="text: controlDate ? new Date(controlDate).toLocaleDateString('tr-TR') : '-'"></td>
                                                 </tr>
                                                 <tr>
@@ -543,9 +543,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th style="width: 28%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>

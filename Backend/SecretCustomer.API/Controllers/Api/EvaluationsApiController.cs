@@ -1,4 +1,4 @@
-using ClosedXML.Excel;
+﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -134,7 +134,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading all evaluations");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
 
@@ -149,7 +149,7 @@ public class EvaluationsApiController : BaseApiController
         {
             var evaluation = await _evaluationService.GetByIdAsync(id);
             if (evaluation == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
 
             return Ok(evaluation);
         }
@@ -323,7 +323,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for project {ProjectId}", projectId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
 
@@ -341,7 +341,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             // CustomerPersonnel kullanıcıları için EvaluatorCustomerPersonnelId ile filtrele
@@ -360,7 +360,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading evaluations for current user");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
 
@@ -379,7 +379,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             // Sadece CustomerPersonnel kullanıcıları için çalışır
@@ -394,7 +394,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading my evaluations for current user");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
 
@@ -447,7 +447,7 @@ public class EvaluationsApiController : BaseApiController
         {
             var form = await _evaluationService.GetEvaluationFormAsync(assignmentId);
             if (form == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.AssignmentNotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
 
             return Ok(form);
         }
@@ -469,7 +469,7 @@ public class EvaluationsApiController : BaseApiController
         {
             var form = await _evaluationService.GetExistingEvaluationFormAsync(evaluationId);
             if (form == null)
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
 
             return Ok(form);
         }
@@ -515,7 +515,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (assignment == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.NotFound")));
             }
 
             if (assignment.Project.StatusId != ProjectStatuses.Ids.Active)
@@ -615,7 +615,7 @@ public class EvaluationsApiController : BaseApiController
 
             return Ok(new
             {
-                message = await _localizationService.GetResourceAsync("Api.Evaluation.SubmitSuccess"),
+                message = await _localizationService.GetResourceAsync("Evaluation.SubmitSuccess"),
                 evaluation,
                 answers
             });
@@ -627,7 +627,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error submitting evaluation for project {ProjectId}", dto.ProjectId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.SubmitError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.SubmitError"), ex));
         }
     }
 
@@ -674,7 +674,7 @@ public class EvaluationsApiController : BaseApiController
 
             return Ok(new
             {
-                message = await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveSuccess"),
+                message = await _localizationService.GetResourceAsync("Evaluation.DraftSaved"),
                 evaluation,
                 answers
             });
@@ -686,7 +686,7 @@ public class EvaluationsApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error saving draft for project {ProjectId}", dto.ProjectId);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.DraftSaveError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.DraftSaveError"), ex));
         }
     }
 
@@ -734,7 +734,7 @@ public class EvaluationsApiController : BaseApiController
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             var evaluation = await _evaluationService.RevertToDraftAsync(id, userId, request?.Reason);
@@ -771,7 +771,7 @@ public class EvaluationsApiController : BaseApiController
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             var evaluation = await _evaluationService.CancelEvaluationAsync(id, userId, request?.Reason);
@@ -991,7 +991,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             // Kullanıcının erişebildiği değerlendirmeleri getir
@@ -1188,7 +1188,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
             {
-                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.UserNotFound")));
+                return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
             // Değerlendirmeyi bul
@@ -1197,7 +1197,7 @@ public class EvaluationsApiController : BaseApiController
 
             if (evaluation == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.NotFound")));
+                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.NotFound")));
             }
 
             // Sadece Draft durumundakiler silinebilir

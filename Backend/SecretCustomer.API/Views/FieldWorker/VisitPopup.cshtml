@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_LayoutPopup";
     var assignmentId = ViewBag.AssignmentId;
     var evaluationId = ViewBag.EvaluationId;
@@ -34,7 +34,7 @@
         <!-- Loading -->
         <div data-bind="visible: isLoading" class="text-center py-5">
             <div class="spinner-border text-primary"></div>
-            <p class="mt-2">@Html.T("Evaluation.FormLoading", "Form yükleniyor...")</p>
+            <p class="mt-2">@Html.T("Form.Loading", "Form yükleniyor...")</p>
         </div>
 
         <!-- Summary View -->
@@ -109,7 +109,7 @@
                                     <span class="fw-bold" data-bind="text: evaluatedPersonnelName || dealerName || '-'"></span>
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">@Html.T("Evaluation.CallId", "Çağrı ID")</small>
+                                    <small class="text-muted d-block">@Html.T("Common.CallId", "Çağrı ID")</small>
                                     <!-- ko if: callId -->
                                     <div class="d-flex align-items-center gap-1">
                                         <code class="fw-bold" data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
@@ -121,11 +121,11 @@
                                     <!-- ko ifnot: callId --><span class="fw-bold">-</span><!-- /ko -->
                                 </div>
                                 <div class="col-6">
-                                    <small class="text-muted d-block">@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</small>
+                                    <small class="text-muted d-block">@Html.T("Report.CallDate", "Çağrı Tarihi")</small>
                                     <span class="fw-bold" data-bind="text: callDate"></span>
                                 </div>
                                 <div class="col-3">
-                                    <small class="text-muted d-block">@Html.T("Evaluation.CallTime", "Çağrı Saati")</small>
+                                    <small class="text-muted d-block">@Html.T("Report.CallTime", "Çağrı Saati")</small>
                                     <span class="fw-bold" data-bind="text: callTime"></span>
                                 </div>
                                 <div class="col-3">
@@ -162,9 +162,9 @@
                                     <thead class="table-light sticky-top">
                                         <tr>
                                             <th style="width: 18%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                            <th style="width: 37%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                            <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                            <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                            <th style="width: 37%;">@Html.T("Report.Question", "Soru")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Common.Answer", "Cevap")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                             <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                         </tr>
                                     </thead>
@@ -257,7 +257,7 @@
                                         <div class="d-flex align-items-center gap-3">
                                             <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? '@Html.T("Evaluation.PeriodOpen", "Aktif")' : '@Html.T("Evaluation.PeriodClosed", "Kapalı")'"></span>
                                             <span class="text-muted">
-                                                @Html.T("Evaluation.Completed", "Tamamlanan"): <strong data-bind="text: completedCount"></strong> / <span data-bind="text: targetCount"></span>
+                                                @Html.T("Status.Completed", "Tamamlanan"): <strong data-bind="text: completedCount"></strong> / <span data-bind="text: targetCount"></span>
                                             </span>
                                             <div class="progress flex-grow-1" style="height: 8px; max-width: 150px;">
                                                 <div class="progress-bar bg-success" data-bind="style: { width: (targetCount > 0 ? (completedCount / targetCount * 100) : 0) + '%' }"></div>
@@ -351,7 +351,7 @@
                                             <div class="card-body py-2">
                                                 <div class="row">
                                                     <div class="col-6">
-                                                        <small class="text-muted">@Html.T("FieldWorker.DealerCode", "Kod")</small>
+                                                        <small class="text-muted">@Html.T("Dealer.Code", "Kod")</small>
                                                         <div class="fw-bold" data-bind="text: code || '-'"></div>
                                                     </div>
                                                     <div class="col-6">
@@ -395,10 +395,10 @@
                                 <div class="col-auto">
                                     <!-- Uygulanan Kartlar -->
                                     <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCountCalc() > 0">
-                                        <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Evaluation.Yellow", "Sarı")
+                                        <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Report.Yellow", "Sarı")
                                     </span>
                                     <span class="badge bg-danger" data-bind="visible: redCardCountCalc() > 0">
-                                        <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Evaluation.Red", "Kırmızı")
+                                        <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Report.Red", "Kırmızı")
                                     </span>
                                 </div>
                             </div>
@@ -427,7 +427,7 @@
                                 </h5>
                                 <div>
                                     <span class="badge bg-white text-dark">
-                                        @Html.T("Evaluation.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                        @Html.T("Checklist.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
                                     </span>
                                 </div>
                             </div>
@@ -451,7 +451,7 @@
                                                     <div class="mt-1">
                                                         <!-- ko if: scoringType === 'Scored' && penaltyType === 'None' -->
                                                         <span class="badge bg-primary">
-                                                            @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
                                                             @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span>
                                                         </span>
                                                         <!-- /ko -->
@@ -460,14 +460,14 @@
                                                         <!-- /ko -->
                                                         <!-- ko if: penaltyType === 'YellowCard' -->
                                                         <span class="badge bg-warning text-dark">
-                                                            @Html.T("Evaluation.YellowCard", "Sarı Kart") |
-                                                            @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                            @Html.T("Report.Yellow", "Sarı Kart") |
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                         </span>
                                                         <!-- /ko -->
                                                         <!-- ko if: penaltyType === 'RedCard' -->
                                                         <span class="badge bg-danger">
-                                                            @Html.T("Evaluation.RedCard", "Kırmızı Kart") |
-                                                            @Html.T("Evaluation.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                            @Html.T("Report.Red", "Kırmızı Kart") |
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
                                                         </span>
                                                         <!-- /ko -->
                                                         <!-- ko if: isRequired && scoringType !== 'Penalty' -->
@@ -580,7 +580,7 @@
                                             <div data-bind="with: $root.getAnswer(id, isRequired)">
                                                 <!-- ko if: $parent.scoringType === 'Scored' && ($root.formData() && ($root.formData().checklistType === 'PhysicalAudit' || $root.formData().checklistType === 'Survey')) -->
                                                 <div class="mb-2">
-                                                    <label class="form-label small">@Html.T("Evaluation.GivenPoints", "Verilen Puan")</label>
+                                                    <label class="form-label small">@Html.T("Report.GivenPoints", "Verilen Puan")</label>
                                                     <input type="number" class="form-control form-control-sm"
                                                            data-bind="value: givenPoints, attr: { max: $parent.maxPoints }"
                                                            step="0.5" min="0">

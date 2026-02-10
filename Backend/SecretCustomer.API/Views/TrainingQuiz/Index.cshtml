@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("TrainingQuiz.Title", "Egitim Anketleri");
 }
 
@@ -7,7 +7,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="bi bi-question-circle"></i> @Html.T("TrainingQuiz.Title", "Egitim Anketleri")</h2>
         <button class="btn btn-primary" data-bind="click: openCreateModal">
-            <i class="bi bi-plus-lg"></i> @Html.T("TrainingQuiz.Create", "Yeni Anket")
+            <i class="bi bi-plus-lg"></i> @Html.T("Common.Create", "Yeni Anket")
         </button>
     </div>
 
@@ -62,7 +62,7 @@
                             <th class="text-center">@Html.T("TrainingQuiz.Questions", "Sorular")</th>
                             <th class="text-center">@Html.T("TrainingQuiz.PassingScore", "Gecme Notu")</th>
                             <th class="text-center">@Html.T("TrainingQuiz.Required", "Zorunlu")</th>
-                            <th class="text-center">@Html.T("TrainingQuiz.Responses", "Yanitlar")</th>
+                            <th class="text-center">@Html.T("Report.Responses", "Yanitlar")</th>
                             <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                             <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
                         </tr>
@@ -213,7 +213,7 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="text-muted" data-bind="text: formQuestions().length + ' soru eklendi'"></span>
                             <button class="btn btn-primary btn-sm" data-bind="click: addQuestion">
-                                <i class="bi bi-plus"></i> @Html.T("TrainingQuiz.AddQuestion", "Soru Ekle")
+                                <i class="bi bi-plus"></i> @Html.T("Checklist.AddQuestion", "Soru Ekle")
                             </button>
                         </div>
 
@@ -241,14 +241,14 @@
                                     <div class="card-body">
                                         <div class="row g-2">
                                             <div class="col-md-8">
-                                                <label class="form-label small">@Html.T("TrainingQuiz.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
+                                                <label class="form-label small">@Html.T("Excel.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
                                                 <textarea class="form-control form-control-sm" rows="2" data-bind="value: text" placeholder="Soru metnini girin..."></textarea>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label small">@Html.T("TrainingQuiz.QuestionType", "Soru Tipi")</label>
+                                                <label class="form-label small">@Html.T("Excel.QuestionType", "Soru Tipi")</label>
                                                 <select class="form-select form-select-sm" data-bind="value: questionTypeId">
                                                     <option value="1">@Html.T("TrainingQuiz.SingleChoice", "Tekli Secim")</option>
-                                                    <option value="2">@Html.T("TrainingQuiz.MultipleChoice", "Coklu Secim")</option>
+                                                    <option value="2">@Html.T("QuestionType.MultipleChoice", "Coklu Secim")</option>
                                                 </select>
                                                 <div class="mt-2">
                                                     <input type="text" class="form-control form-control-sm" data-bind="value: helpText" placeholder="Yardim metni (opsiyonel)">
@@ -256,7 +256,7 @@
                                             </div>
                                             <div class="col-md-12">
                                                 <label class="form-label small d-flex justify-content-between align-items-center">
-                                                    <span>@Html.T("TrainingQuiz.Options", "Secenekler")</span>
+                                                    <span>@Html.T("Import.Options", "Secenekler")</span>
                                                     <button type="button" class="btn btn-outline-primary btn-sm py-0" data-bind="click: $parent.addOption">
                                                         <i class="bi bi-plus"></i> Secenek
                                                     </button>
@@ -337,7 +337,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <i class="bi bi-bar-chart me-2"></i>
-                        @Html.T("TrainingQuiz.Responses", "Yanitlar") - <span data-bind="text: selectedQuizTitle"></span>
+                        @Html.T("Report.Responses", "Yanitlar") - <span data-bind="text: selectedQuizTitle"></span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
@@ -346,11 +346,11 @@
                         <table class="table table-sm table-hover">
                             <thead>
                                 <tr>
-                                    <th>@Html.T("TrainingQuiz.Participant", "Katilimci")</th>
+                                    <th>@Html.T("Meeting.Participant", "Katilimci")</th>
                                     <th class="text-center">@Html.T("TrainingQuiz.Score", "Puan")</th>
                                     <th class="text-center">@Html.T("TrainingQuiz.Percentage", "Yuzde")</th>
                                     <th class="text-center">@Html.T("TrainingQuiz.Passed", "Gecti")</th>
-                                    <th class="text-center">@Html.T("TrainingQuiz.Attempt", "Deneme")</th>
+                                    <th class="text-center">@Html.T("QuizReports.Attempt", "Deneme")</th>
                                     <th>@Html.T("TrainingQuiz.CompletedAt", "Tamamlanma")</th>
                                 </tr>
                             </thead>
@@ -381,7 +381,7 @@
                         </table>
                     </div>
                     <div data-bind="visible: responses().length === 0" class="text-center py-4 text-muted">
-                        @Html.T("TrainingQuiz.NoResponses", "Henuz yanit bulunmuyor.")
+                        @Html.T("Report.NoResponses", "Henuz yanit bulunmuyor.")
                     </div>
                 </div>
                 <div class="modal-footer">

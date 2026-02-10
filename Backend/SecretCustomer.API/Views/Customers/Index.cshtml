@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Customer.Title", "Müşteriler");
 }
 
@@ -67,7 +67,7 @@
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('phone')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('email'); }, css: sorting.getSortClass('email')">
-                                @Html.T("User.Email", "E-posta")
+                                @Html.T("Common.Email", "E-posta")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('email')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('city'); }, css: sorting.getSortClass('city')">
@@ -83,7 +83,7 @@
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('branchCount')"></i>
                             </th>
                             <th class="sortable" data-bind="click: function() { sorting.toggleSort('projectCount'); }, css: sorting.getSortClass('projectCount')">
-                                @Html.T("Customer.Project", "Proje")
+                                @Html.T("Common.Project", "Proje")
                                 <i class="bi sort-icon" data-bind="css: sorting.getSortIcon('projectCount')"></i>
                             </th>
                             <th>@Html.T("Customer.Contract", "Sözleşme")</th>
@@ -122,7 +122,7 @@
                                 <button class="btn btn-sm btn-outline-info me-1" data-bind="click: $parent.showPersonnel" title="@Html.T("Customer.Personnel", "Personeller")">
                                     <i class="bi bi-people"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-warning me-1" data-bind="click: $parent.showDealers" title="@Html.T("Customer.Dealers", "Bayiler")">
+                                <button class="btn btn-sm btn-outline-warning me-1" data-bind="click: $parent.showDealers" title="@Html.T("Dealer.Title", "Bayiler")">
                                     <i class="bi bi-shop"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-primary me-1" data-bind="click: $parent.editCustomer" title="@Html.T("Common.Edit", "Düzenle")">
@@ -200,7 +200,7 @@
                             <input type="tel" class="form-control" data-bind="value: phone" placeholder="+90 555 123 45 67" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.Email", "E-posta")</label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta")</label>
                             <input type="email" class="form-control" data-bind="value: email" placeholder="info@sirket.com" />
                         </div>
                     </div>
@@ -211,7 +211,7 @@
                             <input type="text" class="form-control" data-bind="value: city" placeholder="@Html.T("Customer.CityPlaceholder", "İstanbul")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("Customer.Address", "Adres")</label>
+                            <label class="form-label">@Html.T("Dealer.Address", "Adres")</label>
                             <input type="text" class="form-control" data-bind="value: address" placeholder="@Html.T("Customer.AddressPlaceholder", "Merkez Mahallesi...")" />
                         </div>
                     </div>
@@ -229,23 +229,23 @@
 
                     <!-- Hedefler ve Kotalar -->
                     <div class="card mb-3">
-                        <div class="card-header py-2"><i class="bi bi-bullseye"></i> @Html.T("Customer.TargetsAndQuotas", "Hedefler ve Kotalar")</div>
+                        <div class="card-header py-2"><i class="bi bi-bullseye"></i> @Html.T("Project.TargetsAndQuotas", "Hedefler ve Kotalar")</div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">@Html.T("Customer.TotalTarget", "Toplam Hedef")</label>
+                                    <label class="form-label">@Html.T("Project.TotalTarget", "Toplam Hedef")</label>
                                     <input type="number" class="form-control" data-bind="value: targetCount" min="0" placeholder="100">
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">@Html.T("Customer.DailyQuota", "Günlük Kota")</label>
+                                    <label class="form-label">@Html.T("Project.DailyQuota", "Günlük Kota")</label>
                                     <input type="number" class="form-control" data-bind="value: dailyQuota" min="0" placeholder="10">
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">@Html.T("Customer.WeeklyQuota", "Haftalık Kota")</label>
+                                    <label class="form-label">@Html.T("Project.WeeklyQuota", "Haftalık Kota")</label>
                                     <input type="number" class="form-control" data-bind="value: weeklyQuota" min="0" placeholder="50">
                                 </div>
                                 <div class="col-md-3 mb-3">
-                                    <label class="form-label">@Html.T("Customer.MonthlyQuota", "Aylık Kota")</label>
+                                    <label class="form-label">@Html.T("Project.MonthlyQuota", "Aylık Kota")</label>
                                     <input type="number" class="form-control" data-bind="value: monthlyQuota" min="0" placeholder="200">
                                 </div>
                             </div>
@@ -368,7 +368,7 @@
                         </span>
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-success btn-sm" data-bind="click: exportPersonnelToExcel, visible: selectedCustomerForPersonnel() && !isLoadingPersonnel()" title="@Html.T("Customer.ExportToExcel", "Excel'e Aktar")">
+                        <button type="button" class="btn btn-success btn-sm" data-bind="click: exportPersonnelToExcel, visible: selectedCustomerForPersonnel() && !isLoadingPersonnel()" title="@Html.T("Common.ExportExcel", "Excel'e Aktar")">
                             <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.Excel", "Excel")
                         </button>
                         <button type="button" class="btn-close" data-bind="click: closePersonnelModal"></button>
@@ -380,7 +380,7 @@
                     <div data-bind="visible: showChangePasswordModal" class="card border-primary mb-3">
                         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                             <span>
-                                <i class="bi bi-key me-2"></i>@Html.T("Customer.ResetPassword", "Şifre Sıfırla")
+                                <i class="bi bi-key me-2"></i>@Html.T("Account.ResetPassword", "Şifre Sıfırla")
                                 <span data-bind="if: selectedPersonnelForPassword">
                                     - <span data-bind="text: selectedPersonnelForPassword().fullName"></span>
                                 </span>
@@ -402,7 +402,7 @@
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-primary" data-bind="click: resetPassword, disable: isResettingPassword">
                                     <span data-bind="visible: !isResettingPassword()">
-                                        <i class="bi bi-check-circle me-1"></i>@Html.T("Customer.ResetPassword", "Şifre Sıfırla")
+                                        <i class="bi bi-check-circle me-1"></i>@Html.T("Account.ResetPassword", "Şifre Sıfırla")
                                     </span>
                                     <span data-bind="visible: isResettingPassword">
                                         <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Customer.Resetting", "Sıfırlanıyor...")
@@ -440,7 +440,7 @@
                                     <tr>
                                         <th>@Html.T("User.FullName", "Ad Soyad")</th>
                                         <th>@Html.T("User.Username", "Kullanıcı Adı")</th>
-                                        <th>@Html.T("User.Email", "E-posta")</th>
+                                        <th>@Html.T("Common.Email", "E-posta")</th>
                                         <th>@Html.T("User.Role", "Rol")</th>
                                         <th>@Html.T("Common.Status", "Durum")</th>
                                         <th>@Html.T("Common.Actions", "İşlemler")</th>
@@ -504,7 +504,7 @@
                             <input type="text" class="form-control" data-bind="value: username" placeholder="ali.veli" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.Email", "E-posta") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Common.Email", "E-posta") <span class="text-danger">*</span></label>
                             <input type="email" class="form-control" data-bind="value: email" placeholder="ali.veli@example.com" />
                         </div>
                     </div>
@@ -514,7 +514,7 @@
                             <input type="text" class="form-control" data-bind="value: firstName" placeholder="@Html.T("Customer.FirstNamePlaceholder", "Ali")" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("User.LastName", "Soyad") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Common.LastName", "Soyad") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: lastName" placeholder="@Html.T("Customer.LastNamePlaceholder", "Veli")" />
                         </div>
                     </div>
@@ -524,7 +524,7 @@
                             <select class="form-select" data-bind="value: role">
                                 <option value="1">@Html.T("Customer.Role.Manager", "Müşteri Yöneticisi")</option>
                                 <option value="2">@Html.T("Customer.Role.Supervisor", "Müşteri Süpervizörü")</option>
-                                <option value="3">@Html.T("Customer.Role.Operator", "Müşteri Operatörü")</option>
+                                <option value="3">@Html.T("Role.CustomerOperator", "Müşteri Operatörü")</option>
                             </select>
                         </div>
                     </div>
@@ -535,11 +535,11 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Customer.Department", "Departman")</label>
-                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("Customer.DepartmentPlaceholder", "Kalite Kontrol")" />
+                            <input type="text" class="form-control" data-bind="value: department" placeholder="@Html.T("ProjectType.QualityControl", "Kalite Kontrol")" />
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("CustomerPersonnel.JobTitle", "Ünvan")</label>
+                        <label class="form-label">@Html.T("Customer.JobTitle", "Ünvan")</label>
                         <input type="text" class="form-control" data-bind="value: title" placeholder="@Html.T("CustomerPersonnel.JobTitlePlaceholder", "Kalite Müdürü")" />
                     </div>
                     <div class="form-check">

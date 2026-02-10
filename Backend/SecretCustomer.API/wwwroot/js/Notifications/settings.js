@@ -1,4 +1,4 @@
-// Notifications Settings ViewModel
+﻿// Notifications Settings ViewModel
 function NotificationsSettingsViewModel() {
     var self = this;
 
@@ -90,13 +90,13 @@ function NotificationsSettingsViewModel() {
         var types = {
             'Info': T('Notification.Type.Info', 'Bilgi'),
             'Success': T('Notification.Type.Success', 'Başarılı İşlem'),
-            'Warning': T('Notification.Type.Warning', 'Uyarı'),
-            'Error': T('Notification.Type.Error', 'Hata'),
-            'ApprovalRequest': T('Notification.Type.ApprovalRequest', 'Onay Talebi'),
-            'Assignment': T('Notification.Type.Assignment', 'Görev Ataması'),
+            'Warning': T('Common.Warning', 'Uyarı'),
+            'Error': T('Common.Error', 'Hata'),
+            'ApprovalRequest': T('Notification.TypeApprovalRequest', 'Onay Talebi'),
+            'Assignment': T('Approval.Type.Assignment', 'Görev Ataması'),
             'MeetingInvite': T('Notification.Type.MeetingInvite', 'Toplantı Daveti'),
             'TrainingInvite': T('Notification.Type.TrainingInvite', 'Eğitim Daveti'),
-            'Reminder': T('Notification.Type.Reminder', 'Hatırlatma'),
+            'Reminder': T('Notification.TypeReminder', 'Hatırlatma'),
             'System': T('Notification.Type.System', 'Sistem Bildirimi')
         };
         return types[type] || type;
@@ -118,13 +118,13 @@ var TRANSLATION_KEYS = [
     'Notification.SettingsSaveError',
     'Notification.Type.Info',
     'Notification.Type.Success',
-    'Notification.Type.Warning',
-    'Notification.Type.Error',
-    'Notification.Type.ApprovalRequest',
-    'Notification.Type.Assignment',
+    'Common.Warning',
+    'Common.Error',
+    'Notification.TypeApprovalRequest',
+    'Approval.Type.Assignment',
     'Notification.Type.MeetingInvite',
     'Notification.Type.TrainingInvite',
-    'Notification.Type.Reminder',
+    'Notification.TypeReminder',
     'Notification.Type.System'
 ];
 

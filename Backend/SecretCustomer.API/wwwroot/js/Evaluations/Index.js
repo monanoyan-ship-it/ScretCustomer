@@ -1,4 +1,4 @@
-// Evaluations ViewModel - Çağrı Denetleme (Birleştirilmiş: Liste + Detay + Değerlendirme Formu)
+﻿// Evaluations ViewModel - Çağrı Denetleme (Birleştirilmiş: Liste + Detay + Değerlendirme Formu)
 function EvaluationsViewModel() {
     var self = this;
 
@@ -956,7 +956,8 @@ function EvaluationsViewModel() {
 
     self.openEvaluateModal = function() {
         self.isEvaluateModalOpen(true);
-        self.isFormLoading(true);        self.formData(null);
+        self.isFormLoading(true);
+        self.formData(null);
         self.answers = {};
         self.isShowingSummary(false);
         self.summaryData(null);
@@ -1226,7 +1227,8 @@ function EvaluationsViewModel() {
 
     // Load form data
     self.loadForm = function() {
-        self.isFormLoading(true);        var url = '';
+        self.isFormLoading(true);
+        var url = '';
         if (self.currentAssignmentId) {
             url = '/api/evaluations/form/' + self.currentAssignmentId;
         } else if (self.currentEvaluationId) {
@@ -1336,7 +1338,7 @@ function EvaluationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Form loading error:', error);
-                toastr.error(T('Evaluation.FormLoadErrorMessage', 'Form yüklenirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.FormLoadError', 'Form yüklenirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isFormLoading(false);
@@ -1671,7 +1673,7 @@ function EvaluationsViewModel() {
             })
             .catch(function(error) {
                 console.error('Draft save error:', error);
-                toastr.error(T('Evaluation.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
+                toastr.error(T('Evaluation.DraftSaveError', 'Taslak kaydedilirken bir hata oluştu.'));
             })
             .finally(function() {
                 self.isSavingForm(false);
@@ -1779,7 +1781,8 @@ function EvaluationsViewModel() {
 
     // Confirm and submit evaluation (onaylandığında backend'e kaydet)
     self.confirmSubmit = function() {
-        self.isSavingForm(true);        var data = self.prepareData();
+        self.isSavingForm(true);
+        var data = self.prepareData();
         var projectId = data.projectId;
 
         fetch('/api/evaluations/submit', {
@@ -1850,7 +1853,7 @@ function EvaluationsViewModel() {
         })
         .catch(function(error) {
             console.error('Submit error:', error);
-            toastr.error(T('Evaluation.SubmitErrorMessage', 'Değerlendirme gönderilirken bir hata oluştu.'));
+            toastr.error(T('Evaluation.SubmitError', 'Değerlendirme gönderilirken bir hata oluştu.'));
         })
         .finally(function() {
             self.isSavingForm(false);
@@ -1874,7 +1877,7 @@ function EvaluationsViewModel() {
             .then(function(response) {
                 if (!response.ok) {
                     return response.json().then(function(data) {
-                        throw new Error(data.message || T('Evaluation.DeleteError', 'Silme işlemi başarısız'));
+                        throw new Error(data.message || T('Common.DeleteError', 'Silme işlemi başarısız'));
                     });
                 }
                 return response.json();
@@ -1960,7 +1963,7 @@ var TRANSLATION_KEYS = [
     'Evaluation.RevertRequestFailed',
     'Evaluation.InvalidParams',
     'Evaluation.FormLoadError',
-    'Evaluation.FormLoadErrorMessage',
+    'Evaluation.FormLoadError',
     'Evaluation.PersonnelRequired',
     'Evaluation.CallDateRequired',
     'Evaluation.CallTimeRequired',
@@ -1968,12 +1971,12 @@ var TRANSLATION_KEYS = [
     'Evaluation.ValidationError',
     'Evaluation.DraftSaveError',
     'Evaluation.DraftSaved',
-    'Evaluation.DraftSaveErrorMessage',
+    'Evaluation.DraftSaveError',
     'Evaluation.SubmitError',
     'Evaluation.SubmitSuccess',
-    'Evaluation.SubmitErrorMessage',
+    'Evaluation.SubmitError',
     // Confirm modal keys
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
     'Common.Confirm'
 ];

@@ -1,4 +1,4 @@
-// CustomerPortal MyTrainings ViewModel
+﻿// CustomerPortal MyTrainings ViewModel
 var TRANSLATION_KEYS = [
     'Common.Loading',
     'Common.Error',
@@ -6,13 +6,13 @@ var TRANSLATION_KEYS = [
     'MyTrainings.StartWatching',
     'MyTrainings.ConfirmWatchVideo',
     'MyTrainings.WatchCountWarning',
-    'MyTrainings.CurrentWatchCount',
+    'Training.Current',
     'MyTrainings.TimesWatched',
     'MyTrainings.RemainingAfter',
     'MyTrainings.CloseVideo',
     'MyTrainings.CloseVideoWarning',
     'MyTrainings.CloseAndSave',
-    'MyTrainings.Quiz.Title',
+    'Menu.TrainingQuiz',
     'MyTrainings.Quiz.Required',
     'MyTrainings.Quiz.Optional',
     'MyTrainings.Quiz.Start',
@@ -263,7 +263,7 @@ function MyTrainingsViewModel() {
         if (remainingAfter !== null) {
             confirmMsg = T('MyTrainings.WatchCountWarning', 'Bu videoyu izlemeye basladiginizda 1 izleme hakkiniz kullanilacak.');
             confirmMsg += '<br><br>';
-            confirmMsg += '<strong>' + T('MyTrainings.CurrentWatchCount', 'Mevcut') + ':</strong> ' + training.watchCount + '/' + training.maxWatchCount + ' ' + T('MyTrainings.TimesWatched', 'izleme');
+            confirmMsg += '<strong>' + T('Training.Current', 'Mevcut') + ':</strong> ' + training.watchCount + '/' + training.maxWatchCount + ' ' + T('MyTrainings.TimesWatched', 'izleme');
             confirmMsg += '<br>';
             confirmMsg += '<strong>' + T('MyTrainings.RemainingAfter', 'Kalan hak') + ':</strong> ' + remainingAfter;
         }
@@ -404,7 +404,7 @@ function MyTrainingsViewModel() {
                 } else {
                     // Opsiyonel - kullaniciya sor
                     showConfirmModal({
-                        title: T('MyTrainings.Quiz.Title', 'Anket'),
+                        title: T('Menu.TrainingQuiz', 'Anket'),
                         message: T('MyTrainings.Quiz.Optional', 'Bu video icin opsiyonel bir anket mevcut. Anketi simdi doldurmak ister misiniz?'),
                         type: 'info',
                         confirmText: T('MyTrainings.Quiz.Start', 'Ankete Git'),

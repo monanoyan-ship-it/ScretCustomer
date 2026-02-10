@@ -1,4 +1,4 @@
-// Reports ViewModel
+﻿// Reports ViewModel
 function ReportsViewModel() {
     var self = this;
 
@@ -615,7 +615,7 @@ var TRANSLATION_KEYS = [
     'File.Evaluations',
     'File.DetailedEvaluations',
     'Status.Completed',
-    'Status.Draft',
+    'Common.Status.Draft',
     'Status.InProgress',
     'Common.Unknown'
 ];

@@ -1,4 +1,4 @@
-// ===== Internal Assignments ViewModel =====
+﻿// ===== Internal Assignments ViewModel =====
 function InternalAssignmentsViewModel() {
     var self = this;
 
@@ -386,7 +386,7 @@ function InternalAssignmentsViewModel() {
         }
 
         if (!self.canCreate()) {
-            self.createError(T('InternalAssignments.SelectPersonnel', 'Lütfen en az bir personel seçin'));
+            self.createError(T('Evaluation.SelectPersonnel', 'Lütfen en az bir personel seçin'));
             return;
         }
 
@@ -580,7 +580,7 @@ function InternalAssignmentsViewModel() {
 var TRANSLATION_KEYS = [
     'InternalAssignments.LoadError',
     'InternalAssignments.FillAllFields',
-    'InternalAssignments.SelectPersonnel',
+    'Evaluation.SelectPersonnel',
     'InternalAssignments.AssignmentsCreated',
     'InternalAssignments.CreateError',
     'InternalAssignments.DetailLoadError',

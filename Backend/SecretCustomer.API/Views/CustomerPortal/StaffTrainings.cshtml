@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("CustomerPortal.StaffTrainings.Title", "Personel Egitimleri");
+﻿@{
+    ViewData["Title"] = Html.T("CustomerPortal.Menu.StaffTrainings", "Personel Egitimleri");
     Layout = "_CustomerLayout";
 }
 
@@ -13,7 +13,7 @@
                     <select class="form-select" data-bind="value: filterPersonnelId, options: personnelList, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Tum Personel'"></select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">@Html.T("StaffTrainings.Training", "Egitim")</label>
+                    <label class="form-label">@Html.T("Meeting.TypeTraining", "Egitim")</label>
                     <select class="form-select" data-bind="value: filterAssignmentId, options: assignmentList, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Tum Egitimler'"></select>
                 </div>
                 <div class="col-md-3">
@@ -42,7 +42,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("StaffTrainings.TotalPersonnel", "Toplam Personel")</h6>
+                            <h6 class="mb-0">@Html.T("Project.TotalPersonnel", "Toplam Personel")</h6>
                             <h3 class="mb-0" data-bind="text: stats().totalPersonnel"></h3>
                         </div>
                         <i class="bi bi-people fs-1 opacity-50"></i>
@@ -55,7 +55,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("StaffTrainings.PendingTrainings", "Bekleyen")</h6>
+                            <h6 class="mb-0">@Html.T("Common.Status.Pending", "Bekleyen")</h6>
                             <h3 class="mb-0" data-bind="text: stats().pending"></h3>
                         </div>
                         <i class="bi bi-hourglass-split fs-1 opacity-50"></i>
@@ -81,7 +81,7 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-0">@Html.T("StaffTrainings.OverdueTrainings", "Geciken")</h6>
+                            <h6 class="mb-0">@Html.T("MyTrainings.Overdue", "Geciken")</h6>
                             <h3 class="mb-0" data-bind="text: stats().overdue"></h3>
                         </div>
                         <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
@@ -108,10 +108,10 @@
                     <thead class="table-light">
                         <tr>
                             <th>@Html.T("StaffTrainings.Personnel", "Personel")</th>
-                            <th>@Html.T("StaffTrainings.Training", "Egitim")</th>
+                            <th>@Html.T("Meeting.TypeTraining", "Egitim")</th>
                             <th class="text-center">@Html.T("Common.Status", "Durum")</th>
-                            <th class="text-center">@Html.T("StaffTrainings.Progress", "Ilerleme")</th>
-                            <th class="text-center">@Html.T("StaffTrainings.DueDate", "Son Tarih")</th>
+                            <th class="text-center">@Html.T("Project.Progress", "Ilerleme")</th>
+                            <th class="text-center">@Html.T("Common.DueDate", "Son Tarih")</th>
                             <th class="text-center">@Html.T("StaffTrainings.CompletedAt", "Tamamlama")</th>
                         </tr>
                     </thead>
@@ -128,7 +128,7 @@
                             <td class="text-center">
                                 <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("MyTrainings.StatusPending", "Bekliyor")</span>
                                 <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("MyTrainings.StatusInProgress", "Izliyor")</span>
-                                <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("MyTrainings.StatusCompleted", "Tamamladi")</span>
+                                <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Status.Completed", "Tamamladi")</span>
                                 <!-- ko if: isOverdue && !isCompleted -->
                                 <br><span class="badge bg-danger mt-1">@Html.T("MyTrainings.Overdue", "Geciken")</span>
                                 <!-- /ko -->

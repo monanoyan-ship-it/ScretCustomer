@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("Import.Title", "Veri İçe Aktarma");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Import", "Veri İçe Aktarma");
 }
 
 <div id="import-app">
@@ -69,7 +69,7 @@
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-primary" data-bind="click: importPersonnel, disable: isLoading() || !personnelFile()">
                                     <span data-bind="visible: !isLoading()">
-                                        <i class="bi bi-upload me-2"></i>@Html.T("Import.Import", "İçe Aktar")
+                                        <i class="bi bi-upload me-2"></i>@Html.T("Common.Import", "İçe Aktar")
                                     </span>
                                     <span data-bind="visible: isLoading">
                                         <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Import.Processing", "İşleniyor...")
@@ -137,7 +137,7 @@
                                 <div class="col-md-2">
                                     <div class="text-center p-3 bg-light rounded">
                                         <h3 class="mb-0 text-danger" data-bind="text: personnelResult() && personnelResult().errors ? personnelResult().errors.length : 0"></h3>
-                                        <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
+                                        <small class="text-muted">@Html.T("Common.Error", "Hata")</small>
                                     </div>
                                 </div>
                             </div>
@@ -219,12 +219,12 @@
                         <div class="alert alert-info mb-4">
                             <h6><i class="bi bi-info-circle me-2"></i>@Html.T("Import.ChecklistInfo", "CSV Kolon Bilgileri")</h6>
                             <ul class="mb-0">
-                                <li><strong>GroupName</strong> = @Html.T("Import.Checklist.GroupName", "Soru grubu adı (raporlama için)")</li>
-                                <li><strong>QuestionText</strong> = @Html.T("Import.Checklist.QuestionText", "Soru metni (zorunlu)")</li>
-                                <li><strong>WeightPoints</strong> = @Html.T("Import.Checklist.WeightPoints", "Ağırlık puanı (varsayılan: 1)")</li>
+                                <li><strong>GroupName</strong> = @Html.T("Report.GroupName", "Soru grubu adı (raporlama için)")</li>
+                                <li><strong>QuestionText</strong> = @Html.T("Excel.QuestionText", "Soru metni (zorunlu)")</li>
+                                <li><strong>WeightPoints</strong> = @Html.T("Excel.Weight", "Ağırlık puanı (varsayılan: 1)")</li>
                                 <li><strong>MaxPoints</strong> = @Html.T("Import.Checklist.MaxPoints", "Maksimum puan 1-10 (varsayılan: 5)")</li>
                                 <li><strong>ScoringType</strong> = @Html.T("Import.Checklist.ScoringType", "Scored, Unscored, Penalty")</li>
-                                <li><strong>PenaltyType</strong> = @Html.T("Import.Checklist.PenaltyType", "None, YellowCard, RedCard")</li>
+                                <li><strong>PenaltyType</strong> = @Html.T("Report.PenaltyType", "None, YellowCard, RedCard")</li>
                                 <li><strong>SubCriteria</strong> = @Html.T("Import.Checklist.SubCriteria", "Alt kriterler (| ile ayrılmış)")</li>
                             </ul>
                         </div>
@@ -264,7 +264,7 @@
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-success" data-bind="click: importChecklist, disable: isLoading() || !checklistFile() || !checklistName()">
                                     <span data-bind="visible: !isLoading()">
-                                        <i class="bi bi-upload me-2"></i>@Html.T("Import.Import", "İçe Aktar")
+                                        <i class="bi bi-upload me-2"></i>@Html.T("Common.Import", "İçe Aktar")
                                     </span>
                                     <span data-bind="visible: isLoading">
                                         <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Import.Processing", "İşleniyor...")
@@ -323,7 +323,7 @@
                                 <div class="col-md-3">
                                     <div class="text-center p-3 bg-light rounded">
                                         <h3 class="mb-0 text-danger" data-bind="text: checklistResult() && checklistResult().errors ? checklistResult().errors.length : 0"></h3>
-                                        <small class="text-muted">@Html.T("Import.Error", "Hata")</small>
+                                        <small class="text-muted">@Html.T("Common.Error", "Hata")</small>
                                     </div>
                                 </div>
                             </div>
@@ -355,9 +355,9 @@
                                     <table class="table table-sm table-striped">
                                         <thead>
                                             <tr>
-                                                <th>@Html.T("Checklist.Order", "Sıra")</th>
+                                                <th>@Html.T("Language.Order", "Sıra")</th>
                                                 <th>@Html.T("Question.GroupName", "Grup")</th>
-                                                <th>@Html.T("Checklist.QuestionText", "Soru Metni")</th>
+                                                <th>@Html.T("Excel.QuestionText", "Soru Metni")</th>
                                                 <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
                                                 <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>
                                                 <th>@Html.T("Checklist.Scoring", "Puanlama")</th>
@@ -486,7 +486,7 @@
             })
             .catch(function(error) {
                 console.error('Import error:', error);
-                toastr.error(T('Import.Error', 'İçe aktarma sırasında bir hata oluştu.'));
+                toastr.error(T('Common.Error', 'İçe aktarma sırasında bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);
@@ -553,7 +553,7 @@
             })
             .catch(function(error) {
                 console.error('Import error:', error);
-                toastr.error(T('Import.Error', 'İçe aktarma sırasında bir hata oluştu.'));
+                toastr.error(T('Common.Error', 'İçe aktarma sırasında bir hata oluştu.'));
             })
             .finally(function() {
                 self.isLoading(false);

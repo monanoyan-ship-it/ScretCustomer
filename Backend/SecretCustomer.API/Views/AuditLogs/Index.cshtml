@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("AuditLog.Title", "Sistem Logları");
 }
 
@@ -25,8 +25,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Html.T("AuditLog.Category", "Kategori")</label>
-                    <input type="text" class="form-control" placeholder="@Html.T("AuditLog.Category", "Kategori")"
+                    <label class="form-label">@Html.T("Setting.Category", "Kategori")</label>
+                    <input type="text" class="form-control" placeholder="@Html.T("Setting.Category", "Kategori")"
                            data-bind="value: filter.category, valueUpdate: 'afterkeydown'" />
                 </div>
                 <div class="col-md-2">
@@ -64,7 +64,7 @@
         <div class="col-md-3">
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
-                    <h5 class="card-title">@Html.T("AuditLog.Errors", "Hatalar")</h5>
+                    <h5 class="card-title">@Html.T("Import.Errors", "Hatalar")</h5>
                     <h2 data-bind="text: errorCount"></h2>
                 </div>
             </div>
@@ -72,7 +72,7 @@
         <div class="col-md-3">
             <div class="card bg-warning text-dark">
                 <div class="card-body text-center">
-                    <h5 class="card-title">@Html.T("AuditLog.Warnings", "Uyarılar")</h5>
+                    <h5 class="card-title">@Html.T("Import.Warnings", "Uyarılar")</h5>
                     <h2 data-bind="text: warningCount"></h2>
                 </div>
             </div>
@@ -96,7 +96,7 @@
                         <tr>
                             <th style="width: 50px;">ID</th>
                             <th style="width: 120px;">@Html.T("AuditLog.Type", "Tür")</th>
-                            <th style="width: 100px;">@Html.T("AuditLog.Category", "Kategori")</th>
+                            <th style="width: 100px;">@Html.T("Setting.Category", "Kategori")</th>
                             <th>@Html.T("AuditLog.Message", "Mesaj")</th>
                             <th style="width: 120px;">@Html.T("AuditLog.User", "Kullanıcı")</th>
                             <th style="width: 120px;">@Html.T("AuditLog.IpAddress", "IP Adresi")</th>
@@ -179,7 +179,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>@Html.T("AuditLog.Category", "Kategori"):</strong> <span data-bind="text: category || '-'"></span>
+                            <strong>@Html.T("Setting.Category", "Kategori"):</strong> <span data-bind="text: category || '-'"></span>
                         </div>
                         <div class="col-md-6">
                             <strong>@Html.T("Common.Date", "Tarih"):</strong> <span data-bind="text: $parent.formatDate(createdAt)"></span>
@@ -190,7 +190,7 @@
                         <p class="bg-light p-2 rounded" data-bind="text: message"></p>
                     </div>
                     <div class="mb-3" data-bind="visible: details">
-                        <strong>@Html.T("AuditLog.Details", "Detaylar"):</strong>
+                        <strong>@Html.T("Common.Details", "Detaylar"):</strong>
                         <pre class="bg-light p-2 rounded" style="max-height: 200px; overflow-y: auto;" data-bind="text: details"></pre>
                     </div>
                     <div class="row mb-3">

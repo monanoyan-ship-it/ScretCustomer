@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.Interfaces.Services;
@@ -39,7 +39,7 @@ public class CustomersApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error loading customers");
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.LoadListError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Customer.LoadError"), ex));
         }
     }
 
@@ -149,7 +149,7 @@ public class CustomersApiController : BaseApiController
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting customer {Id}", id);
-            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Customer.DeleteError"), ex));
+            return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Customer.DeleteError"), ex));
         }
     }
 

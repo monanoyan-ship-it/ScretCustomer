@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("TrainingVideo.Title", "Egitim Videolari");
 }
 
@@ -8,7 +8,7 @@
         <h2><i class="bi bi-play-circle"></i> @Html.T("TrainingVideo.Title", "Egitim Videolari")</h2>
         <div>
             <a href="/TrainingVideos/Assignments" class="btn btn-outline-primary me-2">
-                <i class="bi bi-people"></i> @Html.T("TrainingVideo.Assignments", "Atamalar")
+                <i class="bi bi-people"></i> @Html.T("Assignment.Title", "Atamalar")
             </a>
             <button class="btn btn-primary" data-bind="click: openUploadModal">
                 <i class="bi bi-upload"></i> @Html.T("TrainingVideo.Upload", "Video Yukle")
@@ -61,8 +61,8 @@
                         <tr>
                             <th>@Html.T("TrainingVideo.VideoTitle", "Video")</th>
                             <th class="text-center">@Html.T("TrainingVideo.Duration", "Sure")</th>
-                            <th class="text-center">@Html.T("TrainingVideo.Scopes", "Kapsam")</th>
-                            <th class="text-center">@Html.T("TrainingVideo.Assignments", "Atama")</th>
+                            <th class="text-center">@Html.T("Permission.Scope", "Kapsam")</th>
+                            <th class="text-center">@Html.T("Assignment.Title", "Atama")</th>
                             <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                             <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
                         </tr>
@@ -139,7 +139,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i>@Html.T("TrainingVideo.UploadVideo", "Video Yukle")</h5>
+                    <h5 class="modal-title"><i class="bi bi-upload me-2"></i>@Html.T("TrainingVideo.Upload", "Video Yukle")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -169,7 +169,7 @@
                             </div>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">@Html.T("TrainingVideo.Scopes", "Kapsam") <span class="text-muted">(@Html.T("Common.Optional", "Opsiyonel"))</span></label>
+                            <label class="form-label">@Html.T("Permission.Scope", "Kapsam") <span class="text-muted">(@Html.T("Common.Optional", "Opsiyonel"))</span></label>
                             <div class="border rounded p-3 bg-light">
                                 <!-- Hierarchical Scope Selection -->
                                 <div class="row g-2 mb-3">
@@ -182,7 +182,7 @@
                                         <select class="form-select form-select-sm" data-bind="value: newScopeGroupName, options: filteredQuestionGroups, optionsValue: 'groupName', optionsText: function(item) { return item.groupName + ' (' + item.questionCount + ')'; }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
                                     </div>
                                     <div class="col-md-3">
-                                        <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestion", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                        <label class="form-label small text-muted mb-1">@Html.T("Report.Question", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
                                         <select class="form-select form-select-sm" data-bind="value: newScopeQuestionId, options: filteredQuestions, optionsValue: 'id', optionsText: function(item) { return item.text.substring(0, 30) + (item.text.length > 30 ? '...' : ''); }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
@@ -255,12 +255,12 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("TrainingVideo.Quiz", "Anket")</label>
+                        <label class="form-label">@Html.T("QuizReports.Quiz", "Anket")</label>
                         <select class="form-select" data-bind="value: editQuizId, options: availableQuizzes, optionsValue: 'id', optionsText: function(item) { return item.title + ' (' + item.questionCount + ' soru)'; }, optionsCaption: T('TrainingVideo.NoQuiz', 'Anket secilmedi')"></select>
                         <small class="text-muted">@Html.T("TrainingVideo.QuizHelp", "Video tamamlandiktan sonra gosterilecek anket")</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">@Html.T("TrainingVideo.Scopes", "Kapsam")</label>
+                        <label class="form-label">@Html.T("Permission.Scope", "Kapsam")</label>
                         <div class="border rounded p-3 bg-light">
                             <!-- Hierarchical Scope Selection -->
                             <div class="row g-2 mb-3">
@@ -273,7 +273,7 @@
                                     <select class="form-select form-select-sm" data-bind="value: newScopeGroupName, options: filteredQuestionGroups, optionsValue: 'groupName', optionsText: function(item) { return item.groupName + ' (' + item.questionCount + ')'; }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small text-muted mb-1">@Html.T("TrainingVideo.ScopeQuestion", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
+                                    <label class="form-label small text-muted mb-1">@Html.T("Report.Question", "Soru") <span class="text-muted">(@Html.T("Common.Optional", "Ops."))</span></label>
                                     <select class="form-select form-select-sm" data-bind="value: newScopeQuestionId, options: filteredQuestions, optionsValue: 'id', optionsText: function(item) { return item.text.substring(0, 30) + (item.text.length > 30 ? '...' : ''); }, optionsCaption: 'Tumu...', enable: newScopeChecklistId()"></select>
                                 </div>
                                 <div class="col-md-2 d-flex align-items-end">
@@ -320,7 +320,7 @@
                 </div>
                 <div class="modal-body p-0">
                     <video id="previewPlayer" class="w-100" controls data-bind="attr: { src: previewUrl }">
-                        @Html.T("TrainingVideo.BrowserNotSupported", "Tarayiciniz video oynatmayi desteklemiyor.")
+                        @Html.T("MyTrainings.BrowserNotSupported", "Tarayiciniz video oynatmayi desteklemiyor.")
                     </video>
                 </div>
             </div>

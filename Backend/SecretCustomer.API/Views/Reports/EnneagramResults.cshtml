@@ -1,11 +1,11 @@
-@{
-    ViewData["Title"] = @Html.T("Report.EnneagramResults", "Enneagram Sonuçları");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.EnneagramResults", "Enneagram Sonuçları");
 }
 
 <div id="enneagram-results-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people text-purple"></i> @Html.T("Report.EnneagramResults", "Enneagram Kişilik Testi Sonuçları")</h2>
+        <h2><i class="bi bi-people text-purple"></i> @Html.T("Menu.EnneagramResults", "Enneagram Kişilik Testi Sonuçları")</h2>
     </div>
 
     <!-- Loading -->
@@ -21,7 +21,7 @@
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">@Html.T("Report.Project", "Proje")</label>
+                        <label class="form-label">@Html.T("Common.Project", "Proje")</label>
                         <select class="form-select" data-bind="value: filter.projectId, options: projects, optionsValue: 'projectId', optionsText: 'projectName', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
                     </div>
                     <div class="col-md-4">
@@ -190,7 +190,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>@Html.T("Report.Respondent", "Katılımcı")</th>
-                                <th>@Html.T("Report.Project", "Proje")</th>
+                                <th>@Html.T("Common.Project", "Proje")</th>
                                 <th class="text-center">@Html.T("Report.DominantType", "Baskın Tip")</th>
                                 <th class="text-center">@Html.T("Report.Score", "Puan")</th>
                                 <th>@Html.T("Report.Date", "Tarih")</th>
@@ -304,7 +304,7 @@
                         <i class="bi bi-x-circle"></i> @Html.T("Common.Close", "Kapat")
                     </button>
                     <button type="button" class="btn btn-success" data-bind="click: exportDetail, visible: detail()">
-                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel İndir")
                     </button>
                 </div>
             </div>

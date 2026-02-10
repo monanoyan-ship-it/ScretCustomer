@@ -1,4 +1,4 @@
-function LanguagesViewModel() {
+﻿function LanguagesViewModel() {
     var self = this;
 
     // State
@@ -261,7 +261,7 @@ function LanguagesViewModel() {
             title: T('Language.ImportXmlTitle', 'XML İçe Aktarma'),
             message: language.name + ' için resources.' + language.uniqueSeoCode + '.xml ' + T('Language.ImportConfirmMessage', 'dosyasından çevirileri içe aktarmak istiyor musunuz?'),
             type: 'info',
-            confirmText: T('Language.Import', 'İçe Aktar'),
+            confirmText: T('Common.Import', 'İçe Aktar'),
             confirmIcon: 'bi-file-earmark-arrow-down',
             onConfirm: function() {
                 self.isImporting(true);
@@ -274,7 +274,7 @@ function LanguagesViewModel() {
                     self.loadLanguages();
                 })
                 .fail(function (xhr) {
-                    toastr.error(xhr.responseJSON?.message || T('Language.ImportError', 'İçe aktarma sırasında hata oluştu.'));
+                    toastr.error(xhr.responseJSON?.message || T('Message.ImportError', 'İçe aktarma sırasında hata oluştu.'));
                 })
                 .always(function () {
                     self.isImporting(false);
@@ -452,9 +452,9 @@ var TRANSLATION_KEYS = [
     'Language.DeleteError',
     'Language.ImportXmlTitle',
     'Language.ImportConfirmMessage',
-    'Language.Import',
+    'Common.Import',
     'Language.ImportSuccess',
-    'Language.ImportError',
+    'Message.ImportError',
     'Language.ResourcesLoadError',
     'Language.ResourceSaved',
     'Language.Resource',
@@ -467,11 +467,11 @@ var TRANSLATION_KEYS = [
     // Common keys
     'Message.Error',
     // Confirm modal keys (used by confirm-modal.js)
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
-    'Confirm.DeleteTitle',
-    'Confirm.DeleteMessage',
-    'Confirm.YesDelete',
+    'Common.DeleteConfirmation',
+    'Common.DeleteConfirmationMessage',
+    'Common.YesDelete',
     'Confirm.CancelTitle',
     'Confirm.CancelMessage',
     'Confirm.YesCancel',

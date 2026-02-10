@@ -1,11 +1,11 @@
-@{
-    ViewData["Title"] = @Html.T("Report.SurveyResults", "Anket Sonuçları");
+﻿@{
+    ViewData["Title"] = @Html.T("Menu.SurveyResults", "Anket Sonuçları");
 }
 
 <div id="survey-results-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-clipboard-data text-primary"></i> @Html.T("Report.SurveyResults", "Anket Sonuçları")</h2>
+        <h2><i class="bi bi-clipboard-data text-primary"></i> @Html.T("Menu.SurveyResults", "Anket Sonuçları")</h2>
     </div>
 
     <!-- Loading -->
@@ -74,7 +74,7 @@
                         <table class="table table-hover mb-0" data-bind="visible: filteredProjects().length > 0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>@Html.T("Report.Project", "Proje")</th>
+                                    <th>@Html.T("Common.Project", "Proje")</th>
                                     <th class="text-center">@Html.T("Report.Invitations", "Davetiye")</th>
                                     <th class="text-center">@Html.T("Report.Responses", "Yanıt")</th>
                                     <th class="text-center">@Html.T("Report.Rate", "Oran")</th>
@@ -115,10 +115,10 @@
                                             <button class="btn btn-outline-info" data-bind="click: $parent.showProjectDetail" title="@Html.T("Report.ViewProjectDetail", "Proje Detayı")">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            <button class="btn btn-outline-warning" data-bind="click: $parent.showScoreDetail" title="@Html.T("Report.ViewScoreDetail", "Puan Detayı")">
+                                            <button class="btn btn-outline-warning" data-bind="click: $parent.showScoreDetail" title="@Html.T("Report.ScoreDetail", "Puan Detayı")">
                                                 <i class="bi bi-bar-chart-steps"></i>
                                             </button>
-                                            <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" title="@Html.T("Report.ExportExcel", "Excel İndir")">
+                                            <button class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" title="@Html.T("Common.ExportExcel", "Excel İndir")">
                                                 <i class="bi bi-file-earmark-excel"></i>
                                             </button>
                                             <ul class="dropdown-menu dropdown-menu-end">
@@ -249,7 +249,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th style="width: 35%">@Html.T("Report.Question", "Soru")</th>
-                                    <th style="width: 30%">@Html.T("Report.Answer", "Cevap")</th>
+                                    <th style="width: 30%">@Html.T("Common.Answer", "Cevap")</th>
                                     <th class="text-center" style="width: 10%">@Html.T("Report.Selection", "Seçim")</th>
                                     <th class="text-center" style="width: 10%">@Html.T("Report.Total", "Toplam")</th>
                                     <th class="text-center" style="width: 15%">@Html.T("Report.Rate", "Oran")</th>
@@ -315,7 +315,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>@Html.T("Report.Respondent", "Katılımcı")</th>
-                                <th>@Html.T("Report.Project", "Proje")</th>
+                                <th>@Html.T("Common.Project", "Proje")</th>
                                 <th class="text-center">@Html.T("Report.Score", "Puan")</th>
                                 <th>@Html.T("Report.Date", "Tarih")</th>
                                 <th></th>
@@ -480,7 +480,7 @@
                 </button>
                 <div class="btn-group" data-bind="visible: projectDetail()">
                     <button type="button" class="btn btn-success dropdown-toggle" data-bs-toggle="dropdown">
-                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                        <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel İndir")
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#" data-bind="click: exportGroupScores"><i class="bi bi-collection me-2"></i>@Html.T("Report.ExportGroupScores", "Grup Bazlı Puan Raporu")</a></li>
@@ -671,7 +671,7 @@
                     <i class="bi bi-x-circle"></i> @Html.T("Common.Close", "Kapat")
                 </button>
                 <button type="button" class="btn btn-success" data-bind="click: exportScoreDetail, visible: scoreDetail()">
-                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Report.ExportExcel", "Excel İndir")
+                    <i class="bi bi-file-earmark-excel"></i> @Html.T("Common.ExportExcel", "Excel İndir")
                 </button>
             </div>
         </div>

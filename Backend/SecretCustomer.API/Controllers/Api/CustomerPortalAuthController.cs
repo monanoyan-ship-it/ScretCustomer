@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
@@ -44,7 +44,7 @@ public class CustomerPortalAuthController : ControllerBase
 
         if (string.IsNullOrEmpty(loginDto.Username) || string.IsNullOrEmpty(loginDto.Password))
         {
-            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.UsernamePasswordRequired") });
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Account.LoginRequired") });
         }
 
         try
@@ -60,7 +60,7 @@ public class CustomerPortalAuthController : ControllerBase
                 if (isDemoMode)
                 {
                     return Unauthorized(new {
-                        message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.InvalidCredentials"),
+                        message = await _localizationService.GetResourceAsync("Auth.InvalidCredentials"),
                         debug = new {
                             hint = "Kullanıcı bulunamadı veya şifre yanlış",
                             username = loginDto.Username,
@@ -68,7 +68,7 @@ public class CustomerPortalAuthController : ControllerBase
                         }
                     });
                 }
-                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.InvalidCredentials") });
+                return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.InvalidCredentials") });
             }
 
             _logger.LogInformation("[CustomerPortal] User found: {Username}, CustomerId: {CustomerId}",
@@ -105,7 +105,7 @@ public class CustomerPortalAuthController : ControllerBase
             if (isDemoMode)
             {
                 return StatusCode(500, new {
-                    message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LoginError"),
+                    message = await _localizationService.GetResourceAsync("Auth.LoginError"),
                     debug = new {
                         error = ex.Message,
                         stackTrace = ex.StackTrace,
@@ -113,7 +113,7 @@ public class CustomerPortalAuthController : ControllerBase
                     }
                 });
             }
-            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LoginError") });
+            return StatusCode(500, new { message = await _localizationService.GetResourceAsync("Auth.LoginError") });
         }
     }
 
@@ -152,6 +152,6 @@ public class CustomerPortalAuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         _logger.LogInformation("Customer personnel logged out");
-        return Ok(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortalAuth.LogoutSuccess") });
+        return Ok(new { message = await _localizationService.GetResourceAsync("Auth.LogoutSuccess") });
     }
 }

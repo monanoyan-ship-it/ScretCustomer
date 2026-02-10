@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = @Html.T("CustomerPortal.InternalReports.Title", "İç Dinleme Raporları");
     Layout = "_CustomerLayout";
 }
@@ -89,7 +89,7 @@
                 <div class="card border-0 shadow-sm h-100 bg-success text-white">
                     <div class="card-body text-center">
                         <h3 class="mb-0" data-bind="text: summary().totalEvaluations || 0"></h3>
-                        <small>@Html.T("CustomerPortal.Report.TotalEvaluations", "Toplam Değerlendirme")</small>
+                        <small>@Html.T("Dashboard.TotalEvaluations", "Toplam Değerlendirme")</small>
                     </div>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <h3 class="mb-0 text-primary" data-bind="text: (summary().averageScore || 0).toFixed(1)"></h3>
-                        <small class="text-muted">@Html.T("CustomerPortal.Report.AverageScore", "Ortalama Puan")</small>
+                        <small class="text-muted">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                     </div>
                 </div>
             </div>
@@ -105,7 +105,7 @@
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body text-center">
                         <h3 class="mb-0 text-info" data-bind="text: summary().projectCount || 0"></h3>
-                        <small class="text-muted">@Html.T("CustomerPortal.Report.ProjectCount", "Proje Sayısı")</small>
+                        <small class="text-muted">@Html.T("Report.ProjectCount", "Proje Sayısı")</small>
                     </div>
                 </div>
             </div>
@@ -132,7 +132,7 @@
             <div class="col-md-6">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-header bg-white border-0">
-                        <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("CustomerPortal.Report.ScoreDistribution", "Puan Dağılımı")</h6>
+                        <h6 class="mb-0"><i class="bi bi-pie-chart me-2"></i>@Html.T("Dashboard.ScoreDistribution", "Puan Dağılımı")</h6>
                     </div>
                     <div class="card-body">
                         <div class="row text-center">
@@ -179,7 +179,7 @@
         <!-- Project Performance Table -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0">
-                <h6 class="mb-0"><i class="bi bi-folder me-2"></i>@Html.T("CustomerPortal.Report.ProjectPerformance", "Proje Performansı")</h6>
+                <h6 class="mb-0"><i class="bi bi-folder me-2"></i>@Html.T("Report.ProjectPerformance", "Proje Performansı")</h6>
             </div>
             <div class="card-body p-0">
                 <div data-bind="visible: projectPerformance().length === 0" class="text-center py-4 text-muted">
@@ -316,7 +316,7 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="progress" style="height: 25px;">
@@ -353,7 +353,7 @@
                                                 <td data-bind="text: organizationName || '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Değerlendirilen")</th>
+                                                <th>@Html.T("Report.Evaluated", "Değerlendirilen")</th>
                                                 <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
@@ -369,16 +369,16 @@
                             <div class="col-md-6">
                                 <div class="card h-100">
                                     <div class="card-header bg-light">
-                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Evaluation.CallInfo", "Çağrı Bilgileri")</h6>
+                                        <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("Call.CallInfo", "Çağrı Bilgileri")</h6>
                                     </div>
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
                                             <tr>
-                                                <th style="width: 40%;">@Html.T("Evaluation.CallId", "Çağrı ID")</th>
+                                                <th style="width: 40%;">@Html.T("Common.CallId", "Çağrı ID")</th>
                                                 <td><call-id params="value: callId"></call-id></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.CallDate", "Çağrı Tarihi")</th>
+                                                <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                                 <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
                                             <tr>
@@ -412,9 +412,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th style="width: 28%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>

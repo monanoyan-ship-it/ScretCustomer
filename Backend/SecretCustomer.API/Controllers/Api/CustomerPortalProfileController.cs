@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Auth;
@@ -204,7 +204,7 @@ public class CustomerPortalProfileController : BaseApiController
             if (dto.NewPassword != dto.ConfirmPassword)
             {
                 return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.PasswordMismatch", defaultValue: "Şifreler eşleşmiyor.")));
+                    await _localizationService.GetResourceAsync("Profile.PasswordMismatch", defaultValue: "Şifreler eşleşmiyor.")));
             }
 
             // Şifreyi güncelle

@@ -1,11 +1,11 @@
-@{
-    ViewData["Title"] = Html.T("FieldWorker.Visits", "Ziyaretlerim");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Visits", "Ziyaretlerim");
 }
 
 <div id="fieldworker-visits-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-geo-alt me-2"></i>@Html.T("FieldWorker.Visits", "Ziyaretlerim")</h2>
+        <h2><i class="bi bi-geo-alt me-2"></i>@Html.T("Menu.Visits", "Ziyaretlerim")</h2>
     </div>
 
     <!-- Loading State -->
@@ -19,7 +19,7 @@
     <ul class="nav nav-tabs mb-3" data-bind="visible: !isLoading()">
         <li class="nav-item">
             <a class="nav-link" data-bind="css: { active: activeTab() === 'assignments' }, click: function() { activeTab('assignments'); }" href="#">
-                <i class="bi bi-clipboard-check"></i> @Html.T("FieldWorker.Assignments", "Atamalar")
+                <i class="bi bi-clipboard-check"></i> @Html.T("Assignment.Title", "Atamalar")
                 <span class="badge bg-primary" data-bind="text: assignments().length"></span>
             </a>
         </li>
@@ -38,7 +38,7 @@
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Yükleniyor...</span>
             </div>
-            <p class="text-muted mt-2">@Html.T("FieldWorker.LoadingAssignments", "Atamalar yükleniyor...")</p>
+            <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
         </div>
 
         <div data-bind="visible: !isAssignmentsLoading()">
@@ -47,7 +47,7 @@
                 <div class="input-group" style="max-width: 400px;">
                     <span class="input-group-text"><i class="bi bi-search"></i></span>
                     <input type="text" class="form-control" data-bind="value: assignmentsSearch, valueUpdate: 'afterkeydown'"
-                           placeholder="@Html.T("FieldWorker.SearchAssignments", "Proje veya müşteri ara...")" autocomplete="off">
+                           placeholder="@Html.T("Assignment.SearchPlaceholder", "Proje veya müşteri ara...")" autocomplete="off">
                 </div>
             </div>
 
@@ -144,7 +144,7 @@
                     <div class="d-flex gap-1">
                         <select class="form-select form-select-sm" style="width: auto;" data-bind="value: tempFilter.status">
                             <option value="">@Html.T("Common.Select", "Seçiniz")</option>
-                            <option value="1">@Html.T("Status.Draft", "Taslak")</option>
+                            <option value="1">@Html.T("Common.Status.Draft", "Taslak")</option>
                             <option value="2">@Html.T("Status.Completed", "Tamamlandı")</option>
                         </select>
                         <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
@@ -328,15 +328,15 @@
                             <select class="form-select" data-bind="value: newVisit.customerDealerId, options: filteredDealers, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz")', enable: newVisit.projectId()"></select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">@Html.T("FieldWorker.ControlDate", "Kontrol Tarihi")</label>
+                            <label class="form-label">@Html.T("Report.ControlDate", "Kontrol Tarihi")</label>
                             <input type="date" class="form-control" data-bind="value: newVisit.controlDate" autocomplete="off">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">@Html.T("FieldWorker.ControlTime", "Kontrol Saati")</label>
+                            <label class="form-label">@Html.T("Evaluation.ControlTime", "Kontrol Saati")</label>
                             <input type="time" class="form-control" data-bind="value: newVisit.controlTime" autocomplete="off">
                         </div>
                         <div class="col-12">
-                            <label class="form-label">@Html.T("FieldWorker.Comment", "Yorum")</label>
+                            <label class="form-label">@Html.T("Report.Comment", "Yorum")</label>
                             <textarea class="form-control" rows="3" data-bind="value: newVisit.auditorComment" placeholder="@Html.T("FieldWorker.CommentPlaceholder", "Ziyaret hakkında notlarınız...")" autocomplete="off"></textarea>
                         </div>
                     </div>
@@ -391,7 +391,7 @@
                     <!-- Proje seçilmediğinde bilgi mesajı -->
                     <div data-bind="visible: !newVisit.projectId() && !isLoadingQuestions()" class="alert alert-info mt-3">
                         <i class="bi bi-info-circle me-2"></i>
-                        @Html.T("FieldWorker.SelectProjectFirst", "Soruları görmek için önce proje seçiniz.")
+                        @Html.T("Assignment.SelectProjectFirst", "Soruları görmek için önce proje seçiniz.")
                     </div>
 
                     <!-- Soru yoksa bilgi mesajı -->
@@ -463,7 +463,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
                             </div>
@@ -479,7 +479,7 @@
                                 <div class="card text-center bg-warning">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: yellowCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.YellowCard", "Sarı Kart")</small>
+                                        <small>@Html.T("Report.Yellow", "Sarı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -487,7 +487,7 @@
                                 <div class="card text-center bg-danger text-white">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: redCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.RedCard", "Kırmızı Kart")</small>
+                                        <small>@Html.T("Report.Red", "Kırmızı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -530,11 +530,11 @@
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
                                             <tr>
-                                                <th class="visit-detail-label">@Html.T("FieldWorker.ControlDate", "Kontrol Tarihi")</th>
+                                                <th class="visit-detail-label">@Html.T("Report.ControlDate", "Kontrol Tarihi")</th>
                                                 <td data-bind="text: controlDate ? new Date(controlDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("FieldWorker.ControlTime", "Kontrol Saati")</th>
+                                                <th>@Html.T("Evaluation.ControlTime", "Kontrol Saati")</th>
                                                 <td data-bind="text: controlTime || '-'"></td>
                                             </tr>
                                             <tr>
@@ -603,9 +603,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th class="visit-detail-col-group">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th class="visit-detail-col-question">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center visit-detail-col-answer">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center visit-detail-col-weight">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th class="visit-detail-col-question">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center visit-detail-col-answer">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center visit-detail-col-weight">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center visit-detail-col-earned">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th class="visit-detail-col-notes">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>

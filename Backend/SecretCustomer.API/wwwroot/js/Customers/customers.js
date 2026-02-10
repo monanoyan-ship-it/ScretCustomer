@@ -1,4 +1,4 @@
-// Customers ViewModel
+﻿// Customers ViewModel
 function CustomersViewModel() {
     var self = this;
 
@@ -1898,11 +1898,11 @@ var TRANSLATION_KEYS = [
     'Personnel.TransferSuccess',
     'Personnel.TransferError',
     // Confirm modal keys
-    'Confirm.Title',
+    'Common.Confirmation',
     'Confirm.Message',
-    'Confirm.DeleteTitle',
-    'Confirm.DeleteMessage',
-    'Confirm.YesDelete',
+    'Common.DeleteConfirmation',
+    'Common.DeleteConfirmationMessage',
+    'Common.YesDelete',
     'Common.Confirm'
 ];
 

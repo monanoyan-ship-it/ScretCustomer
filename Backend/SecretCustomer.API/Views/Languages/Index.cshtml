@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("Language.Title", "Dil Yönetimi");
+﻿@{
+    ViewData["Title"] = Html.T("Menu.Languages", "Dil Yönetimi");
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -19,12 +19,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h4 class="mb-1">
-                <i class="bi bi-globe me-2"></i>@Html.T("Language.Title", "Dil Yönetimi")
+                <i class="bi bi-globe me-2"></i>@Html.T("Menu.Languages", "Dil Yönetimi")
             </h4>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="/">@Html.T("Menu.Dashboard", "Ana Sayfa")</a></li>
-                    <li class="breadcrumb-item active">@Html.T("Language.Title", "Diller")</li>
+                    <li class="breadcrumb-item active">@Html.T("Menu.Languages", "Diller")</li>
                 </ol>
             </nav>
         </div>
@@ -57,7 +57,7 @@
                             <th>@Html.T("Language.Name", "Dil Adı")</th>
                             <th>@Html.T("Language.Culture", "Kültür Kodu")</th>
                             <th>@Html.T("Language.SeoCode", "SEO Kodu")</th>
-                            <th>@Html.T("Language.IsDefault", "Varsayılan")</th>
+                            <th>@Html.T("Language.Default", "Varsayılan")</th>
                             <th>@Html.T("Common.Status", "Durum")</th>
                             <th>@Html.T("Language.ResourceCount", "Kaynak Sayısı")</th>
                             <th style="width: 200px;">@Html.T("Common.Actions", "İşlemler")</th>
@@ -188,7 +188,7 @@
                             <div class="col-md-4 mb-3">
                                 <div class="form-check">
                                     <input type="checkbox" class="form-check-input" id="isDefault" data-bind="checked: form.isDefault">
-                                    <label class="form-check-label" for="isDefault">@Html.T("Language.IsDefault", "Varsayılan")</label>
+                                    <label class="form-check-label" for="isDefault">@Html.T("Language.Default", "Varsayılan")</label>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">

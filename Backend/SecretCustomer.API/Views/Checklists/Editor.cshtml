@@ -1,4 +1,4 @@
-@{
+﻿@{
     Layout = "_LayoutPopup";
     var checklistId = ViewBag.ChecklistId;
     var cloneId = ViewBag.CloneId;
@@ -53,7 +53,7 @@
             <li class="nav-item">
                 <a class="nav-link" data-bind="css: { active: $parent.wizardStep() === 1 }, click: function() { $parent.wizardStep(1); }">
                     <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': $parent.wizardStep() === 1, 'bg-secondary': $parent.wizardStep() !== 1 }">1</span>
-                    @Html.T("Checklist.Step1.GeneralInfo", "Genel Bilgiler")
+                    @Html.T("Report.GeneralInfo", "Genel Bilgiler")
                 </a>
             </li>
             <li class="nav-item">
@@ -71,7 +71,7 @@
             <li class="nav-item">
                 <a class="nav-link" data-bind="css: { active: $parent.wizardStep() === 4 }, click: function() { $parent.wizardStep(4); }">
                     <span class="badge rounded-pill me-2" data-bind="css: { 'bg-primary': $parent.wizardStep() === 4, 'bg-secondary': $parent.wizardStep() !== 4 }">4</span>
-                    @Html.T("Checklist.Step4.Summary", "Özet")
+                    @Html.T("Report.Summary", "Özet")
                 </a>
             </li>
         </ul>
@@ -80,12 +80,12 @@
         <div data-bind="visible: $parent.wizardStep() === 1">
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-primary text-white py-2">
-                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> @Html.T("Checklist.Step1.GeneralInfo", "Genel Bilgiler")</h6>
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> @Html.T("Report.GeneralInfo", "Genel Bilgiler")</h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">@Html.T("Checklist.ChecklistName", "Kontrol Listesi Adı") <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("Import.ChecklistName", "Kontrol Listesi Adı") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: name" placeholder="@Html.T("Checklist.NamePlaceholder", "Örn: Çağrı Performans Değerlendirmesi")" />
                         </div>
                         <div class="col-md-3 mb-3">
@@ -101,16 +101,16 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">@Html.T("Checklist.TemplateName", "Şablon Adı")</label>
-                            <input type="text" class="form-control" data-bind="value: templateName" placeholder="@Html.T("Checklist.TemplateNamePlaceholder", "Çağrı Performans")" />
+                            <input type="text" class="form-control" data-bind="value: templateName" placeholder="@Html.T("Checklist.Type.CallPerformance", "Çağrı Performans")" />
                         </div>
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.Type", "K.L. Tipi")</label>
                             <select class="form-select" data-bind="value: checklistType">
                                 <option value="CallPerformance">@Html.T("Checklist.Type.CallPerformance", "Çağrı Performans")</option>
-                                <option value="PhysicalAudit">@Html.T("Checklist.Type.PhysicalAudit", "Fiziksel Denetim")</option>
+                                <option value="PhysicalAudit">@Html.T("ProjectType.PhysicalAudit", "Fiziksel Denetim")</option>
                                 <option value="MysteryShopping">@Html.T("Checklist.Type.MysteryShopping", "Gizli Müşteri")</option>
                                 <option value="OnlineEvaluation">@Html.T("Checklist.Type.OnlineEvaluation", "Online Değerlendirme")</option>
-                                <option value="Survey">@Html.T("Checklist.Type.Survey", "Anket")</option>
+                                <option value="Survey">@Html.T("ScoringMethod.Survey", "Anket")</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">
@@ -179,7 +179,7 @@
                             <div class="card-header d-flex justify-content-between align-items-center py-1 px-2" data-bind="css: { 'bg-light': scoringType() === 'Scored', 'bg-warning': scoringType() === 'Penalty', 'bg-secondary text-white': scoringType() === 'Unscored' }">
                                 <span>
                                     <i class="bi bi-question-circle me-1"></i>
-                                    <strong>@Html.T("Checklist.Question", "Soru") #<span data-bind="text: $index() + 1"></span></strong>
+                                    <strong>@Html.T("Report.Question", "Soru") #<span data-bind="text: $index() + 1"></span></strong>
                                 </span>
                                 <button type="button" class="btn btn-sm btn-outline-danger py-0" data-bind="click: $parent.removeQuestion">
                                     <i class="bi bi-trash"></i>
@@ -203,7 +203,7 @@
                                 <!-- Soru Metni -->
                                 <div class="row">
                                     <div class="col-12 mb-2">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
+                                        <label class="form-label form-label-sm mb-1">@Html.T("Excel.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="@Html.T("Checklist.QuestionTextPlaceholder", "Soru metni")" />
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@
                                         <input type="number" class="form-control form-control-sm" data-bind="value: maxPoints" min="1" max="10" />
                                     </div>
                                     <div class="col-md-2 mb-2" data-bind="visible: scoringType() === 'Penalty'">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.PenaltyType", "Ceza Tipi")</label>
+                                        <label class="form-label form-label-sm mb-1">@Html.T("Report.PenaltyType", "Ceza Tipi")</label>
                                         <select class="form-select form-select-sm" data-bind="value: penaltyType">
                                             <option value="None">@Html.T("Checklist.PenaltyType.None", "Yok")</option>
                                             <option value="YellowCard">@Html.T("Checklist.PenaltyType.YellowCard", "Sarı Kart")</option>
@@ -235,7 +235,7 @@
                                         </select>
                                     </div>
                                     <div class="col-md-2 mb-2">
-                                        <label class="form-label form-label-sm mb-1">@Html.T("Checklist.Order", "Sıra")</label>
+                                        <label class="form-label form-label-sm mb-1">@Html.T("Language.Order", "Sıra")</label>
                                         <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
                                     </div>
                                     <div class="col-md-2 mb-2 d-flex align-items-end">
@@ -333,7 +333,7 @@
                                             <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
                                                 <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
                                                 <div class="col-md-2">@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")</div>
-                                                <div class="col-md-2">@Html.T("Checklist.Order", "Sıra")</div>
+                                                <div class="col-md-2">@Html.T("Language.Order", "Sıra")</div>
                                                 <div class="col-md-2"></div>
                                             </div>
                                             <!-- Mevcut Alt Kriterler -->
@@ -346,7 +346,7 @@
                                                         <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")" />
                                                     </div>
                                                     <div class="col-md-2">
-                                                        <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" title="@Html.T("Checklist.Order", "Sıra")" />
+                                                        <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" title="@Html.T("Language.Order", "Sıra")" />
                                                     </div>
                                                     <div class="col-md-2">
                                                         <button type="button" class="btn btn-sm btn-outline-danger w-100 py-0" data-bind="click: function() { $parent.removeSubCriteria($data); }">
@@ -439,7 +439,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <table class="table table-sm">
-                                <tr><th>@Html.T("Checklist.ChecklistName", "Kontrol Listesi Adı"):</th><td data-bind="text: name"></td></tr>
+                                <tr><th>@Html.T("Import.ChecklistName", "Kontrol Listesi Adı"):</th><td data-bind="text: name"></td></tr>
                                 <tr><th>@Html.T("Checklist.Code", "Kod"):</th><td data-bind="text: code || '-'"></td></tr>
                                 <tr><th>@Html.T("Checklist.TemplateName", "Şablon"):</th><td data-bind="text: templateName || '-'"></td></tr>
                                 <tr><th>@Html.T("Checklist.Type", "Tip"):</th><td data-bind="text: checklistType"></td></tr>
@@ -468,7 +468,7 @@
                             <thead class="table-light sticky-top">
                                 <tr>
                                     <th>#</th>
-                                    <th>@Html.T("Checklist.QuestionText", "Soru")</th>
+                                    <th>@Html.T("Excel.QuestionText", "Soru")</th>
                                     <th>@Html.T("Checklist.ScoringType", "Puanlama")</th>
                                     <th>@Html.T("Checklist.WeightPoints", "Ağırlık")</th>
                                     <th>@Html.T("Checklist.MaxPoints", "Maks Puan")</th>

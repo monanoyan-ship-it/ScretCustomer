@@ -1,5 +1,5 @@
-@{
-    ViewData["Title"] = Html.T("CustomerPortal.MyPerformance.Title", "Performansım");
+﻿@{
+    ViewData["Title"] = Html.T("CustomerPortal.Menu.MyPerformance", "Performansım");
     Layout = "_CustomerLayout";
 }
 
@@ -26,7 +26,7 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.MyPerformance.TotalEvaluations", "Toplam Dinleme")</h6>
+                                <h6 class="text-muted mb-1">@Html.T("Dashboard.TotalEvaluations", "Toplam Dinleme")</h6>
                                 <h3 class="mb-0" data-bind="text: totalEvaluations">0</h3>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="text-muted mb-1">@Html.T("CustomerPortal.MyPerformance.AverageScore", "Ortalama Puan")</h6>
+                                <h6 class="text-muted mb-1">@Html.T("Dealer.AverageScore", "Ortalama Puan")</h6>
                                 <h3 class="mb-0">
                                     <span data-bind="text: averageScore().toFixed(1)">0</span>
                                     <small class="text-muted fs-6">%</small>
@@ -167,7 +167,7 @@
                                 <tr>
                                     <th>@Html.T("CustomerPortal.MyPerformance.Period", "Donem")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.MyPerformance.EvaluationCount", "Dinleme")</th>
-                                    <th class="text-center">@Html.T("CustomerPortal.MyPerformance.AverageScore", "Ort. Puan")</th>
+                                    <th class="text-center">@Html.T("Dealer.AverageScore", "Ort. Puan")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.MyPerformance.YellowCard", "S.Kart")</th>
                                     <th class="text-center">@Html.T("CustomerPortal.MyPerformance.RedCard", "K.Kart")</th>
                                 </tr>
@@ -193,7 +193,7 @@
                 <div class="col-md-6" data-bind="visible: reportCard() && reportCard().groupPerformances && reportCard().groupPerformances.length > 0">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-secondary text-white py-2">
-                            <h6 class="mb-0"><i class="bi bi-list-task me-2"></i>@Html.T("CustomerPortal.MyPerformance.GroupPerformance", "Grup Performansi")</h6>
+                            <h6 class="mb-0"><i class="bi bi-list-task me-2"></i>@Html.T("Report.GroupPerformance", "Grup Performansi")</h6>
                         </div>
                         <div class="card-body p-0">
                             <table class="table table-sm mb-0">
@@ -214,11 +214,11 @@
                 <div class="col-md-6">
                     <div class="card shadow-sm h-100">
                         <div class="card-header bg-secondary text-white py-2">
-                            <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>@Html.T("CustomerPortal.MyPerformance.StrengthsWeaknesses", "Guclu/Zayif Yonler")</h6>
+                            <h6 class="mb-0"><i class="bi bi-bar-chart me-2"></i>@Html.T("Report.StrengthsWeaknesses", "Guclu/Zayif Yonler")</h6>
                         </div>
                         <div class="card-body p-0">
                             <div class="p-2 bg-success bg-opacity-10" data-bind="visible: reportCard() && reportCard().strengths && reportCard().strengths.length > 0">
-                                <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle me-1"></i>@Html.T("CustomerPortal.MyPerformance.Strengths", "Guclu")</small>
+                                <small class="text-success fw-bold"><i class="bi bi-arrow-up-circle me-1"></i>@Html.T("Report.Strengths", "Guclu")</small>
                             </div>
                             <ul class="list-group list-group-flush" data-bind="foreach: reportCard() ? reportCard().strengths : []">
                                 <li class="list-group-item py-1 small">
@@ -274,9 +274,9 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th>@Html.T("CustomerPortal.MyPerformance.CallId", "Cagri ID")</th>
-                                <th>@Html.T("CustomerPortal.MyPerformance.CallDate", "Cagri Tarihi")</th>
-                                <th>@Html.T("CustomerPortal.MyPerformance.Project", "Proje")</th>
+                                <th>@Html.T("Common.CallId", "Cagri ID")</th>
+                                <th>@Html.T("Report.CallDate", "Cagri Tarihi")</th>
+                                <th>@Html.T("Common.Project", "Proje")</th>
                                 <th class="text-center">@Html.T("CustomerPortal.MyPerformance.Score", "Puan")</th>
                                 <th class="text-center">@Html.T("CustomerPortal.MyPerformance.Cards", "Kartlar")</th>
                                 <th class="text-center">@Html.T("Common.Actions", "Islemler")</th>
@@ -398,12 +398,12 @@
                                     <div class="card-body">
                                         <table class="table table-sm mb-0">
                                             <tr>
-                                                <th style="width:40%;">@Html.T("CustomerPortal.MyPerformance.CallId", "Cagri ID")</th>
+                                                <th style="width:40%;">@Html.T("Common.CallId", "Cagri ID")</th>
                                                 <td><call-id params="value: callId"></call-id></td>
                                             </tr>
-                                            <tr><th>@Html.T("CustomerPortal.MyPerformance.CallDate", "Tarih")</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                                            <tr><th>@Html.T("Report.CallDate", "Tarih")</th><td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td></tr>
                                             <!-- ko if: callTime -->
-                                            <tr><th>@Html.T("Evaluation.CallTime", "Cagri Saati")</th><td data-bind="text: callTime"></td></tr>
+                                            <tr><th>@Html.T("Report.CallTime", "Cagri Saati")</th><td data-bind="text: callTime"></td></tr>
                                             <!-- /ko -->
                                             <tr><th>@Html.T("CustomerPortal.MyPerformance.Duration", "Sure")</th><td data-bind="text: duration || '-'"></td></tr>
                                             <!-- ko if: controlTime -->
@@ -415,7 +415,7 @@
                             </div>
                         </div>
                         <div class="card mb-4" data-bind="visible: evaluationComment">
-                            <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("CustomerPortal.MyPerformance.Comment", "Denetim Yorumu")</h6></div>
+                            <div class="card-header bg-info text-white"><h6 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("Report.Comment", "Denetim Yorumu")</h6></div>
                             <div class="card-body"><p class="mb-0" data-bind="text: evaluationComment"></p></div>
                         </div>
                         <div class="card">

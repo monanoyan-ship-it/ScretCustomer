@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Dashboard.Title", "Dashboard").ToString();
 }
 
@@ -93,7 +93,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.ThisMonth", "Bu Ay")</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Common.ThisMonth", "Bu Ay")</h6>
                                 <h2 class="mb-0" data-bind="text: dailyMetrics().thisMonthEvaluations"></h2>
                                 <small class="text-white-50">@Html.T("Dashboard.Total", "Toplam")</small>
                             </div>
@@ -251,7 +251,7 @@
                             <!-- Bu Ay -->
                             <div class="col-md-4 mb-3">
                                 <div class="border rounded p-3 h-100">
-                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar-month"></i> @Html.T("Dashboard.ThisMonth", "Bu Ay")</h6>
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar-month"></i> @Html.T("Common.ThisMonth", "Bu Ay")</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3 class="mb-0" data-bind="text: scorecard().currentMonthEvaluations"></h3>
@@ -267,7 +267,7 @@
                             <!-- Geçen Ay -->
                             <div class="col-md-4 mb-3">
                                 <div class="border rounded p-3 h-100">
-                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar"></i> @Html.T("Dashboard.LastMonth", "Geçen Ay")</h6>
+                                    <h6 class="text-muted mb-2"><i class="bi bi-calendar"></i> @Html.T("Common.LastMonth", "Geçen Ay")</h6>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3 class="mb-0" data-bind="text: scorecard().lastMonthEvaluations"></h3>
@@ -391,7 +391,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-white-50 mb-1">@Html.T("Dashboard.AverageScore", "Ortalama Puan")</h6>
+                                <h6 class="text-white-50 mb-1">@Html.T("Dealer.AverageScore", "Ortalama Puan")</h6>
                                 <h2 class="mb-0">
                                     <span data-bind="text: stats().averageScore.toFixed(1)"></span>%
                                 </h2>

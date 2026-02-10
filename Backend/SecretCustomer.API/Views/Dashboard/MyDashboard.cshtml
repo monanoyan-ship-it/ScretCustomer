@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Dashboard.MyEvaluations", "Değerlendirmelerim").ToString();
 }
 
@@ -63,7 +63,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="border rounded p-3 text-center">
-                        <h6 class="text-muted mb-1">@Html.T("Dashboard.AverageScore", "Ortalama Puan")</h6>
+                        <h6 class="text-muted mb-1">@Html.T("Dealer.AverageScore", "Ortalama Puan")</h6>
                         <h2 class="mb-0" data-bind="text: summary().averageScore + '%', css: summary().averageScore >= 80 ? 'text-success' : (summary().averageScore >= 60 ? 'text-warning' : 'text-danger')"></h2>
                     </div>
                 </div>
@@ -79,7 +79,7 @@
                                 <th>@Html.T("Common.Supervisor", "Takım Lideri")</th>
                                 <th class="text-center">@Html.T("Common.Personnel", "Personel")</th>
                                 <th class="text-center">@Html.T("Dashboard.EvaluationCount", "Değerlendirme")</th>
-                                <th class="text-center">@Html.T("Dashboard.AverageScore", "Ortalama")</th>
+                                <th class="text-center">@Html.T("Dealer.AverageScore", "Ortalama")</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -121,7 +121,7 @@
                                 <th>@Html.T("Common.Supervisor", "Takım Lideri")</th>
                                 <!-- /ko -->
                                 <th class="text-center">@Html.T("Dashboard.EvaluationCount", "Adet")</th>
-                                <th class="text-center">@Html.T("Dashboard.AverageScore", "Ortalama")</th>
+                                <th class="text-center">@Html.T("Dealer.AverageScore", "Ortalama")</th>
                                 <th class="text-center">@Html.T("Dashboard.MinMax", "Min/Max")</th>
                                 <th></th>
                             </tr>

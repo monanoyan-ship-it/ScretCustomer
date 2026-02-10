@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = Html.T("Visits.Title", "Ziyaretler");
 }
 
@@ -73,9 +73,9 @@
                         <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
                                 <option value="">@Html.T("Common.Select", "Seçin...")</option>
-                                <option value="Completed">@Html.T("Evaluation.Status.Completed", "Tamamlandı")</option>
+                                <option value="Completed">@Html.T("Status.Completed", "Tamamlandı")</option>
                                 <option value="InProgress">@Html.T("Evaluation.Status.InProgress", "Devam Ediyor")</option>
-                                <option value="Draft">@Html.T("Evaluation.Status.Draft", "Taslak")</option>
+                                <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             </select>
                         </div>
                         <!-- Evaluation Source -->
@@ -301,7 +301,7 @@
                                 <div class="card text-center">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
-                                        <small class="text-muted">@Html.T("Evaluation.TotalScore", "Toplam Puan")</small>
+                                        <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
                             </div>
@@ -317,7 +317,7 @@
                                 <div class="card text-center bg-warning">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: yellowCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.YellowCard", "Sarı Kart")</small>
+                                        <small>@Html.T("Report.Yellow", "Sarı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -325,7 +325,7 @@
                                 <div class="card text-center bg-danger text-white">
                                     <div class="card-body">
                                         <h2 class="mb-0" data-bind="text: redCardCount || 0"></h2>
-                                        <small>@Html.T("Evaluation.RedCard", "Kırmızı Kart")</small>
+                                        <small>@Html.T("Report.Red", "Kırmızı Kart")</small>
                                     </div>
                                 </div>
                             </div>
@@ -353,7 +353,7 @@
                                                 <td data-bind="text: dealerName || '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.Evaluated", "Denetlenen")</th>
+                                                <th>@Html.T("Report.Evaluated", "Denetlenen")</th>
                                                 <td data-bind="text: evaluatedPersonnelName || '-'"></td>
                                             </tr>
                                             <!-- ko if: supervisorName -->
@@ -378,7 +378,7 @@
                                                 <td data-bind="text: dealerName || '-'"></td>
                                             </tr>
                                             <tr>
-                                                <th>@Html.T("Evaluation.ControlDate", "Kontrol Tarihi")</th>
+                                                <th>@Html.T("Report.ControlDate", "Kontrol Tarihi")</th>
                                                 <td data-bind="text: (controlDate || evaluationDate) ? new Date(controlDate || evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
                                             </tr>
                                             <tr>
@@ -435,9 +435,9 @@
                                         <thead class="table-light">
                                             <tr>
                                                 <th style="width: 12%;">@Html.T("Evaluation.Group", "Grup")</th>
-                                                <th style="width: 28%;">@Html.T("Evaluation.Question", "Soru")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Answer", "Cevap")</th>
-                                                <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Weight", "Ağırlık")</th>
+                                                <th style="width: 28%;">@Html.T("Report.Question", "Soru")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Common.Answer", "Cevap")</th>
+                                                <th class="text-center" style="width: 10%;">@Html.T("Excel.Weight", "Ağırlık")</th>
                                                 <th class="text-center" style="width: 10%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
                                                 <th style="width: 30%;">@Html.T("Evaluation.Notes", "Notlar")</th>
                                             </tr>
