@@ -109,7 +109,8 @@ function ListeningsViewModel() {
         callId: 'Çağrı No',
         status: 'Durum',
         evaluationSource: 'Kaynak',
-        dateRange: 'Tarih'
+        callDateRange: 'Çağrı Tarihi',
+        dateRange: 'Kayıt Tarihi'
     };
 
     self.statusLabels = {
@@ -149,6 +150,7 @@ function ListeningsViewModel() {
             case 'callId': return self.tempFilter.callId().trim() !== '';
             case 'status': return self.tempFilter.status() !== '';
             case 'evaluationSource': return self.tempFilter.evaluationSource();
+            case 'callDateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             default: return false;
         }
@@ -366,6 +368,7 @@ function ListeningsViewModel() {
                 self.tempFilter.evaluationSource(null);
                 break;
 
+            case 'callDateRange':
             case 'dateRange':
                 var startDate = self.tempFilter.startDate();
                 var endDate = self.tempFilter.endDate();
@@ -549,10 +552,18 @@ function ListeningsViewModel() {
                 case 'evaluationSource':
                     evaluationSources.push(filter.value);
                     break;
+                case 'callDateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate,
+                        filterType: 'callDate'
+                    });
+                    break;
                 case 'dateRange':
                     dateRanges.push({
                         startDate: filter.value.startDate,
-                        endDate: filter.value.endDate
+                        endDate: filter.value.endDate,
+                        filterType: 'createdAt'
                     });
                     break;
             }
@@ -1074,8 +1085,8 @@ function ListeningsViewModel() {
 
             // Apply each filter
             filters.forEach(function(f) {
-                // dateRange filtresi için dateRangeType varsa tarihleri yeniden hesapla
-                if (f.type === 'dateRange' && f.value && f.value.dateRangeType) {
+                // dateRange/callDateRange filtresi için dateRangeType varsa tarihleri yeniden hesapla
+                if ((f.type === 'dateRange' || f.type === 'callDateRange') && f.value && f.value.dateRangeType) {
                     // Dinamik tarih hesapla
                     self.setTempDateRange(f.value.dateRangeType);
                     var newStartDate = self.tempFilter.startDate();

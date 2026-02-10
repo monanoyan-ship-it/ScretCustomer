@@ -77,29 +77,42 @@ public class ReportService : IReportService
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
-        // Date Range filter (çoklu - OR mantığı)
+        // Date Range filter - CallDate ve CreatedAt ayrı ayrı
         if (filter.DateRanges?.Any() == true)
         {
-            // Her tarih aralığı için OR koşulu oluştur
-            var datePredicates = filter.DateRanges.Select(dr =>
+            // CallDate filtresi
+            var callDateRanges = filter.DateRanges.Where(dr => dr.FilterType == "callDate").ToList();
+            if (callDateRanges.Any())
             {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
+                var dr = callDateRanges.First();
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    query = query.Where(e => e.CallDate != null && e.CallDate >= startUtc);
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(e => e.CallDate != null && e.CallDate <= endUtc);
+                }
+            }
 
-            // En geniş aralığı bul (OR mantığı için)
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+            // CreatedAt filtresi
+            var createdAtRanges = filter.DateRanges.Where(dr => dr.FilterType == "createdAt" || string.IsNullOrEmpty(dr.FilterType)).ToList();
+            if (createdAtRanges.Any())
+            {
+                var dr = createdAtRanges.First();
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    query = query.Where(e => e.CreatedAt >= startUtc);
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(e => e.CreatedAt <= endUtc);
+                }
+            }
         }
 
         // Status filter (çoklu)
@@ -271,27 +284,42 @@ public class ReportService : IReportService
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
-        // Date Range filter (çoklu - OR mantığı)
+        // Date Range filter - CallDate ve CreatedAt ayrı ayrı
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
+            // CallDate filtresi
+            var callDateRanges = filter.DateRanges.Where(dr => dr.FilterType == "callDate").ToList();
+            if (callDateRanges.Any())
             {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
+                var dr = callDateRanges.First();
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    query = query.Where(e => e.CallDate != null && e.CallDate >= startUtc);
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(e => e.CallDate != null && e.CallDate <= endUtc);
+                }
+            }
 
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+            // CreatedAt filtresi
+            var createdAtRanges = filter.DateRanges.Where(dr => dr.FilterType == "createdAt" || string.IsNullOrEmpty(dr.FilterType)).ToList();
+            if (createdAtRanges.Any())
+            {
+                var dr = createdAtRanges.First();
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    query = query.Where(e => e.CreatedAt >= startUtc);
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    query = query.Where(e => e.CreatedAt <= endUtc);
+                }
+            }
         }
 
         // Status filter (çoklu)
