@@ -22,18 +22,21 @@ public class ApprovalsApiController : BaseApiController
     private readonly ILocalizationService _localizationService;
     private readonly IAuditLogService _auditLogService;
     private readonly IEvaluationService _evaluationService;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public ApprovalsApiController(
         ApplicationDbContext context,
         ILocalizationService localizationService,
         IAuditLogService auditLogService,
         IEvaluationService evaluationService,
+        INotificationCreatorService notificationCreator,
         IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _localizationService = localizationService;
         _auditLogService = auditLogService;
         _evaluationService = evaluationService;
+        _notificationCreator = notificationCreator;
     }
 
     private int GetCurrentUserId()
@@ -291,27 +294,22 @@ public class ApprovalsApiController : BaseApiController
         };
 
         _context.Approvals.Add(approval);
+        await _context.SaveChangesAsync();
 
-        // Create notification for approver
+        // Create notification for approver via service (SignalR push + email)
         if (dto.ApproverUserId.HasValue)
         {
-            var notification = new Notification
-            {
-                NotificationTypeId = NotificationTypes.Ids.ApprovalRequest,
-                ChannelId = NotificationChannels.Ids.InApp,
-                PriorityId = approval.PriorityId,
-                Title = "Yeni Onay Talebi",
-                Message = $"{approval.Title} için onay talebiniz var.",
-                RecipientUserId = dto.ApproverUserId.Value,
-                SenderUserId = userType == "CustomerPersonnel" ? null : currentUserId,
-                RelatedEntityId = approval.Id,
-                RelatedEntityType = "Approval",
-                ActionUrl = $"/Approvals/Detail/{approval.Id}"
-            };
-            _context.Notifications.Add(notification);
+            await _notificationCreator.CreateAsync(
+                dto.ApproverUserId.Value,
+                NotificationTypes.Ids.ApprovalRequest,
+                "Yeni Onay Talebi",
+                $"{approval.Title} için onay talebiniz var.",
+                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                relatedEntityId: approval.Id,
+                relatedEntityType: "Approval",
+                priorityId: approval.PriorityId,
+                senderUserId: userType == "CustomerPersonnel" ? null : currentUserId);
         }
-
-        await _context.SaveChangesAsync();
 
         // Audit Log
         await _auditLogService.LogInfoAsync(
@@ -368,26 +366,21 @@ public class ApprovalsApiController : BaseApiController
             }
         }
 
-        // Notify requester (only if requester is a User, not CustomerPersonnel)
+        await _context.SaveChangesAsync();
+
+        // Notify requester via service (SignalR push + email)
         if (approval.RequestedByUserId.HasValue)
         {
-            var notification = new Notification
-            {
-                NotificationTypeId = dto.Approved ? NotificationTypes.Ids.Success : NotificationTypes.Ids.Warning,
-                ChannelId = NotificationChannels.Ids.InApp,
-                PriorityId = NotificationPriorities.Ids.Normal,
-                Title = dto.Approved ? "Onay Kabul Edildi" : "Onay Reddedildi",
-                Message = $"{approval.Title} için onay talebiniz {(dto.Approved ? "kabul edildi" : "reddedildi")}.",
-                RecipientUserId = approval.RequestedByUserId.Value,
-                SenderUserId = userId,
-                RelatedEntityId = approval.Id,
-                RelatedEntityType = "Approval",
-                ActionUrl = $"/Approvals/Detail/{approval.Id}"
-            };
-            _context.Notifications.Add(notification);
+            await _notificationCreator.CreateAsync(
+                approval.RequestedByUserId.Value,
+                dto.Approved ? NotificationTypes.Ids.Success : NotificationTypes.Ids.Warning,
+                dto.Approved ? "Onay Kabul Edildi" : "Onay Reddedildi",
+                $"{approval.Title} için onay talebiniz {(dto.Approved ? "kabul edildi" : "reddedildi")}.",
+                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                relatedEntityId: approval.Id,
+                relatedEntityType: "Approval",
+                senderUserId: userId);
         }
-
-        await _context.SaveChangesAsync();
 
         // Audit Log
         var logMessage = dto.Approved

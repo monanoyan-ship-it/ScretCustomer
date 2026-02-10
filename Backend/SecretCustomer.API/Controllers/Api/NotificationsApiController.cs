@@ -20,11 +20,17 @@ public class NotificationsApiController : BaseApiController
 {
     private readonly ApplicationDbContext _context;
     private readonly ILocalizationService _localizationService;
+    private readonly INotificationPushService _pushService;
 
-    public NotificationsApiController(ApplicationDbContext context, ILocalizationService localizationService, IConfiguration configuration) : base(configuration)
+    public NotificationsApiController(
+        ApplicationDbContext context,
+        ILocalizationService localizationService,
+        INotificationPushService pushService,
+        IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _localizationService = localizationService;
+        _pushService = pushService;
     }
 
     private int GetCurrentUserId()
@@ -283,6 +289,10 @@ public class NotificationsApiController : BaseApiController
             notification.IsRead = true;
             notification.ReadAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+
+            // SignalR ile unread count güncelle
+            var unreadCount = await _context.Notifications.CountAsync(n => n.RecipientUserId == userId && !n.IsRead);
+            await _pushService.SendUnreadCountToUserAsync(userId, unreadCount);
         }
 
         return Ok();
@@ -307,6 +317,9 @@ public class NotificationsApiController : BaseApiController
         }
 
         await _context.SaveChangesAsync();
+
+        // SignalR ile unread count güncelle
+        await _pushService.SendUnreadCountToUserAsync(userId, 0);
 
         return Ok(new { count = notifications.Count });
     }

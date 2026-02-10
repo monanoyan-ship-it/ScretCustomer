@@ -840,6 +840,31 @@ public class EvaluationService : IEvaluationService
                         if (evalForNotification != null)
                         {
                             await notificationService.SendSingleEvaluationNotificationAsync(evalForNotification, baseUrl);
+
+                            // Proje ekibine in-app bildirim gönder (evaluator hariç)
+                            var notificationCreator = scope.ServiceProvider.GetService<INotificationCreatorService>();
+                            if (notificationCreator != null)
+                            {
+                                var teamMemberUserIds = await dbContext.ProjectTeamMembers
+                                    .Where(tm => tm.ProjectId == evalForNotification.ProjectId
+                                        && tm.UserId != evalForNotification.EvaluatorId)
+                                    .Select(tm => tm.UserId)
+                                    .ToListAsync();
+
+                                if (teamMemberUserIds.Any())
+                                {
+                                    var projectName = evalForNotification.Project?.Name ?? "Proje";
+                                    await notificationCreator.CreateBulkAsync(
+                                        teamMemberUserIds,
+                                        NotificationTypes.Ids.Info,
+                                        "Yeni Değerlendirme Tamamlandı",
+                                        $"{projectName} projesinde yeni bir değerlendirme tamamlandı.",
+                                        actionUrl: $"/Evaluations/Detail/{evaluationId}",
+                                        relatedEntityId: evaluationId,
+                                        relatedEntityType: "Evaluation",
+                                        senderUserId: evalForNotification.EvaluatorId);
+                                }
+                            }
                         }
                     }
                 }

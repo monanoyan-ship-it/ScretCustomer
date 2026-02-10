@@ -11,6 +11,7 @@ using SecretCustomer.Services.Helpers;
 using SecretCustomer.Services.Services;
 using SecretCustomer.API.Middleware;
 using SecretCustomer.API.Filters;
+using SecretCustomer.API.Hubs;
 using SecretCustomer.Core.Helpers;
 using System.Text;
 
@@ -220,6 +221,13 @@ builder.Services.AddSingleton<INotificationTokenService, NotificationTokenServic
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 builder.Services.AddScoped<ITrainingQuizService, TrainingQuizService>();
 
+// SignalR
+builder.Services.AddSignalR();
+
+// Notification Services
+builder.Services.AddScoped<INotificationPushService, SecretCustomer.API.Services.NotificationPushService>();
+builder.Services.AddScoped<INotificationCreatorService, NotificationCreatorService>();
+
 // Background Services
 builder.Services.AddHostedService<SecretCustomer.API.BackgroundServices.EvaluationNotificationJob>();
 
@@ -349,6 +357,9 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map SignalR Hubs
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 // Map MVC Controllers (for Views)
 app.MapControllerRoute(
