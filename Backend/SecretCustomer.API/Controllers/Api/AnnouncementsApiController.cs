@@ -18,16 +18,19 @@ public class AnnouncementsApiController : BaseApiController
     private readonly ApplicationDbContext _context;
     private readonly ILogger<AnnouncementsApiController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public AnnouncementsApiController(
         ApplicationDbContext context,
         ILogger<AnnouncementsApiController> logger,
         ILocalizationService localizationService,
+        INotificationCreatorService notificationCreator,
         IConfiguration configuration) : base(configuration)
     {
         _context = context;
         _logger = logger;
         _localizationService = localizationService;
+        _notificationCreator = notificationCreator;
     }
 
     /// <summary>
@@ -251,6 +254,60 @@ public class AnnouncementsApiController : BaseApiController
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Announcement {Id} created by user {UserId}", announcement.Id, userId);
+
+            // TargetRoles'a uyan kullanıcılara bildirim gönder
+            var targetRoles = announcement.TargetRoles?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? Array.Empty<string>();
+
+            // System Users
+            var userQuery = _context.Users.Where(u => u.IsActive && !u.IsDeleted);
+            if (targetRoles.Length > 0)
+            {
+                var targetRoleIds = targetRoles
+                    .Select(r => UserRoles.GetBySystemName(r)?.Id)
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
+                    .ToList();
+                if (targetRoleIds.Any())
+                    userQuery = userQuery.Where(u => targetRoleIds.Contains(u.RoleId));
+                else
+                    userQuery = userQuery.Where(u => false); // Hiçbir system role eşleşmediyse skip
+            }
+            var userIds = await userQuery.Select(u => u.Id).ToListAsync();
+
+            // Customer Personnel
+            var cpQuery = _context.CustomerPersonnel.Where(cp => cp.IsActive && !cp.IsDeleted);
+            if (targetRoles.Length > 0)
+            {
+                var cpRoleIds = targetRoles
+                    .Select(r => CustomerPersonnelRoles.GetBySystemName(r)?.Id)
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
+                    .ToList();
+                if (cpRoleIds.Any())
+                    cpQuery = cpQuery.Where(cp => cpRoleIds.Contains(cp.RoleId));
+                else
+                    cpQuery = cpQuery.Where(cp => false);
+            }
+            // CustomerPersonnel bildirimi: Notification tablosu RecipientUserId (int) → User tablosu
+            // CustomerPersonnel'e bildirim göndermek için ayrı bir mekanizma gerekir
+            // Şimdilik sadece system user'lara gönder
+
+            // Oluşturanı hariç tut
+            if (userId.HasValue)
+                userIds = userIds.Where(id => id != userId.Value).ToList();
+
+            if (userIds.Any())
+            {
+                await _notificationCreator.CreateBulkAsync(
+                    userIds,
+                    NotificationTypes.Ids.Info,
+                    announcement.Title,
+                    announcement.Summary ?? (announcement.Content.Length > 100 ? announcement.Content.Substring(0, 100) + "..." : announcement.Content),
+                    actionUrl: $"/Announcements",
+                    relatedEntityId: announcement.Id,
+                    relatedEntityType: "Announcement",
+                    senderUserId: userId);
+            }
 
             return Ok(new AnnouncementDto
             {

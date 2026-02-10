@@ -12,13 +12,16 @@ public class SupportRequestService : ISupportRequestService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<SupportRequestService> _logger;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public SupportRequestService(
         ApplicationDbContext context,
-        ILogger<SupportRequestService> logger)
+        ILogger<SupportRequestService> logger,
+        INotificationCreatorService notificationCreator)
     {
         _context = context;
         _logger = logger;
+        _notificationCreator = notificationCreator;
     }
 
     public async Task<(List<SupportRequestListDto> Items, int TotalCount)> GetAllAsync(SupportRequestFilterDto filter)
@@ -163,8 +166,8 @@ public class SupportRequestService : ISupportRequestService
         _context.SupportRequests.Add(request);
         await _context.SaveChangesAsync();
 
-        // Admin'lere bildirim gönder
-        var admins = await _context.Users
+        // Admin'lere bildirim gönder (SignalR push + email)
+        var adminIds = await _context.Users
             .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
@@ -173,13 +176,17 @@ public class SupportRequestService : ISupportRequestService
             ? await _context.Users.Where(u => u.Id == userId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefaultAsync() ?? "Kullanıcı"
             : await _context.CustomerPersonnel.Where(cp => cp.Id == customerPersonnelId).Select(cp => cp.FirstName + " " + cp.LastName).FirstOrDefaultAsync() ?? "Müşteri Personeli";
 
-        foreach (var adminId in admins)
+        if (adminIds.Any())
         {
-            await CreateNotificationAsync(
-                adminId,
-                "SupportRequest.New",
+            await _notificationCreator.CreateBulkAsync(
+                adminIds,
+                NotificationTypes.Ids.Info,
+                "Yeni Destek Talebi",
                 $"Yeni destek talebi: {senderName}",
-                $"/SupportRequests?id={request.Id}");
+                actionUrl: $"/SupportRequests?id={request.Id}",
+                relatedEntityId: request.Id,
+                relatedEntityType: "SupportRequest",
+                senderUserId: userId);
         }
 
         _logger.LogInformation("Support request created: {Id} by User: {UserId} / CustomerPersonnel: {CustomerPersonnelId}",
@@ -203,18 +210,22 @@ public class SupportRequestService : ISupportRequestService
 
         await _context.SaveChangesAsync();
 
-        // Talep sahibine bildirim gönder
+        // Talep sahibine bildirim gönder (SignalR push + email)
         if (request.UserId.HasValue)
         {
-            await CreateNotificationAsync(
+            await _notificationCreator.CreateAsync(
                 request.UserId.Value,
-                "SupportRequest.Responded",
-                "Destek talebiniz cevaplandı",
-                "/MySupport");
+                NotificationTypes.Ids.Success,
+                "Destek Talebi Cevaplandı",
+                "Destek talebiniz cevaplandı.",
+                actionUrl: "/MySupport",
+                relatedEntityId: request.Id,
+                relatedEntityType: "SupportRequest",
+                senderUserId: adminUserId);
         }
         else if (request.CustomerPersonnelId.HasValue)
         {
-            // CustomerPersonnel için bildirim - şimdilik log
+            // CustomerPersonnel için bildirim - Notification tablosu sadece User destekler
             _logger.LogInformation("Support request {Id} responded. CustomerPersonnel {PersonnelId} should be notified.",
                 request.Id, request.CustomerPersonnelId);
         }
@@ -281,24 +292,6 @@ public class SupportRequestService : ISupportRequestService
             counts.FirstOrDefault(c => c.StatusId == SupportRequestStatuses.Ids.Resolved)?.Count ?? 0,
             counts.FirstOrDefault(c => c.StatusId == SupportRequestStatuses.Ids.Closed)?.Count ?? 0
         );
-    }
-
-    private async Task CreateNotificationAsync(int userId, string title, string message, string? url = null)
-    {
-        var notification = new Notification
-        {
-            RecipientUserId = userId,
-            NotificationTypeId = NotificationTypes.Ids.Info,
-            ChannelId = NotificationChannels.Ids.InApp,
-            PriorityId = NotificationPriorities.Ids.Normal,
-            Title = title,
-            Message = message,
-            ActionUrl = url,
-            IsRead = false
-        };
-
-        _context.Notifications.Add(notification);
-        await _context.SaveChangesAsync();
     }
 
     private static SupportRequestListDto MapToListDto(SupportRequest sr)

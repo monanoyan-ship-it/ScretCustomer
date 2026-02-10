@@ -415,6 +415,20 @@ public class ApprovalsApiController : BaseApiController
         approval.StatusId = ApprovalStatuses.Ids.Cancelled;
         await _context.SaveChangesAsync();
 
+        // Onaylayıcıya bildirim gönder
+        if (approval.ApproverUserId.HasValue)
+        {
+            await _notificationCreator.CreateAsync(
+                approval.ApproverUserId.Value,
+                NotificationTypes.Ids.Warning,
+                "Onay Talebi İptal Edildi",
+                $"{approval.Title} onay talebi iptal edildi.",
+                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                relatedEntityId: approval.Id,
+                relatedEntityType: "Approval",
+                senderUserId: cancelUserType == "CustomerPersonnel" ? null : cancelUserId);
+        }
+
         // Audit Log
         await _auditLogService.LogInfoAsync(
             $"Onay talebi iptal edildi: {approval.ReferenceNumber} - {approval.Title}",

@@ -16,19 +16,22 @@ public class AssignmentService : IAssignmentService
     private readonly IChecklistRepository _checklistRepository;
     private readonly ApplicationDbContext _context;
     private readonly IAuditLogService _auditLogService;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public AssignmentService(
         IAssignmentRepository assignmentRepository,
         IProjectRepository projectRepository,
         IChecklistRepository checklistRepository,
         ApplicationDbContext context,
-        IAuditLogService auditLogService)
+        IAuditLogService auditLogService,
+        INotificationCreatorService notificationCreator)
     {
         _assignmentRepository = assignmentRepository;
         _projectRepository = projectRepository;
         _checklistRepository = checklistRepository;
         _context = context;
         _auditLogService = auditLogService;
+        _notificationCreator = notificationCreator;
     }
 
     #region TEMEL CRUD
@@ -357,6 +360,24 @@ public class AssignmentService : IAssignmentService
             await _context.SaveChangesAsync();
         }
 
+        // Atanan kullanıcıya bildirim gönder
+        if (assignment.AssignedUserId.HasValue)
+        {
+            var projectName = await _context.Projects
+                .Where(p => p.Id == assignment.ProjectId)
+                .Select(p => p.Name)
+                .FirstOrDefaultAsync() ?? "Proje";
+
+            await _notificationCreator.CreateAsync(
+                assignment.AssignedUserId.Value,
+                NotificationTypes.Ids.Assignment,
+                "Yeni Atama",
+                $"{projectName} projesinde size yeni bir atama yapıldı.",
+                actionUrl: $"/Assignments/Detail/{assignment.Id}",
+                relatedEntityId: assignment.Id,
+                relatedEntityType: "Assignment");
+        }
+
         return await GetByIdAsync(assignment.Id) ?? MapToDto(assignment);
     }
 
@@ -646,6 +667,18 @@ public class AssignmentService : IAssignmentService
             $"Atama tamamlandı: {assignment.Project?.Name}",
             "AssignmentService");
 
+        // Atanan kullanıcıya bildirim
+        if (assignment.AssignedUserId.HasValue)
+        {
+            await _notificationCreator.CreateAsync(
+                assignment.AssignedUserId.Value,
+                NotificationTypes.Ids.Success,
+                "Atama Tamamlandı",
+                $"{assignment.Project?.Name} projesindeki atamanız tamamlandı olarak işaretlendi.",
+                relatedEntityId: id,
+                relatedEntityType: "Assignment");
+        }
+
         return await GetByIdAsync(id) ?? throw new KeyNotFoundException("Atama bulunamadı");
     }
 
@@ -670,6 +703,18 @@ public class AssignmentService : IAssignmentService
         await _auditLogService.LogWarningAsync(
             $"Atama iptal edildi: {assignment.Project?.Name} - Sebep: {reason ?? "Belirtilmedi"}",
             "AssignmentService");
+
+        // Atanan kullanıcıya bildirim
+        if (assignment.AssignedUserId.HasValue)
+        {
+            await _notificationCreator.CreateAsync(
+                assignment.AssignedUserId.Value,
+                NotificationTypes.Ids.Warning,
+                "Atama İptal Edildi",
+                $"{assignment.Project?.Name} projesindeki atamanız iptal edildi. Sebep: {reason ?? "Belirtilmedi"}",
+                relatedEntityId: id,
+                relatedEntityType: "Assignment");
+        }
 
         // İptal edilen atamayı direkt map et (GetByIdAsync silinen kayıtları filtreliyor)
         return MapToDto(assignment);

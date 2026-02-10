@@ -12,13 +12,16 @@ public class PersonnelRequestService : IPersonnelRequestService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<PersonnelRequestService> _logger;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public PersonnelRequestService(
         ApplicationDbContext context,
-        ILogger<PersonnelRequestService> logger)
+        ILogger<PersonnelRequestService> logger,
+        INotificationCreatorService notificationCreator)
     {
         _context = context;
         _logger = logger;
+        _notificationCreator = notificationCreator;
     }
 
     public async Task<(List<PersonnelRequestDto> Items, int TotalCount)> GetAllAsync(PersonnelRequestFilterDto filter)
@@ -96,19 +99,23 @@ public class PersonnelRequestService : IPersonnelRequestService
         _context.PersonnelRequests.Add(request);
         await _context.SaveChangesAsync();
 
-        // Admin'lere bildirim gönder
-        var admins = await _context.Users
+        // Admin'lere bildirim gönder (SignalR push + email)
+        var adminIds = await _context.Users
             .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
 
-        foreach (var adminId in admins)
+        if (adminIds.Any())
         {
-            await CreateNotificationAsync(
-                adminId,
-                "PersonnelRequest.New",
+            await _notificationCreator.CreateBulkAsync(
+                adminIds,
+                NotificationTypes.Ids.Info,
+                "Yeni Personel Talebi",
                 $"Yeni personel talebi: {request.FullName}",
-                $"/UserRequests?tab=personnel&id={request.Id}");
+                actionUrl: $"/UserRequests?tab=personnel&id={request.Id}",
+                relatedEntityId: request.Id,
+                relatedEntityType: "PersonnelRequest",
+                senderUserId: requestedByUserId);
         }
 
         _logger.LogInformation("Personnel request created: {Id} - {FullName}", request.Id, request.FullName);
@@ -200,12 +207,16 @@ public class PersonnelRequestService : IPersonnelRequestService
 
         await _context.SaveChangesAsync();
 
-        // 4. Talep eden kullanıcıya bildirim
-        await CreateNotificationAsync(
+        // 4. Talep eden kullanıcıya bildirim (SignalR push + email)
+        await _notificationCreator.CreateAsync(
             request.RequestedByUserId,
-            "PersonnelRequest.Approved",
+            NotificationTypes.Ids.Success,
+            "Personel Talebi Onaylandı",
             $"Personel talebiniz onaylandı: {request.FullName}",
-            $"/Evaluations?id={request.EvaluationId}");
+            actionUrl: $"/Evaluations?id={request.EvaluationId}",
+            relatedEntityId: request.Id,
+            relatedEntityType: "PersonnelRequest",
+            senderUserId: reviewedByUserId);
 
         _logger.LogInformation("Personnel request approved: {Id} - {FullName}, Created Personnel: {PersonnelId}",
             request.Id, request.FullName, personnel.Id);
@@ -280,12 +291,16 @@ public class PersonnelRequestService : IPersonnelRequestService
 
         await _context.SaveChangesAsync();
 
-        // 3. Talep eden kullanıcıya bildirim
-        await CreateNotificationAsync(
+        // 3. Talep eden kullanıcıya bildirim (SignalR push + email)
+        await _notificationCreator.CreateAsync(
             request.RequestedByUserId,
-            "PersonnelRequest.Rejected",
+            NotificationTypes.Ids.Warning,
+            "Personel Talebi Reddedildi",
             notificationMessage,
-            $"/Evaluations?id={request.EvaluationId}");
+            actionUrl: $"/Evaluations?id={request.EvaluationId}",
+            relatedEntityId: request.Id,
+            relatedEntityType: "PersonnelRequest",
+            senderUserId: reviewedByUserId);
 
         _logger.LogInformation("Personnel request rejected: {Id} - {FullName}, Reason: {Reason}, CorrectPersonnelId: {PersonnelId}",
             request.Id, request.FullName, dto.RejectReason, dto.CorrectPersonnelId);
@@ -317,24 +332,6 @@ public class PersonnelRequestService : IPersonnelRequestService
             counts.FirstOrDefault(c => c.Status == ApprovalStatuses.Ids.Approved)?.Count ?? 0,
             counts.FirstOrDefault(c => c.Status == ApprovalStatuses.Ids.Rejected)?.Count ?? 0
         );
-    }
-
-    private async Task CreateNotificationAsync(int userId, string title, string message, string? url = null)
-    {
-        var notification = new Notification
-        {
-            RecipientUserId = userId,
-            NotificationTypeId = NotificationTypes.Ids.Info,
-            ChannelId = NotificationChannels.Ids.InApp,
-            PriorityId = NotificationPriorities.Ids.Normal,
-            Title = title,
-            Message = message,
-            ActionUrl = url,
-            IsRead = false
-        };
-
-        _context.Notifications.Add(notification);
-        await _context.SaveChangesAsync();
     }
 
     private static PersonnelRequestDto MapToDto(PersonnelRequest pr)

@@ -10,10 +10,12 @@ namespace SecretCustomer.Services.Services;
 public class FieldWorkerService : IFieldWorkerService
 {
     private readonly ApplicationDbContext _context;
+    private readonly INotificationCreatorService _notificationCreator;
 
-    public FieldWorkerService(ApplicationDbContext context)
+    public FieldWorkerService(ApplicationDbContext context, INotificationCreatorService notificationCreator)
     {
         _context = context;
+        _notificationCreator = notificationCreator;
     }
 
     public async Task<FieldWorkerDashboardDto> GetDashboardAsync(int userId)
@@ -544,6 +546,33 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 assignmentDealer.EvaluationId = evaluation.Id;
                 await _context.SaveChangesAsync();
+            }
+        }
+
+        // Ziyaret tamamlandıysa proje ekibine bildirim gönder
+        if (!dto.IsDraft)
+        {
+            var dealerName = dto.CustomerDealerId > 0
+                ? await _context.CustomerDealers.Where(d => d.Id == dto.CustomerDealerId).Select(d => d.Name).FirstOrDefaultAsync()
+                : null;
+
+            var teamMemberUserIds = await _context.ProjectTeamMembers
+                .Where(ptm => ptm.ProjectId == assignment.ProjectId && ptm.UserId != userId)
+                .Select(ptm => ptm.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            if (teamMemberUserIds.Any())
+            {
+                await _notificationCreator.CreateBulkAsync(
+                    teamMemberUserIds,
+                    NotificationTypes.Ids.Info,
+                    "Yeni Ziyaret Tamamlandı",
+                    $"{user.FirstName} {user.LastName} - {dealerName ?? "Bayi"} ziyaretini tamamladı.",
+                    actionUrl: $"/Evaluations/Detail/{evaluation.Id}",
+                    relatedEntityId: evaluation.Id,
+                    relatedEntityType: "Evaluation",
+                    senderUserId: userId);
             }
         }
 

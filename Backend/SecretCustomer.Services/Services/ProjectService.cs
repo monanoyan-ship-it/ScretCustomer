@@ -13,15 +13,18 @@ public class ProjectService : IProjectService
     private readonly IProjectRepository _projectRepository;
     private readonly IChecklistRepository _checklistRepository;
     private readonly ApplicationDbContext _context;
+    private readonly INotificationCreatorService _notificationCreator;
 
     public ProjectService(
         IProjectRepository projectRepository,
         IChecklistRepository checklistRepository,
-        ApplicationDbContext context)
+        ApplicationDbContext context,
+        INotificationCreatorService notificationCreator)
     {
         _projectRepository = projectRepository;
         _checklistRepository = checklistRepository;
         _context = context;
+        _notificationCreator = notificationCreator;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -557,12 +560,15 @@ public class ProjectService : IProjectService
             }
 
             // Yeni üyeleri ekle
+            var newMemberUserIds = new List<int>();
             foreach (var memberDto in dto.TeamMembers.Where(m => m.UserId > 0))
             {
                 // Daha önce eklenmiş ama silinmiş mi kontrol et
                 var existing = project.TeamMembers.FirstOrDefault(m => m.UserId == memberDto.UserId);
                 if (existing != null)
                 {
+                    if (existing.IsDeleted)
+                        newMemberUserIds.Add(memberDto.UserId);
                     // Geri aktif et
                     existing.IsDeleted = false;
                     existing.Role = memberDto.Role ?? "Evaluator";
@@ -578,11 +584,34 @@ public class ProjectService : IProjectService
                         AssignedAt = DateTime.UtcNow,
                         IsActive = true
                     });
+                    newMemberUserIds.Add(memberDto.UserId);
                 }
             }
         }
 
         await _context.SaveChangesAsync();
+
+        // Yeni eklenen ekip üyelerine bildirim gönder
+        if (dto.TeamMembers != null)
+        {
+            var newMemberIds = project.TeamMembers
+                .Where(m => !m.IsDeleted && m.AssignedAt >= DateTime.UtcNow.AddSeconds(-5))
+                .Select(m => m.UserId)
+                .ToList();
+
+            if (newMemberIds.Any())
+            {
+                await _notificationCreator.CreateBulkAsync(
+                    newMemberIds,
+                    NotificationTypes.Ids.Assignment,
+                    "Proje Ekibine Eklendi",
+                    $"{project.Name} projesinin ekibine eklendiniz.",
+                    actionUrl: $"/Projects/Detail/{project.Id}",
+                    relatedEntityId: project.Id,
+                    relatedEntityType: "Project");
+            }
+        }
+
         return MapToDto(project);
     }
 
@@ -654,6 +683,22 @@ public class ProjectService : IProjectService
         project.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
 
+        // Proje ekibine bildirim
+        var teamUserIds = await _context.ProjectTeamMembers
+            .Where(tm => tm.ProjectId == id && !tm.IsDeleted)
+            .Select(tm => tm.UserId)
+            .ToListAsync();
+        if (teamUserIds.Any())
+        {
+            await _notificationCreator.CreateBulkAsync(
+                teamUserIds,
+                NotificationTypes.Ids.Success,
+                "Proje Tamamlandı",
+                $"{project.Name} projesi tamamlandı.",
+                relatedEntityId: id,
+                relatedEntityType: "Project");
+        }
+
         return MapToDto(project);
     }
 
@@ -668,6 +713,22 @@ public class ProjectService : IProjectService
         project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": Proje iptal edildi" + (string.IsNullOrEmpty(reason) ? "" : " - " + reason);
         project.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+
+        // Proje ekibine bildirim
+        var cancelTeamUserIds = await _context.ProjectTeamMembers
+            .Where(tm => tm.ProjectId == id && !tm.IsDeleted)
+            .Select(tm => tm.UserId)
+            .ToListAsync();
+        if (cancelTeamUserIds.Any())
+        {
+            await _notificationCreator.CreateBulkAsync(
+                cancelTeamUserIds,
+                NotificationTypes.Ids.Warning,
+                "Proje İptal Edildi",
+                $"{project.Name} projesi iptal edildi.{(string.IsNullOrEmpty(reason) ? "" : $" Sebep: {reason}")}",
+                relatedEntityId: id,
+                relatedEntityType: "Project");
+        }
 
         return MapToDto(project);
     }

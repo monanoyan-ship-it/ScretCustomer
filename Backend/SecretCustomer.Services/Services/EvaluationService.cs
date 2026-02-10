@@ -1304,6 +1304,30 @@ public class EvaluationService : IEvaluationService
         evaluation.Notes = (evaluation.Notes ?? "") + logEntry;
 
         await _context.SaveChangesAsync();
+
+        // Evaluator'a bildirim gönder (taslağa alan kişi farklıysa)
+        if (evaluation.EvaluatorId.HasValue && evaluation.EvaluatorId.Value != revertedByUserId)
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var notificationCreator = scope.ServiceProvider.GetService<INotificationCreatorService>();
+                if (notificationCreator != null)
+                {
+                    await notificationCreator.CreateAsync(
+                        evaluation.EvaluatorId.Value,
+                        NotificationTypes.Ids.Warning,
+                        "Değerlendirme Taslağa Alındı",
+                        $"#{evaluationId} numaralı değerlendirmeniz taslağa alındı. Neden: {reason ?? "Belirtilmedi"}",
+                        actionUrl: $"/Evaluations/Detail/{evaluationId}",
+                        relatedEntityId: evaluationId,
+                        relatedEntityType: "Evaluation",
+                        senderUserId: revertedByUserId);
+                }
+            }
+            catch { /* Bildirim hatası ana işlemi etkilemesin */ }
+        }
+
         return await MapToDtoAsync(evaluation);
     }
 
@@ -1333,6 +1357,30 @@ public class EvaluationService : IEvaluationService
         evaluation.Notes = (evaluation.Notes ?? "") + logEntry;
 
         await _context.SaveChangesAsync();
+
+        // Evaluator'a bildirim gönder (iptal eden kişi farklıysa)
+        if (evaluation.EvaluatorId.HasValue && evaluation.EvaluatorId.Value != cancelledByUserId)
+        {
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var notificationCreator = scope.ServiceProvider.GetService<INotificationCreatorService>();
+                if (notificationCreator != null)
+                {
+                    await notificationCreator.CreateAsync(
+                        evaluation.EvaluatorId.Value,
+                        NotificationTypes.Ids.Warning,
+                        "Değerlendirme İptal Edildi",
+                        $"#{evaluationId} numaralı değerlendirmeniz iptal edildi. Neden: {reason ?? "Belirtilmedi"}",
+                        actionUrl: $"/Evaluations/Detail/{evaluationId}",
+                        relatedEntityId: evaluationId,
+                        relatedEntityType: "Evaluation",
+                        senderUserId: cancelledByUserId);
+                }
+            }
+            catch { /* Bildirim hatası ana işlemi etkilemesin */ }
+        }
+
         return await MapToDtoAsync(evaluation);
     }
 
