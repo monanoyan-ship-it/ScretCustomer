@@ -10023,7 +10023,7 @@
     <Value>Bueno (80-89)</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ScorePoor">
-    <Value>Poor (<60)</Value>
+    <Value>Poor (&lt;60)</Value>
   </LocaleResource>
   <LocaleResource Name="Report.SelectCustomer">
     <Value>Seleccionar cliente...</Value>
