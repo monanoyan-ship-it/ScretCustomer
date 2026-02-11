@@ -174,7 +174,7 @@
                     <div class="row g-3">
                         <div class="col-md-8">
                             <label class="form-label">@Html.T("Dealer.Name", "Bayi Adı") <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" data-bind="value: name" required placeholder="ABC Bayi">
+                            <input type="text" class="form-control" data-bind="value: name" required placeholder="@Html.T("Dealer.NamePlaceholder", "ABC Bayi")">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">@Html.T("Dealer.Type", "Bayi Tipi") <span class="text-danger">*</span></label>
@@ -188,16 +188,16 @@
 
                         <div class="col-12">
                             <label class="form-label">@Html.T("Dealer.Address", "Adres")</label>
-                            <input type="text" class="form-control" data-bind="value: address" placeholder="Cadde, Sokak, No">
+                            <input type="text" class="form-control" data-bind="value: address" placeholder="@Html.T("Dealer.AddressPlaceholder", "Cadde, Sokak, No")">
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.City", "Şehir")</label>
-                            <input type="text" class="form-control" data-bind="value: city" placeholder="İstanbul">
+                            <input type="text" class="form-control" data-bind="value: city" placeholder="@Html.T("Customer.CityPlaceholder", "İstanbul")">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Branch.District", "İlçe")</label>
-                            <input type="text" class="form-control" data-bind="value: district" placeholder="Kadıköy">
+                            <input type="text" class="form-control" data-bind="value: district" placeholder="@Html.T("Customer.DistrictPlaceholder", "Kadıköy")">
                         </div>
 
                         <div class="col-md-6">
@@ -216,7 +216,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.ContactPerson", "Yetkili Kişi (Manuel)")</label>
-                            <input type="text" class="form-control" data-bind="value: contactPerson" placeholder="Ahmet Yılmaz">
+                            <input type="text" class="form-control" data-bind="value: contactPerson" placeholder="@Html.T("Dealer.ContactPlaceholder", "Ahmet Yılmaz")">
                             <small class="text-muted">@Html.T("Dealer.ContactPersonHint", "Veya manuel olarak yazabilirsiniz")</small>
                         </div>
 
@@ -231,7 +231,7 @@
 
                         <div class="col-12">
                             <label class="form-label">@Html.T("Dealer.Notes", "Notlar")</label>
-                            <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="Bayi hakkında notlar..."></textarea>
+                            <textarea class="form-control" data-bind="value: notes" rows="2" placeholder="@Html.T("Dealer.NotesPlaceholder", "Bayi hakkında notlar...")"></textarea>
                         </div>
 
                         <div class="col-12">

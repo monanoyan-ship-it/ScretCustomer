@@ -36,7 +36,7 @@
         <!-- Assignments Loading -->
         <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
+                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
             </div>
             <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
         </div>
@@ -164,12 +164,12 @@
                                 <i class="bi bi-calendar3"></i>
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">Bugün</a></li>
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">Dün</a></li>
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">Bu Hafta</a></li>
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">Geçen Hafta</a></li>
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">Bu Ay</a></li>
-                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">Geçen Ay</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }">@Html.T("DateRange.Today", "Bugün")</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }">@Html.T("DateRange.Yesterday", "Dün")</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }">@Html.T("DateRange.ThisWeek", "Bu Hafta")</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }">@Html.T("DateRange.LastWeek", "Geçen Hafta")</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }">@Html.T("DateRange.ThisMonth", "Bu Ay")</a></li>
+                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }">@Html.T("DateRange.LastMonth", "Geçen Ay")</a></li>
                             </ul>
                         </div>
                         <button class="btn btn-sm btn-primary" data-bind="click: addFilter, enable: canAddFilter">
@@ -199,7 +199,7 @@
         <!-- Visits Loading -->
         <div data-bind="visible: isVisitsLoading()" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
+                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
             </div>
         </div>
 
@@ -239,7 +239,7 @@
                                     <td><span class="badge bg-primary" data-bind="text: visitId"></span></td>
                                     <td>
                                         <div>
-                                            <div class="fw-medium" data-bind="text: customerDealerName || 'Belirtilmemiş'"></div>
+                                            <div class="fw-medium" data-bind="text: customerDealerName || '@Html.T("Common.NotSpecified", "Belirtilmemiş")'"></div>
                                             <small class="text-muted" data-bind="text: customerDealerCity || ''"></small>
                                         </div>
                                     </td>
@@ -644,7 +644,7 @@
                                                     <!-- /ko -->
                                                     <!-- ko if: scoringType === 'Penalty' && isPenaltyApplied -->
                                                     <span class="text-danger fw-bold" data-bind="text: '-' + (earnedPoints || 0).toFixed(1)"></span>
-                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? 'Sarı' : 'Kırmızı'"></span>
+                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? '@Html.T("Common.Yellow", "Sarı")' : '@Html.T("Common.Red", "Kırmızı")'"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: scoringType === 'Penalty' && !isPenaltyApplied -->
                                                     <span class="text-muted">-</span>

@@ -321,24 +321,24 @@
         <div class="col-12 mt-4">
             <div class="card shadow">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> Değerlendirme Genel Notları</h5>
-                    <span class="badge bg-secondary" data-bind="text: evaluationNotesCount() + ' kayıt'"></span>
+                    <h5 class="mb-0"><i class="bi bi-chat-left-text"></i> @Html.T("Report.EvaluationGeneralNotes", "Değerlendirme Genel Notları")</h5>
+                    <span class="badge bg-secondary" data-bind="text: evaluationNotesCount() + ' @Html.T("Report.Records", "kayıt")'"></span>
                 </div>
                 <div class="card-body p-0">
                     <div data-bind="visible: evaluationNotes().length === 0" class="text-center text-muted py-5">
                         <i class="bi bi-chat-left fs-1"></i>
-                        <p class="mt-2">Genel not bulunamadı.</p>
+                        <p class="mt-2">@Html.T("Report.NoGeneralNotes", "Genel not bulunamadı.")</p>
                     </div>
                     <div data-bind="visible: evaluationNotes().length > 0" class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Tarih</th>
-                                    <th>Proje</th>
-                                    <th>Personel</th>
-                                    <th>Puan</th>
-                                    <th>Genel Not</th>
-                                    <th>Denetim Yorumu</th>
+                                    <th>@Html.T("Report.Date", "Tarih")</th>
+                                    <th>@Html.T("Common.Project", "Proje")</th>
+                                    <th>@Html.T("Report.Personnel", "Personel")</th>
+                                    <th>@Html.T("Report.Score", "Puan")</th>
+                                    <th>@Html.T("Report.GeneralNote", "Genel Not")</th>
+                                    <th>@Html.T("Evaluation.EvaluationComment", "Denetim Yorumu")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: evaluationNotes">
@@ -348,7 +348,7 @@
                                         <!-- ko if: callId -->
                                         <div class="d-flex align-items-center gap-1">
                                             <code class="text-muted small" data-bind="text: $root.truncateCallId(callId), attr: { title: callId }" style="cursor: help;"></code>
-                                            <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { $root.copyToClipboard(callId); }" title="Kopyala">
+                                            <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { $root.copyToClipboard(callId); }" title="@Html.T("Common.Copy", "Kopyala")">
                                                 <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                                             </button>
                                         </div>
@@ -628,7 +628,7 @@
                                                     <!-- /ko -->
                                                     <!-- ko if: scoringType === 'Penalty' && isPenaltyApplied -->
                                                     <span class="text-danger fw-bold" data-bind="text: '-' + (earnedPoints || 0).toFixed(1)"></span>
-                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? 'Sari' : 'Kirmizi'"></span>
+                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? '@Html.T("Report.Yellow", "Sarı")' : '@Html.T("Report.Red", "Kırmızı")'"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: scoringType === 'Penalty' && !isPenaltyApplied -->
                                                     <span class="text-muted">-</span>

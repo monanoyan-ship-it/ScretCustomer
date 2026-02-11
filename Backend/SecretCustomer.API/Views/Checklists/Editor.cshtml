@@ -126,8 +126,8 @@
                             {
                                 <!-- Mevcut checklist - sadece gösterim -->
                                 <select class="form-select" data-bind="value: scoringMethod" disabled>
-                                    <option value="Maximum">Maksimum</option>
-                                    <option value="CriteriaTotal">Kriter Toplam</option>
+                                    <option value="Maximum">@Html.T("Checklist.Maximum", "Maksimum")</option>
+                                    <option value="CriteriaTotal">@Html.T("Checklist.CriteriaTotal", "Kriter Toplam")</option>
                                 </select>
                                 <small class="text-muted">@Html.T("Checklist.ScoringMethodReadonly", "Puanlama yöntemi değiştirilemez")</small>
                             }
@@ -325,7 +325,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 d-flex align-items-center">
-                                                    <span class="text-danger fw-bold small">Online Anket Ayarları</span>
+                                                    <span class="text-danger fw-bold small">@Html.T("Checklist.OnlineSurveySettings", "Online Anket Ayarları")</span>
                                                 </div>
                                             </div>
 

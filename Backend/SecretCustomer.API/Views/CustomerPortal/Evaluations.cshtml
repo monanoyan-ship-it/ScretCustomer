@@ -81,7 +81,7 @@
                             <td>
                                 <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 <!-- ko if: daysRemaining <= 3 && daysRemaining >= 0 -->
-                                <span class="badge bg-warning text-dark ms-1" data-bind="text: daysRemaining + ' gün'"></span>
+                                <span class="badge bg-warning text-dark ms-1" data-bind="text: daysRemaining + ' @Html.T("Common.DaySuffix", "gün")'"></span>
                                 <!-- /ko -->
                             </td>
                             <td>
@@ -232,7 +232,7 @@
                         <button class="btn btn-sm btn-outline-secondary" data-bind="visible: evalActiveFilters().length > 0, click: evalClearFilters">
                             <i class="bi bi-x-circle"></i> @Html.T("Common.ClearFilters", "Temizle")
                         </button>
-                        <span class="text-muted small" data-bind="text: allEvaluationsList().length + ' kayıt'"></span>
+                        <span class="text-muted small" data-bind="text: allEvaluationsList().length + ' @Html.T("Common.RecordSuffix", "kayıt")'"></span>
                     </div>
                 </div>
             </div>
@@ -405,7 +405,7 @@
                             <td data-bind="text: checklistName"></td>
                             <td data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></td>
                             <td>
-                                <span class="badge bg-danger" data-bind="text: Math.abs(daysRemaining) + ' gün'"></span>
+                                <span class="badge bg-danger" data-bind="text: Math.abs(daysRemaining) + ' @Html.T("Common.DaySuffix", "gün")'"></span>
                             </td>
                             <td>
                                 <span class="badge bg-secondary" data-bind="text: evaluationCount || 0"></span>
@@ -663,7 +663,7 @@
                                                     <!-- Cezalı soru - ceza uygulandı -->
                                                     <!-- ko if: scoringType === 'Penalty' && isPenaltyApplied -->
                                                     <span class="text-danger fw-bold" data-bind="text: '-' + (earnedPoints || 0).toFixed(1)"></span>
-                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? 'Sarı' : 'Kırmızı'"></span>
+                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? '@Html.T("Common.Yellow", "Sarı")' : '@Html.T("Common.Red", "Kırmızı")'"></span>
                                                     <!-- /ko -->
                                                     <!-- Cezalı soru - ceza uygulanmadı -->
                                                     <!-- ko if: scoringType === 'Penalty' && !isPenaltyApplied -->

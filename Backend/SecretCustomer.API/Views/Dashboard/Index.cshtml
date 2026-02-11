@@ -130,7 +130,7 @@
                         </div>
                         <div class="d-flex justify-content-between text-muted small">
                             <span>@Html.T("Dashboard.Remaining", "Kalan"): <strong data-bind="text: targetProgress().remaining"></strong></span>
-                            <span data-bind="text: formatDate(targetProgress().periodEndDate) + ' bitiş'"></span>
+                            <span data-bind="text: formatDate(targetProgress().periodEndDate) + ' @Html.T("Dashboard.EndDateSuffix", "bitiş")'"></span>
                         </div>
                     </div>
                 </div>

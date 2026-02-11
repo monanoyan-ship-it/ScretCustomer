@@ -5,16 +5,16 @@
 <div id="assignments-app">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="bi bi-people"></i> Egitim Atamalari</h2>
+        <h2><i class="bi bi-people"></i> @Html.T("Assignment.Title", "Egitim Atamalari")</h2>
         <div>
             <a href="/TrainingVideos" class="btn btn-outline-secondary me-2">
-                <i class="bi bi-arrow-left"></i> Videolara Don
+                <i class="bi bi-arrow-left"></i> @Html.T("Training.BackToVideos", "Videolara Don")
             </a>
             <button class="btn btn-success me-2" data-bind="click: openExternalAssignmentModal">
-                <i class="bi bi-person-plus"></i> Dis Katilimci Atama
+                <i class="bi bi-person-plus"></i> @Html.T("Training.ExternalParticipantAssignment", "Dis Katilimci Atama")
             </button>
             <button class="btn btn-primary" data-bind="click: openCreateModal">
-                <i class="bi bi-plus-circle"></i> Yeni Atama
+                <i class="bi bi-plus-circle"></i> @Html.T("Training.NewAssignment", "Yeni Atama")
             </button>
         </div>
     </div>
@@ -23,13 +23,13 @@
     <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-content" type="button" role="tab">
-                <i class="bi bi-list-check me-1"></i>Atamalar
+                <i class="bi bi-list-check me-1"></i>@Html.T("Training.Assignments", "Atamalar")
                 <span class="badge bg-secondary ms-1" data-bind="text: assignments().length"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants-content" type="button" role="tab" data-bind="click: loadAllParticipants">
-                <i class="bi bi-people me-1"></i>Tum Katilimcilar
+                <i class="bi bi-people me-1"></i>@Html.T("Training.AllParticipants", "Tum Katilimcilar")
                 <span class="badge bg-secondary ms-1" data-bind="text: allParticipants().length"></span>
             </button>
         </li>
@@ -45,51 +45,51 @@
                         <!-- Add Filter Dropdown -->
                         <div class="dropdown">
                             <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                <i class="bi bi-plus-circle me-1"></i>Filtre Ekle
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                             </button>
                             <div class="dropdown-menu p-3" style="min-width: 300px;">
                                 <!-- Filter Type Selector -->
                                 <div class="mb-2">
                                     <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
-                                        <option value="">Filtre Secin...</option>
-                                        <option value="searchTerm">Arama</option>
-                                        <option value="video">Video</option>
-                                        <option value="status">Durum</option>
-                                        <option value="participantType">Katilimci Tipi</option>
-                                        <option value="dateRange">Tarih Araligi</option>
+                                        <option value="">@Html.T("Common.SelectFilter", "Filtre Secin...")</option>
+                                        <option value="searchTerm">@Html.T("Common.Search", "Arama")</option>
+                                        <option value="video">@Html.T("Training.Video", "Video")</option>
+                                        <option value="status">@Html.T("Common.Status", "Durum")</option>
+                                        <option value="participantType">@Html.T("Training.ParticipantType", "Katilimci Tipi")</option>
+                                        <option value="dateRange">@Html.T("Common.DateRange", "Tarih Araligi")</option>
                                     </select>
                                 </div>
                                 <!-- Dynamic Filter Input -->
                                 <!-- Arama -->
                                 <div data-bind="visible: selectedFilterType() === 'searchTerm'" class="mb-2">
-                                    <input type="text" class="form-control form-control-sm" placeholder="Atama adi..." data-bind="value: tempFilter.searchTerm">
+                                    <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Training.AssignmentNamePlaceholder", "Atama adi...")" data-bind="value: tempFilter.searchTerm">
                                 </div>
                                 <!-- Video -->
                                 <div data-bind="visible: selectedFilterType() === 'video'" class="mb-2">
-                                    <select class="form-select form-select-sm" data-bind="value: tempFilter.videoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Video secin...'"></select>
+                                    <select class="form-select form-select-sm" data-bind="value: tempFilter.videoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: '@Html.T("Training.SelectVideo", "Video secin...")'"></select>
                                 </div>
                                 <!-- Durum -->
                                 <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
                                     <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
-                                        <option value="">Durum secin...</option>
-                                        <option value="true">Aktif</option>
-                                        <option value="false">Pasif</option>
+                                        <option value="">@Html.T("Common.SelectStatus", "Durum secin...")</option>
+                                        <option value="true">@Html.T("Common.Active", "Aktif")</option>
+                                        <option value="false">@Html.T("Common.Passive", "Pasif")</option>
                                     </select>
                                 </div>
                                 <!-- Katilimci Tipi -->
                                 <div data-bind="visible: selectedFilterType() === 'participantType'" class="mb-2">
                                     <select class="form-select form-select-sm" data-bind="value: tempFilter.participantType">
-                                        <option value="">Tip secin...</option>
-                                        <option value="internal">Ic</option>
-                                        <option value="external">Dis</option>
+                                        <option value="">@Html.T("Common.SelectType", "Tip secin...")</option>
+                                        <option value="internal">@Html.T("Training.Internal", "Ic")</option>
+                                        <option value="external">@Html.T("Training.External", "Dis")</option>
                                     </select>
                                 </div>
                                 <!-- Date Range -->
                                 <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
                                     <div class="mb-2">
                                         <select class="form-select form-select-sm" data-bind="value: tempFilter.dateType">
-                                            <option value="start">Baslangic Tarihi</option>
-                                            <option value="due">Bitis Tarihi</option>
+                                            <option value="start">@Html.T("Common.StartDate", "Baslangic Tarihi")</option>
+                                            <option value="due">@Html.T("Common.DueDate", "Bitis Tarihi")</option>
                                         </select>
                                     </div>
                                     <div class="d-flex gap-1 mb-1">
@@ -115,7 +115,7 @@
                                 </div>
                                 <!-- Add Button -->
                                 <button type="button" class="btn btn-primary btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
-                                    <i class="bi bi-plus"></i> Ekle
+                                    <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
                                 </button>
                             </div>
                         </div>
@@ -130,7 +130,7 @@
 
                         <!-- Clear All -->
                         <button class="btn btn-outline-danger btn-sm" data-bind="visible: activeFilters().length > 0, click: clearFilters">
-                            <i class="bi bi-x-circle"></i> Temizle
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                         </button>
 
                         <!-- Spacer -->
@@ -138,7 +138,7 @@
 
                         <!-- Search Button -->
                         <button class="btn btn-primary btn-sm" data-bind="click: search">
-                            <i class="bi bi-search me-1"></i>Ara
+                            <i class="bi bi-search me-1"></i>@Html.T("Common.Search", "Ara")
                         </button>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
             <!-- Loading -->
             <div data-bind="visible: isLoading" class="text-center py-5">
                 <div class="spinner-border text-primary"></div>
-                <p class="mt-2 text-muted">Yukleniyor...</p>
+                <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
             </div>
 
             <!-- Assignments List -->
@@ -157,13 +157,13 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Atama</th>
-                                    <th>Video</th>
-                                    <th class="text-center">Tip</th>
-                                    <th class="text-center">Tarih Araligi</th>
-                                    <th class="text-center">Ilerleme</th>
-                                    <th class="text-center">Durum</th>
-                                    <th class="text-end" style="width: 150px;">Islemler</th>
+                                    <th>@Html.T("Training.Assignment", "Atama")</th>
+                                    <th>@Html.T("Training.Video", "Video")</th>
+                                    <th class="text-center">@Html.T("Common.Type", "Tip")</th>
+                                    <th class="text-center">@Html.T("Common.DateRange", "Tarih Araligi")</th>
+                                    <th class="text-center">@Html.T("Training.Progress", "Ilerleme")</th>
+                                    <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                    <th class="text-end" style="width: 150px;">@Html.T("Common.Actions", "Islemler")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: assignments">
@@ -175,8 +175,8 @@
                                         <span class="badge bg-primary" data-bind="text: trainingVideoTitle"></span>
                                     </td>
                                     <td class="text-center">
-                                        <span data-bind="visible: isExternal" class="badge bg-secondary">Dis</span>
-                                        <span data-bind="visible: !isExternal" class="badge bg-info">Ic</span>
+                                        <span data-bind="visible: isExternal" class="badge bg-secondary">@Html.T("Training.External", "Dis")</span>
+                                        <span data-bind="visible: !isExternal" class="badge bg-info">@Html.T("Training.Internal", "Ic")</span>
                                     </td>
                                     <td class="text-center">
                                         <small>
@@ -189,24 +189,24 @@
                                             <div class="progress-bar" role="progressbar"
                                                  data-bind="style: { width: completionPercentage + '%' }, text: completionPercentage + '%'"></div>
                                         </div>
-                                        <small class="text-muted" data-bind="text: completedParticipants + '/' + totalParticipants + ' kisi'"></small>
+                                        <small class="text-muted" data-bind="text: completedParticipants + '/' + totalParticipants + ' @Html.T("Common.Person", "kisi")'"></small>
                                     </td>
                                     <td class="text-center">
-                                        <span data-bind="visible: isActive" class="badge bg-success">Aktif</span>
-                                        <span data-bind="visible: !isActive" class="badge bg-danger">Pasif</span>
+                                        <span data-bind="visible: isActive" class="badge bg-success">@Html.T("Common.Active", "Aktif")</span>
+                                        <span data-bind="visible: !isActive" class="badge bg-danger">@Html.T("Common.Passive", "Pasif")</span>
                                     </td>
                                     <td class="text-end">
                                         <div class="btn-group btn-group-sm">
-                                            <button class="btn btn-outline-secondary" data-bind="click: $parent.openEditModal" title="Duzenle">
+                                            <button class="btn btn-outline-secondary" data-bind="click: $parent.openEditModal" title="@Html.T("Common.Edit", "Duzenle")">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button class="btn btn-outline-info" data-bind="click: $parent.viewParticipants" title="Katilimcilari Gor">
+                                            <button class="btn btn-outline-info" data-bind="click: $parent.viewParticipants" title="@Html.T("Training.ViewParticipants", "Katilimcilari Gor")">
                                                 <i class="bi bi-people"></i>
                                             </button>
-                                            <button class="btn btn-outline-primary" data-bind="click: $parent.openEmailModal" title="Email Yonetimi">
+                                            <button class="btn btn-outline-primary" data-bind="click: $parent.openEmailModal" title="@Html.T("Training.EmailManagement", "Email Yonetimi")">
                                                 <i class="bi bi-envelope"></i>
                                             </button>
-                                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteAssignment" title="Sil">
+                                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteAssignment" title="@Html.T("Common.Delete", "Sil")">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
@@ -220,9 +220,9 @@
                 <!-- Empty State -->
                 <div data-bind="visible: assignments().length === 0" class="text-center py-5 text-muted">
                     <i class="bi bi-people fs-1"></i>
-                    <p class="mt-2">Henuz egitim atamasi bulunmuyor.</p>
+                    <p class="mt-2">@Html.T("Training.NoAssignmentsYet", "Henuz egitim atamasi bulunmuyor.")</p>
                     <button class="btn btn-primary" data-bind="click: openCreateModal">
-                        <i class="bi bi-plus-circle"></i> Ilk Atamayi Olustur
+                        <i class="bi bi-plus-circle"></i> @Html.T("Training.CreateFirstAssignment", "Ilk Atamayi Olustur")
                     </button>
                 </div>
             </div>
@@ -233,7 +233,7 @@
             <!-- Loading -->
             <div data-bind="visible: isLoadingAllParticipants" class="text-center py-5">
                 <div class="spinner-border text-primary"></div>
-                <p class="mt-2 text-muted">Katilimcilar yukleniyor...</p>
+                <p class="mt-2 text-muted">@Html.T("Training.LoadingParticipants", "Katilimcilar yukleniyor...")</p>
             </div>
 
             <!-- Participants Filters (KURALLAR.md Pattern) -->
@@ -243,39 +243,39 @@
                         <!-- Add Filter Dropdown -->
                         <div class="dropdown">
                             <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                                <i class="bi bi-plus-circle me-1"></i>Filtre Ekle
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
                             </button>
                             <div class="dropdown-menu p-3" style="min-width: 300px;">
                                 <!-- Filter Type Selector -->
                                 <div class="mb-2">
                                     <select class="form-select form-select-sm" data-bind="value: participantSelectedFilterType">
-                                        <option value="">Filtre Secin...</option>
-                                        <option value="searchText">Isim Ara</option>
-                                        <option value="video">Video</option>
-                                        <option value="status">Durum</option>
+                                        <option value="">@Html.T("Common.SelectFilter", "Filtre Secin...")</option>
+                                        <option value="searchText">@Html.T("Common.SearchByName", "Isim Ara")</option>
+                                        <option value="video">@Html.T("Training.Video", "Video")</option>
+                                        <option value="status">@Html.T("Common.Status", "Durum")</option>
                                     </select>
                                 </div>
                                 <!-- Dynamic Filter Input -->
                                 <!-- Arama -->
                                 <div data-bind="visible: participantSelectedFilterType() === 'searchText'" class="mb-2">
-                                    <input type="text" class="form-control form-control-sm" placeholder="Personel adi..." data-bind="value: participantTempFilter.searchText">
+                                    <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.PersonnelNamePlaceholder", "Personel adi...")" data-bind="value: participantTempFilter.searchText">
                                 </div>
                                 <!-- Video -->
                                 <div data-bind="visible: participantSelectedFilterType() === 'video'" class="mb-2">
-                                    <select class="form-select form-select-sm" data-bind="value: participantTempFilter.videoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Video secin...'"></select>
+                                    <select class="form-select form-select-sm" data-bind="value: participantTempFilter.videoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: '@Html.T("Training.SelectVideo", "Video secin...")'"></select>
                                 </div>
                                 <!-- Durum -->
                                 <div data-bind="visible: participantSelectedFilterType() === 'status'" class="mb-2">
                                     <select class="form-select form-select-sm" data-bind="value: participantTempFilter.status">
-                                        <option value="">Durum secin...</option>
-                                        <option value="1">Bekliyor</option>
-                                        <option value="2">Izliyor</option>
-                                        <option value="3">Tamamladi</option>
+                                        <option value="">@Html.T("Common.SelectStatus", "Durum secin...")</option>
+                                        <option value="1">@Html.T("Training.Waiting", "Bekliyor")</option>
+                                        <option value="2">@Html.T("Training.Watching", "Izliyor")</option>
+                                        <option value="3">@Html.T("Training.Completed", "Tamamladi")</option>
                                     </select>
                                 </div>
                                 <!-- Add Button -->
                                 <button type="button" class="btn btn-primary btn-sm w-100" data-bind="click: addParticipantFilter, enable: canAddParticipantFilter">
-                                    <i class="bi bi-plus"></i> Ekle
+                                    <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
                                 </button>
                             </div>
                         </div>
@@ -290,7 +290,7 @@
 
                         <!-- Clear All -->
                         <button class="btn btn-outline-danger btn-sm" data-bind="visible: participantActiveFilters().length > 0, click: clearParticipantFilters">
-                            <i class="bi bi-x-circle"></i> Temizle
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                         </button>
                     </div>
                 </div>
@@ -303,13 +303,13 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Personel</th>
-                                    <th>Musteri</th>
-                                    <th>Video</th>
-                                    <th>Atama</th>
-                                    <th class="text-center">Durum</th>
-                                    <th class="text-center">Ilerleme</th>
-                                    <th class="text-center">Tarih</th>
+                                    <th>@Html.T("Common.Personnel", "Personel")</th>
+                                    <th>@Html.T("Common.Customer", "Musteri")</th>
+                                    <th>@Html.T("Training.Video", "Video")</th>
+                                    <th>@Html.T("Training.Assignment", "Atama")</th>
+                                    <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                    <th class="text-center">@Html.T("Training.Progress", "Ilerleme")</th>
+                                    <th class="text-center">@Html.T("Common.Date", "Tarih")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: filteredAllParticipants">
@@ -324,9 +324,9 @@
                                     </td>
                                     <td data-bind="text: assignmentTitle"></td>
                                     <td class="text-center">
-                                        <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekliyor</span>
-                                        <span data-bind="visible: statusId === 2" class="badge bg-info">Izliyor</span>
-                                        <span data-bind="visible: statusId === 3" class="badge bg-success">Tamamladi</span>
+                                        <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("Training.Waiting", "Bekliyor")</span>
+                                        <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("Training.Watching", "Izliyor")</span>
+                                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Training.Completed", "Tamamladi")</span>
                                     </td>
                                     <td class="text-center">
                                         <div class="progress" style="height: 16px; min-width: 80px;">
@@ -348,7 +348,7 @@
                 <!-- Empty State -->
                 <div data-bind="visible: filteredAllParticipants().length === 0" class="text-center py-5 text-muted">
                     <i class="bi bi-people fs-1"></i>
-                    <p class="mt-2">Filtrelerinize uygun katilimci bulunamadi.</p>
+                    <p class="mt-2">@Html.T("Training.NoMatchingParticipants", "Filtrelerinize uygun katilimci bulunamadi.")</p>
                 </div>
             </div>
         </div>
@@ -359,7 +359,7 @@
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Yeni Atama</h5>
+                    <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>@Html.T("Training.NewAssignment", "Yeni Atama")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -368,7 +368,7 @@
                         <ul class="nav nav-pills nav-justified" id="wizardTabs" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link active" id="step1-tab" data-bs-toggle="tab" data-bs-target="#step1" type="button" role="tab">
-                                    <span class="badge bg-primary rounded-pill me-2">1</span> Video ve Ayarlar
+                                    <span class="badge bg-primary rounded-pill me-2">1</span> @Html.T("Training.VideoAndSettings", "Video ve Ayarlar")
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -378,7 +378,7 @@
                             </li>
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="step3-tab" data-bs-toggle="tab" data-bs-target="#step3" type="button" role="tab" data-bind="css: { disabled: !canShowPersonnel() }">
-                                    <span class="badge bg-secondary rounded-pill me-2" data-bind="css: { 'bg-primary': canShowPersonnel() }">3</span> Personel
+                                    <span class="badge bg-secondary rounded-pill me-2" data-bind="css: { 'bg-primary': canShowPersonnel() }">3</span> @Html.T("Common.Personnel", "Personel")
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
@@ -396,13 +396,13 @@
                             <div class="row">
                                 <!-- Sol Kolon -->
                                 <div class="col-md-6">
-                                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-play-circle me-2"></i>Video Secimi</h6>
+                                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-play-circle me-2"></i>@Html.T("Training.VideoSelection", "Video Secimi")</h6>
 
                                     <!-- Searchable Video Dropdown -->
                                     <div class="mb-3">
-                                        <label class="form-label">Egitim Videosu <span class="text-danger">*</span></label>
+                                        <label class="form-label">@Html.T("Training.TrainingVideo", "Egitim Videosu") <span class="text-danger">*</span></label>
                                         <div class="position-relative">
-                                            <input type="text" class="form-control" placeholder="Video ara..."
+                                            <input type="text" class="form-control" placeholder="@Html.T("Training.SearchVideo", "Video ara...")"
                                                    data-bind="value: videoSearchText, valueUpdate: 'input', event: { focus: showVideoDropdown, blur: hideVideoDropdownDelayed }">
                                             <div class="dropdown-menu w-100 shadow" style="max-height: 250px; overflow-y: auto;"
                                                  data-bind="css: { show: isVideoDropdownVisible() && filteredVideos().length > 0 }">
@@ -421,40 +421,40 @@
 
                                     <!-- Atama Basligi -->
                                     <div class="mb-3">
-                                        <label class="form-label">Atama Basligi <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" data-bind="value: formTitle" placeholder="orn: Ocak 2026 Aktif Dinleme Egitimi">
+                                        <label class="form-label">@Html.T("Training.AssignmentTitle", "Atama Basligi") <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" data-bind="value: formTitle" placeholder="@Html.T("Training.AssignmentTitlePlaceholder", "orn: Ocak 2026 Aktif Dinleme Egitimi")">
                                     </div>
 
                                     <!-- Tarihler -->
                                     <div class="row">
                                         <div class="col-6 mb-3">
-                                            <label class="form-label">Baslangic Tarihi <span class="text-danger">*</span></label>
+                                            <label class="form-label">@Html.T("Common.StartDate", "Baslangic Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: formStartDate">
                                         </div>
                                         <div class="col-6 mb-3">
-                                            <label class="form-label">Bitis Tarihi <span class="text-danger">*</span></label>
+                                            <label class="form-label">@Html.T("Common.DueDate", "Bitis Tarihi") <span class="text-danger">*</span></label>
                                             <input type="date" class="form-control" data-bind="value: formDueDate">
                                         </div>
                                     </div>
 
                                     <!-- Izleme Ayarlari -->
-                                    <h6 class="border-bottom pb-2 mb-3 mt-3"><i class="bi bi-gear me-2"></i>Izleme Ayarlari</h6>
+                                    <h6 class="border-bottom pb-2 mb-3 mt-3"><i class="bi bi-gear me-2"></i>@Html.T("Training.WatchSettings", "Izleme Ayarlari")</h6>
                                     <div class="row">
                                         <div class="col-6 mb-3">
-                                            <label class="form-label">Min Izleme Sayisi</label>
+                                            <label class="form-label">@Html.T("Training.MinWatchCount", "Min Izleme Sayisi")</label>
                                             <input type="number" class="form-control" data-bind="value: formMinWatchCount" min="1" placeholder="1">
                                         </div>
                                         <div class="col-6 mb-3">
-                                            <label class="form-label">Max Izleme Sayisi</label>
-                                            <input type="number" class="form-control" data-bind="value: formMaxWatchCount" min="1" placeholder="Sinirsiz">
-                                            <small class="text-muted">Bos = sinirsiz</small>
+                                            <label class="form-label">@Html.T("Training.MaxWatchCount", "Max Izleme Sayisi")</label>
+                                            <input type="number" class="form-control" data-bind="value: formMaxWatchCount" min="1" placeholder="@Html.T("Training.Unlimited", "Sinirsiz")">
+                                            <small class="text-muted">@Html.T("Training.EmptyMeansUnlimited", "Bos = sinirsiz")</small>
                                         </div>
                                     </div>
                                     <div class="mb-3">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="allowSpeedChange" data-bind="checked: formAllowSpeedChange">
                                             <label class="form-check-label" for="allowSpeedChange">
-                                                Video hizini degistirmeye izin ver
+                                                @Html.T("Training.AllowSpeedChange", "Video hizini degistirmeye izin ver")
                                             </label>
                                         </div>
                                     </div>
@@ -462,7 +462,7 @@
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="allowSeeking" data-bind="checked: formAllowSeeking">
                                             <label class="form-check-label" for="allowSeeking">
-                                                Videoyu ileri/geri sarmaya izin ver
+                                                @Html.T("Training.AllowSeeking", "Videoyu ileri/geri sarmaya izin ver")
                                             </label>
                                         </div>
                                     </div>
@@ -471,46 +471,46 @@
                                 <!-- Sag Kolon -->
                                 <div class="col-md-6">
                                     <!-- Email Ayarlari -->
-                                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-envelope me-2"></i>Email Ayarlari</h6>
+                                    <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-envelope me-2"></i>@Html.T("Training.EmailSettings", "Email Ayarlari")</h6>
                                     <div class="mb-3">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="sendEmail" data-bind="checked: formSendEmail">
                                             <label class="form-check-label" for="sendEmail">
-                                                Katilimcilara email gonder
+                                                @Html.T("Training.SendEmailToParticipants", "Katilimcilara email gonder")
                                             </label>
                                         </div>
                                     </div>
                                     <div class="mb-3" data-bind="visible: formSendEmail">
-                                        <label class="form-label">Email Sablonu</label>
-                                        <select class="form-select" data-bind="value: formEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Varsayilan sablon'"></select>
+                                        <label class="form-label">@Html.T("Training.EmailTemplate", "Email Sablonu")</label>
+                                        <select class="form-select" data-bind="value: formEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Training.DefaultTemplate", "Varsayilan sablon")'"></select>
                                     </div>
 
                                     <!-- Video Kapsami (Table Format) -->
                                     <div data-bind="visible: selectedVideoScopes().length > 0" class="mt-4">
-                                        <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2"></i>Video Kapsami</h6>
+                                        <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-list-check me-2"></i>@Html.T("Training.VideoScope", "Video Kapsami")</h6>
                                         <div class="alert alert-info py-2 mb-2">
-                                            <small><i class="bi bi-info-circle me-1"></i>Bu video asagidaki konularda egitim icin hazirlanmistir.</small>
+                                            <small><i class="bi bi-info-circle me-1"></i>@Html.T("Training.VideoScopeDescription", "Bu video asagidaki konularda egitim icin hazirlanmistir.")</small>
                                         </div>
                                         <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
                                             <table class="table table-sm table-bordered mb-0">
                                                 <thead class="table-light sticky-top">
                                                     <tr>
-                                                        <th style="width: 100px;">Tur</th>
-                                                        <th>Checklist</th>
-                                                        <th>Grup/Soru</th>
+                                                        <th style="width: 100px;">@Html.T("Common.Type", "Tur")</th>
+                                                        <th>@Html.T("Common.Checklist", "Checklist")</th>
+                                                        <th>@Html.T("Training.GroupQuestion", "Grup/Soru")</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody data-bind="foreach: selectedVideoScopes">
                                                     <tr>
                                                         <td>
                                                             <!-- ko if: scopeTypeId === 1 -->
-                                                            <span class="badge bg-primary"><i class="bi bi-journal-check"></i> Checklist</span>
+                                                            <span class="badge bg-primary"><i class="bi bi-journal-check"></i> @Html.T("Common.Checklist", "Checklist")</span>
                                                             <!-- /ko -->
                                                             <!-- ko if: scopeTypeId === 2 -->
-                                                            <span class="badge bg-success"><i class="bi bi-collection"></i> Grup</span>
+                                                            <span class="badge bg-success"><i class="bi bi-collection"></i> @Html.T("Common.Group", "Grup")</span>
                                                             <!-- /ko -->
                                                             <!-- ko if: scopeTypeId === 3 -->
-                                                            <span class="badge bg-warning text-dark"><i class="bi bi-question-circle"></i> Soru</span>
+                                                            <span class="badge bg-warning text-dark"><i class="bi bi-question-circle"></i> @Html.T("Common.Question", "Soru")</span>
                                                             <!-- /ko -->
                                                         </td>
                                                         <td data-bind="text: checklistName || '-'"></td>
@@ -522,7 +522,7 @@
                                                             <small data-bind="text: questionText" class="text-muted" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"></small>
                                                             <!-- /ko -->
                                                             <!-- ko if: scopeTypeId === 1 -->
-                                                            <span class="text-muted">Tum checklist</span>
+                                                            <span class="text-muted">@Html.T("Training.AllChecklist", "Tum checklist")</span>
                                                             <!-- /ko -->
                                                         </td>
                                                     </tr>
@@ -535,39 +535,39 @@
 
                             <div class="d-flex justify-content-end mt-4">
                                 <button type="button" class="btn btn-primary" data-bind="click: goToStep2, disable: !canGoToStep2()">
-                                    Devam <i class="bi bi-arrow-right"></i>
+                                    @Html.T("Common.Continue", "Devam") <i class="bi bi-arrow-right"></i>
                                 </button>
                             </div>
                         </div>
 
                         <!-- STEP 2: Filters -->
                         <div class="tab-pane fade" id="step2" role="tabpanel">
-                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-funnel me-2"></i>Personel Filtreleri</h6>
+                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-funnel me-2"></i>@Html.T("Training.PersonnelFilters", "Personel Filtreleri")</h6>
 
                             <div class="row">
                                 <!-- Sol Kolon: Entity Filtreleri -->
                                 <div class="col-md-6">
                                     <!-- Musteri -->
                                     <div class="mb-3">
-                                        <label class="form-label">Musteri</label>
-                                        <select class="form-select" data-bind="value: formCustomerId, options: scopeFilteredCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: 'Tum musteriler...'"></select>
+                                        <label class="form-label">@Html.T("Common.Customer", "Musteri")</label>
+                                        <select class="form-select" data-bind="value: formCustomerId, options: scopeFilteredCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Common.AllCustomers", "Tum musteriler...")'"></select>
                                         <small class="text-muted" data-bind="visible: scopeFilteredCustomers().length > 0">
-                                            Video kapsamindaki checklistlerde degerlendirmesi olan <strong data-bind="text: scopeFilteredCustomers().length"></strong> musteri
+                                            @Html.T("Training.CustomersWithEvaluationsPrefix", "Video kapsamindaki checklistlerde degerlendirmesi olan") <strong data-bind="text: scopeFilteredCustomers().length"></strong> @Html.T("Common.Customer", "musteri")
                                         </small>
                                     </div>
 
                                     <!-- Organizasyon -->
                                     <div class="mb-3">
-                                        <label class="form-label">Organizasyon</label>
-                                        <select class="form-select" data-bind="value: formOrganizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tum organizasyonlar...', disable: filteredOrganizations().length === 0"></select>
+                                        <label class="form-label">@Html.T("Common.Organization", "Organizasyon")</label>
+                                        <select class="form-select" data-bind="value: formOrganizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.AllOrganizations", "Tum organizasyonlar...")', disable: filteredOrganizations().length === 0"></select>
                                     </div>
 
                                     <!-- Proje -->
                                     <div class="mb-3">
-                                        <label class="form-label">Proje</label>
-                                        <select class="form-select" data-bind="value: formProjectId, options: filteredProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tum projeler...'"></select>
+                                        <label class="form-label">@Html.T("Common.Project", "Proje")</label>
+                                        <select class="form-select" data-bind="value: formProjectId, options: filteredProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.AllProjects", "Tum projeler...")'"></select>
                                         <small class="text-muted" data-bind="visible: filteredProjects().length > 0">
-                                            Video kapsamindaki <strong data-bind="text: filteredProjects().length"></strong> proje
+                                            @Html.T("Training.InVideoScopePrefix", "Video kapsamindaki") <strong data-bind="text: filteredProjects().length"></strong> @Html.T("Common.Project", "proje")
                                         </small>
                                     </div>
                                 </div>
@@ -575,81 +575,81 @@
                                 <!-- Sag Kolon: Tarih ve Puan -->
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">Degerlendirme Tarih Araligi <span class="text-danger">*</span></label>
+                                        <label class="form-label">@Html.T("Training.EvaluationDateRange", "Degerlendirme Tarih Araligi") <span class="text-danger">*</span></label>
                                         <div class="d-flex gap-2 mb-2">
-                                            <input type="date" class="form-control" data-bind="value: formSourceStartDate" placeholder="Baslangic">
+                                            <input type="date" class="form-control" data-bind="value: formSourceStartDate" placeholder="@Html.T("Common.StartDate", "Baslangic")">
                                             <span class="align-self-center">-</span>
-                                            <input type="date" class="form-control" data-bind="value: formSourceEndDate" placeholder="Bitis">
+                                            <input type="date" class="form-control" data-bind="value: formSourceEndDate" placeholder="@Html.T("Common.EndDate", "Bitis")">
                                         </div>
                                         <!-- Quick Date Range Dropdown -->
                                         <div class="dropdown">
                                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                                 <i class="bi bi-calendar-range me-1"></i>
-                                                <span data-bind="text: formDateRangeType() ? dateRangeLabels[formDateRangeType()] : 'Hizli Sec'"></span>
+                                                <span data-bind="text: formDateRangeType() ? dateRangeLabels[formDateRangeType()] : '@Html.T("Common.QuickSelect", "Hizli Sec")'"></span>
                                             </button>
                                             <ul class="dropdown-menu">
-                                                <li><h6 class="dropdown-header">Gun</h6></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('today'); }">Bugun</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('yesterday'); }">Dun</a></li>
+                                                <li><h6 class="dropdown-header">@Html.T("Common.Day", "Gun")</h6></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('today'); }">@Html.T("Common.Today", "Bugun")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('yesterday'); }">@Html.T("Common.Yesterday", "Dun")</a></li>
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><h6 class="dropdown-header">Hafta</h6></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisWeek'); }">Bu Hafta</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastWeek'); }">Gecen Hafta</a></li>
+                                                <li><h6 class="dropdown-header">@Html.T("Common.Week", "Hafta")</h6></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisWeek'); }">@Html.T("Common.ThisWeek", "Bu Hafta")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastWeek'); }">@Html.T("Common.LastWeek", "Gecen Hafta")</a></li>
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><h6 class="dropdown-header">Ay</h6></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisMonth'); }">Bu Ay</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastMonth'); }">Gecen Ay</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last3Months'); }">Son 3 Ay</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last6Months'); }">Son 6 Ay</a></li>
+                                                <li><h6 class="dropdown-header">@Html.T("Common.Month", "Ay")</h6></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisMonth'); }">@Html.T("Common.ThisMonth", "Bu Ay")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastMonth'); }">@Html.T("Common.LastMonth", "Gecen Ay")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last3Months'); }">@Html.T("Common.Last3Months", "Son 3 Ay")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('last6Months'); }">@Html.T("Common.Last6Months", "Son 6 Ay")</a></li>
                                                 <li><hr class="dropdown-divider"></li>
-                                                <li><h6 class="dropdown-header">Yil</h6></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisYear'); }">Bu Yil</a></li>
-                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastYear'); }">Gecen Yil</a></li>
+                                                <li><h6 class="dropdown-header">@Html.T("Common.Year", "Yil")</h6></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('thisYear'); }">@Html.T("Common.ThisYear", "Bu Yil")</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bind="click: function() { setDateRange('lastYear'); }">@Html.T("Common.LastYear", "Gecen Yil")</a></li>
                                             </ul>
                                         </div>
                                     </div>
 
                                     <!-- Puan Araligi -->
                                     <div class="mb-3">
-                                        <label class="form-label">Puan Araligi</label>
+                                        <label class="form-label">@Html.T("Training.ScoreRange", "Puan Araligi")</label>
                                         <div class="row g-2">
                                             <div class="col-6">
                                                 <div class="input-group">
-                                                    <span class="input-group-text">Min</span>
+                                                    <span class="input-group-text">@Html.T("Common.Min", "Min")</span>
                                                     <input type="number" class="form-control" data-bind="value: formMinScore" placeholder="0" min="0" max="100">
                                                     <span class="input-group-text">%</span>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="input-group">
-                                                    <span class="input-group-text">Max</span>
+                                                    <span class="input-group-text">@Html.T("Common.Max", "Max")</span>
                                                     <input type="number" class="form-control" data-bind="value: formMaxScore" placeholder="70" min="0" max="100">
                                                     <span class="input-group-text">%</span>
                                                 </div>
                                             </div>
                                         </div>
-                                        <small class="text-muted">Bu puan araligindaki personeller listelenecek</small>
+                                        <small class="text-muted">@Html.T("Training.ScoreRangeDescription", "Bu puan araligindaki personeller listelenecek")</small>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="d-flex justify-content-between mt-4">
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: goToStep1">
-                                    <i class="bi bi-arrow-left"></i> Geri
+                                    <i class="bi bi-arrow-left"></i> @Html.T("Common.Back", "Geri")
                                 </button>
                                 <button type="button" class="btn btn-primary" data-bind="click: goToStep3, disable: !canShowPersonnel()">
-                                    Personelleri Listele <i class="bi bi-arrow-right"></i>
+                                    @Html.T("Training.ListPersonnel", "Personelleri Listele") <i class="bi bi-arrow-right"></i>
                                 </button>
                             </div>
                         </div>
 
                         <!-- STEP 3: Personnel Selection -->
                         <div class="tab-pane fade" id="step3" role="tabpanel">
-                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-people me-2"></i>Personel Secimi</h6>
+                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-people me-2"></i>@Html.T("Training.PersonnelSelection", "Personel Secimi")</h6>
 
                             <!-- Scope Info -->
                             <div data-bind="visible: selectedVideoScopes().length > 0" class="alert alert-info py-2 mb-3">
-                                <strong><i class="bi bi-info-circle me-1"></i>Puan hesabi:</strong>
+                                <strong><i class="bi bi-info-circle me-1"></i>@Html.T("Training.ScoreCalculation", "Puan hesabi:")</strong>
                                 <span data-bind="foreach: selectedVideoScopes">
                                     <span class="badge bg-secondary ms-1" data-bind="text: checklistName || questionGroupName || questionText"></span>
                                 </span>
@@ -658,7 +658,7 @@
                             <!-- Loading -->
                             <div data-bind="visible: isLoadingPersonnel" class="text-center py-4">
                                 <div class="spinner-border text-primary"></div>
-                                <p class="mt-2 text-muted">Personel listesi yukleniyor...</p>
+                                <p class="mt-2 text-muted">@Html.T("Training.PersonnelListLoading", "Personel listesi yukleniyor...")</p>
                             </div>
 
                             <!-- Toolbar -->
@@ -667,20 +667,20 @@
                                     <div class="col-md-4">
                                         <div class="input-group input-group-sm">
                                             <span class="input-group-text"><i class="bi bi-search"></i></span>
-                                            <input type="text" class="form-control" placeholder="Isim ile ara..."
+                                            <input type="text" class="form-control" placeholder="@Html.T("Common.SearchByName", "Isim ile ara...")"
                                                    data-bind="value: personnelSearchText, valueUpdate: 'input'">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <span class="badge bg-primary" data-bind="text: selectedCount() + ' secildi'"></span>
-                                        <span class="badge bg-secondary ms-1" data-bind="text: visiblePersonnel().length + '/' + personnelWithScores().length + ' gosteriliyor'"></span>
+                                        <span class="badge bg-primary" data-bind="text: selectedCount() + ' @Html.T("Common.Selected", "secildi")'"></span>
+                                        <span class="badge bg-secondary ms-1" data-bind="text: visiblePersonnel().length + '/' + personnelWithScores().length + ' @Html.T("Common.Showing", "gosteriliyor")'"></span>
                                     </div>
                                     <div class="col-md-4 text-end">
                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: selectBelowThreshold">
-                                            <i class="bi bi-check-all"></i> Max puan altini sec
+                                            <i class="bi bi-check-all"></i> @Html.T("Training.SelectBelowThreshold", "Max puan altini sec")
                                         </button>
                                         <button type="button" class="btn btn-sm btn-outline-secondary ms-1" data-bind="click: clearSelection">
-                                            <i class="bi bi-x-circle"></i> Temizle
+                                            <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                                         </button>
                                     </div>
                                 </div>
@@ -692,15 +692,15 @@
                                     <thead class="table-light sticky-top">
                                         <tr>
                                             <th style="width: 40px;">
-                                                <input type="checkbox" class="form-check-input" data-bind="checked: selectAll" title="Tumunu Sec">
+                                                <input type="checkbox" class="form-check-input" data-bind="checked: selectAll" title="@Html.T("Common.SelectAll", "Tumunu Sec")">
                                             </th>
-                                            <th>Personel</th>
-                                            <th>Musteri</th>
+                                            <th>@Html.T("Common.Personnel", "Personel")</th>
+                                            <th>@Html.T("Common.Customer", "Musteri")</th>
                                             <!-- Dinamik Scope Kolonlari -->
                                             <!-- ko foreach: scopeColumnHeaders -->
                                             <th class="text-center" style="min-width: 100px;" data-bind="text: $data"></th>
                                             <!-- /ko -->
-                                            <th class="text-center" style="width: 100px;">Ort. Puan</th>
+                                            <th class="text-center" style="width: 100px;">@Html.T("Training.AvgScore", "Ort. Puan")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: visiblePersonnel">
@@ -736,46 +736,46 @@
                             <!-- Empty State -->
                             <div data-bind="visible: !isLoadingPersonnel() && personnelWithScores().length === 0" class="text-center py-4 text-muted">
                                 <i class="bi bi-info-circle fs-3"></i>
-                                <p class="mb-0 mt-2">Bu kriterlere uyan personel bulunamadi</p>
+                                <p class="mb-0 mt-2">@Html.T("Training.NoMatchingPersonnel", "Bu kriterlere uyan personel bulunamadi")</p>
                             </div>
 
                             <div class="d-flex justify-content-between mt-4">
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: goToStep2">
-                                    <i class="bi bi-arrow-left"></i> Geri
+                                    <i class="bi bi-arrow-left"></i> @Html.T("Common.Back", "Geri")
                                 </button>
                                 <button type="button" class="btn btn-primary" data-bind="click: goToStep4, disable: selectedCount() === 0">
-                                    Ozete Git <i class="bi bi-arrow-right"></i>
+                                    @Html.T("Training.GoToSummary", "Ozete Git") <i class="bi bi-arrow-right"></i>
                                 </button>
                             </div>
                         </div>
 
                         <!-- STEP 4: Summary -->
                         <div class="tab-pane fade" id="step4" role="tabpanel">
-                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-check-circle me-2"></i>Atama Ozeti</h6>
+                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-check-circle me-2"></i>@Html.T("Training.AssignmentSummary", "Atama Ozeti")</h6>
 
                             <div class="row">
                                 <div class="col-md-6">
                                     <!-- Temel Bilgiler -->
                                     <div class="card mb-3">
                                         <div class="card-header bg-light py-2">
-                                            <i class="bi bi-info-circle me-2"></i>Temel Bilgiler
+                                            <i class="bi bi-info-circle me-2"></i>@Html.T("Training.BasicInfo", "Temel Bilgiler")
                                         </div>
                                         <div class="card-body py-2">
                                             <table class="table table-sm mb-0">
                                                 <tr>
-                                                    <th style="width: 40%;">Atama Basligi:</th>
+                                                    <th style="width: 40%;">@Html.T("Training.AssignmentTitle", "Atama Basligi"):</th>
                                                     <td><strong data-bind="text: formTitle"></strong></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Video:</th>
+                                                    <th>@Html.T("Training.Video", "Video"):</th>
                                                     <td><span class="badge bg-primary" data-bind="text: selectedVideoTitle"></span></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Baslangic:</th>
+                                                    <th>@Html.T("Common.StartDate", "Baslangic"):</th>
                                                     <td data-bind="text: formatDate(formStartDate())"></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Bitis:</th>
+                                                    <th>@Html.T("Common.EndDate", "Bitis"):</th>
                                                     <td data-bind="text: formatDate(formDueDate())"></td>
                                                 </tr>
                                             </table>
@@ -785,30 +785,30 @@
                                     <!-- Izleme Ayarlari -->
                                     <div class="card mb-3">
                                         <div class="card-header bg-light py-2">
-                                            <i class="bi bi-gear me-2"></i>Izleme Ayarlari
+                                            <i class="bi bi-gear me-2"></i>@Html.T("Training.WatchSettings", "Izleme Ayarlari")
                                         </div>
                                         <div class="card-body py-2">
                                             <table class="table table-sm mb-0">
                                                 <tr>
-                                                    <th style="width: 40%;">Min Izleme:</th>
-                                                    <td data-bind="text: (formMinWatchCount() || 1) + ' kere'"></td>
+                                                    <th style="width: 40%;">@Html.T("Training.MinWatch", "Min Izleme"):</th>
+                                                    <td data-bind="text: (formMinWatchCount() || 1) + ' @Html.T("Common.Times", "kere")'"></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Max Izleme:</th>
-                                                    <td data-bind="text: formMaxWatchCount() ? formMaxWatchCount() + ' kere' : 'Sinirsiz'"></td>
+                                                    <th>@Html.T("Training.MaxWatch", "Max Izleme"):</th>
+                                                    <td data-bind="text: formMaxWatchCount() ? formMaxWatchCount() + ' @Html.T("Common.Times", "kere")' : '@Html.T("Training.Unlimited", "Sinirsiz")'"></td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Hiz Degisimi:</th>
+                                                    <th>@Html.T("Training.SpeedChange", "Hiz Degisimi"):</th>
                                                     <td>
-                                                        <span data-bind="visible: formAllowSpeedChange" class="badge bg-success">Izin var</span>
-                                                        <span data-bind="visible: !formAllowSpeedChange()" class="badge bg-danger">Izin yok</span>
+                                                        <span data-bind="visible: formAllowSpeedChange" class="badge bg-success">@Html.T("Training.Allowed", "Izin var")</span>
+                                                        <span data-bind="visible: !formAllowSpeedChange()" class="badge bg-danger">@Html.T("Training.NotAllowed", "Izin yok")</span>
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <th>Ileri/Geri Sarma:</th>
+                                                    <th>@Html.T("Training.ForwardBackward", "Ileri/Geri Sarma"):</th>
                                                     <td>
-                                                        <span data-bind="visible: formAllowSeeking" class="badge bg-success">Izin var</span>
-                                                        <span data-bind="visible: !formAllowSeeking()" class="badge bg-danger">Izin yok</span>
+                                                        <span data-bind="visible: formAllowSeeking" class="badge bg-success">@Html.T("Training.Allowed", "Izin var")</span>
+                                                        <span data-bind="visible: !formAllowSeeking()" class="badge bg-danger">@Html.T("Training.NotAllowed", "Izin yok")</span>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -820,20 +820,20 @@
                                     <!-- Email Ayarlari -->
                                     <div class="card mb-3">
                                         <div class="card-header bg-light py-2">
-                                            <i class="bi bi-envelope me-2"></i>Email Ayarlari
+                                            <i class="bi bi-envelope me-2"></i>@Html.T("Training.EmailSettings", "Email Ayarlari")
                                         </div>
                                         <div class="card-body py-2">
                                             <table class="table table-sm mb-0">
                                                 <tr>
-                                                    <th style="width: 40%;">Email Gonder:</th>
+                                                    <th style="width: 40%;">@Html.T("Training.SendEmail", "Email Gonder"):</th>
                                                     <td>
-                                                        <span data-bind="visible: formSendEmail" class="badge bg-success">Evet</span>
-                                                        <span data-bind="visible: !formSendEmail()" class="badge bg-secondary">Hayir</span>
+                                                        <span data-bind="visible: formSendEmail" class="badge bg-success">@Html.T("Common.Yes", "Evet")</span>
+                                                        <span data-bind="visible: !formSendEmail()" class="badge bg-secondary">@Html.T("Common.No", "Hayir")</span>
                                                     </td>
                                                 </tr>
                                                 <tr data-bind="visible: formSendEmail">
-                                                    <th>Sablon:</th>
-                                                    <td data-bind="text: selectedEmailTemplateName() || 'Varsayilan'"></td>
+                                                    <th>@Html.T("Training.Template", "Sablon"):</th>
+                                                    <td data-bind="text: selectedEmailTemplateName() || '@Html.T("Training.Default", "Varsayilan")'"></td>
                                                 </tr>
                                             </table>
                                         </div>
@@ -842,13 +842,13 @@
                                     <!-- Personel Ozeti -->
                                     <div class="card mb-3">
                                         <div class="card-header bg-light py-2">
-                                            <i class="bi bi-people me-2"></i>Secilen Personel
+                                            <i class="bi bi-people me-2"></i>@Html.T("Training.SelectedPersonnel", "Secilen Personel")
                                         </div>
                                         <div class="card-body py-2">
                                             <div class="d-flex align-items-center justify-content-center">
                                                 <div class="text-center">
                                                     <h2 class="mb-0 text-primary" data-bind="text: selectedCount()"></h2>
-                                                    <span class="text-muted">kisi</span>
+                                                    <span class="text-muted">@Html.T("Common.Person", "kisi")</span>
                                                 </div>
                                             </div>
                                             <div class="mt-2" data-bind="visible: selectedPersonnelPreview().length > 0">
@@ -857,7 +857,7 @@
                                                     <li><i class="bi bi-person me-1"></i><span data-bind="text: userName"></span></li>
                                                     <!-- /ko -->
                                                     <!-- ko if: selectedCount() > 5 -->
-                                                    <li class="text-muted">... ve <span data-bind="text: selectedCount() - 5"></span> kisi daha</li>
+                                                    <li class="text-muted">... ve <span data-bind="text: selectedCount() - 5"></span> @Html.T("Training.MorePersons", "kisi daha")</li>
                                                     <!-- /ko -->
                                                 </ul>
                                             </div>
@@ -868,16 +868,16 @@
 
                             <div class="alert alert-warning mb-3">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                Lutfen yukaridaki bilgileri kontrol edin. "Atamayi Olustur" butonuna tikladiginizda islem geri alinamaz.
+                                @Html.T("Training.CreateWarning", "Lutfen yukaridaki bilgileri kontrol edin. Atamayi Olustur butonuna tikladiginizda islem geri alinamaz.")
                             </div>
 
                             <div class="d-flex justify-content-between">
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: goToStep3">
-                                    <i class="bi bi-arrow-left"></i> Geri
+                                    <i class="bi bi-arrow-left"></i> @Html.T("Common.Back", "Geri")
                                 </button>
                                 <button type="button" class="btn btn-success btn-lg" data-bind="click: createAssignment, disable: isSaving">
-                                    <span data-bind="visible: !isSaving()"><i class="bi bi-check-lg me-1"></i> Atamayi Olustur</span>
-                                    <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span> Olusturuluyor...</span>
+                                    <span data-bind="visible: !isSaving()"><i class="bi bi-check-lg me-1"></i> @Html.T("Training.CreateAssignment", "Atamayi Olustur")</span>
+                                    <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span> @Html.T("Training.Creating", "Olusturuluyor...")</span>
                                 </button>
                             </div>
                         </div>
@@ -892,7 +892,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-people me-2"></i>Katilimcilar</h5>
+                    <h5 class="modal-title"><i class="bi bi-people me-2"></i>@Html.T("Training.Participants", "Katilimcilar")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -903,10 +903,10 @@
                         <table class="table table-sm">
                             <thead>
                                 <tr>
-                                    <th>Kullanici</th>
-                                    <th class="text-center">Durum</th>
-                                    <th class="text-center">Izlenen</th>
-                                    <th class="text-center">Tamamlama</th>
+                                    <th>@Html.T("Common.User", "Kullanici")</th>
+                                    <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                    <th class="text-center">@Html.T("Training.Watched", "Izlenen")</th>
+                                    <th class="text-center">@Html.T("Training.Completion", "Tamamlama")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: participants">
@@ -914,14 +914,14 @@
                                     <td>
                                         <span data-bind="text: userName"></span>
                                         <!-- ko if: isExternal -->
-                                        <span class="badge bg-secondary ms-1">Dis</span>
+                                        <span class="badge bg-secondary ms-1">@Html.T("Training.External", "Dis")</span>
                                         <!-- /ko -->
                                         <br><small class="text-muted" data-bind="text: email"></small>
                                     </td>
                                     <td class="text-center">
-                                        <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekliyor</span>
-                                        <span data-bind="visible: statusId === 2" class="badge bg-info">Izliyor</span>
-                                        <span data-bind="visible: statusId === 3" class="badge bg-success">Tamamladi</span>
+                                        <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("Training.Waiting", "Bekliyor")</span>
+                                        <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("Training.Watching", "Izliyor")</span>
+                                        <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Training.Completed", "Tamamladi")</span>
                                     </td>
                                     <td class="text-center" data-bind="text: $parent.formatDuration(watchedSeconds)"></td>
                                     <td class="text-center" data-bind="text: completedAt ? $parent.formatDate(completedAt) : '-'"></td>
@@ -929,12 +929,12 @@
                             </tbody>
                         </table>
                         <div data-bind="visible: participants().length === 0" class="text-center text-muted py-3">
-                            Henuz katilimci yok
+                            @Html.T("Training.NoParticipantsYet", "Henuz katilimci yok")
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>
@@ -946,7 +946,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-envelope me-2"></i>Email Yonetimi
+                        <i class="bi bi-envelope me-2"></i>@Html.T("Training.EmailManagement", "Email Yonetimi")
                         <small class="text-muted ms-2" data-bind="text: '- ' + emailModalAssignmentTitle()"></small>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -954,52 +954,52 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-funnel me-2"></i>Filtreler</h6>
+                            <h6 class="border-bottom pb-2 mb-3"><i class="bi bi-funnel me-2"></i>@Html.T("Common.Filters", "Filtreler")</h6>
                             <div class="mb-3">
-                                <label class="form-label">Email Durumu</label>
+                                <label class="form-label">@Html.T("Training.EmailStatus", "Email Durumu")</label>
                                 <select class="form-select" data-bind="value: emailFilterEmailSent">
-                                    <option value="">Tumu</option>
-                                    <option value="true">Email Gitmis</option>
-                                    <option value="false">Email Gitmemis</option>
+                                    <option value="">@Html.T("Common.All", "Tumu")</option>
+                                    <option value="true">@Html.T("Training.EmailSent", "Email Gitmis")</option>
+                                    <option value="false">@Html.T("Training.EmailNotSent", "Email Gitmemis")</option>
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Izleme Durumu</label>
+                                <label class="form-label">@Html.T("Training.WatchStatus", "Izleme Durumu")</label>
                                 <select class="form-select" data-bind="value: emailFilterHasStarted">
-                                    <option value="">Tumu</option>
-                                    <option value="true">Baslamis</option>
-                                    <option value="false">Baslamadi</option>
+                                    <option value="">@Html.T("Common.All", "Tumu")</option>
+                                    <option value="true">@Html.T("Training.Started", "Baslamis")</option>
+                                    <option value="false">@Html.T("Training.NotStarted", "Baslamadi")</option>
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Tamamlama</label>
+                                <label class="form-label">@Html.T("Training.Completion", "Tamamlama")</label>
                                 <select class="form-select" data-bind="value: emailFilterIsCompleted">
-                                    <option value="">Tumu</option>
-                                    <option value="true">Tamamladi</option>
-                                    <option value="false">Tamamlamadi</option>
+                                    <option value="">@Html.T("Common.All", "Tumu")</option>
+                                    <option value="true">@Html.T("Training.Completed", "Tamamladi")</option>
+                                    <option value="false">@Html.T("Training.NotCompleted", "Tamamlamadi")</option>
                                 </select>
                             </div>
                             <hr>
                             <div class="mb-3">
-                                <label class="form-label">Email Turu</label>
+                                <label class="form-label">@Html.T("Training.EmailType", "Email Turu")</label>
                                 <select class="form-select" data-bind="value: emailModalTypeId">
-                                    <option value="1">Ilk Bildirim</option>
-                                    <option value="2">Hatirlatma</option>
+                                    <option value="1">@Html.T("Training.FirstNotification", "Ilk Bildirim")</option>
+                                    <option value="2">@Html.T("Training.Reminder", "Hatirlatma")</option>
                                 </select>
                             </div>
                             <div class="d-grid gap-2 mt-4">
                                 <button type="button" class="btn btn-outline-primary" data-bind="click: selectAllEmailParticipants">
-                                    <i class="bi bi-check-all"></i> Tumunu Sec
+                                    <i class="bi bi-check-all"></i> @Html.T("Common.SelectAll", "Tumunu Sec")
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary" data-bind="click: clearEmailSelection">
-                                    <i class="bi bi-x-circle"></i> Temizle
+                                    <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                                 </button>
                             </div>
                         </div>
                         <div class="col-md-8">
                             <h6 class="border-bottom pb-2 mb-3">
-                                <i class="bi bi-people me-2"></i>Katilimcilar
-                                <span class="badge bg-primary ms-2" data-bind="text: emailSelectedCount() + ' secili'"></span>
+                                <i class="bi bi-people me-2"></i>@Html.T("Training.Participants", "Katilimcilar")
+                                <span class="badge bg-primary ms-2" data-bind="text: emailSelectedCount() + ' @Html.T("Common.Selected", "secili")'"></span>
                             </h6>
                             <div data-bind="visible: isLoadingEmailParticipants" class="text-center py-4">
                                 <div class="spinner-border text-primary"></div>
@@ -1009,10 +1009,10 @@
                                     <thead class="table-light sticky-top">
                                         <tr>
                                             <th style="width: 40px;"><input type="checkbox" class="form-check-input" data-bind="checked: emailSelectAll"></th>
-                                            <th>Personel</th>
+                                            <th>@Html.T("Common.Personnel", "Personel")</th>
                                             <th class="text-center">Email</th>
-                                            <th class="text-center">Durum</th>
-                                            <th class="text-center">Son Email</th>
+                                            <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                            <th class="text-center">@Html.T("Training.LastEmail", "Son Email")</th>
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: emailFilteredParticipants">
@@ -1021,7 +1021,7 @@
                                             <td>
                                                 <span data-bind="text: userName"></span>
                                                 <!-- ko if: isExternal -->
-                                                <span class="badge bg-info ms-1">Dis</span>
+                                                <span class="badge bg-info ms-1">@Html.T("Training.External", "Dis")</span>
                                                 <!-- /ko -->
                                                 <br><small class="text-muted" data-bind="text: email"></small>
                                             </td>
@@ -1034,9 +1034,9 @@
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-center">
-                                                <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekleme</span>
-                                                <span data-bind="visible: statusId === 2" class="badge bg-info">Izliyor</span>
-                                                <span data-bind="visible: statusId === 3" class="badge bg-success">Tamamladi</span>
+                                                <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("Training.Waiting", "Bekleme")</span>
+                                                <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("Training.Watching", "Izliyor")</span>
+                                                <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Training.Completed", "Tamamladi")</span>
                                             </td>
                                             <td class="text-center">
                                                 <small data-bind="text: lastEmailSentAt ? $parent.formatDate(lastEmailSentAt) : '-'"></small>
@@ -1047,18 +1047,18 @@
                             </div>
                             <div data-bind="visible: !isLoadingEmailParticipants() && emailFilteredParticipants().length === 0" class="text-center py-4 text-muted">
                                 <i class="bi bi-inbox fs-1"></i>
-                                <p class="mb-0 mt-2">Filtre kriterlerine uyan katilimci yok</p>
+                                <p class="mb-0 mt-2">@Html.T("Training.NoMatchingParticipants", "Filtre kriterlerine uyan katilimci yok")</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: sendEmails, disable: isSendingEmails() || emailSelectedCount() === 0">
                         <span data-bind="visible: !isSendingEmails()">
-                            <i class="bi bi-send me-1"></i> Email Gonder (<span data-bind="text: emailSelectedCount"></span>)
+                            <i class="bi bi-send me-1"></i> @Html.T("Training.SendEmail", "Email Gonder") (<span data-bind="text: emailSelectedCount"></span>)
                         </span>
-                        <span data-bind="visible: isSendingEmails"><span class="spinner-border spinner-border-sm"></span> Gonderiliyor...</span>
+                        <span data-bind="visible: isSendingEmails"><span class="spinner-border spinner-border-sm"></span> @Html.T("Training.Sending", "Gonderiliyor...")</span>
                     </button>
                 </div>
             </div>
@@ -1071,7 +1071,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-pencil me-2"></i>Atama Duzenle
+                        <i class="bi bi-pencil me-2"></i>@Html.T("Training.EditAssignment", "Atama Duzenle")
                         <small class="text-muted ms-2" data-bind="text: '- ' + editVideoTitle()"></small>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -1087,12 +1087,12 @@
                         <ul class="nav nav-tabs mb-3" role="tablist">
                             <li class="nav-item">
                                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#edit-general">
-                                    <i class="bi bi-gear me-1"></i>Genel
+                                    <i class="bi bi-gear me-1"></i>@Html.T("Common.General", "Genel")
                                 </button>
                             </li>
                             <li class="nav-item">
                                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#edit-participants">
-                                    <i class="bi bi-people me-1"></i>Katilimcilar
+                                    <i class="bi bi-people me-1"></i>@Html.T("Training.Participants", "Katilimcilar")
                                     <span class="badge bg-secondary ms-1" data-bind="text: editParticipants().length + editExternalParticipants().length"></span>
                                 </button>
                             </li>
@@ -1103,46 +1103,46 @@
                             <div class="tab-pane fade show active" id="edit-general">
                                 <div class="row g-3">
                                     <div class="col-12">
-                                        <label class="form-label">Baslik <span class="text-danger">*</span></label>
+                                        <label class="form-label">@Html.T("Common.Title", "Baslik") <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control" data-bind="value: editTitle">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Baslangic Tarihi <span class="text-danger">*</span></label>
+                                        <label class="form-label">@Html.T("Common.StartDate", "Baslangic Tarihi") <span class="text-danger">*</span></label>
                                         <input type="date" class="form-control" data-bind="value: editStartDate">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Bitis Tarihi <span class="text-danger">*</span></label>
+                                        <label class="form-label">@Html.T("Common.DueDate", "Bitis Tarihi") <span class="text-danger">*</span></label>
                                         <input type="date" class="form-control" data-bind="value: editDueDate">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Email Sablonu</label>
-                                        <select class="form-select" data-bind="value: editEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Sablon secin...'"></select>
+                                        <label class="form-label">@Html.T("Training.EmailTemplate", "Email Sablonu")</label>
+                                        <select class="form-select" data-bind="value: editEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Training.SelectTemplate", "Sablon secin...")'"></select>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Durum</label>
+                                        <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                                         <div class="form-check form-switch mt-2">
                                             <input class="form-check-input" type="checkbox" data-bind="checked: editIsActive">
-                                            <label class="form-check-label" data-bind="text: editIsActive() ? 'Aktif' : 'Pasif'"></label>
+                                            <label class="form-check-label" data-bind="text: editIsActive() ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Passive", "Pasif")'"></label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Min. Izleme Sayisi</label>
+                                        <label class="form-label">@Html.T("Training.MinWatchCount", "Min. Izleme Sayisi")</label>
                                         <input type="number" class="form-control" min="1" data-bind="value: editMinWatchCount">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label">Max. Izleme Sayisi</label>
-                                        <input type="number" class="form-control" min="1" placeholder="Sinirsiz" data-bind="value: editMaxWatchCount">
+                                        <label class="form-label">@Html.T("Training.MaxWatchCount", "Max. Izleme Sayisi")</label>
+                                        <input type="number" class="form-control" min="1" placeholder="@Html.T("Training.Unlimited", "Sinirsiz")" data-bind="value: editMaxWatchCount">
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" data-bind="checked: editAllowSpeedChange">
-                                            <label class="form-check-label">Hiz degistirmeye izin ver</label>
+                                            <label class="form-check-label">@Html.T("Training.AllowSpeedChange", "Hiz degistirmeye izin ver")</label>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" data-bind="checked: editAllowSeeking">
-                                            <label class="form-check-label">Ileri/geri sarmaya izin ver</label>
+                                            <label class="form-check-label">@Html.T("Training.AllowSeeking", "Ileri/geri sarmaya izin ver")</label>
                                         </div>
                                     </div>
                                 </div>
@@ -1153,7 +1153,7 @@
                                 <!-- Iç Katilimcilar (isExternal=false ise göster) -->
                                 <div data-bind="visible: !editIsExternal()">
                                     <h6 class="border-bottom pb-2 mb-3">
-                                        <i class="bi bi-person me-1"></i>Ic Katilimcilar
+                                        <i class="bi bi-person me-1"></i>@Html.T("Training.InternalParticipants", "Ic Katilimcilar")
                                         <span class="badge bg-primary" data-bind="text: editParticipants().length"></span>
                                     </h6>
 
@@ -1162,9 +1162,9 @@
                                         <table class="table table-sm table-hover mb-0">
                                             <thead class="table-light">
                                                 <tr>
-                                                    <th>Ad Soyad</th>
-                                                    <th>Email</th>
-                                                    <th>Durum</th>
+                                                    <th>@Html.T("Common.FullName", "Ad Soyad")</th>
+                                                    <th>@Html.T("Common.Email", "Email")</th>
+                                                    <th>@Html.T("Common.Status", "Durum")</th>
                                                     <th style="width: 50px;"></th>
                                                 </tr>
                                             </thead>
@@ -1173,10 +1173,10 @@
                                                     <td data-bind="text: userName"></td>
                                                     <td><small class="text-muted" data-bind="text: email"></small></td>
                                                     <td>
-                                                        <span class="badge" data-bind="css: isCompleted ? 'bg-success' : (statusId === 2 ? 'bg-info' : 'bg-secondary'), text: isCompleted ? 'Tamamladi' : (statusId === 2 ? 'Izliyor' : 'Bekliyor')"></span>
+                                                        <span class="badge" data-bind="css: isCompleted ? 'bg-success' : (statusId === 2 ? 'bg-info' : 'bg-secondary'), text: isCompleted ? '@Html.T("Training.Completed", "Tamamladi")' : (statusId === 2 ? '@Html.T("Training.Watching", "Izliyor")' : '@Html.T("Training.Waiting", "Bekliyor")')"></span>
                                                     </td>
                                                     <td>
-                                                        <button class="btn btn-sm" data-bind="click: $parent.toggleRemoveParticipant, css: markedForRemoval() ? 'btn-success' : 'btn-outline-danger'" title="Sil/Geri Al">
+                                                        <button class="btn btn-sm" data-bind="click: $parent.toggleRemoveParticipant, css: markedForRemoval() ? 'btn-success' : 'btn-outline-danger'" title="@Html.T("Training.DeleteOrUndo", "Sil/Geri Al")">
                                                             <i data-bind="css: markedForRemoval() ? 'bi bi-arrow-counterclockwise' : 'bi bi-trash'"></i>
                                                         </button>
                                                     </td>
@@ -1185,15 +1185,15 @@
                                         </table>
                                     </div>
                                     <div data-bind="visible: editParticipants().length === 0" class="text-muted small mb-3">
-                                        Henuz ic katilimci yok.
+                                        @Html.T("Training.NoInternalParticipantsYet", "Henuz ic katilimci yok.")
                                     </div>
 
                                     <!-- Yeni katilimci ekle -->
                                     <div class="card bg-light mb-3">
                                         <div class="card-body py-2">
-                                            <label class="form-label small mb-1">Yeni Katilimci Ekle</label>
+                                            <label class="form-label small mb-1">@Html.T("Training.AddNewParticipant", "Yeni Katilimci Ekle")</label>
                                             <div class="position-relative">
-                                                <input type="text" class="form-control form-control-sm" placeholder="Video kapsaminda dinlemesi olan personel ara..."
+                                                <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Training.SearchPersonnelInScope", "Video kapsaminda dinlemesi olan personel ara...")"
                                                        data-bind="value: editNewParticipantSearch, valueUpdate: 'afterkeydown', event: { keyup: searchEditPersonnel, focus: showEditPersonnelDropdown, blur: hideEditPersonnelDropdownDelayed }">
                                                 <div class="dropdown-menu w-100" data-bind="css: { show: isEditPersonnelDropdownVisible() && editPersonnelSearchResults().length > 0 }">
                                                     <!-- ko foreach: editPersonnelSearchResults -->
@@ -1209,7 +1209,7 @@
                                             </div>
                                             <!-- Eklenmek uzere olanlar -->
                                             <div data-bind="visible: editAddParticipants().length > 0" class="mt-2">
-                                                <small class="text-success">Eklenecek:</small>
+                                                <small class="text-success">@Html.T("Training.ToBeAdded", "Eklenecek"):</small>
                                                 <!-- ko foreach: editAddParticipants -->
                                                 <span class="badge bg-success me-1">
                                                     <span data-bind="text: userName"></span>
@@ -1223,7 +1223,7 @@
 
                                 <!-- Dis Katilimcilar -->
                                 <h6 class="border-bottom pb-2 mb-3">
-                                    <i class="bi bi-person-badge me-1"></i>Dis Katilimcilar
+                                    <i class="bi bi-person-badge me-1"></i>@Html.T("Training.ExternalParticipants", "Dis Katilimcilar")
                                     <span class="badge bg-success" data-bind="text: editExternalParticipants().length"></span>
                                 </h6>
 
@@ -1232,9 +1232,9 @@
                                     <table class="table table-sm table-hover mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Email</th>
-                                                <th>Ad Soyad</th>
-                                                <th>Durum</th>
+                                                <th>@Html.T("Common.Email", "Email")</th>
+                                                <th>@Html.T("Common.FullName", "Ad Soyad")</th>
+                                                <th>@Html.T("Common.Status", "Durum")</th>
                                                 <th style="width: 50px;"></th>
                                             </tr>
                                         </thead>
@@ -1243,10 +1243,10 @@
                                                 <td data-bind="text: email"></td>
                                                 <td data-bind="text: fullName || '-'"></td>
                                                 <td>
-                                                    <span class="badge" data-bind="css: isCompleted ? 'bg-success' : (statusId === 2 ? 'bg-info' : 'bg-secondary'), text: isCompleted ? 'Tamamladi' : (statusId === 2 ? 'Izliyor' : 'Bekliyor')"></span>
+                                                    <span class="badge" data-bind="css: isCompleted ? 'bg-success' : (statusId === 2 ? 'bg-info' : 'bg-secondary'), text: isCompleted ? '@Html.T("Training.Completed", "Tamamladi")' : (statusId === 2 ? '@Html.T("Training.Watching", "Izliyor")' : '@Html.T("Training.Waiting", "Bekliyor")')"></span>
                                                 </td>
                                                 <td>
-                                                    <button class="btn btn-sm" data-bind="click: $parent.toggleRemoveExternal, css: markedForRemoval() ? 'btn-success' : 'btn-outline-danger'" title="Sil/Geri Al">
+                                                    <button class="btn btn-sm" data-bind="click: $parent.toggleRemoveExternal, css: markedForRemoval() ? 'btn-success' : 'btn-outline-danger'" title="@Html.T("Training.DeleteOrUndo", "Sil/Geri Al")">
                                                         <i data-bind="css: markedForRemoval() ? 'bi bi-arrow-counterclockwise' : 'bi bi-trash'"></i>
                                                     </button>
                                                 </td>
@@ -1255,32 +1255,32 @@
                                     </table>
                                 </div>
                                 <div data-bind="visible: editExternalParticipants().length === 0" class="text-muted small mb-3">
-                                    Henuz dis katilimci yok.
+                                    @Html.T("Training.NoExternalParticipantsYet", "Henuz dis katilimci yok.")
                                 </div>
 
                                 <!-- Yeni dis katilimci ekle -->
                                 <div class="card bg-light">
                                     <div class="card-body py-2">
-                                        <label class="form-label small mb-1">Yeni Dis Katilimci Ekle</label>
+                                        <label class="form-label small mb-1">@Html.T("Training.AddNewExternalParticipant", "Yeni Dis Katilimci Ekle")</label>
                                         <div class="row g-2">
                                             <div class="col-md-5">
-                                                <input type="email" class="form-control form-control-sm" placeholder="Email *" data-bind="value: editNewExternalEmail">
+                                                <input type="email" class="form-control form-control-sm" placeholder="@Html.T("Common.Email", "Email") *" data-bind="value: editNewExternalEmail">
                                             </div>
                                             <div class="col-md-3">
-                                                <input type="text" class="form-control form-control-sm" placeholder="Ad" data-bind="value: editNewExternalFirstName">
+                                                <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.FirstName", "Ad")" data-bind="value: editNewExternalFirstName">
                                             </div>
                                             <div class="col-md-3">
-                                                <input type="text" class="form-control form-control-sm" placeholder="Soyad" data-bind="value: editNewExternalLastName">
+                                                <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.LastName", "Soyad")" data-bind="value: editNewExternalLastName">
                                             </div>
                                             <div class="col-md-1">
-                                                <button class="btn btn-sm btn-primary w-100" data-bind="click: addEditExternal" title="Ekle">
+                                                <button class="btn btn-sm btn-primary w-100" data-bind="click: addEditExternal" title="@Html.T("Common.Add", "Ekle")">
                                                     <i class="bi bi-plus"></i>
                                                 </button>
                                             </div>
                                         </div>
                                         <!-- Eklenmek uzere olanlar -->
                                         <div data-bind="visible: editAddExternals().length > 0" class="mt-2">
-                                            <small class="text-success">Eklenecek:</small>
+                                            <small class="text-success">@Html.T("Training.ToBeAdded", "Eklenecek"):</small>
                                             <!-- ko foreach: editAddExternals -->
                                             <span class="badge bg-success me-1">
                                                 <span data-bind="text: email"></span>
@@ -1297,8 +1297,8 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Iptal</button>
                     <button type="button" class="btn btn-primary" data-bind="click: saveEdit, disable: isSavingEdit">
-                        <span data-bind="visible: !isSavingEdit()"><i class="bi bi-check-lg me-1"></i>Kaydet</span>
-                        <span data-bind="visible: isSavingEdit"><span class="spinner-border spinner-border-sm"></span> Kaydediliyor...</span>
+                        <span data-bind="visible: !isSavingEdit()"><i class="bi bi-check-lg me-1"></i>@Html.T("Common.Save", "Kaydet")</span>
+                        <span data-bind="visible: isSavingEdit"><span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Saving", "Kaydediliyor...")</span>
                     </button>
                 </div>
             </div>

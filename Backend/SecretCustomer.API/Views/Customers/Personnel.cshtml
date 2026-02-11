@@ -13,7 +13,7 @@
             <small class="text-muted ms-2">- @customerName</small>
         </h4>
         <div class="d-flex gap-2">
-            <button class="btn btn-success btn-sm" data-bind="click: exportToExcel" title="Excel'e Aktar">
+            <button class="btn btn-success btn-sm" data-bind="click: exportToExcel" title="@Html.T("Common.ExportExcel", "Excel'e Aktar")">
                 <i class="bi bi-file-earmark-excel me-1"></i>Excel
             </button>
             <button class="btn btn-primary" data-bind="click: createNew">
@@ -35,7 +35,7 @@
                            data-bind="value: searchText, valueUpdate: 'afterkeydown'" autocomplete="off">
                 </div>
                 <div class="col-md-8 text-end">
-                    <span class="text-muted small" data-bind="text: totalCount() + ' kayıt'"></span>
+                    <span class="text-muted small" data-bind="text: totalCount() + ' @Html.T("Common.RecordSuffix", "kayıt")'"></span>
                 </div>
             </div>
         </div>
@@ -81,13 +81,13 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" title="Düzenle" data-bind="click: $parent.editPersonnel">
+                                    <button class="btn btn-outline-primary" title="@Html.T("Common.Edit", "Düzenle")" data-bind="click: $parent.editPersonnel">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button class="btn btn-outline-warning" title="Şifre Sıfırla" data-bind="click: $parent.showResetPassword">
+                                    <button class="btn btn-outline-warning" title="@Html.T("Account.ResetPassword", "Şifre Sıfırla")" data-bind="click: $parent.showResetPassword">
                                         <i class="bi bi-key"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger" title="Sil" data-bind="click: $parent.deletePersonnel">
+                                    <button class="btn btn-outline-danger" title="@Html.T("Common.Delete", "Sil")" data-bind="click: $parent.deletePersonnel">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -130,10 +130,10 @@
                 <div class="modal-header">
                     <h5 class="modal-title">
                         <!-- ko if: id() -->
-                        <i class="bi bi-pencil me-2"></i>Personel Düzenle
+                        <i class="bi bi-pencil me-2"></i>@Html.T("CustomerPersonnel.EditPersonnel", "Personel Düzenle")
                         <!-- /ko -->
                         <!-- ko ifnot: id() -->
-                        <i class="bi bi-plus-circle me-2"></i>Yeni Personel
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("CustomerPersonnel.NewPersonnel", "Yeni Personel")
                         <!-- /ko -->
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -194,7 +194,7 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-primary" data-bind="click: $parent.savePersonnel, disable: $parent.isSaving">
                         <span data-bind="visible: !$parent.isSaving()">@Html.T("Common.Save", "Kaydet")</span>
-                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>Kaydediliyor...</span>
+                        <span data-bind="visible: $parent.isSaving"><span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Saving", "Kaydediliyor...")</span>
                     </button>
                 </div>
             </div>
@@ -206,24 +206,24 @@
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-key me-2"></i>Şifre Sıfırla</h5>
+                    <h5 class="modal-title"><i class="bi bi-key me-2"></i>@Html.T("Account.ResetPassword", "Şifre Sıfırla")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p class="text-muted small mb-3" data-bind="text: selectedPersonnelName"></p>
                     <div class="mb-3">
-                        <label class="form-label">Yeni Şifre <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("User.NewPassword", "Yeni Şifre") <span class="text-danger">*</span></label>
                         <input type="password" class="form-control" data-bind="value: newPassword">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Şifre Tekrar <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("User.ConfirmPassword", "Şifre Tekrar") <span class="text-danger">*</span></label>
                         <input type="password" class="form-control" data-bind="value: confirmPassword">
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
                     <button type="button" class="btn btn-warning btn-sm" data-bind="click: resetPassword, disable: isResettingPassword">
-                        <span data-bind="visible: !isResettingPassword()">Şifreyi Sıfırla</span>
+                        <span data-bind="visible: !isResettingPassword()">@Html.T("Account.ResetPassword", "Şifreyi Sıfırla")</span>
                         <span data-bind="visible: isResettingPassword"><span class="spinner-border spinner-border-sm me-1"></span></span>
                     </button>
                 </div>

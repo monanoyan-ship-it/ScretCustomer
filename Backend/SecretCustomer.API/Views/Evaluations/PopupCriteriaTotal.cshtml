@@ -137,7 +137,7 @@
                                             <td>
                                                 <span data-bind="text: questionText"></span>
                                                 <!-- ko ifnot: isRequired -->
-                                                <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65em;">Opsiyonel</span>
+                                                <span class="badge bg-warning text-dark ms-1" style="font-size: 0.65em;">@Html.T("Common.Optional", "Opsiyonel")</span>
                                                 <!-- /ko -->
                                                 <!-- ko if: comment -->
                                                 <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: comment"></span></small>
@@ -148,7 +148,7 @@
                                                 <span data-bind="text: answerText"></span>
                                                 <!-- /ko -->
                                                 <!-- ko ifnot: isAnswered -->
-                                                <span class="text-muted fst-italic" data-bind="text: isRequired ? 'Cevaplanmadı' : 'Gerekmedi'"></span>
+                                                <span class="text-muted fst-italic" data-bind="text: isRequired ? '@Html.T("Evaluation.NotAnswered", "Cevaplanmadı")' : '@Html.T("Evaluation.NotRequired", "Gerekmedi")'"></span>
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-end">

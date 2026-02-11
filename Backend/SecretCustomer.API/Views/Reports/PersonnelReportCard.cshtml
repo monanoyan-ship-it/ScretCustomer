@@ -37,22 +37,22 @@
             <div class="row g-2 mb-3">
                 <div class="col-md-3">
                     <label class="form-label small mb-1">@Html.T("Report.Customer", "Müşteri")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedCustomerId, options: customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: 'Tüm Müşteriler', event: { change: onCustomerChange }"></select>
+                    <select class="form-select form-select-sm" data-bind="value: selectedCustomerId, options: customers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Common.AllCustomers", "Tüm Müşteriler")', event: { change: onCustomerChange }"></select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1">@Html.T("Report.Organization", "Şube")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedOrganizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Tüm Şubeler', event: { change: onOrganizationChange }, enable: organizations().length > 0"></select>
+                    <select class="form-select form-select-sm" data-bind="value: selectedOrganizationId, options: filteredOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.AllBranches", "Tüm Şubeler")', event: { change: onOrganizationChange }, enable: organizations().length > 0"></select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1">@Html.T("Report.Personnel", "Temsilci")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedPersonnelId, options: filteredPersonnelList, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçin...', enable: personnelList().length > 0, event: { change: onPersonnelChange }"></select>
+                    <select class="form-select form-select-sm" data-bind="value: selectedPersonnelId, options: filteredPersonnelList, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçin...")', enable: personnelList().length > 0, event: { change: onPersonnelChange }"></select>
                 </div>
                 <div class="col-md-3 d-flex align-items-end gap-1">
                     <button class="btn btn-primary btn-sm" data-bind="click: loadReport, disable: !selectedPersonnelId()">
-                        <i class="bi bi-search"></i> Getir
+                        <i class="bi bi-search"></i> @Html.T("Common.Fetch", "Getir")
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" data-bind="click: clearFilters">
-                        <i class="bi bi-x-circle"></i> Temizle
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.Clear", "Temizle")
                     </button>
                 </div>
             </div>
@@ -64,16 +64,16 @@
                     <div class="col-md-2">
                         <label class="form-label small mb-1">@Html.T("Report.AddFilter", "Filtre Ekle")</label>
                         <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
-                            <option value="">Seçin...</option>
-                            <option value="project">Proje</option>
-                            <option value="dateRange">Tarih Aralığı</option>
+                            <option value="">@Html.T("Common.Select", "Seçin...")</option>
+                            <option value="project">@Html.T("Common.Project", "Proje")</option>
+                            <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
                         </select>
                     </div>
 
                     <!-- Proje Seçimi (Filtre tipine göre görünür) -->
                     <div class="col-md-3" data-bind="visible: selectedFilterType() === 'project'">
                         <label class="form-label small mb-1">@Html.T("Common.Project", "Proje")</label>
-                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Seçin...'"></select>
+                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                     </div>
 
                     <!-- Tarih Aralığı Seçimi (Filtre tipine göre görünür) -->
@@ -85,26 +85,26 @@
                             <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate" style="width: 130px;">
                             <div class="dropdown">
                                 <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <span data-bind="text: tempFilter.dateRangeType() ? dateRanges().find(function(d) { return d.systemName === tempFilter.dateRangeType(); })?.name : 'Hızlı Seç'"></span>
+                                    <span data-bind="text: tempFilter.dateRangeType() ? dateRanges().find(function(d) { return d.systemName === tempFilter.dateRangeType(); })?.name : '@Html.T("DateRange.QuickSelect", "Hızlı Seç")'"></span>
                                 </button>
                                 <ul class="dropdown-menu">
-                                    <li><h6 class="dropdown-header">Gün</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }, css: { active: tempFilter.dateRangeType() === 'today' }">Bugün</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }, css: { active: tempFilter.dateRangeType() === 'yesterday' }">Dün</a></li>
+                                    <li><h6 class="dropdown-header">@Html.T("DateRange.Day", "Gün")</h6></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('today'); }, css: { active: tempFilter.dateRangeType() === 'today' }">@Html.T("DateRange.Today", "Bugün")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('yesterday'); }, css: { active: tempFilter.dateRangeType() === 'yesterday' }">@Html.T("DateRange.Yesterday", "Dün")</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Hafta</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }, css: { active: tempFilter.dateRangeType() === 'thisWeek' }">Bu Hafta</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }, css: { active: tempFilter.dateRangeType() === 'lastWeek' }">Geçen Hafta</a></li>
+                                    <li><h6 class="dropdown-header">@Html.T("DateRange.Week", "Hafta")</h6></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisWeek'); }, css: { active: tempFilter.dateRangeType() === 'thisWeek' }">@Html.T("DateRange.ThisWeek", "Bu Hafta")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastWeek'); }, css: { active: tempFilter.dateRangeType() === 'lastWeek' }">@Html.T("DateRange.LastWeek", "Geçen Hafta")</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Ay</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }, css: { active: tempFilter.dateRangeType() === 'thisMonth' }">Bu Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }, css: { active: tempFilter.dateRangeType() === 'lastMonth' }">Geçen Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last3Months'); }, css: { active: tempFilter.dateRangeType() === 'last3Months' }">Son 3 Ay</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last6Months'); }, css: { active: tempFilter.dateRangeType() === 'last6Months' }">Son 6 Ay</a></li>
+                                    <li><h6 class="dropdown-header">@Html.T("DateRange.Month", "Ay")</h6></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisMonth'); }, css: { active: tempFilter.dateRangeType() === 'thisMonth' }">@Html.T("DateRange.ThisMonth", "Bu Ay")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastMonth'); }, css: { active: tempFilter.dateRangeType() === 'lastMonth' }">@Html.T("DateRange.LastMonth", "Geçen Ay")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last3Months'); }, css: { active: tempFilter.dateRangeType() === 'last3Months' }">@Html.T("DateRange.Last3Months", "Son 3 Ay")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('last6Months'); }, css: { active: tempFilter.dateRangeType() === 'last6Months' }">@Html.T("DateRange.Last6Months", "Son 6 Ay")</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Yıl</h6></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisYear'); }, css: { active: tempFilter.dateRangeType() === 'thisYear' }">Bu Yıl</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastYear'); }, css: { active: tempFilter.dateRangeType() === 'lastYear' }">Geçen Yıl</a></li>
+                                    <li><h6 class="dropdown-header">@Html.T("DateRange.Year", "Yıl")</h6></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('thisYear'); }, css: { active: tempFilter.dateRangeType() === 'thisYear' }">@Html.T("DateRange.ThisYear", "Bu Yıl")</a></li>
+                                    <li><a class="dropdown-item" href="#" data-bind="click: function() { setTempDateRange('lastYear'); }, css: { active: tempFilter.dateRangeType() === 'lastYear' }">@Html.T("DateRange.LastYear", "Geçen Yıl")</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                     <!-- Filtre Ekle Butonu -->
                     <div class="col-auto" data-bind="visible: selectedFilterType()">
                         <button class="btn btn-success btn-sm" data-bind="click: addFilter, enable: canAddFilter">
-                            <i class="bi bi-plus-circle"></i> Ekle
+                            <i class="bi bi-plus-circle"></i> @Html.T("Common.Add", "Ekle")
                         </button>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
                 <!-- Aktif Filtreler (Chips) -->
                 <div class="mt-2" data-bind="visible: activeFilters().length > 0">
                     <div class="d-flex flex-wrap gap-1 align-items-center">
-                        <small class="text-muted me-1">Filtreler:</small>
+                        <small class="text-muted me-1">@Html.T("Common.Filters", "Filtreler"):</small>
                         <!-- ko foreach: activeFilters -->
                         <span class="badge bg-primary d-flex align-items-center">
                             <span data-bind="text: label + ': ' + displayValue"></span>
@@ -129,7 +129,7 @@
                         </span>
                         <!-- /ko -->
                         <button class="btn btn-outline-danger btn-sm" data-bind="click: clearAllFilters, visible: activeFilters().length > 1">
-                            <i class="bi bi-x-circle"></i> Tümünü Temizle
+                            <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Tümünü Temizle")
                         </button>
                     </div>
                 </div>
@@ -460,8 +460,8 @@
                                                 <!-- /ko -->
                                             </td>
                                             <td>
-                                                <span data-bind="visible: appliedPenaltyType === 'YellowCard'" class="badge bg-warning text-dark me-1">Sarı Kart</span>
-                                                <span data-bind="visible: appliedPenaltyType === 'RedCard'" class="badge bg-danger me-1">Kırmızı Kart</span>
+                                                <span data-bind="visible: appliedPenaltyType === 'YellowCard'" class="badge bg-warning text-dark me-1">@Html.T("Report.YellowCard", "Sarı Kart")</span>
+                                                <span data-bind="visible: appliedPenaltyType === 'RedCard'" class="badge bg-danger me-1">@Html.T("Report.RedCard", "Kırmızı Kart")</span>
                                                 <small data-bind="text: notes" class="text-muted"></small>
                                             </td>
                                         </tr>

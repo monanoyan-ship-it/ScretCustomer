@@ -137,13 +137,13 @@
                     <div class="card-body">
                         <div class="row text-center">
                             <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(90, 101, 'Mükemmel (90+)', 'success'); }">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(90, 101, '@Html.T("Report.ScoreExcellent", "Mükemmel (90+)")', 'success'); }">
                                     <div class="display-6 text-success" data-bind="text: summary().excellentCount || 0"></div>
                                     <small class="text-muted">90+</small>
                                 </a>
                             </div>
                             <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(80, 90, 'İyi (80-89)', 'primary'); }">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(80, 90, '@Html.T("Report.ScoreGood", "İyi (80-89)")', 'primary'); }">
                                     <div class="display-6 text-primary" data-bind="text: summary().goodCount || 0"></div>
                                     <small class="text-muted">80-89</small>
                                 </a>
@@ -155,7 +155,7 @@
                                 </a>
                             </div>
                             <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(0, 60, 'Düşük (<60)', 'danger'); }">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(0, 60, '@Html.T("Report.ScorePoor", "Düşük (<60)")', 'danger'); }">
                                     <div class="display-6 text-danger" data-bind="text: summary().poorCount || 0"></div>
                                     <small class="text-muted">&lt;60</small>
                                 </a>
@@ -243,7 +243,7 @@
                     <div data-bind="visible: !isScoreRangeLoading()">
                         <div data-bind="visible: scoreRangeEvaluations().length === 0" class="text-center py-4 text-muted">
                             <i class="bi bi-inbox fs-1"></i>
-                            <p class="mt-2">Bu aralıkta değerlendirme bulunamadı.</p>
+                            <p class="mt-2">@Html.T("Report.NoEvaluationsInRange", "Bu aralıkta değerlendirme bulunamadı.")</p>
                         </div>
                         <div data-bind="visible: scoreRangeEvaluations().length > 0" class="table-responsive">
                             <table class="table table-hover table-sm mb-0">
@@ -271,7 +271,7 @@
                                             <span data-bind="visible: yellowCards === 0 && redCards === 0">-</span>
                                         </td>
                                         <td>
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetails" title="Detay">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetails" title="@Html.T("Common.Detail", "Detay")">
                                                 <i class="bi bi-eye"></i>
                                             </button>
                                         </td>
@@ -280,7 +280,7 @@
                             </table>
                         </div>
                         <div data-bind="visible: scoreRangeEvaluations().length >= 100" class="text-muted small text-center mt-2">
-                            <i class="bi bi-info-circle"></i> İlk 100 kayıt gösteriliyor
+                            <i class="bi bi-info-circle"></i> @Html.T("Common.First100Records", "İlk 100 kayıt gösteriliyor")
                         </div>
                     </div>
                 </div>

@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Egitim Videosu</title>
+    <title>@Html.T("Training.TrainingVideo", "Egitim Videosu")</title>
     <link rel="icon" type="image/svg+xml" href="~/favicon.svg">
 
     <!-- Bootstrap CSS -->
@@ -111,7 +111,7 @@
             <i class="bi bi-clock-history text-warning" style="font-size: 4rem;"></i>
             <h4 class="mt-3">Sure Doldu</h4>
             <p class="text-muted">Bu egitim videosunun izleme suresi dolmustur.</p>
-            <p><strong>Son Tarih:</strong> <span data-bind="text: videoInfo() ? formatDate(videoInfo().dueDate) : '-'"></span></p>
+            <p><strong>@Html.T("Training.DueDate", "Son Tarih"):</strong> <span data-bind="text: videoInfo() ? formatDate(videoInfo().dueDate) : '-'"></span></p>
         </div>
 
         <!-- Video Content -->
@@ -170,7 +170,7 @@
                         </div>
                     </div>
                     <div>
-                        <small class="text-muted d-block">Son Tarih</small>
+                        <small class="text-muted d-block">@Html.T("Training.DueDate", "Son Tarih")</small>
                         <strong data-bind="text: videoInfo() ? formatDate(videoInfo().dueDate) : '-'"></strong>
                     </div>
                     <div data-bind="visible: videoInfo() && videoInfo().isCompleted">
@@ -187,7 +187,7 @@
                                 <i class="bi bi-clipboard-check text-primary me-2"></i>
                                 <span>Bu egitim icin bir anket bulunuyor</span>
                                 <!-- ko if: quizStatus() && quizStatus().isRequired -->
-                                <span class="badge bg-warning ms-2">Zorunlu</span>
+                                <span class="badge bg-warning ms-2">@Html.T("Common.Required", "Zorunlu")</span>
                                 <!-- /ko -->
                             </div>
                             <a data-bind="attr: { href: '/Training/Quiz/' + VIDEO_TOKEN }" class="btn btn-primary">

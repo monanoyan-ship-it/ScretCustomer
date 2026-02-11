@@ -56,20 +56,20 @@
                                 <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate" autocomplete="off">
                             </div>
                             <div class="d-flex flex-wrap gap-1">
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-primary' : 'btn-outline-secondary'">Bugün</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-primary' : 'btn-outline-secondary'">Dün</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-primary' : 'btn-outline-secondary'">Bu Hafta</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-primary' : 'btn-outline-secondary'">Geçen Hafta</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.Today", "Bugün")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.Yesterday", "Dün")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.ThisWeek", "Bu Hafta")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.LastWeek", "Geçen Hafta")</button>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mt-1">
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-primary' : 'btn-outline-secondary'">Bu Ay</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-primary' : 'btn-outline-secondary'">Geçen Ay</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last3Months'); }, css: tempFilter.dateRangeType() === 'last3Months' ? 'btn-primary' : 'btn-outline-secondary'">Son 3 Ay</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last6Months'); }, css: tempFilter.dateRangeType() === 'last6Months' ? 'btn-primary' : 'btn-outline-secondary'">Son 6 Ay</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.ThisMonth", "Bu Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.LastMonth", "Geçen Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last3Months'); }, css: tempFilter.dateRangeType() === 'last3Months' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.Last3Months", "Son 3 Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last6Months'); }, css: tempFilter.dateRangeType() === 'last6Months' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.Last6Months", "Son 6 Ay")</button>
                             </div>
                             <div class="d-flex flex-wrap gap-1 mt-1">
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisYear'); }, css: tempFilter.dateRangeType() === 'thisYear' ? 'btn-primary' : 'btn-outline-secondary'">Bu Yıl</button>
-                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastYear'); }, css: tempFilter.dateRangeType() === 'lastYear' ? 'btn-primary' : 'btn-outline-secondary'">Geçen Yıl</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisYear'); }, css: tempFilter.dateRangeType() === 'thisYear' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.ThisYear", "Bu Yıl")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastYear'); }, css: tempFilter.dateRangeType() === 'lastYear' ? 'btn-primary' : 'btn-outline-secondary'">@Html.T("DateRange.LastYear", "Geçen Yıl")</button>
                             </div>
                         </div>
                         <!-- Add Button -->

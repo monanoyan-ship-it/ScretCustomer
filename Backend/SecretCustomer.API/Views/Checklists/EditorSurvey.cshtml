@@ -19,19 +19,19 @@
             @if (isNew)
             {
                 <i class="bi bi-plus-circle me-2"></i>@Html.T("Checklist.NewChecklist", "Yeni Kontrol Listesi")
-                <span class="badge bg-info ms-2 fs-6">Anket</span>
+                <span class="badge bg-info ms-2 fs-6">@Html.T("Checklist.Survey", "Anket")</span>
             }
             else if (isClone)
             {
                 <span data-bind="text: checklist() ? checklist().name() : ''"></span>
                 <small class="text-muted ms-2"><i class="bi bi-files"></i> @Html.T("Checklist.CloneChecklist", "Klonla")</small>
-                <span class="badge bg-info ms-2 fs-6">Anket</span>
+                <span class="badge bg-info ms-2 fs-6">@Html.T("Checklist.Survey", "Anket")</span>
             }
             else
             {
                 <span data-bind="text: checklist() ? checklist().name() : ''"></span>
                 <small class="text-muted ms-2"><i class="bi bi-pencil"></i> @Html.T("Checklist.EditChecklist", "Düzenle")</small>
-                <span class="badge bg-info ms-2 fs-6">Anket</span>
+                <span class="badge bg-info ms-2 fs-6">@Html.T("Checklist.Survey", "Anket")</span>
             }
         </h4>
         <div class="d-flex gap-2">

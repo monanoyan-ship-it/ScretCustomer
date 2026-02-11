@@ -2,7 +2,7 @@
     Layout = "_LayoutPopup";
     var templateId = ViewBag.TemplateId;
     var isNew = templateId == null;
-    ViewData["Title"] = isNew ? "Yeni Email Şablonu" : "Email Şablonu Düzenle";
+    ViewData["Title"] = isNew ? Html.T("EmailTemplate.NewTemplate", "Yeni Email Şablonu") : Html.T("EmailTemplate.EditTemplate", "Email Şablonu Düzenle");
 }
 
 <div id="email-template-editor">
@@ -11,23 +11,23 @@
         <h4>
             @if (isNew)
             {
-                <i class="bi bi-plus-circle me-2"></i>@:Yeni Email Şablonu
+                <i class="bi bi-plus-circle me-2"></i>@Html.T("EmailTemplate.NewTemplate", "Yeni Email Şablonu")
             }
             else
             {
-                <i class="bi bi-pencil me-2"></i>@:Email Şablonu Düzenle
+                <i class="bi bi-pencil me-2"></i>@Html.T("EmailTemplate.EditTemplate", "Email Şablonu Düzenle")
             }
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-outline-info btn-sm" data-bind="click: showPreview">
-                <i class="bi bi-eye"></i> Önizleme
+                <i class="bi bi-eye"></i> @Html.T("Common.Preview", "Önizleme")
             </button>
             <button class="btn btn-primary btn-sm" data-bind="click: saveTemplate, disable: isSaving">
-                <span data-bind="visible: !isSaving()"><i class="bi bi-save"></i> Kaydet</span>
+                <span data-bind="visible: !isSaving()"><i class="bi bi-save"></i> @Html.T("Common.Save", "Kaydet")</span>
                 <span data-bind="visible: isSaving"><span class="spinner-border spinner-border-sm"></span></span>
             </button>
             <button class="btn btn-secondary btn-sm" onclick="window.close()">
-                <i class="bi bi-x-lg"></i> Kapat
+                <i class="bi bi-x-lg"></i> @Html.T("Common.Close", "Kapat")
             </button>
         </div>
     </div>
@@ -35,7 +35,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">Şablon yükleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("EmailTemplate.TemplateLoading", "Şablon yükleniyor...")</p>
     </div>
 
     <!-- Form -->
@@ -45,32 +45,32 @@
             <!-- Temel Bilgiler -->
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-primary text-white py-2">
-                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Temel Bilgiler</h6>
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> @Html.T("EmailTemplate.BasicInfo", "Temel Bilgiler")</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">Şablon Adı <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("EmailTemplate.TemplateName", "Şablon Adı") <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" data-bind="value: template.name" placeholder="Anket Davetiyesi - Standart" autocomplete="off">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Şablon Tipi <span class="text-danger">*</span></label>
+                            <label class="form-label">@Html.T("EmailTemplate.TemplateType", "Şablon Tipi") <span class="text-danger">*</span></label>
                             <select class="form-select" data-bind="value: template.templateTypeId, options: templateTypes, optionsValue: 'id', optionsText: 'displayName'"></select>
                         </div>
                         <div class="col-12">
-                            <label class="form-label">Açıklama</label>
-                            <input type="text" class="form-control" data-bind="value: template.description" placeholder="Bu şablon hakkında kısa açıklama" autocomplete="off">
+                            <label class="form-label">@Html.T("Common.Description", "Açıklama")</label>
+                            <input type="text" class="form-control" data-bind="value: template.description" placeholder="@Html.T("EmailTemplate.DescriptionPlaceholder", "Bu şablon hakkında kısa açıklama")" autocomplete="off">
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="isActive" data-bind="checked: template.isActive">
-                                <label class="form-check-label" for="isActive">Aktif</label>
+                                <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" id="isDefault" data-bind="checked: template.isDefault">
-                                <label class="form-check-label" for="isDefault">Varsayılan Şablon</label>
+                                <label class="form-check-label" for="isDefault">@Html.T("EmailTemplate.DefaultTemplate", "Varsayılan Şablon")</label>
                             </div>
                         </div>
                     </div>
@@ -80,16 +80,16 @@
             <!-- Email İçeriği -->
             <div class="card shadow-sm mb-3">
                 <div class="card-header bg-secondary text-white py-2">
-                    <h6 class="mb-0"><i class="bi bi-envelope"></i> Email İçeriği</h6>
+                    <h6 class="mb-0"><i class="bi bi-envelope"></i> @Html.T("EmailTemplate.EmailContent", "Email İçeriği")</h6>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Konu (Subject) <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("EmailTemplate.SubjectLabel", "Konu (Subject)") <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="subjectInput" data-bind="value: template.subject" placeholder="{CompanyName} - Anket Davetiyesi" autocomplete="off">
-                        <small class="text-muted">Placeholder kullanabilirsiniz: {ProjectName}, {CompanyName}, vb.</small>
+                        <small class="text-muted">@Html.T("EmailTemplate.PlaceholderHint", "Placeholder kullanabilirsiniz: {ProjectName}, {CompanyName}, vb.")</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">İçerik (Body) <span class="text-danger">*</span></label>
+                        <label class="form-label">@Html.T("EmailTemplate.BodyLabel", "İçerik (Body)") <span class="text-danger">*</span></label>
                         <textarea id="bodyEditor" data-bind="value: template.body"></textarea>
                     </div>
                 </div>
@@ -100,7 +100,7 @@
         <div class="col-lg-4">
             <div class="card shadow-sm sticky-top placeholder-panel">
                 <div class="card-header bg-info text-white py-2">
-                    <h6 class="mb-0"><i class="bi bi-braces"></i> Değişken Ekle</h6>
+                    <h6 class="mb-0"><i class="bi bi-braces"></i> @Html.T("EmailTemplate.InsertVariable", "Değişken Ekle")</h6>
                 </div>
                 <div class="card-body p-0 placeholder-panel-body">
                     <div class="accordion accordion-flush" id="placeholderAccordion" data-bind="foreach: placeholderCategories">
@@ -132,7 +132,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-light small">
-                    <i class="bi bi-lightbulb"></i> Değişkene tıklayarak ekleyin
+                    <i class="bi bi-lightbulb"></i> @Html.T("EmailTemplate.InsertVariableHint", "Değişkene tıklayarak ekleyin")
                 </div>
             </div>
         </div>
@@ -143,18 +143,18 @@
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"><i class="bi bi-eye"></i> Email Önizleme</h5>
+                    <h5 class="modal-title"><i class="bi bi-eye"></i> @Html.T("EmailTemplate.Preview", "Email Önizleme")</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <strong>Konu:</strong> <span data-bind="text: previewSubject"></span>
+                        <strong>@Html.T("EmailTemplate.Subject", "Konu"):</strong> <span data-bind="text: previewSubject"></span>
                     </div>
                     <hr>
                     <div data-bind="html: previewBody"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
                 </div>
             </div>
         </div>

@@ -85,7 +85,7 @@
                                         <small class="text-muted" data-bind="text: description || '-'"></small>
                                     </td>
                                     <td>
-                                        <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-danger', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                        <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-danger', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span>
                                     </td>
                                 </tr>
                             </tbody>
@@ -266,14 +266,14 @@
                                             <tr>
                                                 <td data-bind="text: permissionDisplayName"></td>
                                                 <td>
-                                                    <span class="badge" data-bind="css: isGranted ? 'bg-success' : 'bg-danger', text: isGranted ? 'Verildi' : 'Kaldırıldı'"></span>
+                                                    <span class="badge" data-bind="css: isGranted ? 'bg-success' : 'bg-danger', text: isGranted ? '@Html.T("Permission.Granted", "Verildi")' : '@Html.T("Permission.Revoked", "Kaldırıldı")'"></span>
                                                 </td>
                                                 <td data-bind="text: scopeName"></td>
                                                 <td>
                                                     <small class="text-muted">
-                                                        <span data-bind="text: validFrom ? new Date(validFrom).toLocaleDateString('tr-TR') : 'Süresiz'"></span>
+                                                        <span data-bind="text: validFrom ? new Date(validFrom).toLocaleDateString('tr-TR') : '@Html.T("Permission.Indefinite", "Süresiz")'"></span>
                                                         -
-                                                        <span data-bind="text: validUntil ? new Date(validUntil).toLocaleDateString('tr-TR') : 'Süresiz'"></span>
+                                                        <span data-bind="text: validUntil ? new Date(validUntil).toLocaleDateString('tr-TR') : '@Html.T("Permission.Indefinite", "Süresiz")'"></span>
                                                     </small>
                                                 </td>
                                                 <td>

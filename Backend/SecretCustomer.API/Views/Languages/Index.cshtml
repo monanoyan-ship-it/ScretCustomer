@@ -233,7 +233,7 @@
                     <div class="alert alert-warning d-flex align-items-center mb-3" role="alert">
                         <i class="bi bi-exclamation-triangle-fill me-2"></i>
                         <div class="flex-grow-1">
-                            <strong data-bind="text: selectedLanguage()?.name"></strong> için <strong data-bind="text: resources().length"></strong> çeviri kaynağı mevcut.
+                            <strong data-bind="text: selectedLanguage()?.name"></strong> @Html.T("Language.ResourceCountInfo", "için") <strong data-bind="text: resources().length"></strong> @Html.T("Language.TranslationResources", "çeviri kaynağı mevcut.")
                         </div>
                         <button class="btn btn-danger btn-sm" data-bind="click: deleteAllResources, disable: isDeletingAll">
                             <span data-bind="visible: isDeletingAll()"><i class="bi bi-arrow-repeat spin me-1"></i></span>

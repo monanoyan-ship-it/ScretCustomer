@@ -228,7 +228,7 @@
                 })
                 .then(function(customers) {
                     var select = document.getElementById('impersonation-customer-select');
-                    select.innerHTML = '<option value="">Musteri Secin...</option>';
+                    select.innerHTML = '<option value="">@Html.T("Common.SelectCustomer", "Musteri Secin...")</option>';
                     customers.forEach(function(c) {
                         var option = document.createElement('option');
                         option.value = c.id;

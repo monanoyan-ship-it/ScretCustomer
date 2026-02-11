@@ -543,7 +543,7 @@
                 if (!text) return;
                 if (navigator.clipboard && window.isSecureContext) {
                     navigator.clipboard.writeText(text).then(function() {
-                        toastr.success('Kopyalandı');
+                        toastr.success('@Html.T("Common.Copied", "Kopyalandı")');
                     }).catch(function() { fallbackCopy(text); });
                 } else {
                     fallbackCopy(text);
@@ -557,8 +557,8 @@
                 ta.style.left = '-9999px';
                 document.body.appendChild(ta);
                 ta.select();
-                try { document.execCommand('copy'); toastr.success('Kopyalandı'); }
-                catch(e) { toastr.error('Kopyalama başarısız'); }
+                try { document.execCommand('copy'); toastr.success('@Html.T("Common.Copied", "Kopyalandı")'); }
+                catch(e) { toastr.error('@Html.T("Common.CopyFailed", "Kopyalama başarısız")'); }
                 document.body.removeChild(ta);
             }
 

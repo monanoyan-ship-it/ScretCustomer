@@ -84,7 +84,7 @@
                         <option value="status">@Html.T("Common.Status", "Durum")</option>
                         <option value="projectManager">@Html.T("Project.ProjectManager", "Proje Yöneticisi")</option>
                         <option value="search">@Html.T("Common.Search", "Arama")</option>
-                        <option value="endingDate">Bitiş Tarihi</option>
+                        <option value="endingDate">@Html.T("Project.EndDate", "Bitiş Tarihi")</option>
                     </select>
                 </div>
 
@@ -139,9 +139,9 @@
 
                     <!-- Ending Date Filter (Proje bitiş tarihine göre) -->
                     <div data-bind="visible: selectedFilterType() === 'endingDate'">
-                        <label class="form-label small text-muted">Bitiş Tarihi Filtresi</label>
+                        <label class="form-label small text-muted">@Html.T("Project.EndDateFilter", "Bitiş Tarihi Filtresi")</label>
                         <select class="form-select form-select-sm" data-bind="value: tempFilter.selectedDateRangeType">
-                            <option value="">Seçiniz...</option>
+                            <option value="">@Html.T("Common.Select", "Seçiniz...")</option>
                             <!-- ko foreach: endingDateOptions -->
                             <option data-bind="value: systemName, text: name"></option>
                             <!-- /ko -->
@@ -686,19 +686,19 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><td class="text-muted" style="width:40%;">Proje Kodu:</td><td><code data-bind="text: code || '-'"></code></td></tr>
-                                                <tr><td class="text-muted">Proje Tipi:</td><td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td></tr>
+                                                <tr><td class="text-muted" style="width:40%;">@Html.T("Project.ProjectCode", "Proje Kodu"):</td><td><code data-bind="text: code || '-'"></code></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Project.ProjectType", "Proje Tipi"):</td><td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td></tr>
                                                 <tr><td class="text-muted">Kontrol Listesi:</td><td data-bind="text: checklistName"></td></tr>
-                                                <tr><td class="text-muted">Müşteri:</td><td><!-- ko if: customerName --><span data-bind="text: customerName"></span><!-- ko if: customerCode --> (<code data-bind="text: customerCode"></code>)<!-- /ko --><!-- /ko --><!-- ko ifnot: customerName -->-<!-- /ko --></td></tr>
-                                                <tr><td class="text-muted">Proje Yöneticisi:</td><td data-bind="text: projectManagerName || '-'"></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Common.Customer", "Müşteri"):</td><td><!-- ko if: customerName --><span data-bind="text: customerName"></span><!-- ko if: customerCode --> (<code data-bind="text: customerCode"></code>)<!-- /ko --><!-- /ko --><!-- ko ifnot: customerName -->-<!-- /ko --></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Project.ProjectManager", "Proje Yöneticisi"):</td><td data-bind="text: projectManagerName || '-'"></td></tr>
                                             </table>
                                         </div>
                                         <div class="col-md-6">
                                             <table class="table table-sm table-borderless mb-0">
-                                                <tr><td class="text-muted" style="width:40%;">Başlangıç:</td><td data-bind="text: $parent.formatDate(startDate)"></td></tr>
-                                                <tr><td class="text-muted">Bitiş:</td><td data-bind="text: $parent.formatDate(endDate)"></td></tr>
-                                                <tr><td class="text-muted">Öncelik:</td><td data-bind="text: priority || 'Normal'"></td></tr>
-                                                <tr><td class="text-muted">Oluşturulma:</td><td data-bind="text: $parent.formatDate(createdAt)"></td></tr>
+                                                <tr><td class="text-muted" style="width:40%;">@Html.T("Project.StartDate", "Başlangıç"):</td><td data-bind="text: $parent.formatDate(startDate)"></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Project.EndDate", "Bitiş"):</td><td data-bind="text: $parent.formatDate(endDate)"></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Call.Priority", "Öncelik"):</td><td data-bind="text: priority || 'Normal'"></td></tr>
+                                                <tr><td class="text-muted">@Html.T("Common.CreatedAt", "Oluşturulma"):</td><td data-bind="text: $parent.formatDate(createdAt)"></td></tr>
                                             </table>
                                         </div>
                                     </div>
@@ -771,9 +771,9 @@
                                     <!-- ko if: surveyIdentityType -->
                                     <div class="mt-2 small text-muted">
                                         <i class="bi bi-info-circle"></i>
-                                        Kimlik: <span data-bind="text: surveyIdentityType === 'Anonymous' ? 'Anonim' : 'Açık'"></span>
+                                        @Html.T("Project.Identity", "Kimlik"): <span data-bind="text: surveyIdentityType === 'Anonymous' ? '@Html.T("Project.SurveyIdentity.Anonymous", "Anonim")' : '@Html.T("Project.SurveyIdentity.Open", "Açık")'"></span>
                                         <!-- ko if: emailTemplateName -->
-                                        | Şablon: <span data-bind="text: emailTemplateName"></span>
+                                        | @Html.T("Project.Template", "Şablon"): <span data-bind="text: emailTemplateName"></span>
                                         <!-- /ko -->
                                     </div>
                                     <!-- /ko -->
@@ -808,9 +808,9 @@
                             <div class="card mb-3">
                                 <div class="card-header py-2"><i class="bi bi-info-square"></i> @Html.T("Project.QuickInfo", "Hızlı Bilgi")</div>
                                 <ul class="list-group list-group-flush small">
-                                    <li class="list-group-item d-flex justify-content-between py-1"><span>Min. Puan Eşiği</span><span data-bind="text: minimumScoreThreshold ? minimumScoreThreshold + '%' : '-'"></span></li>
-                                    <li class="list-group-item d-flex justify-content-between py-1"><span>Raporlama</span><span data-bind="text: reportingFrequencyDays ? reportingFrequencyDays + ' gün' : '-'"></span></li>
-                                    <li class="list-group-item d-flex justify-content-between py-1"><span>Otomatik Rapor</span><span data-bind="text: autoGenerateReports ? 'Evet' : 'Hayır'"></span></li>
+                                    <li class="list-group-item d-flex justify-content-between py-1"><span>@Html.T("Project.MinScoreThreshold", "Min. Puan Eşiği")</span><span data-bind="text: minimumScoreThreshold ? minimumScoreThreshold + '%' : '-'"></span></li>
+                                    <li class="list-group-item d-flex justify-content-between py-1"><span>@Html.T("Project.Reporting", "Raporlama")</span><span data-bind="text: reportingFrequencyDays ? reportingFrequencyDays + ' @Html.T("Common.DaySuffix", "gün")' : '-'"></span></li>
+                                    <li class="list-group-item d-flex justify-content-between py-1"><span>@Html.T("Project.AutoReport", "Otomatik Rapor")</span><span data-bind="text: autoGenerateReports ? '@Html.T("Common.Yes", "Evet")' : '@Html.T("Common.No", "Hayır")'"></span></li>
                                     <!-- ko if: tags --><li class="list-group-item py-1"><span class="text-muted">Etiketler:</span> <span data-bind="text: tags"></span></li><!-- /ko -->
                                 </ul>
                             </div>
@@ -847,7 +847,7 @@
                     <div class="alert alert-info mb-3" data-bind="with: surveyProject">
                         <strong><i class="bi bi-clipboard-data"></i> <span data-bind="text: name"></span></strong><br>
                         <small>
-                            <span data-bind="text: customerName || 'Müşteri belirtilmedi'"></span>
+                            <span data-bind="text: customerName || '@Html.T("Project.NoCustomer", "Müşteri belirtilmedi")'"></span>
                             <!-- ko if: organizationName --> | <span data-bind="text: organizationName"></span><!-- /ko -->
                         </small>
                     </div>
@@ -902,15 +902,15 @@
                                 <div class="card-body py-2">
                                     <div class="row small">
                                         <div class="col-md-6">
-                                            <i class="bi bi-envelope me-1"></i> <strong>Email Şablonu:</strong>
-                                            <span data-bind="text: emailTemplateName || 'Belirtilmemiş'" class="ms-1"></span>
+                                            <i class="bi bi-envelope me-1"></i> <strong>@Html.T("Project.EmailTemplate", "Email Şablonu"):</strong>
+                                            <span data-bind="text: emailTemplateName || '@Html.T("Common.NotSpecified", "Belirtilmemiş")'" class="ms-1"></span>
                                             <!-- ko ifnot: emailTemplateName -->
-                                            <span class="text-danger">(Proje ayarlarından seçin)</span>
+                                            <span class="text-danger">@Html.T("Project.SelectFromSettings", "(Proje ayarlarından seçin)")</span>
                                             <!-- /ko -->
                                         </div>
                                         <div class="col-md-6">
-                                            <i class="bi bi-person-badge me-1"></i> <strong>Kimlik:</strong>
-                                            <span data-bind="text: surveyIdentityType === 'Anonymous' ? 'Anonim' : 'Açık'" class="ms-1"></span>
+                                            <i class="bi bi-person-badge me-1"></i> <strong>@Html.T("Project.Identity", "Kimlik"):</strong>
+                                            <span data-bind="text: surveyIdentityType === 'Anonymous' ? '@Html.T("Project.SurveyIdentity.Anonymous", "Anonim")' : '@Html.T("Project.SurveyIdentity.Open", "Açık")'" class="ms-1"></span>
                                         </div>
                                     </div>
                                 </div>

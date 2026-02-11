@@ -82,7 +82,7 @@
         <div class="card shadow-sm mb-4" data-bind="visible: filter.projectId() && distribution().length > 0">
             <div class="card-header bg-purple text-white d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="bi bi-bar-chart-fill"></i> @Html.T("Report.PersonalityDistribution", "Kişilik Tipi Dağılımı")</h5>
-                <small data-bind="text: distributionInfo().totalResponses + ' yanıt'"></small>
+                <small data-bind="text: distributionInfo().totalResponses + ' @Html.T("Report.Response", "yanıt")'"></small>
             </div>
             <div class="card-body">
                 <!-- Loading -->
@@ -95,13 +95,13 @@
                     <div class="row">
                         <!-- Rapor 1: Puan Tablosu -->
                         <div class="col-md-4">
-                            <h6 class="text-muted mb-2"><i class="bi bi-table"></i> Puan Dağılımı</h6>
+                            <h6 class="text-muted mb-2"><i class="bi bi-table"></i> @Html.T("Report.ScoreDistribution", "Puan Dağılımı")</h6>
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Kişilik Tipi</th>
-                                        <th class="text-center">Puan</th>
-                                        <th class="text-center">Maks</th>
+                                        <th>@Html.T("Report.PersonalityType", "Kişilik Tipi")</th>
+                                        <th class="text-center">@Html.T("Report.Score", "Puan")</th>
+                                        <th class="text-center">@Html.T("Report.MaxScore", "Maks")</th>
                                     </tr>
                                 </thead>
                                 <tbody data-bind="foreach: distribution">
@@ -113,7 +113,7 @@
                                 </tbody>
                                 <tfoot class="table-secondary">
                                     <tr>
-                                        <th class="small">Toplam</th>
+                                        <th class="small">@Html.T("Report.Total", "Toplam")</th>
                                         <th class="text-center" data-bind="text: distributionTotalPoints()"></th>
                                         <th class="text-center" data-bind="text: distribution().length * 50"></th>
                                     </tr>
@@ -123,12 +123,12 @@
 
                         <!-- Rapor 2: Yüzde Tablosu (Sıralı) -->
                         <div class="col-md-4">
-                            <h6 class="text-muted mb-2"><i class="bi bi-percent"></i> Yüzde Sıralaması</h6>
+                            <h6 class="text-muted mb-2"><i class="bi bi-percent"></i> @Html.T("Report.PercentageRanking", "Yüzde Sıralaması")</h6>
                             <table class="table table-sm table-bordered mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Kişilik Tipi</th>
-                                        <th class="text-center">Yüzde</th>
+                                        <th>@Html.T("Report.PersonalityType", "Kişilik Tipi")</th>
+                                        <th class="text-center">@Html.T("Report.Percentage", "Yüzde")</th>
                                     </tr>
                                 </thead>
                                 <tbody data-bind="foreach: distribution">
@@ -149,7 +149,7 @@
 
                         <!-- Görsel: Progress Bar -->
                         <div class="col-md-4">
-                            <h6 class="text-muted mb-2"><i class="bi bi-bar-chart"></i> Görsel</h6>
+                            <h6 class="text-muted mb-2"><i class="bi bi-bar-chart"></i> @Html.T("Report.Visual", "Görsel")</h6>
                             <!-- ko foreach: distribution -->
                             <div class="mb-1">
                                 <div class="d-flex justify-content-between small">

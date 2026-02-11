@@ -33,7 +33,7 @@
                         <div class="mb-2">
                             <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
                                 <option value="">@Html.T("Common.SelectFilter", "Filtre Secin...")</option>
-                                <option value="customerOrganization">Musteri / Organizasyon</option>
+                                <option value="customerOrganization">@Html.T("Filter.CustomerOrganization", "Musteri / Organizasyon")</option>
                                 <option value="project">@Html.T("Common.Project", "Proje")</option>
                                 <option value="checklist">@Html.T("Report.Checklist", "Kontrol Listesi")</option>
                                 <option value="evaluator">@Html.T("Report.Evaluator", "Degerlendirici")</option>
@@ -44,8 +44,8 @@
                         <!-- Dynamic Filter Input -->
                         <!-- Customer / Organization (Combined) -->
                         <div data-bind="visible: selectedFilterType() === 'customerOrganization'" class="mb-2">
-                            <select class="form-select form-select-sm mb-1" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: tempFilter.customerIdForFilter, optionsCaption: 'Musteri Secin...', event: { change: onCustomerChangeForFilter }"></select>
-                            <select class="form-select form-select-sm" data-bind="options: filteredOrganizationsForFilter, optionsText: 'name', optionsValue: 'id', value: tempFilter.organizationId, optionsCaption: 'Organizasyon (Opsiyonel)', enable: filteredOrganizationsForFilter().length > 0"></select>
+                            <select class="form-select form-select-sm mb-1" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: tempFilter.customerIdForFilter, optionsCaption: '@Html.T("Common.SelectCustomer", "Musteri Secin...")', event: { change: onCustomerChangeForFilter }"></select>
+                            <select class="form-select form-select-sm" data-bind="options: filteredOrganizationsForFilter, optionsText: 'name', optionsValue: 'id', value: tempFilter.organizationId, optionsCaption: '@Html.T("Common.OrganizationOptional", "Organizasyon (Opsiyonel)")', enable: filteredOrganizationsForFilter().length > 0"></select>
                         </div>
                         <!-- Project -->
                         <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">

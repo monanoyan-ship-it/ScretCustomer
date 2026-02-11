@@ -2,7 +2,7 @@
     Layout = "_LayoutPopup";
     var assignmentId = ViewBag.AssignmentId ?? 0;
     var isNewMode = (int)assignmentId == 0;
-    ViewData["Title"] = isNewMode ? "Dis Katilimci Atama" : "Dis Katilimcilar";
+    ViewData["Title"] = isNewMode ? Html.T("Training.ExternalParticipantAssignment", "Dis Katilimci Atama").ToString() : Html.T("Training.ExternalParticipants", "Dis Katilimcilar").ToString();
 }
 
 <div id="external-participants-app">
@@ -10,16 +10,16 @@
     <div class="popup-header">
         <h4>
             <!-- ko if: isNewMode -->
-            <i class="bi bi-person-plus me-2"></i>Dis Katilimci Atama
+            <i class="bi bi-person-plus me-2"></i>@Html.T("Training.ExternalParticipantAssignment", "Dis Katilimci Atama")
             <!-- /ko -->
             <!-- ko ifnot: isNewMode -->
-            <i class="bi bi-people me-2"></i>Dis Katilimcilar
+            <i class="bi bi-people me-2"></i>@Html.T("Training.ExternalParticipants", "Dis Katilimcilar")
             <small class="text-muted ms-2" data-bind="visible: assignmentTitle(), text: '- ' + assignmentTitle()"></small>
             <!-- /ko -->
         </h4>
         <div class="d-flex gap-2">
             <button class="btn btn-secondary btn-sm" onclick="window.close()">
-                <i class="bi bi-x-lg"></i> Kapat
+                <i class="bi bi-x-lg"></i> @Html.T("Common.Close", "Kapat")
             </button>
         </div>
     </div>
@@ -27,7 +27,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary"></div>
-        <p class="mt-2 text-muted">Yukleniyor...</p>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Yukleniyor...")</p>
     </div>
 
     <!-- Content -->
@@ -39,29 +39,29 @@
                 <!-- ko if: isNewMode -->
                 <div class="card mb-3">
                     <div class="card-header bg-primary text-white py-2">
-                        <i class="bi bi-play-circle me-2"></i>Video ve Ayarlar
+                        <i class="bi bi-play-circle me-2"></i>@Html.T("Training.VideoAndSettings", "Video ve Ayarlar")
                     </div>
                     <div class="card-body">
                         <!-- Video Secimi -->
                         <div class="mb-3">
-                            <label class="form-label">Video <span class="text-danger">*</span></label>
-                            <select class="form-select form-select-sm" data-bind="value: formVideoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: 'Video secin...'"></select>
+                            <label class="form-label">@Html.T("Training.Video", "Video") <span class="text-danger">*</span></label>
+                            <select class="form-select form-select-sm" data-bind="value: formVideoId, options: videos, optionsValue: 'id', optionsText: 'title', optionsCaption: '@Html.T("Training.SelectVideo", "Video secin...")'"></select>
                         </div>
 
                         <!-- Atama Basligi -->
                         <div class="mb-3">
-                            <label class="form-label">Atama Basligi <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control form-control-sm" data-bind="value: formTitle" placeholder="orn: Ocak 2026 Dis Egitim">
+                            <label class="form-label">@Html.T("Training.AssignmentTitle", "Atama Basligi") <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-sm" data-bind="value: formTitle" placeholder="@Html.T("Training.ExternalAssignmentPlaceholder", "orn: Ocak 2026 Dis Egitim")">
                         </div>
 
                         <!-- Tarihler -->
                         <div class="row">
                             <div class="col-6 mb-3">
-                                <label class="form-label">Baslangic <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.StartDate", "Baslangic") <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control form-control-sm" data-bind="value: formStartDate">
                             </div>
                             <div class="col-6 mb-3">
-                                <label class="form-label">Bitis <span class="text-danger">*</span></label>
+                                <label class="form-label">@Html.T("Common.EndDate", "Bitis") <span class="text-danger">*</span></label>
                                 <input type="date" class="form-control form-control-sm" data-bind="value: formDueDate">
                             </div>
                         </div>
@@ -69,21 +69,21 @@
                         <!-- Izleme Ayarlari -->
                         <div class="row">
                             <div class="col-6 mb-2">
-                                <label class="form-label">Min Izleme</label>
+                                <label class="form-label">@Html.T("Training.MinWatch", "Min Izleme")</label>
                                 <input type="number" class="form-control form-control-sm" data-bind="value: formMinWatchCount" min="1">
                             </div>
                             <div class="col-6 mb-2">
-                                <label class="form-label">Max Izleme</label>
-                                <input type="number" class="form-control form-control-sm" data-bind="value: formMaxWatchCount" min="1" placeholder="Sinirsiz">
+                                <label class="form-label">@Html.T("Training.MaxWatch", "Max Izleme")</label>
+                                <input type="number" class="form-control form-control-sm" data-bind="value: formMaxWatchCount" min="1" placeholder="@Html.T("Training.Unlimited", "Sinirsiz")">
                             </div>
                         </div>
                         <div class="form-check mb-1">
                             <input class="form-check-input" type="checkbox" id="allowSpeedChange" data-bind="checked: formAllowSpeedChange">
-                            <label class="form-check-label small" for="allowSpeedChange">Hiz degistirmeye izin ver</label>
+                            <label class="form-check-label small" for="allowSpeedChange">@Html.T("Training.AllowSpeedChange", "Hiz degistirmeye izin ver")</label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="allowSeeking" data-bind="checked: formAllowSeeking">
-                            <label class="form-check-label small" for="allowSeeking">Ileri/geri sarmaya izin ver</label>
+                            <label class="form-check-label small" for="allowSeeking">@Html.T("Training.AllowSeeking", "Ileri/geri sarmaya izin ver")</label>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                 <!-- Katilimci Ekleme -->
                 <div class="card">
                     <div class="card-header bg-success text-white py-2">
-                        <i class="bi bi-plus-circle me-2"></i>Katilimci Ekle
+                        <i class="bi bi-plus-circle me-2"></i>@Html.T("Training.AddParticipant", "Katilimci Ekle")
                     </div>
                     <div class="card-body">
                         <!-- Ekleme Modu Secimi -->
@@ -114,7 +114,7 @@
 
 ornek@firma.com
 ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></textarea>
-                                <small class="text-muted">Format: <code>email</code> veya <code>email;ad;soyad</code></small>
+                                <small class="text-muted">@Html.T("Training.EmailFormat", "Format: email veya email;ad;soyad")</small>
                             </div>
                         </div>
 
@@ -122,42 +122,42 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                         <div data-bind="visible: addMode() === 'excel'">
                             <div class="mb-3">
                                 <input type="file" class="form-control form-control-sm" accept=".xlsx,.xls,.csv" id="fileInput" data-bind="event: { change: handleFileSelect }">
-                                <small class="text-muted">Kolonlar: Email, Ad, Soyad</small>
+                                <small class="text-muted">@Html.T("Training.ExcelColumns", "Kolonlar: Email, Ad, Soyad")</small>
                             </div>
                             <div data-bind="visible: parsedFromFile().length > 0" class="alert alert-success py-2 small">
-                                <i class="bi bi-check-circle me-1"></i><strong data-bind="text: parsedFromFile().length"></strong> kisi bulundu
+                                <i class="bi bi-check-circle me-1"></i><strong data-bind="text: parsedFromFile().length"></strong> @Html.T("Training.PersonFound", "kisi bulundu")
                             </div>
                         </div>
 
                         <!-- Email Gonderimi -->
                         <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" id="sendEmail" data-bind="checked: sendEmailOnAdd">
-                            <label class="form-check-label small" for="sendEmail">Email gonder</label>
+                            <label class="form-check-label small" for="sendEmail">@Html.T("Training.SendEmail", "Email gonder")</label>
                         </div>
                         <!-- Email Sablonu -->
                         <div class="mb-3" data-bind="visible: sendEmailOnAdd()">
-                            <label class="form-label small">Email Sablonu</label>
-                            <select class="form-select form-select-sm" data-bind="value: formEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: 'Sablon secin...'"></select>
+                            <label class="form-label small">@Html.T("Training.EmailTemplate", "Email Sablonu")</label>
+                            <select class="form-select form-select-sm" data-bind="value: formEmailTemplateId, options: emailTemplates, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Training.SelectTemplate", "Sablon secin...")'"></select>
                         </div>
 
                         <!-- Buton -->
                         <!-- ko if: isNewMode -->
                         <button type="button" class="btn btn-success w-100" data-bind="click: createAssignment, disable: isCreating() || !canCreate()">
                             <span data-bind="visible: !isCreating()">
-                                <i class="bi bi-check-lg me-1"></i>Atamayi Olustur
+                                <i class="bi bi-check-lg me-1"></i>@Html.T("Training.CreateAssignment", "Atamayi Olustur")
                             </span>
                             <span data-bind="visible: isCreating">
-                                <span class="spinner-border spinner-border-sm"></span> Olusturuluyor...
+                                <span class="spinner-border spinner-border-sm"></span> @Html.T("Training.Creating", "Olusturuluyor...")
                             </span>
                         </button>
                         <!-- /ko -->
                         <!-- ko ifnot: isNewMode -->
                         <button type="button" class="btn btn-primary w-100" data-bind="click: addParticipants, disable: isAdding">
                             <span data-bind="visible: !isAdding()">
-                                <i class="bi bi-plus-circle me-1"></i>Ekle
+                                <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.Add", "Ekle")
                             </span>
                             <span data-bind="visible: isAdding">
-                                <span class="spinner-border spinner-border-sm"></span> Ekleniyor...
+                                <span class="spinner-border spinner-border-sm"></span> @Html.T("Common.Adding", "Ekleniyor...")
                             </span>
                         </button>
                         <!-- /ko -->
@@ -171,10 +171,10 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                     <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
                         <span>
                             <!-- ko if: isNewMode -->
-                            <i class="bi bi-list-check me-2"></i>Eklenecek Katilimcilar
+                            <i class="bi bi-list-check me-2"></i>@Html.T("Training.ParticipantsToAdd", "Eklenecek Katilimcilar")
                             <!-- /ko -->
                             <!-- ko ifnot: isNewMode -->
-                            <i class="bi bi-people me-2"></i>Mevcut Katilimcilar
+                            <i class="bi bi-people me-2"></i>@Html.T("Training.ExistingParticipants", "Mevcut Katilimcilar")
                             <!-- /ko -->
                             <span class="badge bg-secondary ms-2" data-bind="text: isNewMode() ? parsedParticipants().length : participants().length"></span>
                         </span>
@@ -183,7 +183,7 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bind="click: sendEmailsToSelected, disable: isSendingEmails">
                                 <i class="bi bi-envelope me-1"></i>Email (<span data-bind="text: selectedCount"></span>)
                             </button>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearSelection">Temizle</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bind="click: clearSelection">@Html.T("Common.Clear", "Temizle")</button>
                         </div>
                         <!-- /ko -->
                     </div>
@@ -194,9 +194,9 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                             <table class="table table-sm table-striped mb-0" data-bind="visible: parsedParticipants().length > 0">
                                 <thead class="table-light sticky-top">
                                     <tr>
-                                        <th>Email</th>
-                                        <th>Ad</th>
-                                        <th>Soyad</th>
+                                        <th>@Html.T("Common.Email", "Email")</th>
+                                        <th>@Html.T("Common.FirstName", "Ad")</th>
+                                        <th>@Html.T("Common.LastName", "Soyad")</th>
                                     </tr>
                                 </thead>
                                 <tbody data-bind="foreach: parsedParticipants">
@@ -209,8 +209,8 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                             </table>
                             <div data-bind="visible: parsedParticipants().length === 0" class="text-center py-5 text-muted">
                                 <i class="bi bi-inbox fs-1"></i>
-                                <p class="mb-0 mt-2">Henuz katilimci eklenmedi</p>
-                                <small>Sol taraftan email adreslerini girin</small>
+                                <p class="mb-0 mt-2">@Html.T("Training.NoParticipantsYet", "Henuz katilimci eklenmedi")</p>
+                                <small>@Html.T("Training.EnterEmailsFromLeft", "Sol taraftan email adreslerini girin")</small>
                             </div>
                         </div>
                         <!-- /ko -->
@@ -225,8 +225,8 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                                 <thead class="table-light sticky-top">
                                     <tr>
                                         <th style="width: 30px;"><input type="checkbox" class="form-check-input" data-bind="checked: selectAll"></th>
-                                        <th>Email / Ad Soyad</th>
-                                        <th class="text-center">Durum</th>
+                                        <th>@Html.T("Common.EmailNameSurname", "Email / Ad Soyad")</th>
+                                        <th class="text-center">@Html.T("Common.Status", "Durum")</th>
                                         <th class="text-center">Email</th>
                                         <th style="width: 80px;"></th>
                                     </tr>
@@ -241,9 +241,9 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                                             <!-- /ko -->
                                         </td>
                                         <td class="text-center">
-                                            <span data-bind="visible: statusId === 1" class="badge bg-warning">Bekliyor</span>
-                                            <span data-bind="visible: statusId === 2" class="badge bg-info">Izliyor</span>
-                                            <span data-bind="visible: statusId === 3" class="badge bg-success">Tamamladi</span>
+                                            <span data-bind="visible: statusId === 1" class="badge bg-warning">@Html.T("Training.Waiting", "Bekliyor")</span>
+                                            <span data-bind="visible: statusId === 2" class="badge bg-info">@Html.T("Training.Watching", "Izliyor")</span>
+                                            <span data-bind="visible: statusId === 3" class="badge bg-success">@Html.T("Training.Completed", "Tamamladi")</span>
                                         </td>
                                         <td class="text-center">
                                             <!-- ko if: emailSentCount > 0 -->
@@ -254,10 +254,10 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                                             <!-- /ko -->
                                         </td>
                                         <td class="text-end">
-                                            <button class="btn btn-sm btn-outline-info me-1" data-bind="click: $parent.copyLink" title="Link Kopyala">
+                                            <button class="btn btn-sm btn-outline-info me-1" data-bind="click: $parent.copyLink" title="@Html.T("Training.CopyLink", "Link Kopyala")">
                                                 <i class="bi bi-link-45deg"></i>
                                             </button>
-                                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteParticipant, disable: statusId === 3" title="Sil">
+                                            <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteParticipant, disable: statusId === 3" title="@Html.T("Common.Delete", "Sil")">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </td>
@@ -267,8 +267,8 @@ ali@firma.com;Ali;Yilmaz" data-bind="value: textInput, valueUpdate: 'input'"></t
                         </div>
                         <div data-bind="visible: !isLoadingParticipants() && participants().length === 0" class="text-center py-5 text-muted">
                             <i class="bi bi-inbox fs-1"></i>
-                            <p class="mb-0 mt-2">Henuz dis katilimci eklenmemis</p>
-                            <small>Sol taraftan email adreslerini ekleyebilirsiniz</small>
+                            <p class="mb-0 mt-2">@Html.T("Training.NoExternalParticipantsYet", "Henuz dis katilimci eklenmemis")</p>
+                            <small>@Html.T("Training.AddEmailsFromLeft", "Sol taraftan email adreslerini ekleyebilirsiniz")</small>
                         </div>
                         <!-- /ko -->
                     </div>

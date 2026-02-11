@@ -42,7 +42,7 @@
         <!-- Assignments Loading Spinner -->
         <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
+                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
             </div>
             <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
         </div>
@@ -99,7 +99,7 @@
                             <td>
                                 <span data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 <!-- ko if: daysRemaining <= 3 && daysRemaining >= 0 -->
-                                <span class="badge bg-warning text-dark ms-1" data-bind="text: daysRemaining + ' gün'"></span>
+                                <span class="badge bg-warning text-dark ms-1" data-bind="text: daysRemaining + ' @Html.T("Common.Day", "gün")'"></span>
                                 <!-- /ko -->
                             </td>
                             <td>
@@ -255,7 +255,7 @@
                             <span data-bind="visible: !isExportingEvaluations()">Excel</span>
                             <span data-bind="visible: isExportingEvaluations()">...</span>
                         </button>
-                        <span class="text-muted small" data-bind="text: evaluationsTotalCount() + ' kayıt'"></span>
+                        <span class="text-muted small" data-bind="text: evaluationsTotalCount() + ' @Html.T("Common.Records", "kayıt")'"></span>
                     </div>
                 </div>
             </div>
@@ -312,7 +312,7 @@
                             <td>
                                 <!-- ko if: callId -->
                                 <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
                                     <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                                 </button>
                                 <!-- /ko -->
@@ -423,7 +423,7 @@
         <!-- Loading Spinner -->
         <div data-bind="visible: isAssignmentsLoading()" class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Yükleniyor...</span>
+                <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
             </div>
             <p class="text-muted mt-2">@Html.T("Evaluation.LoadingAssignments", "Atamalar yükleniyor...")</p>
         </div>
@@ -483,7 +483,7 @@
                             <td data-bind="text: assigneeName || '-'"></td>
                             <td data-bind="text: dueDate ? new Date(dueDate).toLocaleDateString('tr-TR') : '-'"></td>
                             <td>
-                                <span class="badge bg-danger" data-bind="text: Math.abs(daysRemaining) + ' gün'"></span>
+                                <span class="badge bg-danger" data-bind="text: Math.abs(daysRemaining) + ' @Html.T("Common.Day", "gün")'"></span>
                             </td>
                             <td>
                                 <span class="badge bg-secondary" data-bind="text: evaluationCount || 0"></span>
@@ -617,7 +617,7 @@
                                                 <td>
                                                     <!-- ko if: callId -->
                                                     <code data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
                                                         <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                                                     </button>
                                                     <!-- /ko -->
@@ -749,7 +749,7 @@
                                                     <!-- Cezalı soru - ceza uygulandı -->
                                                     <!-- ko if: scoringType === 'Penalty' && isPenaltyApplied -->
                                                     <span class="text-danger fw-bold" data-bind="text: '-' + (earnedPoints || 0).toFixed(1)"></span>
-                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? 'Sarı' : 'Kırmızı'"></span>
+                                                    <span class="badge ms-1" data-bind="css: penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: penaltyType === 'YellowCard' ? '@Html.T("Penalty.Yellow", "Sarı")' : '@Html.T("Penalty.Red", "Kırmızı")'"></span>
                                                     <!-- /ko -->
                                                     <!-- Cezalı soru - ceza uygulanmadı -->
                                                     <!-- ko if: scoringType === 'Penalty' && !isPenaltyApplied -->
@@ -881,7 +881,7 @@
                                                 <!-- ko if: callId -->
                                                 <div class="d-flex align-items-center gap-1">
                                                     <code class="fw-bold" data-bind="text: callId.length > 20 ? callId.substring(0, 8) + '...' + callId.substring(callId.length - 8) : callId, attr: { title: callId }" style="cursor: help;"></code>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('Panoya kopyalandı'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('Panoya kopyalandı'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 text-secondary" data-bind="click: function() { var t = callId; (navigator.clipboard && window.isSecureContext) ? navigator.clipboard.writeText(t).then(function() { toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }).catch(function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); }) : (function() { var a = document.createElement('textarea'); a.value = t; document.body.appendChild(a); a.select(); document.execCommand('copy'); document.body.removeChild(a); toastr.success('@Html.T("Common.CopiedToClipboard", "Panoya kopyalandı")'); })(); }" title="@Html.T("Common.Copy", "Kopyala")">
                                                         <i class="bi bi-clipboard" style="font-size: 0.75rem;"></i>
                                                     </button>
                                                 </div>
@@ -1223,7 +1223,7 @@
                                                 <i class="bi bi-list-check me-2"></i>
                                                 <!-- /ko -->
                                                 <span data-bind="text: name"></span>
-                                                <span class="badge bg-white text-dark ms-2" data-bind="text: questions.length + ' soru'"></span>
+                                                <span class="badge bg-white text-dark ms-2" data-bind="text: questions.length + ' @Html.T("Common.Question", "soru")'"></span>
                                             </h5>
                                             <div>
                                                 <span class="badge bg-white text-dark">

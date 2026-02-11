@@ -10,7 +10,7 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">@Html.T("StaffTrainings.Personnel", "Personel")</label>
-                    <select class="form-select" data-bind="value: filterPersonnelId, options: personnelList, optionsValue: 'id', optionsText: 'fullName', optionsCaption: 'Tum Personel'"></select>
+                    <select class="form-select" data-bind="value: filterPersonnelId, options: personnelList, optionsValue: 'id', optionsText: 'fullName', optionsCaption: '@Html.T("Common.AllPersonnel", "Tum Personel")'"></select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">@Html.T("Meeting.TypeTraining", "Egitim")</label>

@@ -105,9 +105,9 @@
                             <div class="d-flex align-items-center">
                                 <i class="bi me-2" data-bind="css: showUnassigned() ? 'bi-folder2-open' : 'bi-folder2'"></i>
                                 <span class="fw-semibold">
-                                    <i class="bi bi-exclamation-triangle me-1"></i>Atanmamış Personeller
+                                    <i class="bi bi-exclamation-triangle me-1"></i>@Html.T("CustomerOrganization.UnassignedPersonnel", "Atanmamış Personeller")
                                 </span>
-                                <span class="badge bg-dark ms-2" data-bind="text: unassignedPersonnel().length + ' kişi'"></span>
+                                <span class="badge bg-dark ms-2" data-bind="text: unassignedPersonnel().length + ' @Html.T("CustomerOrganization.PersonSuffix", "kişi")'"></span>
                             </div>
                             <i class="bi" data-bind="css: showUnassigned() ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                         </div>
@@ -121,8 +121,8 @@
                                         <span class="badge bg-secondary ms-2" data-bind="text: roleName"></span>
                                         <small class="text-muted ms-2" data-bind="text: email"></small>
                                     </div>
-                                    <button class="btn btn-sm btn-warning" title="Organizasyona Taşı" data-bind="click: function() { $root.openMoveModal($data); }">
-                                        <i class="bi bi-arrows-move me-1"></i>Taşı
+                                    <button class="btn btn-sm btn-warning" title="@Html.T("CustomerOrganization.MoveToOrg", "Organizasyona Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
+                                        <i class="bi bi-arrows-move me-1"></i>@Html.T("Common.Move", "Taşı")
                                     </button>
                                 </div>
                                 <!-- /ko -->
@@ -150,7 +150,7 @@
                             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                                 <h6 class="mb-0"><i class="bi bi-diagram-3 me-2"></i>@Html.T("CustomerOrganization.List", "Organizasyonlar")</h6>
                                 <small class="text-muted">
-                                    <i class="bi bi-lightbulb me-1"></i>Taşımak için personel satırındaki butonu kullanın
+                                    <i class="bi bi-lightbulb me-1"></i>@Html.T("CustomerOrganization.MoveHint", "Taşımak için personel satırındaki butonu kullanın")
                                 </small>
                             </div>
                         </div>
@@ -166,7 +166,7 @@
                                         <div class="d-flex align-items-center">
                                             <i class="bi me-2" data-bind="css: isSelected() ? 'bi-folder2-open' : 'bi-folder2'"></i>
                                             <span class="fw-semibold" data-bind="text: name"></span>
-                                            <span class="badge ms-2" data-bind="text: personnelCount + ' kişi', css: isSelected() ? 'bg-light text-primary' : 'bg-secondary'"></span>
+                                            <span class="badge ms-2" data-bind="text: personnelCount + ' @Html.T("CustomerOrganization.PersonSuffix", "kişi")', css: isSelected() ? 'bg-light text-primary' : 'bg-secondary'"></span>
                                         </div>
                                         <div class="btn-group btn-group-sm">
                                             <button class="btn btn-sm" title="@Html.T("Common.Edit", "Düzenle")"
@@ -191,7 +191,7 @@
                                         <div data-bind="visible: !$root.isLoadingPersonnel()" class="personnel-tree">
                                             <!-- Empty -->
                                             <div data-bind="visible: !$root.personnelData().supervisors.length && !$root.personnelData().operators.length" class="text-center text-muted py-3">
-                                                <i class="bi bi-person-x"></i> Personel yok
+                                                <i class="bi bi-person-x"></i> @Html.T("CustomerOrganization.NoPersonnel", "Personel yok")
                                             </div>
 
                                             <!-- Supervisors with Team Members -->
@@ -203,13 +203,13 @@
                                                             <i class="bi bi-person-badge text-primary me-2"></i>
                                                             <span class="fw-semibold" data-bind="text: fullName"></span>
                                                             <span class="badge bg-primary ms-2" data-bind="text: roleName"></span>
-                                                            <span class="badge bg-info ms-1" data-bind="visible: teamMembers && teamMembers.length, text: teamMembers ? teamMembers.length + ' ekip' : ''"></span>
+                                                            <span class="badge bg-info ms-1" data-bind="visible: teamMembers && teamMembers.length, text: teamMembers ? teamMembers.length + ' @Html.T("CustomerOrganization.TeamSuffix", "ekip")' : ''"></span>
                                                         </div>
                                                         <div class="btn-group btn-group-sm">
                                                             <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                                 <i class="bi bi-arrows-move"></i>
                                                             </button>
-                                                            <button class="btn btn-outline-danger" title="Organizasyondan Çıkar" data-bind="click: function() { $root.removeFromOrganization($data); }">
+                                                            <button class="btn btn-outline-danger" title="@Html.T("CustomerOrganization.RemoveFromOrg", "Organizasyondan Çıkar")" data-bind="click: function() { $root.removeFromOrganization($data); }">
                                                                 <i class="bi bi-box-arrow-right"></i>
                                                             </button>
                                                         </div>
@@ -228,7 +228,7 @@
                                                                 <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                                     <i class="bi bi-arrows-move"></i>
                                                                 </button>
-                                                                <button class="btn btn-outline-danger" title="Ekipten Çıkar" data-bind="click: function() { $root.removeFromTeam($data, $parent); }">
+                                                                <button class="btn btn-outline-danger" title="@Html.T("CustomerOrganization.RemoveFromTeam", "Ekipten Çıkar")" data-bind="click: function() { $root.removeFromTeam($data, $parent); }">
                                                                     <i class="bi bi-box-arrow-right"></i>
                                                                 </button>
                                                             </div>
@@ -240,7 +240,7 @@
                                             <!-- Independent Operators -->
                                             <div data-bind="visible: $root.personnelData().operators.length > 0" class="tree-group">
                                                 <div class="tree-section-header px-3 py-1 bg-light border-top">
-                                                    <small class="text-muted"><i class="bi bi-people me-1"></i>Bağımsız Operatörler</small>
+                                                    <small class="text-muted"><i class="bi bi-people me-1"></i>@Html.T("CustomerOrganization.IndependentOperators", "Bağımsız Operatörler")</small>
                                                 </div>
                                                 <div data-bind="foreach: $root.personnelData().operators">
                                                     <div class="tree-item tree-independent d-flex align-items-center justify-content-between px-3 py-2">
@@ -253,7 +253,7 @@
                                                             <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveModal($data); }">
                                                                 <i class="bi bi-arrows-move"></i>
                                                             </button>
-                                                            <button class="btn btn-outline-danger" title="Organizasyondan Çıkar" data-bind="click: function() { $root.removeFromOrganization($data); }">
+                                                            <button class="btn btn-outline-danger" title="@Html.T("CustomerOrganization.RemoveFromOrg", "Organizasyondan Çıkar")" data-bind="click: function() { $root.removeFromOrganization($data); }">
                                                                 <i class="bi bi-box-arrow-right"></i>
                                                             </button>
                                                         </div>
@@ -337,7 +337,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
-                        <i class="bi bi-arrows-move me-2"></i>Personel Taşı
+                        <i class="bi bi-arrows-move me-2"></i>@Html.T("CustomerOrganization.MovePersonnel", "Personel Taşı")
                     </h5>
                     <button type="button" class="btn-close" data-bind="click: closeMoveModal"></button>
                 </div>
@@ -349,7 +349,7 @@
                         <!-- ko if: movingPerson() && movingPerson().teamMembers && movingPerson().teamMembers.length > 0 -->
                         <div class="mt-2 small">
                             <i class="bi bi-people me-1"></i>
-                            <span data-bind="text: movingPerson().teamMembers.length"></span> ekip üyesi var
+                            <span data-bind="text: movingPerson().teamMembers.length"></span> @Html.T("CustomerOrganization.TeamMembersExist", "ekip üyesi var")
                         </div>
                         <!-- /ko -->
                     </div>
@@ -357,7 +357,7 @@
                     <!-- Step 1: Hedef Organizasyon -->
                     <div class="mb-3">
                         <label class="form-label fw-bold">
-                            <span class="badge bg-primary rounded-pill me-2">1</span>Hedef Organizasyon Seçin:
+                            <span class="badge bg-primary rounded-pill me-2">1</span>@Html.T("CustomerOrganization.SelectTargetOrg", "Hedef Organizasyon Seçin:")
                         </label>
                         <div class="list-group" style="max-height: 200px; overflow-y: auto;">
                             <!-- ko foreach: organizations -->
@@ -367,28 +367,28 @@
                                     <i class="bi bi-folder2 me-2"></i>
                                     <span data-bind="text: name"></span>
                                     <!-- ko if: $root.selectedOrganization() && $root.selectedOrganization().id === id -->
-                                    <span class="badge bg-info ms-2">Mevcut</span>
+                                    <span class="badge bg-info ms-2">@Html.T("CustomerOrganization.Current", "Mevcut")</span>
                                     <!-- /ko -->
                                 </div>
-                                <span class="badge bg-secondary" data-bind="text: personnelCount + ' kişi'"></span>
+                                <span class="badge bg-secondary" data-bind="text: personnelCount + ' @Html.T("CustomerOrganization.PersonSuffix", "kişi")'"></span>
                             </a>
                             <!-- /ko -->
                         </div>
                         <div data-bind="visible: organizations().length === 0" class="text-muted text-center py-3">
-                            Organizasyon bulunamadı
+                            @Html.T("CustomerOrganization.NoOrganization", "Organizasyon bulunamadı")
                         </div>
                     </div>
 
                     <!-- Step 2: Hedef Süpervizör (organizasyon seçildikten sonra görünür) -->
                     <div data-bind="visible: selectedTargetOrg()" class="mb-3">
                         <label class="form-label fw-bold">
-                            <span class="badge bg-primary rounded-pill me-2">2</span>Hedef Süpervizör Seçin:
+                            <span class="badge bg-primary rounded-pill me-2">2</span>@Html.T("CustomerOrganization.SelectTargetSupervisor", "Hedef Süpervizör Seçin:")
                         </label>
 
                         <!-- Loading -->
                         <div data-bind="visible: isLoadingTargetPersonnel()" class="text-center py-3">
                             <div class="spinner-border spinner-border-sm text-primary"></div>
-                            <small class="ms-2 text-muted">Personel yükleniyor...</small>
+                            <small class="ms-2 text-muted">@Html.T("CustomerOrganization.LoadingPersonnel", "Personel yükleniyor...")</small>
                         </div>
 
                         <!-- Supervisor Selection List -->
@@ -398,9 +398,9 @@
                                data-bind="click: function() { $root.selectTargetSupervisor(null); }, css: { 'active': $root.selectedTargetSupervisor() === null }">
                                 <div>
                                     <i class="bi bi-person-dash text-warning me-2"></i>
-                                    <span>Bağımsız (Süpervizörsüz)</span>
+                                    <span>@Html.T("CustomerOrganization.Independent", "Bağımsız (Süpervizörsüz)")</span>
                                 </div>
-                                <span class="badge bg-warning text-dark">Bağımsız</span>
+                                <span class="badge bg-warning text-dark">@Html.T("CustomerOrganization.IndependentShort", "Bağımsız")</span>
                             </a>
 
                             <!-- Available Supervisors -->
@@ -411,13 +411,13 @@
                                     <i class="bi bi-person-badge text-primary me-2"></i>
                                     <span data-bind="text: fullName"></span>
                                 </div>
-                                <span class="badge bg-primary" data-bind="text: teamMembers ? teamMembers.length + ' ekip' : '0 ekip'"></span>
+                                <span class="badge bg-primary" data-bind="text: teamMembers ? teamMembers.length + ' @Html.T("CustomerOrganization.TeamSuffix", "ekip")' : '0 @Html.T("CustomerOrganization.TeamSuffix", "ekip")'"></span>
                             </a>
                             <!-- /ko -->
 
                             <!-- No supervisors message -->
                             <div data-bind="visible: targetOrgPersonnel().supervisors.length === 0" class="list-group-item text-muted text-center small">
-                                <i class="bi bi-info-circle me-1"></i>Bu organizasyonda süpervizör yok
+                                <i class="bi bi-info-circle me-1"></i>@Html.T("CustomerOrganization.NoSupervisors", "Bu organizasyonda süpervizör yok")
                             </div>
                         </div>
                     </div>
@@ -427,31 +427,31 @@
                     <div class="form-check mb-3">
                         <input type="checkbox" class="form-check-input" id="moveWithTeam" data-bind="checked: moveWithTeam" />
                         <label class="form-check-label" for="moveWithTeam">
-                            <i class="bi bi-people me-1"></i>Ekip uyelerini de birlikte tasi (<span data-bind="text: movingPerson().teamMembers.length"></span> kisi)
+                            <i class="bi bi-people me-1"></i>@Html.T("CustomerOrganization.MoveWithTeam", "Ekip üyelerini de birlikte taşı") (<span data-bind="text: movingPerson().teamMembers.length"></span> @Html.T("CustomerOrganization.PersonSuffix", "kişi"))
                         </label>
                     </div>
                     <!-- /ko -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bind="click: closeMoveModal">
-                        <i class="bi bi-x-circle me-1"></i>İptal
+                        <i class="bi bi-x-circle me-1"></i>@Html.T("Common.Cancel", "İptal")
                     </button>
                     <!-- ko if: selectedOrganization() -->
                     <button type="button" class="btn btn-info" data-bind="click: executeCopy, disable: !selectedTargetOrg() || isMoving()">
                         <span data-bind="visible: !isMoving()">
-                            <i class="bi bi-copy me-1"></i>Kopyala
+                            <i class="bi bi-copy me-1"></i>@Html.T("Common.Copy", "Kopyala")
                         </span>
                         <span data-bind="visible: isMoving()">
-                            <span class="spinner-border spinner-border-sm me-1"></span>Isleniyor...
+                            <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Processing", "İşleniyor...")
                         </span>
                     </button>
                     <!-- /ko -->
                     <button type="button" class="btn btn-warning" data-bind="click: executeMove, disable: !selectedTargetOrg() || isMoving()">
                         <span data-bind="visible: !isMoving()">
-                            <i class="bi bi-arrows-move me-1"></i>Tasi
+                            <i class="bi bi-arrows-move me-1"></i>@Html.T("Common.Move", "Taşı")
                         </span>
                         <span data-bind="visible: isMoving()">
-                            <span class="spinner-border spinner-border-sm me-1"></span>Isleniyor...
+                            <span class="spinner-border spinner-border-sm me-1"></span>@Html.T("Common.Processing", "İşleniyor...")
                         </span>
                     </button>
                 </div>

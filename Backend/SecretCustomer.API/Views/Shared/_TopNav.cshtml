@@ -186,7 +186,7 @@
         })
         .then(res => res.json())
         .then(data => {
-            self.userName(data.username || 'Kullanıcı');
+            self.userName(data.username || '@Html.T("Common.User", "Kullanıcı")');
             self.userRole(data.role || 'User');
             self.isAdmin(data.role === 'Admin');
         })

@@ -177,7 +177,7 @@
                         <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
                     </button>
                     <div class="flex-grow-1"></div>
-                    <span class="text-muted small" data-bind="text: totalCount() + ' kayıt'"></span>
+                    <span class="text-muted small" data-bind="text: totalCount() + ' @Html.T("Common.Records", "kayıt")'"></span>
                 </div>
             </div>
         </div>
@@ -736,7 +736,7 @@
                                             <span class="badge bg-info" data-bind="text: targetCount"></span>
                                         </td>
                                         <td>
-                                            <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? 'Açık' : 'Kapalı'"></span>
+                                            <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? '@Html.T("Period.Open", "Açık")' : '@Html.T("Period.Closed", "Kapalı")'"></span>
                                         </td>
                                     </tr>
                                 </tbody>

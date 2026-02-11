@@ -43,7 +43,7 @@
                         <input type="text" class="form-control form-control-sm" placeholder="@Html.T("Common.Search", "Ara...")" data-bind="value: usersSearchText, valueUpdate: 'afterkeydown'" autocomplete="off">
                     </div>
                     <div class="col-md-8 text-end">
-                        <span class="text-muted small" data-bind="text: usersTotalCount() + ' kayıt'"></span>
+                        <span class="text-muted small" data-bind="text: usersTotalCount() + ' @Html.T("Common.RecordSuffix", "kayıt")'"></span>
                     </div>
                 </div>
             </div>
@@ -160,7 +160,7 @@
                         </div>
                     </div>
                     <div class="col-md-4 text-end">
-                        <span class="text-muted small" data-bind="text: cpTotalCount() + ' kayıt'"></span>
+                        <span class="text-muted small" data-bind="text: cpTotalCount() + ' @Html.T("Common.RecordSuffix", "kayıt")'"></span>
                     </div>
                 </div>
             </div>

@@ -48,7 +48,7 @@
                                 <td><span class="badge bg-secondary" data-bind="text: entityType"></span></td>
                                 <td><span class="badge bg-info" data-bind="text: (columns && columns.length) || 0"></span> kolon</td>
                                 <td>
-                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? 'Aktif' : 'Pasif'"></span>
+                                    <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Passive", "Pasif")'"></span>
                                 </td>
                                 <td data-bind="text: new Date(createdAt).toLocaleDateString('tr-TR')"></td>
                                 <td>

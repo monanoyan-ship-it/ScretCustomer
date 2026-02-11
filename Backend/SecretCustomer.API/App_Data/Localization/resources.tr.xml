@@ -123,7 +123,7 @@
     <Value>Başarılı</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Error">
-    <Value>Hata</Value>
+    <Value>hata</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Warning">
     <Value>Uyarı</Value>
@@ -147,7 +147,7 @@
     <Value>Başlangıç Tarihi</Value>
   </LocaleResource>
   <LocaleResource Name="Common.EndDate">
-    <Value>Bitiş Tarihi</Value>
+    <Value>Bitiş</Value>
   </LocaleResource>
   <LocaleResource Name="Common.CreatedAt">
     <Value>Oluşturma Tarihi</Value>
@@ -165,10 +165,10 @@
     <Value>Ortalama</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Min">
-    <Value>Minimum</Value>
+    <Value>Min</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Max">
-    <Value>Maksimum</Value>
+    <Value>Maks</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Count">
     <Value>Adet</Value>
@@ -219,7 +219,7 @@
     <Value>Kontrol Listesi</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DueDate">
-    <Value>Son Tarih</Value>
+    <Value>Bitiş Tarihi</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NotSpecified">
     <Value>Belirtilmemiş</Value>
@@ -231,7 +231,7 @@
     <Value>Son güncelleme</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Continue">
-    <Value>Devam Et</Value>
+    <Value>Devam</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Email">
     <Value>E-posta</Value>
@@ -6867,21 +6867,15 @@
   <LocaleResource Name="Report.NoEvaluatorData">
     <Value>Henüz dinleme verisi bulunmuyor.</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Evaluator">
-    <Value>Dinleyici</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.Today">
     <Value>Bugün</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Total">
-    <Value>Toplam</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.AvgScore">
     <Value>Ort. Puan</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.EvaluatorCount">
-    <Value>Toplam Dinleyici</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.CustomerQuotaStatus">
     <Value>Firma Kota Durumu</Value>
   </LocaleResource>
@@ -6909,9 +6903,7 @@
   <LocaleResource Name="Report.ActiveCustomers">
     <Value>Aktif Firma</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.LoadError">
-    <Value>Veriler yüklenirken hata oluştu.</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.ScoreDetail">
     <Value>Puan Detayı</Value>
   </LocaleResource>
@@ -9273,5 +9265,1292 @@
   </LocaleResource>
   <LocaleResource Name="Visits.Title">
     <Value>Ziyaretler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Current">
+    <Value>Mevcut</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Independent">
+    <Value>Bağımsız (Süpervizörsüz)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.IndependentOperators">
+    <Value>Bağımsız Operatörler</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.IndependentShort">
+    <Value>Bağımsız</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.LoadingPersonnel">
+    <Value>Personel yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveHint">
+    <Value>Taşımak için personel satırındaki butonu kullanın</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MovePersonnel">
+    <Value>Personel Taşı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveToOrg">
+    <Value>Organizasyona Taşı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveWithTeam">
+    <Value>Ekip üyelerini de birlikte taşı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoOrganization">
+    <Value>Organizasyon bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoPersonnel">
+    <Value>Personel yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoSupervisors">
+    <Value>Bu organizasyonda süpervizör yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.PersonSuffix">
+    <Value>kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.RemoveFromOrg">
+    <Value>Organizasyondan Çıkar</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.RemoveFromTeam">
+    <Value>Ekipten Çıkar</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.SelectTargetOrg">
+    <Value>Hedef Organizasyon Seçin:</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.SelectTargetSupervisor">
+    <Value>Hedef Süpervizör Seçin:</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.TeamMembersExist">
+    <Value>ekip üyesi var</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.TeamSuffix">
+    <Value>ekip</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.UnassignedPersonnel">
+    <Value>Atanmamış Personeller</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.OnlineSurveySettings">
+    <Value>Online Anket Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Alternative">
+    <Value>Alternatif</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Default">
+    <Value>Varsayılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Disabled">
+    <Value>Devre Dışı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Help">
+    <Value>Yardım</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Recommended">
+    <Value>Önerilen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Closed">
+    <Value>Kapalı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Open">
+    <Value>Açık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Authentication">
+    <Value>Kimlik Doğrulama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ConnectionTest">
+    <Value>Bağlantı Testi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.CreateFirst">
+    <Value>İlk Profili Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.EditProfileTitle">
+    <Value>SMTP Profili Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.GmailAppPasswordHint">
+    <Value>Gmail için "Uygulama Şifresi" kullanın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.GraphApiHint">
+    <Value>SMTP yerine Graph API ile email gönderir (önerilen)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ModernAuth">
+    <Value>Modern kimlik doğrulama yöntemi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NewProfile">
+    <Value>Yeni Profil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NewProfileTitle">
+    <Value>Yeni SMTP Profili</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NoProfiles">
+    <Value>Henüz SMTP profili bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Password">
+    <Value>Şifre / Uygulama Şifresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Port">
+    <Value>Port</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Profile">
+    <Value>Profil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileActive">
+    <Value>Profil Aktif</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileName">
+    <Value>Profil Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.RecipientEmail">
+    <Value>Alıcı Email Adresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SendTestEmail">
+    <Value>Test Email Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Sender">
+    <Value>Gönderen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SenderEmail">
+    <Value>Gönderen Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SenderName">
+    <Value>Gönderen Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Server">
+    <Value>Sunucu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ServerSettings">
+    <Value>Sunucu Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SetDefault">
+    <Value>Varsayılan Yap</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SmtpServer">
+    <Value>SMTP Sunucu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Title">
+    <Value>SMTP Profilleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.UseGraphApi">
+    <Value>Microsoft Graph API Kullan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.UseSsl">
+    <Value>SSL/TLS Kullan (StartTLS)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Username">
+    <Value>Kullanıcı Adı / Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.BasicInfo">
+    <Value>Temel Bilgiler</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.BodyLabel">
+    <Value>İçerik (Body)</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.CreateFirst">
+    <Value>İlk Şablonu Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.DefaultTemplate">
+    <Value>Varsayılan Şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.DescriptionPlaceholder">
+    <Value>Bu şablon hakkında kısa açıklama</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.EditTemplate">
+    <Value>Email Şablonu Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.EmailContent">
+    <Value>Email İçeriği</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.InsertVariable">
+    <Value>Değişken Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.InsertVariableHint">
+    <Value>Değişkene tıklayarak ekleyin</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Loading">
+    <Value>Şablonlar yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.NewTemplate">
+    <Value>Yeni Şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.NoTemplates">
+    <Value>Henüz email şablonu bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.PlaceholderHint">
+    <Value>Placeholder kullanabilirsiniz: {ProjectName}, {CompanyName}, vb.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Preview">
+    <Value>Email Önizleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.RealDataInfo">
+    <Value>Seçilen personel için gerçek anket linki ve QR kod oluşturulacak. Email yukarıda girdiğiniz adrese gönderilecek.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.RecipientAddress">
+    <Value>Gönderilecek Email Adresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectPersonnel">
+    <Value>Personel seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectProject">
+    <Value>Proje seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectProjectFirst">
+    <Value>Önce proje seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Subject">
+    <Value>Konu</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SubjectLabel">
+    <Value>Konu (Subject)</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Template">
+    <Value>Şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateLoading">
+    <Value>Şablon yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateName">
+    <Value>Şablon Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateType">
+    <Value>Şablon Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TestEmail">
+    <Value>Test Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TestEmailHint">
+    <Value>Test emaili bu adrese gönderilecek</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Title">
+    <Value>Email Şablonları</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.UseRealData">
+    <Value>Gerçek Proje/Personel Verisi Kullan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.UseRealDataHint">
+    <Value>Gerçek anket linki ve QR kod oluşturulur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Company">
+    <Value>Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Dealer">
+    <Value>Bayi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Representative">
+    <Value>Temsilci</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Answer">
+    <Value>Cevap</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Answers">
+    <Value>Cevaplar</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.AuditComment">
+    <Value>Denetim Yorumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.CallId">
+    <Value>Çağrı ID</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.CallInfo">
+    <Value>Çağrı Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Comment">
+    <Value>Yorum</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Duration">
+    <Value>Süre</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Earned">
+    <Value>Kazanılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Evaluated">
+    <Value>Değerlendirilen</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Evaluation">
+    <Value>değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.EvaluationDetail">
+    <Value>Değerlendirme Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Group">
+    <Value>Grup</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Loading">
+    <Value>Rapor yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.NoEvaluationsInRange">
+    <Value>Bu tarih aralığında değerlendirme bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Notes">
+    <Value>Notlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Question">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Score">
+    <Value>Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Title">
+    <Value>Değerlendirme Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.TotalPrefix">
+    <Value>Toplam</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.TotalScore">
+    <Value>Toplam Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Weight">
+    <Value>Ağırlık</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last3Months">
+    <Value>Son 3 Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastMonth">
+    <Value>Geçen Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisMonth">
+    <Value>Bu Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisYear">
+    <Value>Bu Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Average">
+    <Value>Ortalama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.BasedOnComments">
+    <Value>(Yorum sayısına göredir)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlTime">
+    <Value>Kontrol Saati</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationType">
+    <Value>Değerlendirme Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExternalEvaluation">
+    <Value>Dış Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Highest">
+    <Value>En Yüksek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Inspected">
+    <Value>Denetlenen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.InternalEvaluation">
+    <Value>İç Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ListeningDetail">
+    <Value>Dinleme Detayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Lowest">
+    <Value>En Düşük</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyPerformance">
+    <Value>Aylık Performans</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RCard">
+    <Value>K.Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.VisitInfo">
+    <Value>Ziyaret Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.YCard">
+    <Value>S.Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DownloadExcel">
+    <Value>Excel İndir</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DownloadPdf">
+    <Value>PDF İndir</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last6Months">
+    <Value>Son 6 Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastWeek">
+    <Value>Geçen Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastYear">
+    <Value>Geçen Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.SelectDate">
+    <Value>Tarih Seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Address">
+    <Value>Adres</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Contact">
+    <Value>İletişim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.MinChars">
+    <Value>En az 6 karakter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OrCreateNew">
+    <Value>veya Yeni Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ActiveCustomer">
+    <Value>Aktif Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DistrictPlaceholder">
+    <Value>Kadıköy</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.EditPersonnel">
+    <Value>Personel Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.AddressPlaceholder">
+    <Value>Cadde, Sokak, No</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NotesPlaceholder">
+    <Value>Bayi hakkında notlar...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceCountInfo">
+    <Value>için</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.TranslationResources">
+    <Value>çeviri kaynağı mevcut.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.AddOperator">
+    <Value>Operatör Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.AddSupervisor">
+    <Value>Yönetici/Süpervizör Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.CompanyManagers">
+    <Value>Firma Yöneticileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DelegateWarning">
+    <Value>personelinin altında ekip üyeleri var. Lütfen bu üyeleri devralacak bir vekil seçin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.EditOrg">
+    <Value>Organizasyon Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.IndependentOperatorHint">
+    <Value>Bu operatör bağımsız olarak eklenecek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.IndependentOperators">
+    <Value>Bağımsız Operatörler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.MakeIndependent">
+    <Value>Bağımsız Yap</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewManager">
+    <Value>Yeni Yönetici</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewOrg">
+    <Value>Yeni Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewSupervisor">
+    <Value>Yeni Süpervizör</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoIndependentOperators">
+    <Value>Bağımsız operatör yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoManagers">
+    <Value>Henüz yönetici yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoPersonnel">
+    <Value>Bu organizasyonda henüz personel yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NotFound">
+    <Value>Organizasyon bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgCode">
+    <Value>Organizasyon Kodu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgName">
+    <Value>Organizasyon Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Organizations">
+    <Value>Organizasyonlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.PersonnelStructure">
+    <Value>Personel Yapısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.RemoveFromOrg">
+    <Value>Organizasyondan Çıkar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectDelegate">
+    <Value>Vekil Seç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectFromPool">
+    <Value>Havuzdan Seç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectNewSupervisor">
+    <Value>Yeni Süpervizör Seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectOrgHint">
+    <Value>Personelleri görmek için sol taraftan bir organizasyon seçin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Supervisor">
+    <Value>Süpervizör</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.TeamMembersToTransfer">
+    <Value>Devredilecek Ekip Üyeleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.TransferAndRemove">
+    <Value>Devret ve Çıkar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Granted">
+    <Value>Verildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Indefinite">
+    <Value>Süresiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Revoked">
+    <Value>Kaldırıldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllCustomers">
+    <Value>Tüm Müşteriler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Copied">
+    <Value>Kopyalandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DaySuffix">
+    <Value>gün</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Fetch">
+    <Value>Getir</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.First100Records">
+    <Value>İlk 100 kayıt gösteriliyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NotSelected">
+    <Value>Seçilmedi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Question">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.RecordSuffix">
+    <Value>kayıt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Red">
+    <Value>Kırmızı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.RedCard">
+    <Value>Kırmızı Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectCustomer">
+    <Value>Müşteri Seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Yellow">
+    <Value>Sarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.YellowCard">
+    <Value>Sarı Kart</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.EndDateSuffix">
+    <Value>bitiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Day">
+    <Value>Gün</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Month">
+    <Value>Ay</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.QuickSelect">
+    <Value>Hızlı Seç</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Week">
+    <Value>Hafta</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Year">
+    <Value>Yıl</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Yesterday">
+    <Value>Dün</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.ClearDefault">
+    <Value>Varsayılanı Kaldır</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.CreatedAt">
+    <Value>Oluşturulma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.CustomerOrganization">
+    <Value>Müşteri / Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Default">
+    <Value>Varsayılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DefaultNote">
+    <Value>Sayfa açıldığında bu filtre otomatik uygulanacak</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Description">
+    <Value>Açıklama (Opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DescriptionOptional">
+    <Value>Açıklama (Opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DescriptionPlaceholder">
+    <Value>Bu filtrenin ne için kullanıldığını açıklayın...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.FilterName">
+    <Value>Filtre Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.FilterNamePlaceholder">
+    <Value>Örn: Ocak Ayı Raporları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Name">
+    <Value>Filtre Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NamePlaceholder">
+    <Value>Örn: Ocak Ayı Raporları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NoSavedFilters">
+    <Value>Henüz kayıtlı filtre yok.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NoSearchResults">
+    <Value>Aramayla eşleşen filtre bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SaveFilterHint">
+    <Value>Filtreleri kaydederek hızlıca tekrar kullanabilirsiniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SaveQuery">
+    <Value>Sorguyu Kaydet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SavedFilters">
+    <Value>Kayıtlı Filtreler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SelectCustomer">
+    <Value>Müşteri Seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SelectedFilters">
+    <Value>Seçilen Filtreler:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetAsDefault">
+    <Value>Varsayılan filtre olarak ayarla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetAsDefaultNote">
+    <Value>Sayfa açıldığında bu filtre otomatik uygulanacak</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetDefault">
+    <Value>Varsayılan Yap</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listening.CustomerOrganization">
+    <Value>Müşteri / Organizasyon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.Red">
+    <Value>Kırmızı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.Yellow">
+    <Value>Sarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AutoReport">
+    <Value>Otomatik Rapor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.EndDateFilter">
+    <Value>Bitiş Tarihi Filtresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Identity">
+    <Value>Kimlik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Reporting">
+    <Value>Raporlama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.SelectFromSettings">
+    <Value>(Proje ayarlarından seçin)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.SurveyIdentity.Open">
+    <Value>Açık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Template">
+    <Value>Şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIGenerating">
+    <Value>AI rapor oluşturuyor, lütfen bekleyin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIInfoText">
+    <Value>Bu özellik Google Gemini AI kullanarak otomatik rapor oluşturur. Rapor oluşturma işlemi 10-30 saniye sürebilir.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIReport">
+    <Value>AI Rapor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AnswerBasedRecords">
+    <Value>Cevap Bazlı Kayıtlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CompareYear">
+    <Value>Karşılaştırma Yılı (Opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CurrentYearTarget">
+    <Value>Mevcut Yıl Hedefi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DataPreview">
+    <Value>Veri Önizleme (JSON)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DownloadMd">
+    <Value>İndir (.md)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvalAbbr">
+    <Value>değ.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationGeneralNotes">
+    <Value>Değerlendirme Genel Notları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationSuffix">
+    <Value>değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GeneralNote">
+    <Value>Genel Not</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Generating">
+    <Value>Oluşturuluyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LowScore">
+    <Value>Düşük Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluationsInRange">
+    <Value>Bu aralıkta değerlendirme bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoGeneralNotes">
+    <Value>Genel not bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PercentageRanking">
+    <Value>Yüzde Sıralaması</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PreviousYearTarget">
+    <Value>Önceki Yıl Hedefi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportOutput">
+    <Value>Rapor Çıktısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportSettings">
+    <Value>Rapor Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportYear">
+    <Value>Rapor Yılı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Response">
+    <Value>yanıt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreDistribution">
+    <Value>Puan Dağılımı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreExcellent">
+    <Value>Mükemmel (90+)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreGood">
+    <Value>İyi (80-89)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScorePoor">
+    <Value>Düşük (<60)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectCustomer">
+    <Value>Müşteri seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionSuffix">
+    <Value>seçim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.StretchTarget">
+    <Value>Üst Hedef</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionSuffix">
+    <Value>öneri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TargetScores">
+    <Value>Hedef Puanlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Token">
+    <Value>Token</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Visual">
+    <Value>Görsel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileManagement">
+    <Value>SMTP Profil Yönetimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Anonymous">
+    <Value>Anonim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.CommentPlaceholder">
+    <Value>Yorum (opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.CloseWindow">
+    <Value>Katılımınız için teşekkür ederiz. Bu pencereyi kapatabilirsiniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Success">
+    <Value>Anketiniz başarıyla gönderildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Thanks">
+    <Value>Teşekkürler!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Title">
+    <Value>Anket Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ErrorMessage">
+    <Value>Lütfen size gönderilen linki kontrol edin veya yöneticinize başvurun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Loading">
+    <Value>Anket yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.QuestionsAnswered">
+    <Value>soru cevaplandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SelectMultiple">
+    <Value>Seçin (birden fazla seçilebilir):</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SelectOne">
+    <Value>Birini seçin:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Submit">
+    <Value>Anketi Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Submitting">
+    <Value>Gönderiliyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Title">
+    <Value>Anket</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIEmptyState">
+    <Value>Sol panelden ayarları yapın ve "Rapor Oluştur" butonuna tıklayın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalParticipantAssignment">
+    <Value>Dis Katilimci Atama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentTitle">
+    <Value>Atama Basligi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DueDate">
+    <Value>Son Tarih</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.GoBack">
+    <Value>Geri Don</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.QuizHint">
+    <Value>&lt;strong&gt;Dogru:&lt;/strong&gt; Her soru icin TEK dogru cevap secin | &lt;strong&gt;Puan:&lt;/strong&gt; Secildiginde alinacak puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.CriteriaTotal">
+    <Value>Kriter Toplam</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Maximum">
+    <Value>Maksimum</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Survey">
+    <Value>Anket</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Adding">
+    <Value>Ekleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllPersonnel">
+    <Value>Tüm Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.EmailNameSurname">
+    <Value>E-posta / Ad Soyad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.EvaluationSuffix">
+    <Value>Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.General">
+    <Value>Genel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Group">
+    <Value>Grup</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OrganizationOptional">
+    <Value>Organizasyon (Opsiyonel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Passive">
+    <Value>Pasif</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Person">
+    <Value>kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PersonnelNamePlaceholder">
+    <Value>Personel adı...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PersonnelSuffix">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Record">
+    <Value>kayıt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SearchByName">
+    <Value>İsim Ara</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectStatus">
+    <Value>Durum seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectType">
+    <Value>Tip seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Selected">
+    <Value>seçildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Showing">
+    <Value>gösteriliyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Times">
+    <Value>kere</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.ContactPlaceholder">
+    <Value>Ahmet Yılmaz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NamePlaceholder">
+    <Value>ABC Bayi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NotSpecified">
+    <Value>Bayi Belirtilmemiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotAnswered">
+    <Value>Cevaplanmadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotRequired">
+    <Value>Gerekmedi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Weight">
+    <Value>Ağırlık</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgManager">
+    <Value>Organizasyon Yöneticisi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectCode">
+    <Value>Proje Kodu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectType">
+    <Value>Proje Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationComment">
+    <Value>Denetim Yorumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Reason">
+    <Value>Sebep</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectedTotalEvaluation">
+    <Value>Seçilen / Toplam değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Success">
+    <Value>Başarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TopSubCriteria">
+    <Value>En Çok Seçilen Alt Kriterler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Warning">
+    <Value>Uyarı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.AppPassword">
+    <Value>Uygulama Şifresi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.CreateIt">
+    <Value>oluşturun</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NormalPasswordOk">
+    <Value>Normal şifre kullanabilirsiniz</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.DetailedReport">
+    <Value>Detay Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.GroupBased">
+    <Value>Grup Bazlı Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.QuestionBased">
+    <Value>Soru İstatistik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddEmailsFromLeft">
+    <Value>Sol taraftan email adreslerini ekleyebilirsiniz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddNewExternalParticipant">
+    <Value>Yeni Dış Katılımcı Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddNewParticipant">
+    <Value>Yeni Katılımcı Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllChecklist">
+    <Value>Tüm kontrol listesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllParticipants">
+    <Value>Tüm Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllowSeeking">
+    <Value>İleri/geri sarmaya izin ver</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllowSpeedChange">
+    <Value>Hız değiştirmeye izin ver</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Allowed">
+    <Value>İzin var</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Assignment">
+    <Value>Atama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentNamePlaceholder">
+    <Value>Atama adı...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentSummary">
+    <Value>Atama Özeti</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentTitlePlaceholder">
+    <Value>örn: Ocak 2026 Aktif Dinleme Eğitimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Assignments">
+    <Value>Atamalar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AvgScore">
+    <Value>Ort. Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.BackToVideos">
+    <Value>Videolara Dön</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.BasicInfo">
+    <Value>Temel Bilgiler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Completed">
+    <Value>Tamamladı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Completion">
+    <Value>Tamamlama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CopyLink">
+    <Value>Link Kopyala</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateAssignment">
+    <Value>Atamayı Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateFirstAssignment">
+    <Value>İlk Atamayı Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateWarning">
+    <Value>Lütfen yukarıdaki bilgileri kontrol edin. Atamayı Oluştur butonuna tıkladığınızda işlem geri alınamaz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Creating">
+    <Value>Oluşturuluyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CustomersWithEvaluationsPrefix">
+    <Value>Video kapsamındaki kontrol listelerinde değerlendirmesi olan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Default">
+    <Value>Varsayılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DefaultTemplate">
+    <Value>Varsayılan şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DeleteOrUndo">
+    <Value>Sil/Geri Al</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EditAssignment">
+    <Value>Atama Düzenle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailFormat">
+    <Value>Format: email veya email;ad;soyad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailManagement">
+    <Value>Email Yönetimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailNotSent">
+    <Value>Email Gitmemiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailSent">
+    <Value>Email Gitmiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailSettings">
+    <Value>Email Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailStatus">
+    <Value>Email Durumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailTemplate">
+    <Value>Email Şablonu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailType">
+    <Value>Email Türü</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmptyMeansUnlimited">
+    <Value>Boş = sınırsız</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EnterEmailsFromLeft">
+    <Value>Sol taraftan email adreslerini girin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EvaluationDateRange">
+    <Value>Değerlendirme Tarih Aralığı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExcelColumns">
+    <Value>Kolonlar: Email, Ad, Soyad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExistingParticipants">
+    <Value>Mevcut Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.External">
+    <Value>Dış</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalAssignmentPlaceholder">
+    <Value>örn: Ocak 2026 Dış Eğitim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalParticipants">
+    <Value>Dış Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.FirstNotification">
+    <Value>İlk Bildirim</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ForwardBackward">
+    <Value>İleri/Geri Sarma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.GoToSummary">
+    <Value>Özete Git</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.GroupQuestion">
+    <Value>Grup/Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InVideoScopePrefix">
+    <Value>Video kapsamındaki</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Internal">
+    <Value>İç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InternalParticipants">
+    <Value>İç Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LastEmail">
+    <Value>Son Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ListPersonnel">
+    <Value>Personelleri Listele</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LoadingParticipants">
+    <Value>Katılımcılar yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MaxWatch">
+    <Value>Maks İzleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MaxWatchCount">
+    <Value>Maks İzleme Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MinWatch">
+    <Value>Min İzleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MinWatchCount">
+    <Value>Min İzleme Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MorePersons">
+    <Value>kişi daha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NewAssignment">
+    <Value>Yeni Atama</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoAssignmentsYet">
+    <Value>Henüz eğitim ataması bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoExternalParticipantsYet">
+    <Value>Henüz dış katılımcı yok.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoInternalParticipantsYet">
+    <Value>Henüz iç katılımcı yok.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoMatchingParticipants">
+    <Value>Filtrelerinize uygun katılımcı bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoMatchingPersonnel">
+    <Value>Bu kriterlere uyan personel bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoParticipantsYet">
+    <Value>Henüz katılımcı yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotAllowed">
+    <Value>İzin yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotCompleted">
+    <Value>Tamamlamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotStarted">
+    <Value>Başlamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantType">
+    <Value>Katılımcı Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Participants">
+    <Value>Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantsToAdd">
+    <Value>Eklenecek Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonFound">
+    <Value>kişi bulundu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelFilters">
+    <Value>Personel Filtreleri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelListLoading">
+    <Value>Personel listesi yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelSelection">
+    <Value>Personel Seçimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Progress">
+    <Value>İlerleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Reminder">
+    <Value>Hatırlatma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreCalculation">
+    <Value>Puan hesabı:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreRange">
+    <Value>Puan Aralığı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreRangeDescription">
+    <Value>Bu puan aralığındaki personeller listelenecek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SearchPersonnelInScope">
+    <Value>Video kapsamında dinlemesi olan personel ara...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SearchVideo">
+    <Value>Video ara...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectBelowThreshold">
+    <Value>Maks puan altını seç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectTemplate">
+    <Value>Şablon seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectVideo">
+    <Value>Video seçin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectedPersonnel">
+    <Value>Seçilen Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SendEmail">
+    <Value>Email Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SendEmailToParticipants">
+    <Value>Katılımcılara email gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Sending">
+    <Value>Gönderiliyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SpeedChange">
+    <Value>Hız Değişimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Started">
+    <Value>Başlamış</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Template">
+    <Value>Şablon</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ToBeAdded">
+    <Value>Eklenecek</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TrainingVideo">
+    <Value>Eğitim Videosu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Video">
+    <Value>Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoAndSettings">
+    <Value>Video ve Ayarlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoScope">
+    <Value>Video Kapsamı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoScopeDescription">
+    <Value>Bu video aşağıdaki konularda eğitim için hazırlanmıştır.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoSelection">
+    <Value>Video Seçimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ViewParticipants">
+    <Value>Katılımcıları Gör</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Waiting">
+    <Value>Bekliyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.WatchSettings">
+    <Value>İzleme Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.WatchStatus">
+    <Value>İzleme Durumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Watched">
+    <Value>İzlenen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Watching">
+    <Value>İzliyor</Value>
   </LocaleResource>
 </Language>

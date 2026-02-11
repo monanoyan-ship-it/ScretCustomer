@@ -90,7 +90,7 @@
     <Value>Seleccionar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.SelectAll">
-    <Value>Seleccionar todo</Value>
+    <Value>Seleccionar Todo</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Export">
     <Value>Exportar</Value>
@@ -120,7 +120,7 @@
     <Value>Éxito</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Error">
-    <Value>Error</Value>
+    <Value>error</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Warning">
     <Value>Advertencia</Value>
@@ -141,10 +141,10 @@
     <Value>Fecha</Value>
   </LocaleResource>
   <LocaleResource Name="Common.StartDate">
-    <Value>Fecha de inicio</Value>
+    <Value>Fecha de Inicio</Value>
   </LocaleResource>
   <LocaleResource Name="Common.EndDate">
-    <Value>Fecha de fin</Value>
+    <Value>Fecha Fin</Value>
   </LocaleResource>
   <LocaleResource Name="Common.CreatedAt">
     <Value>Fecha de creación</Value>
@@ -162,10 +162,10 @@
     <Value>Promedio</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Min">
-    <Value>Mínimo</Value>
+    <Value>Mín</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Max">
-    <Value>Máximo</Value>
+    <Value>Máx</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Count">
     <Value>Cantidad</Value>
@@ -213,10 +213,10 @@
     <Value>Proyecto</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Checklist">
-    <Value>Lista de verificación</Value>
+    <Value>Lista de Verificación</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DueDate">
-    <Value>Fecha de vencimiento</Value>
+    <Value>Fecha de Vencimiento</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NotSpecified">
     <Value>No especificado</Value>
@@ -231,7 +231,7 @@
     <Value>Continuar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Email">
-    <Value>Correo electrónico</Value>
+    <Value>Correo Electrónico</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Customer">
     <Value>Cliente</Value>
@@ -240,10 +240,10 @@
     <Value>Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Common.FullName">
-    <Value>Nombre completo</Value>
+    <Value>Nombre Completo</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Role">
-    <Value>Role</Value>
+    <Value>Rol</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Excel">
     <Value>Excel</Value>
@@ -3259,10 +3259,10 @@
     <Value>Punt. Media</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Projects.NotFound">
-    <Value>[ES] No Projects Found</Value>
+    <Value>No se encontraron Proyectos</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Projects.NoRecords">
-    <Value>[ES] No projects defined for your company.</Value>
+    <Value>No hay proyectos definidos para su empresa.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.NoEvaluations">
     <Value>No hay evaluaciones todavía.</Value>
@@ -5479,1075 +5479,1075 @@
 
   <!-- Synced from TR (needs Spanish translation) -->
   <LocaleResource Name="Account.MustChangePassword">
-    <Value>[ES] İlk giriş veya şifre sıfırlama sonrası şifrenizi değiştirmeniz gerekmektedir.</Value>
+    <Value>Debe cambiar su contraseña después del primer inicio de sesión o restablecimiento.</Value>
   </LocaleResource>
   <LocaleResource Name="Account.PasswordChangeErrorMessage">
-    <Value>[ES] Şifre değiştirilirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cambiar la contraseña.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Assignment.ProjectNotActive">
-    <Value>[ES] Proje aktif olmadığı için atama yapılamaz.</Value>
+    <Value>No se puede crear la asignación porque el proyecto no está activo.</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Evaluation.ProjectNotActive">
-    <Value>[ES] Proje aktif olmadığı için değerlendirme başlatılamaz.</Value>
+    <Value>No se puede iniciar la evaluación porque el proyecto no está activo.</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.RejectReason">
-    <Value>[ES] Red Sebebi</Value>
+    <Value>Motivo de Rechazo</Value>
   </LocaleResource>
   <LocaleResource Name="Approval.RejectReasonPlaceholder">
-    <Value>[ES] Red sebebini giriniz...</Value>
+    <Value>Ingrese el motivo de rechazo...</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AddPeriodHint">
-    <Value>[ES] Dönem eklemek için </Value>
+    <Value>Para agregar un período</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AllPersons">
-    <Value>[ES] Tüm Kişiler</Value>
+    <Value>Todas las Personas</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AllProjects">
-    <Value>[ES] Tüm Projeler</Value>
+    <Value>Todos los Proyectos</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AllStatuses">
-    <Value>[ES] Tüm Durumlar</Value>
+    <Value>Todos los Estados</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AssignedPerson">
-    <Value>[ES] Atanan Kişi</Value>
+    <Value>Persona Asignada</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.AssigneePerson">
-    <Value>[ES] Atanacak Kişi</Value>
+    <Value>Persona a Asignar</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.CancelConfirm">
-    <Value>[ES] Bu atamayı iptal etmek istediğinizden emin misiniz?</Value>
+    <Value>¿Está seguro de que desea cancelar esta asignación?</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.CancelProcessError">
-    <Value>[ES] Atama iptal edilirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cancelar la asignación.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.CancelTitle">
-    <Value>[ES] Atama İptali</Value>
+    <Value>Cancelar Asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.Create">
-    <Value>[ES] Yeni Atama Oluştur</Value>
+    <Value>Crear Nueva Asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.DetailLoadError">
-    <Value>[ES] Detay yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar los detalles.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.DueDateFrom">
-    <Value>[ES] Son Tarih (Başlangıç)</Value>
+    <Value>Fecha Límite (Desde)</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.DueDateTo">
-    <Value>[ES] Son Tarih (Bitiş)</Value>
+    <Value>Fecha Límite (Hasta)</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.Edit">
-    <Value>[ES] Atamayı Düzenle</Value>
+    <Value>Editar Asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.External">
-    <Value>[ES] Harici</Value>
+    <Value>Externo</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.FilterError">
-    <Value>[ES] Atamalar filtrelenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al filtrar las asignaciones.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.New">
-    <Value>[ES] Yeni Atama</Value>
+    <Value>Nueva Asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.NewAssigneeType">
-    <Value>[ES] Yeni Atanan Kişi Türü</Value>
+    <Value>Nuevo Tipo de Asignado</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.NewDueDateOptional">
-    <Value>[ES] Yeni Son Tarih (İsteğe bağlı)</Value>
+    <Value>Nueva Fecha Límite (Opcional)</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.NoPeriods">
-    <Value>[ES] Henüz dönem açılmamış</Value>
+    <Value>Aún no se han creado períodos</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.NoRecords">
-    <Value>[ES] Henüz atama bulunmamaktadır veya filtrelere uygun sonuç yoktur.</Value>
+    <Value>No se encontraron asignaciones o no hay resultados para sus filtros.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.Periods">
-    <Value>[ES] Dönemler</Value>
+    <Value>Períodos</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.Reassign">
-    <Value>[ES] Yeniden Ata</Value>
+    <Value>Reasignar</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReassignProcessError">
-    <Value>[ES] Yeniden atama yapılırken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al reasignar.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReassignReasonPlaceholder">
-    <Value>[ES] Yeniden atama sebebi...</Value>
+    <Value>Motivo de reasignación...</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.UpdateDueDate">
-    <Value>[ES] Actualizar Fecha</Value>
+    <Value>Actualizar Fecha Límite</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.UpdateDueDateError">
-    <Value>[ES] Error al actualizar la fecha</Value>
+    <Value>Error al actualizar la fecha límite</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.UpdateDueDateSuccess">
-    <Value>[ES] Fecha actualizada correctamente.</Value>
+    <Value>Fecha límite actualizada exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.UpdateDueDateProcessError">
-    <Value>[ES] Se produjo un error al actualizar la fecha.</Value>
+    <Value>Ocurrió un error al actualizar la fecha límite.</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NewDueDate">
-    <Value>[ES] Nueva Fecha Límite</Value>
+    <Value>Nueva Fecha Límite</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenConfirm">
-    <Value>[ES] Bu tamamlanmış atamayı yeniden açmak istediğinizden emin misiniz? Değerlendirme tekrar düzenlenebilir hale gelecektir.</Value>
+    <Value>¿Está seguro de que desea reabrir esta asignación completada? La evaluación será editable nuevamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenError">
-    <Value>[ES] Yeniden açma başarısız</Value>
+    <Value>Error al reabrir</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenProcessError">
-    <Value>[ES] Atama yeniden açılırken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al reabrir la asignación.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenSuccess">
-    <Value>[ES] Atama başarıyla yeniden açıldı.</Value>
+    <Value>Asignación reabierta exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ReopenTitle">
-    <Value>[ES] Atamayı Yeniden Aç</Value>
+    <Value>Reabrir Asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.SelectFirst">
-    <Value>[ES] Önce bir atama seçmelisiniz!</Value>
+    <Value>¡Primero seleccione una asignación!</Value>
   </LocaleResource>
   <LocaleResource Name="Assignment.ThisAssignment">
-    <Value>[ES] Bu atama</Value>
+    <Value>Esta asignación</Value>
   </LocaleResource>
   <LocaleResource Name="AssignmentType.CustomerPersonnel">
-    <Value>[ES] Müşteri Personeli Değerlendirmesi</Value>
+    <Value>Evaluación de Personal del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="AssignmentType.ExternalCustomer">
-    <Value>[ES] Dış Müşteri Anketi</Value>
+    <Value>Encuesta de Cliente Externo</Value>
   </LocaleResource>
   <LocaleResource Name="AssignmentType.FieldWorker">
-    <Value>[ES] Saha Çalışanı Değerlendirmesi</Value>
+    <Value>Evaluación de Trabajador de Campo</Value>
   </LocaleResource>
   <LocaleResource Name="AssignmentType.InternalBranch">
-    <Value>[ES] İç Şube Değerlendirmesi</Value>
+    <Value>Evaluación Interna de Sucursal</Value>
   </LocaleResource>
   <LocaleResource Name="AssignmentType.InternalUser">
-    <Value>[ES] İç Kullanıcı Değerlendirmesi</Value>
+    <Value>Evaluación de Usuario Interno</Value>
   </LocaleResource>
   <LocaleResource Name="Button.OpenForm">
-    <Value>[ES] Formu Aç</Value>
+    <Value>Abrir Formulario</Value>
   </LocaleResource>
   <LocaleResource Name="Button.QRCode">
-    <Value>[ES] QR Kod</Value>
+    <Value>Código QR</Value>
   </LocaleResource>
   <LocaleResource Name="Button.Reopen">
-    <Value>[ES] Yeniden Aç</Value>
+    <Value>Reabrir</Value>
   </LocaleResource>
   <LocaleResource Name="Card.Red">
-    <Value>[ES] Kırmızı Kart</Value>
+    <Value>Tarjeta Roja</Value>
   </LocaleResource>
   <LocaleResource Name="Card.Yellow">
-    <Value>[ES] Sarı Kart</Value>
+    <Value>Tarjeta Amarilla</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.AddSubCriteria">
-    <Value>[ES] Alt Kriter Ekle</Value>
+    <Value>Agregar Subcriterio</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.AllOrganizations">
-    <Value>[ES] Tüm Organizasyonlar</Value>
+    <Value>Todas las Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.General">
-    <Value>[ES] Genel</Value>
+    <Value>General</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.MaxPointsHelp">
-    <Value>[ES] 1=Evet/Hayır, 5=Detaylı</Value>
+    <Value>1=Sí/No, 5=Detallado</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.MaxTotalPointsHelp">
-    <Value>[ES] Varsayılan: 100</Value>
+    <Value>Predeterminado: 100</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Name">
-    <Value>[ES] Adı</Value>
+    <Value>Nombre</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.NoQuestionsWarning">
-    <Value>[ES] Henüz soru eklenmemiş. Lütfen en az bir soru ekleyin.</Value>
+    <Value>Aún no se han agregado preguntas. Agregue al menos una pregunta.</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.NoRedCard">
-    <Value>[ES] Kırmızı kart sorusu tanımlanmamış.</Value>
+    <Value>No se definió pregunta de tarjeta roja.</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.NoYellowCard">
-    <Value>[ES] Sarı kart sorusu tanımlanmamış.</Value>
+    <Value>No se definió pregunta de tarjeta amarilla.</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.QuestionSummary">
-    <Value>[ES] Soru Özeti</Value>
+    <Value>Resumen de Preguntas</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.RedCardWeightPoints">
-    <Value>[ES] Kırmızı Kart Ağırlığı</Value>
+    <Value>Peso de Tarjeta Roja</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Required">
-    <Value>[ES] Zorunlu</Value>
+    <Value>Obligatorio</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoredQuestions">
-    <Value>[ES] Puanlı Soru</Value>
+    <Value>Preguntas Puntuadas</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoredWeightPoints">
-    <Value>[ES] Puanlı Soru Ağırlığı</Value>
+    <Value>Peso de Preguntas Puntuadas</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoringType">
-    <Value>[ES] Puanlama</Value>
+    <Value>Puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoringType.Penalty">
-    <Value>[ES] Cezalı</Value>
+    <Value>Penalización</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoringType.Scored">
-    <Value>[ES] Puanlı</Value>
+    <Value>Puntuado</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.ScoringType.Unscored">
-    <Value>[ES] Puansız</Value>
+    <Value>Sin Puntuar</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.SearchPlaceholder">
-    <Value>[ES] İsim, açıklama veya kod...</Value>
+    <Value>Nombre, descripción o código...</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.Step2.Questions">
-    <Value>[ES] Sorular</Value>
+    <Value>Preguntas</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.SubCriteria">
-    <Value>[ES] Alt Kriterler/Öneriler</Value>
+    <Value>Subcriterios / Sugerencias</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.SubCriteriaDescription">
-    <Value>[ES] Alt kriter açıklaması</Value>
+    <Value>Descripción del subcriterio</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.SubCriteriaHelp">
-    <Value>[ES] Alt kriterler değerlendirme sırasında puan düşürme nedeni olarak seçilebilir.</Value>
+    <Value>Los subcriterios pueden seleccionarse como razones de reducción de puntuación durante la evaluación.</Value>
   </LocaleResource>
   <LocaleResource Name="Checklist.YellowCardWeightPoints">
-    <Value>[ES] Sarı Kart Ağırlığı</Value>
+    <Value>Peso de Tarjeta Amarilla</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Action">
-    <Value>[ES] İşlem</Value>
+    <Value>Acción</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AddFilter">
-    <Value>[ES] Filtre Ekle</Value>
+    <Value>Agregar Filtro</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AllFieldsRequired">
-    <Value>[ES] Tüm alanlar zorunludur.</Value>
+    <Value>Todos los campos son obligatorios.</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AllOrganizations">
-    <Value>[ES] Tüm Şubeler</Value>
+    <Value>Todas las Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AllSupervisors">
-    <Value>[ES] Tüm Takım Liderleri</Value>
+    <Value>Todos los Supervisores</Value>
   </LocaleResource>
   <LocaleResource Name="Common.AverageScore">
-    <Value>[ES] Ort. Puan</Value>
+    <Value>Punt. Prom.</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Branch">
-    <Value>[ES] Şube</Value>
+    <Value>Sucursal</Value>
   </LocaleResource>
   <LocaleResource Name="Common.City">
-    <Value>[ES] Şehir</Value>
+    <Value>Ciudad</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ClearAll">
-    <Value>[ES] Temizle</Value>
+    <Value>Limpiar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ClearFilter">
-    <Value>[ES] Temizle</Value>
+    <Value>Limpiar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.CreatedDate">
-    <Value>[ES] Oluşturma Tarihi</Value>
+    <Value>Fecha de Creación</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DateRange">
-    <Value>[ES] Tarih Aralığı</Value>
+    <Value>Rango de Fechas</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DaysLeft">
-    <Value>[ES] gün kaldı</Value>
+    <Value>días restantes</Value>
   </LocaleResource>
   <LocaleResource Name="Common.DaysPassed">
-    <Value>[ES] gün geçti</Value>
+    <Value>días transcurridos</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Department">
-    <Value>[ES] Departman</Value>
+    <Value>Departamento</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Evaluation">
-    <Value>[ES] Değerlendirme</Value>
+    <Value>Evaluación</Value>
   </LocaleResource>
   <LocaleResource Name="Common.File">
-    <Value>[ES] Dosya</Value>
+    <Value>Archivo</Value>
   </LocaleResource>
   <LocaleResource Name="Common.FullNamePlaceholder">
-    <Value>[ES] Adı Soyadı</Value>
+    <Value>Nombre Completo</Value>
   </LocaleResource>
   <LocaleResource Name="Common.History">
-    <Value>[ES] Geçmiş</Value>
+    <Value>Historial</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Important">
-    <Value>[ES] Önemli</Value>
+    <Value>Importante</Value>
   </LocaleResource>
   <LocaleResource Name="Common.LinkCopied">
-    <Value>[ES] Link kopyalandı</Value>
+    <Value>Enlace copiado</Value>
   </LocaleResource>
   <LocaleResource Name="Common.LinkCopyError">
-    <Value>[ES] Link kopyalanamadı</Value>
+    <Value>Error al copiar el enlace</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Location">
-    <Value>[ES] Konum</Value>
+    <Value>Ubicación</Value>
   </LocaleResource>
   <LocaleResource Name="Common.News">
-    <Value>[ES] Haber</Value>
+    <Value>Noticias</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NoDescription">
-    <Value>[ES] Açıklama yok</Value>
+    <Value>Sin descripción</Value>
   </LocaleResource>
   <LocaleResource Name="Common.NoRecords">
-    <Value>[ES] Kayıt bulunamadı</Value>
+    <Value>No se encontraron registros</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Notes">
-    <Value>[ES] Notlar</Value>
+    <Value>Notas</Value>
   </LocaleResource>
   <LocaleResource Name="Common.OpenLink">
-    <Value>[ES] Linki Aç</Value>
+    <Value>Abrir Enlace</Value>
   </LocaleResource>
   <LocaleResource Name="Common.OptionalNotes">
-    <Value>[ES] İsteğe bağlı notlar...</Value>
+    <Value>Notas opcionales...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Page">
-    <Value>[ES] Sayfa</Value>
+    <Value>Página</Value>
   </LocaleResource>
   <LocaleResource Name="Common.PageSize">
-    <Value>[ES] Sayfa Boyutu</Value>
+    <Value>Tamaño de Página</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Password">
-    <Value>[ES] Şifre</Value>
+    <Value>Contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Common.PerformedBy">
-    <Value>[ES] Yapan</Value>
+    <Value>Realizado por</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Processing">
-    <Value>[ES] İşleniyor...</Value>
+    <Value>Procesando...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Reason">
-    <Value>[ES] Sebep</Value>
+    <Value>Razón</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Records">
-    <Value>[ES] kayıt</Value>
+    <Value>registros</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Relations">
-    <Value>[ES] İlişkiler</Value>
+    <Value>Relaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Result">
-    <Value>[ES] sonuç</Value>
+    <Value>resultado</Value>
   </LocaleResource>
   <LocaleResource Name="Common.SearchPersonnel">
-    <Value>[ES] Personel ara...</Value>
+    <Value>Buscar personal...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.SelectFilter">
-    <Value>[ES] Filtre Seçin...</Value>
+    <Value>Seleccionar Filtro...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Supervisor">
-    <Value>[ES] Takım Lideri</Value>
+    <Value>Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Syncing">
-    <Value>[ES] Senkronize ediliyor...</Value>
+    <Value>Sincronizando...</Value>
   </LocaleResource>
   <LocaleResource Name="Common.System">
-    <Value>[ES] Sistem</Value>
+    <Value>Sistema</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Tags">
-    <Value>[ES] Etiketler</Value>
+    <Value>Etiquetas</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Title">
-    <Value>[ES] Başlık</Value>
+    <Value>Título</Value>
   </LocaleResource>
   <LocaleResource Name="Common.TotalRecords">
-    <Value>[ES] Toplam</Value>
+    <Value>Total de Registros</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Type">
-    <Value>[ES] Tip</Value>
+    <Value>Tipo</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Username">
-    <Value>[ES] Kullanıcı Adı</Value>
+    <Value>Nombre de Usuario</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Version">
-    <Value>[ES] Versiyon</Value>
+    <Value>Versión</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ViewAll">
-    <Value>[ES] Tümünü Gör</Value>
+    <Value>Ver Todo</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.AddOperator">
-    <Value>[ES] Operatör Ekle</Value>
+    <Value>Agregar Operador</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.AddOperatorToSupervisor">
-    <Value>[ES] Süpervizör:</Value>
+    <Value>Supervisor:</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.AddSupervisorOrManager">
-    <Value>[ES] Yönetici/Süpervizör Ekle</Value>
+    <Value>Agregar Gerente/Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Description">
-    <Value>[ES] Açıklama</Value>
+    <Value>Descripción</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.EditOrganization">
-    <Value>[ES] Organizasyon Düzenle</Value>
+    <Value>Editar Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.HasTeamMembers">
-    <Value>[ES]  personelinin altında ekip üyeleri var. Lütfen bu üyeleri devralacak bir vekil seçin.</Value>
+    <Value> tiene miembros de equipo. Seleccione un delegado.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.IndependentOperatorInfo">
-    <Value>[ES] Bu operatör bağımsız olarak eklenecek (süpervizörsüz)</Value>
+    <Value>Este operador será agregado como independiente (sin supervisor)</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.IndependentOperators">
-    <Value>[ES] Bağımsız Operatörler</Value>
+    <Value>Operadores Independientes</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.MakeIndependent">
-    <Value>[ES] Bağımsız Yap</Value>
+    <Value>Hacer Independiente</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.MakeIndependentConfirm">
-    <Value>[ES] personelini bağımsız yapmak istediğinizden emin misiniz? Süpervizörden ayrılacak ama organizasyonda kalacak.</Value>
+    <Value>¿Está seguro de hacer independiente a este personal? Dejará al supervisor pero permanecerá en la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.MakeIndependentError">
-    <Value>[ES] Personel bağımsız yapılırken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al hacer independiente al personal.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.MakeIndependentSuccess">
-    <Value>[ES] Personel bağımsız yapıldı.</Value>
+    <Value>Personal hecho independiente.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Managers">
-    <Value>[ES] Firma Yöneticileri</Value>
+    <Value>Gerentes de Empresa</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NewIndependentOperator">
-    <Value>[ES] Yeni Bağımsız Operatör</Value>
+    <Value>Nuevo Operador Independiente</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NewOrganization">
-    <Value>[ES] Yeni Organizasyon</Value>
+    <Value>Nueva Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NewSupervisor">
-    <Value>[ES] Yeni Yönetici/Süpervizör</Value>
+    <Value>Nuevo Gerente/Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NoIndependentOperators">
-    <Value>[ES] Bağımsız operatör yok</Value>
+    <Value>No hay operadores independientes</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NoOrganizations">
-    <Value>[ES] Henüz organizasyon yok</Value>
+    <Value>Aún no hay organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NoPersonnelInOrg">
-    <Value>[ES] Bu organizasyonda henüz personel yok</Value>
+    <Value>Aún no hay personal en esta organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationCode">
-    <Value>[ES] Organizasyon Kodu</Value>
+    <Value>Código de Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationCodePlaceholder">
-    <Value>[ES] CONC-001</Value>
+    <Value>CONC-001</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationManagement">
-    <Value>[ES] Organizasyon Yönetimi</Value>
+    <Value>Gestión de Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationName">
-    <Value>[ES] Organizasyon Adı</Value>
+    <Value>Nombre de Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationNamePlaceholder">
-    <Value>[ES] Concentrix, Teleperform vb.</Value>
+    <Value>Concentrix, Teleperform etc.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Organizations">
-    <Value>[ES] Organizasyonlar</Value>
+    <Value>Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrganizationsBranches">
-    <Value>[ES] Organizasyonlar/Şubeler</Value>
+    <Value>Organizaciones / Sucursales</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrgManager">
-    <Value>[ES] Organizasyon Yöneticisi</Value>
+    <Value>Gerente de Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.OrNewCreate">
-    <Value>[ES] veya Yeni Oluştur</Value>
+    <Value>o Crear Nuevo</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.PersonnelStructure">
-    <Value>[ES] Personel Yapısı</Value>
+    <Value>Estructura de Personal</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.RemoveFromOrg">
-    <Value>[ES] Organizasyondan Çıkar</Value>
+    <Value>Eliminar de la Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.SelectDelegate">
-    <Value>[ES] Vekil Seç</Value>
+    <Value>Seleccionar Delegado</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.SelectFromPool">
-    <Value>[ES] Havuzdan Seç</Value>
+    <Value>Seleccionar del Pool</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.SelectNewSupervisor">
-    <Value>[ES] Yeni Süpervizör Seçin</Value>
+    <Value>Seleccionar Nuevo Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.SelectOrganization">
-    <Value>[ES] Personelleri görmek için sol taraftan bir organizasyon seçin</Value>
+    <Value>Seleccione una organización de la izquierda para ver el personal</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.TeamMembersCount">
-    <Value>[ES] Devredilecek Ekip Üyeleri</Value>
+    <Value>Miembros del Equipo a Transferir</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.TransferAndRemove">
-    <Value>[ES] Devret ve Çıkar</Value>
+    <Value>Transferir y Eliminar</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Code">
-    <Value>[ES] Organizasyon Kodu</Value>
+    <Value>Código de Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.CreateFirst">
-    <Value>[ES] İlk Organizasyonu Oluştur</Value>
+    <Value>Crear Primera Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Customers">
-    <Value>[ES] Müşteriler</Value>
+    <Value>Clientes</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Description">
-    <Value>[ES] Açıklama</Value>
+    <Value>Descripción</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.EditOrganization">
-    <Value>[ES] Organizasyon Düzenle</Value>
+    <Value>Editar Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.List">
-    <Value>[ES] Organizasyonlar</Value>
+    <Value>Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Name">
-    <Value>[ES] Organizasyon Adı</Value>
+    <Value>Nombre de Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NamePlaceholder">
-    <Value>[ES] Concentrix, Teleperform vb.</Value>
+    <Value>Concentrix, Teleperform etc.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NewOrganization">
-    <Value>[ES] Yeni Organizasyon</Value>
+    <Value>Nueva Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NewPersonnel">
-    <Value>[ES] Yeni Personel</Value>
+    <Value>Nuevo Personal</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NewPersonnelTitle">
-    <Value>[ES] Yeni Personel Ekle</Value>
+    <Value>Agregar Nuevo Personal</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NoCustomers">
-    <Value>[ES] Müşteri bulunamadı</Value>
+    <Value>No se encontraron clientes</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.NoOrganizations">
-    <Value>[ES] Bu müşteriye ait organizasyon bulunmamaktadır.</Value>
+    <Value>No se encontraron organizaciones para este cliente.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Order">
-    <Value>[ES] Sıralama</Value>
+    <Value>Orden</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.PasswordHint">
-    <Value>[ES] En az 6 karakter</Value>
+    <Value>Al menos 6 caracteres</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.PersonnelNoOrgInfo">
-    <Value>[ES] Bu personel hiçbir organizasyona atanmadan firmaya eklenecektir. Daha sonra organizasyona atayabilirsiniz.</Value>
+    <Value>Este personal será agregado a la empresa sin asignación de organización. Puede asignarlo a una organización después.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.SelectCustomer">
-    <Value>[ES] Organizasyonları görmek için sol taraftan bir müşteri seçin</Value>
+    <Value>Seleccione un cliente de la izquierda para ver organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.Title">
-    <Value>[ES] Müşteri Organizasyonları</Value>
+    <Value>Organizaciones de Clientes</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerOrganization.UsernameHint">
-    <Value>[ES] Sadece İngilizce harf, rakam ve alt çizgi</Value>
+    <Value>Solo letras en inglés, números y guion bajo</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.AllCustomers">
-    <Value>[ES] Tüm Müşteriler</Value>
+    <Value>Todos los Clientes</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Customer">
-    <Value>[ES] Müşteri</Value>
+    <Value>Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Edit">
-    <Value>[ES] Müşteri Personeli Düzenle</Value>
+    <Value>Editar Personal del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.New">
-    <Value>[ES] Yeni Müşteri Personeli</Value>
+    <Value>Nuevo Personal del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.NoPersonnel">
-    <Value>[ES] Müşteri personeli bulunmamaktadır.</Value>
+    <Value>No se encontró personal del cliente.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.SelectCustomer">
-    <Value>[ES] Müşteri Seçin...</Value>
+    <Value>Seleccionar Cliente...</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.OrganizationCount">
-    <Value>[ES] Organizasyon</Value>
+    <Value>Organización</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.AnnouncementsLoadError">
-    <Value>[ES] Duyurular yüklenemedi</Value>
+    <Value>Error al cargar los anuncios</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Completed">
-    <Value>[ES] Tamamlanan</Value>
+    <Value>Completado</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Count">
-    <Value>[ES] Adet</Value>
+    <Value>Cantidad</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.DailyTarget">
-    <Value>[ES] Günlük Hedef</Value>
+    <Value>Objetivo Diario</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.EvaluationCount">
-    <Value>[ES] Değerlendirme Sayısı</Value>
+    <Value>Número de Evaluaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.MinMax">
-    <Value>[ES] Min/Max</Value>
+    <Value>Mín/Máx</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.MyEvaluations">
-    <Value>[ES] Değerlendirmelerim</Value>
+    <Value>Mis Evaluaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.NoDataToday">
-    <Value>[ES] Bugün henüz dinleme yapılmadı</Value>
+    <Value>Aún no hay evaluaciones hoy</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.NoEvaluationsThisMonth">
-    <Value>[ES] Bu dönemde değerlendirme bulunmamaktadır.</Value>
+    <Value>No hay evaluaciones en este período.</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.NoMatchingEvaluations">
-    <Value>[ES] Eşleşen değerlendirme bulunamadı.</Value>
+    <Value>No se encontraron evaluaciones coincidentes.</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Period">
-    <Value>[ES] Dönem</Value>
+    <Value>Período</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.PeriodTarget">
-    <Value>[ES] Dönem Hedefi</Value>
+    <Value>Objetivo del Período</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.PersonnelAnalysis">
-    <Value>[ES] Personel Bazlı Analiz</Value>
+    <Value>Análisis de Personal</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Remaining">
-    <Value>[ES] Kalan</Value>
+    <Value>Restante</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Score">
-    <Value>[ES] Puan (%)</Value>
+    <Value>Puntuación (%)</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.SupervisorAnalysis">
-    <Value>[ES] Takım Lideri Bazlı Analiz</Value>
+    <Value>Análisis de Supervisores</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Target">
-    <Value>[ES] Hedef</Value>
+    <Value>Objetivo</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.ThisWeek">
-    <Value>[ES] Bu Hafta</Value>
+    <Value>Esta Semana</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Today">
-    <Value>[ES] Bugün</Value>
+    <Value>Hoy</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.TopEvaluatorsMonth">
-    <Value>[ES] Bu Ay En Çok Dinleyenler</Value>
+    <Value>Mejores Evaluadores Este Mes</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.TopEvaluatorsToday">
-    <Value>[ES] Bugün En Çok Dinleyenler</Value>
+    <Value>Mejores Evaluadores Hoy</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.Total">
-    <Value>[ES] Toplam</Value>
+    <Value>Total</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.User">
-    <Value>[ES] Kullanıcı</Value>
+    <Value>Usuario</Value>
   </LocaleResource>
   <LocaleResource Name="Dashboard.WeeklyTrend">
-    <Value>[ES] Son 7 Gün</Value>
+    <Value>Últimos 7 Días</Value>
   </LocaleResource>
   <LocaleResource Name="DateRange.Last30Days">
-    <Value>[ES] Son 30 Gün</Value>
+    <Value>Últimos 30 Días</Value>
   </LocaleResource>
   <LocaleResource Name="DateRange.Last7Days">
-    <Value>[ES] Son 7 Gün</Value>
+    <Value>Últimos 7 Días</Value>
   </LocaleResource>
   <LocaleResource Name="DateRange.ThisQuarter">
-    <Value>[ES] Bu Çeyrek</Value>
+    <Value>Este Trimestre</Value>
   </LocaleResource>
   <LocaleResource Name="DateRange.ThisWeek">
-    <Value>[ES] Bu Hafta</Value>
+    <Value>Esta Semana</Value>
   </LocaleResource>
   <LocaleResource Name="DateRange.Today">
-    <Value>[ES] Bugün</Value>
+    <Value>Hoy</Value>
   </LocaleResource>
   <LocaleResource Name="DraftRequest.DetailLoadError">
-    <Value>[ES] Talep detayi yuklenemedi</Value>
+    <Value>Error al cargar los detalles de la solicitud</Value>
   </LocaleResource>
   <LocaleResource Name="DraftRequest.NoEvaluationLinked">
-    <Value>[ES] Bu talebe bagli degerlendirme bulunamadi.</Value>
+    <Value>No hay evaluación vinculada a esta solicitud.</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Assignee">
-    <Value>[ES] Atanan</Value>
+    <Value>Asignado</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.EvaluatedInfo">
-    <Value>[ES] Değerlendirilen Bilgileri</Value>
+    <Value>Información Evaluada</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Form">
-    <Value>[ES] Değerlendirme Formu</Value>
+    <Value>Formulario de Evaluación</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.GoToForm">
-    <Value>[ES] Değerlendirme Formuna Git</Value>
+    <Value>Ir al Formulario de Evaluación</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Group">
-    <Value>[ES] Grup</Value>
+    <Value>Grupo</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.NewPersonnelFirstNameRequired">
-    <Value>[ES] Yeni personel için ad zorunludur</Value>
+    <Value>El nombre es obligatorio para nuevo personal</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.NewPersonnelLastNameRequired">
-    <Value>[ES] Yeni personel için soyad zorunludur</Value>
+    <Value>El apellido es obligatorio para nuevo personal</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.NoPersonnelFound">
-    <Value>[ES] Personel bulunamadı</Value>
+    <Value>No se encontró personal</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.PeriodOpen">
-    <Value>[ES] Aktif</Value>
+    <Value>Activo</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.SearchPersonnel">
-    <Value>[ES] Personel ara...</Value>
+    <Value>Buscar personal...</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Supervisor">
-    <Value>[ES] Müşteri Yöneticisi</Value>
+    <Value>Gerente del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.UniqueLink">
-    <Value>[ES] Form Linki</Value>
+    <Value>Enlace del Formulario</Value>
   </LocaleResource>
   <LocaleResource Name="Import.EnterChecklistName">
-    <Value>[ES] Lütfen bir checklist adı girin.</Value>
+    <Value>Ingrese un nombre de lista de verificación.</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.AssignmentsCreated">
-    <Value>[ES] atama başarıyla oluşturuldu</Value>
+    <Value>asignaciones creadas exitosamente</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.CreateError">
-    <Value>[ES] Atamalar oluşturulurken hata oluştu</Value>
+    <Value>Ocurrió un error al crear las asignaciones</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.DeleteError">
-    <Value>[ES] Atama silinirken hata oluştu</Value>
+    <Value>Ocurrió un error al eliminar la asignación</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.DeleteSuccess">
-    <Value>[ES] Atama silindi</Value>
+    <Value>Asignación eliminada</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.DetailLoadError">
-    <Value>[ES] Detay yüklenirken hata oluştu</Value>
+    <Value>Ocurrió un error al cargar los detalles</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.FillAllFields">
-    <Value>[ES] Lütfen tüm zorunlu alanları doldurun</Value>
+    <Value>Complete todos los campos obligatorios</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.LoadError">
-    <Value>[ES] Atamalar yüklenirken hata oluştu</Value>
+    <Value>Ocurrió un error al cargar las asignaciones</Value>
   </LocaleResource>
   <LocaleResource Name="InternalAssignments.ThisAssignment">
-    <Value>[ES] Bu atama</Value>
+    <Value>Esta asignación</Value>
   </LocaleResource>
   <LocaleResource Name="Key.Name">
-    <Value>[ES] Fallback Value</Value>
+    <Value>Valor de Respaldo</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.CallDate">
-    <Value>[ES] Tarih</Value>
+    <Value>Fecha</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.CallId">
-    <Value>[ES] Çağrı No</Value>
+    <Value>ID de Llamada</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.CallTime">
-    <Value>[ES] Saat</Value>
+    <Value>Hora</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Cards">
-    <Value>[ES] Kartlar</Value>
+    <Value>Tarjetas</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Detail">
-    <Value>[ES] Dinleme Detayı</Value>
+    <Value>Detalle de Escucha</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Duration">
-    <Value>[ES] Süre</Value>
+    <Value>Duración</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Evaluator">
-    <Value>[ES] Değerlendiren</Value>
+    <Value>Evaluador</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.NoRecords">
-    <Value>[ES] Kayıt bulunamadı.</Value>
+    <Value>No se encontraron registros.</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Period">
-    <Value>[ES] Dönem</Value>
+    <Value>Período</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Personnel">
-    <Value>[ES] Temsilci</Value>
+    <Value>Representante</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Score">
-    <Value>[ES] Puan</Value>
+    <Value>Puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Supervisor">
-    <Value>[ES] Yönetici</Value>
+    <Value>Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.Title">
-    <Value>[ES] Dinlemeler</Value>
+    <Value>Escuchas</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.AuditLogs">
-    <Value>[ES] Sistem Logları</Value>
+    <Value>Registros del Sistema</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.Listenings">
-    <Value>[ES] Dinlemeler</Value>
+    <Value>Escuchas</Value>
   </LocaleResource>
   <LocaleResource Name="Message.FilterError">
-    <Value>[ES] Filtreleme başarısız</Value>
+    <Value>Error en el filtro</Value>
   </LocaleResource>
   <LocaleResource Name="Message.LinkCopied">
-    <Value>[ES] Link kopyalandı!</Value>
+    <Value>¡Enlace copiado!</Value>
   </LocaleResource>
   <LocaleResource Name="Message.LinkCopiedToClipboard">
-    <Value>[ES] Link panoya kopyalandı!</Value>
+    <Value>¡Enlace copiado al portapapeles!</Value>
   </LocaleResource>
   <LocaleResource Name="Message.LinkCopyError">
-    <Value>[ES] Link kopyalanırken hata oluştu.</Value>
+    <Value>Ocurrió un error al copiar el enlace.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.CreateSuccess">
-    <Value>[ES] Organizasyon oluşturuldu.</Value>
+    <Value>Organización creada.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.DeleteConfirm">
-    <Value>[ES] organizasyonunu silmek istediğinizden emin misiniz?</Value>
+    <Value>¿Está seguro de que desea eliminar esta organización?</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.DeleteError">
-    <Value>[ES] Organizasyon silinirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al eliminar la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.DeleteSuccess">
-    <Value>[ES] Organizasyon silindi.</Value>
+    <Value>Organización eliminada.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.LoadError">
-    <Value>[ES] Organizasyonlar yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar las organizaciones.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.NameRequired">
-    <Value>[ES] Organizasyon adı zorunludur.</Value>
+    <Value>El nombre de la organización es obligatorio.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.SaveError">
-    <Value>[ES] Organizasyon kaydedilirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al guardar la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Organization.UpdateSuccess">
-    <Value>[ES] Organizasyon güncellendi.</Value>
+    <Value>Organización actualizada.</Value>
   </LocaleResource>
   <LocaleResource Name="Password.MinLength">
-    <Value>[ES] Yeni şifre en az 6 karakter olmalıdır.</Value>
+    <Value>La nueva contraseña debe tener al menos 6 caracteres.</Value>
   </LocaleResource>
   <LocaleResource Name="Password.Mismatch">
-    <Value>[ES] Yeni şifre ve onay eşleşmiyor.</Value>
+    <Value>La nueva contraseña y la confirmación no coinciden.</Value>
   </LocaleResource>
   <LocaleResource Name="Password.ResetError">
-    <Value>[ES] Şifre sıfırlanırken bir hata oluştu:</Value>
+    <Value>Ocurrió un error al restablecer la contraseña:</Value>
   </LocaleResource>
   <LocaleResource Name="Password.ResetSuccess">
-    <Value>[ES] Şifre başarıyla sıfırlandı.</Value>
+    <Value>Contraseña restablecida exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Period.Add">
-    <Value>[ES] Dönem Ekle</Value>
+    <Value>Agregar Período</Value>
   </LocaleResource>
   <LocaleResource Name="Period.CreateError">
-    <Value>[ES] Dönem oluşturulamadı</Value>
+    <Value>Error al crear el período</Value>
   </LocaleResource>
   <LocaleResource Name="Period.CreateSuccess">
-    <Value>[ES] Dönem başarıyla oluşturuldu.</Value>
+    <Value>Período creado exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Period.DailyTarget">
-    <Value>[ES] Günlük Hedef</Value>
+    <Value>Objetivo Diario</Value>
   </LocaleResource>
   <LocaleResource Name="Period.DailyTargetHint">
-    <Value>[ES] Günlük yapılması gereken değerlendirme sayısı</Value>
+    <Value>Número de evaluaciones a realizar diariamente</Value>
   </LocaleResource>
   <LocaleResource Name="Period.DateRange">
-    <Value>[ES] Tarih Aralığı</Value>
+    <Value>Rango de Fechas</Value>
   </LocaleResource>
   <LocaleResource Name="Period.EndDate">
-    <Value>[ES] Bitiş Tarihi</Value>
+    <Value>Fecha Fin</Value>
   </LocaleResource>
   <LocaleResource Name="Period.EndDateRequired">
-    <Value>[ES] Bitiş tarihi zorunludur!</Value>
+    <Value>¡La fecha fin es obligatoria!</Value>
   </LocaleResource>
   <LocaleResource Name="Period.InvalidDateRange">
-    <Value>[ES] Bitiş tarihi başlangıç tarihinden sonra olmalıdır!</Value>
+    <Value>¡La fecha fin debe ser posterior a la fecha de inicio!</Value>
   </LocaleResource>
   <LocaleResource Name="Period.Name">
-    <Value>[ES] Dönem</Value>
+    <Value>Período</Value>
   </LocaleResource>
   <LocaleResource Name="Period.NameHint">
-    <Value>[ES] Aylık dönem ismi girin (Örn: Ocak 2025)</Value>
+    <Value>Ingrese nombre del período mensual (ej.: Enero 2025)</Value>
   </LocaleResource>
   <LocaleResource Name="Period.NamePlaceholder">
-    <Value>[ES] Örn: Aralık 2025</Value>
+    <Value>ej.: Diciembre 2025</Value>
   </LocaleResource>
   <LocaleResource Name="Period.NameRequired">
-    <Value>[ES] Dönem adı zorunludur!</Value>
+    <Value>¡El nombre del período es obligatorio!</Value>
   </LocaleResource>
   <LocaleResource Name="Period.StartDate">
-    <Value>[ES] Başlangıç Tarihi</Value>
+    <Value>Fecha de Inicio</Value>
   </LocaleResource>
   <LocaleResource Name="Period.StartDateRequired">
-    <Value>[ES] Başlangıç tarihi zorunludur!</Value>
+    <Value>¡La fecha de inicio es obligatoria!</Value>
   </LocaleResource>
   <LocaleResource Name="Period.TargetRequired">
-    <Value>[ES] Hedef değerlendirme sayısı en az 1 olmalıdır!</Value>
+    <Value>¡El número objetivo de evaluaciones debe ser al menos 1!</Value>
   </LocaleResource>
   <LocaleResource Name="Permission.SyncPermissions">
-    <Value>[ES] Yetkileri Senkronize Et</Value>
+    <Value>Sincronizar Permisos</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.AssignError">
-    <Value>[ES] Personel atanırken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al asignar el personal.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.AssignSuccess">
-    <Value>[ES] Personel organizasyona atandı.</Value>
+    <Value>Personal asignado a la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.ChangePassword">
-    <Value>[ES] Şifre Değiştir</Value>
+    <Value>Cambiar Contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.ConfirmPassword">
-    <Value>[ES] Şifre Tekrar</Value>
+    <Value>Confirmar Contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.CreateError">
-    <Value>[ES] Yönetici oluşturulurken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al crear el gerente.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.LastLogin">
-    <Value>[ES] Son Giriş</Value>
+    <Value>Último Acceso</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.ManagerCreated">
-    <Value>[ES] Firma yöneticisi oluşturuldu.</Value>
+    <Value>Gerente de empresa creado.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.NewPassword">
-    <Value>[ES] Yeni Şifre</Value>
+    <Value>Nueva Contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.OperatorAssignSuccess">
-    <Value>[ES] Operatör organizasyona atandı.</Value>
+    <Value>Operador asignado a la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.OperatorCreated">
-    <Value>[ES] Operatör oluşturuldu ve atandı.</Value>
+    <Value>Operador creado y asignado.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Password">
-    <Value>[ES] Şifre</Value>
+    <Value>Contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.RemoveError">
-    <Value>[ES] Personel çıkarılırken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al eliminar el personal.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.RemoveFromOrgConfirm">
-    <Value>[ES] personelini organizasyondan çıkarmak istediğinizden emin misiniz?</Value>
+    <Value>¿Está seguro de que desea eliminar este personal de la organización?</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.RemoveSuccess">
-    <Value>[ES] Personel organizasyondan çıkarıldı.</Value>
+    <Value>Personal eliminado de la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Role">
-    <Value>[ES] Rol</Value>
+    <Value>Rol</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.RoleRequired">
-    <Value>[ES] Rol seçimi zorunludur.</Value>
+    <Value>La selección de rol es obligatoria.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Stats">
-    <Value>[ES] İstatistik</Value>
+    <Value>Estadísticas</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.SupervisorCreated">
-    <Value>[ES] Yönetici/Süpervizör oluşturuldu ve atandı.</Value>
+    <Value>Gerente/Supervisor creado y asignado.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.TransferError">
-    <Value>[ES] Transfer işlemi sırasında bir hata oluştu.</Value>
+    <Value>Ocurrió un error durante la transferencia.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.TransferSuccess">
-    <Value>[ES] Ekip üyeleri devredildi ve personel organizasyondan çıkarıldı.</Value>
+    <Value>Miembros transferidos y personal eliminado de la organización.</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.Username">
-    <Value>[ES] Kullanıcı Adı</Value>
+    <Value>Nombre de Usuario</Value>
   </LocaleResource>
   <LocaleResource Name="PersonnelRequest.NoEvaluationLinked">
-    <Value>[ES] Bu talebe bagli degerlendirme bulunamadi.</Value>
+    <Value>No hay evaluación vinculada a esta solicitud.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.FillAllFields">
-    <Value>[ES] Lütfen tüm alanları doldurun ve şifrelerin eşleştiğinden emin olun.</Value>
+    <Value>Complete todos los campos y asegúrese de que las contraseñas coincidan.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.LoadErrorMessage">
-    <Value>[ES] Profil yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar el perfil.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.NameRequired">
-    <Value>[ES] Ad ve Soyad alanları zorunludur.</Value>
+    <Value>El nombre y apellido son obligatorios.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.PasswordChanged">
-    <Value>[ES] Şifreniz başarıyla değiştirildi.</Value>
+    <Value>Su contraseña ha sido cambiada exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.PasswordChangeError">
-    <Value>[ES] Şifre değiştirilirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cambiar la contraseña.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.PasswordChangeFailed">
-    <Value>[ES] Şifre değiştirilemedi</Value>
+    <Value>Error al cambiar la contraseña</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.PasswordChangeRequired">
-    <Value>[ES] Şifre Değişikliği Gerekli!</Value>
+    <Value>¡Se requiere cambio de contraseña!</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.UpdateErrorMessage">
-    <Value>[ES] Profil güncellenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al actualizar el perfil.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.UpdateFailed">
-    <Value>[ES] Profil güncellenemedi</Value>
+    <Value>Error al actualizar el perfil</Value>
   </LocaleResource>
   <LocaleResource Name="Project.AllCompany">
-    <Value>[ES] Tüm Firma</Value>
+    <Value>Toda la Empresa</Value>
   </LocaleResource>
   <LocaleResource Name="Project.FilesLoadError">
-    <Value>[ES] Dosyalar yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar los archivos.</Value>
   </LocaleResource>
   <LocaleResource Name="Project.Organization">
-    <Value>[ES] Organizasyon/Şube</Value>
+    <Value>Organización / Sucursal</Value>
   </LocaleResource>
   <LocaleResource Name="Project.OrganizationHint">
-    <Value>[ES] Seçilmezse proje tüm firmayı kapsar</Value>
+    <Value>Si no se selecciona, el proyecto abarca toda la empresa</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectStatus.Active">
-    <Value>[ES] Aktif</Value>
+    <Value>Activo</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectStatus.Paused">
-    <Value>[ES] Duraklatıldı</Value>
+    <Value>Pausado</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectStatus.Planned">
-    <Value>[ES] Planlandı</Value>
+    <Value>Planificado</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.CallAuditing">
-    <Value>[ES] Çağrı Denetleme</Value>
+    <Value>Auditoría de Llamadas</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.CustomerSatisfaction">
-    <Value>[ES] Müşteri Memnuniyeti</Value>
+    <Value>Satisfacción del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.MysteryShopping">
-    <Value>[ES] Gizli Müşteri</Value>
+    <Value>Compra Misteriosa</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.OnlineSurvey">
-    <Value>[ES] Online Anket</Value>
+    <Value>Encuesta en Línea</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.PhysicalAudit">
-    <Value>[ES] Fiziksel Denetim</Value>
+    <Value>Auditoría Física</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.QualityControl">
-    <Value>[ES] Kalite Kontrol</Value>
+    <Value>Control de Calidad</Value>
   </LocaleResource>
   <LocaleResource Name="ProjectType.TrainingEvaluation">
-    <Value>[ES] Eğitim Değerlendirmesi</Value>
+    <Value>Evaluación de Capacitación</Value>
   </LocaleResource>
   <LocaleResource Name="Question.GroupNamePlaceholder">
-    <Value>[ES] Grup adı...</Value>
+    <Value>Nombre del grupo...</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.Likert">
-    <Value>[ES] Likert Ölçeği</Value>
+    <Value>Escala Likert</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.MultipleChoice">
-    <Value>[ES] Çoktan Seçmeli</Value>
+    <Value>Opción Múltiple</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.Rating">
-    <Value>[ES] Puan Derecelendirme</Value>
+    <Value>Escala de Calificación</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.Star">
-    <Value>[ES] Yıldız Derecelendirme</Value>
+    <Value>Calificación por Estrellas</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.Text">
-    <Value>[ES] Açık Uçlu Metin</Value>
+    <Value>Texto Abierto</Value>
   </LocaleResource>
   <LocaleResource Name="QuestionType.YesNo">
-    <Value>[ES] Evet/Hayır</Value>
+    <Value>Sí/No</Value>
   </LocaleResource>
   <LocaleResource Name="Report.DetailedExcelDownloadError">
-    <Value>[ES] Detaylı Excel dosyası indirilemedi.</Value>
+    <Value>Error al descargar el archivo Excel detallado.</Value>
   </LocaleResource>
   <LocaleResource Name="Report.DetailLoadError">
-    <Value>[ES] Detay yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar los detalles.</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExcelDownloadError">
-    <Value>[ES] Excel dosyası indirilemedi.</Value>
+    <Value>Error al descargar el archivo Excel.</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExcelExportError">
-    <Value>[ES] Excel export başarısız</Value>
+    <Value>Error en la exportación Excel</Value>
   </LocaleResource>
   <LocaleResource Name="Report.LoadErrorMessage">
-    <Value>[ES] Veriler yüklenirken bir hata oluştu.</Value>
+    <Value>Ocurrió un error al cargar los datos.</Value>
   </LocaleResource>
   <LocaleResource Name="Role.CustomerPersonnel">
-    <Value>[ES] Müşteri Temsilcisi</Value>
+    <Value>Representante del Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="User.EmailExists">
-    <Value>[ES] Bu e-posta adresi zaten kullanılıyor.</Value>
+    <Value>Esta dirección de correo ya está en uso.</Value>
   </LocaleResource>
   <LocaleResource Name="User.FieldWorker">
-    <Value>[ES] Saha Çalışanı</Value>
+    <Value>Trabajador de Campo</Value>
   </LocaleResource>
   <LocaleResource Name="User.Phone">
-    <Value>[ES] Telefon</Value>
+    <Value>Teléfono</Value>
   </LocaleResource>
   <LocaleResource Name="User.QualitySpecialist">
-    <Value>[ES] Kalite Uzmanı</Value>
+    <Value>Especialista en Calidad</Value>
   </LocaleResource>
   <LocaleResource Name="User.SystemUsers">
-    <Value>[ES] Sistem Kullanıcıları</Value>
+    <Value>Usuarios del Sistema</Value>
   </LocaleResource>
   <LocaleResource Name="User.UsernameExists">
-    <Value>[ES] Bu kullanıcı adı zaten kullanılıyor.</Value>
+    <Value>Este nombre de usuario ya está en uso.</Value>
   </LocaleResource>
   <LocaleResource Name="User.UsernameInvalid">
-    <Value>[ES] Kullanıcı adı sadece İngilizce harf, rakam, alt çizgi, nokta ve tire içerebilir. Boşluk ve Türkçe karakter kullanılamaz.</Value>
+    <Value>El nombre de usuario solo puede contener letras en inglés, números, guion bajo, punto y guion. No se permiten espacios ni caracteres especiales.</Value>
   </LocaleResource>
   <LocaleResource Name="Validation.CustomerRequired">
-    <Value>[ES] Müşteri seçimi zorunludur.</Value>
+    <Value>La selección de cliente es obligatoria.</Value>
   </LocaleResource>
   <LocaleResource Name="Validation.PasswordMinLength">
-    <Value>[ES] Yeni şifre en az 6 karakter olmalıdır.</Value>
+    <Value>La nueva contraseña debe tener al menos 6 caracteres.</Value>
   </LocaleResource>
   <!-- Listenings Reports -->
   <LocaleResource Name="Listenings.SavedFilters">
@@ -6695,9 +6695,7 @@
   <LocaleResource Name="Report.CallDate">
     <Value>Fecha de Llamada</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.RedCard">
-    <Value>Tarjeta Roja</Value>
-  </LocaleResource>
+
   <!-- Informe MT -->
   <LocaleResource Name="Report.Sheet.MTBasari">
     <Value>MT Éxito</Value>
@@ -6797,21 +6795,15 @@
   <LocaleResource Name="Report.NoEvaluatorData">
     <Value>Aún no hay datos de evaluación disponibles.</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Evaluator">
-    <Value>Evaluador</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.Today">
     <Value>Hoy</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.Total">
-    <Value>Total</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.AvgScore">
     <Value>Punt. Prom.</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.EvaluatorCount">
-    <Value>Total Evaluadores</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.CustomerQuotaStatus">
     <Value>Estado de Cuota del Cliente</Value>
   </LocaleResource>
@@ -6839,9 +6831,7 @@
   <LocaleResource Name="Report.ActiveCustomers">
     <Value>Clientes Activos</Value>
   </LocaleResource>
-  <LocaleResource Name="Report.LoadError">
-    <Value>Error al cargar los datos.</Value>
-  </LocaleResource>
+
   <LocaleResource Name="Report.ScoreDetail">
     <Value>Detalle de Puntuación</Value>
   </LocaleResource>
@@ -7297,7 +7287,7 @@
     <Value>Respuesta</Value>
   </LocaleResource>
   <LocaleResource Name="Common.Apply">
-    <Value>Apply</Value>
+    <Value>Aplicar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.CallId">
     <Value>ID de Llamada</Value>
@@ -7345,7 +7335,7 @@
     <Value>Últimos 6 Meses</Value>
   </LocaleResource>
   <LocaleResource Name="Common.LastMonth">
-    <Value>Last Month</Value>
+    <Value>Mes Pasado</Value>
   </LocaleResource>
   <LocaleResource Name="Common.LastWeek">
     <Value>Semana Pasada</Value>
@@ -7438,10 +7428,10 @@
     <Value>Enviar</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ThisMonth">
-    <Value>This Month</Value>
+    <Value>Este Mes</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ThisWeek">
-    <Value>This Week</Value>
+    <Value>Esta Semana</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ThisYear">
     <Value>Este Año</Value>
@@ -7504,19 +7494,19 @@
     <Value>Informes Externos</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.FilterNamePlaceholder">
-    <Value>E.g.: This Month Reports</Value>
+    <Value>Ej.: Informes de Este Mes</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.InternalReports.Title">
     <Value>Informes Internos</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.ExternalEvaluations">
-    <Value>External Evaluations</Value>
+    <Value>Evaluaciones Externas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.ExternalReports">
     <Value>Informes Externos</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.InternalEvaluations">
-    <Value>Internal Evaluations</Value>
+    <Value>Evaluaciones Internas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.InternalReports">
     <Value>Informes Internos</Value>
@@ -7525,7 +7515,7 @@
     <Value>Mi Rendimiento</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Organizations">
-    <Value>Branches</Value>
+    <Value>Sucursales</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Penalties">
     <Value>Penalizaciones</Value>
@@ -7534,7 +7524,7 @@
     <Value>Boleta del Personal</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.Supervisors">
-    <Value>Supervisors</Value>
+    <Value>Supervisores</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.CallInfo">
     <Value>Información de Llamada</Value>
@@ -7585,25 +7575,25 @@
     <Value>Tarjeta Amarilla</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.NoSavedFilters">
-    <Value>No saved filters.</Value>
+    <Value>No hay filtros guardados.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.AverageScore">
-    <Value>Avg. Score</Value>
+    <Value>Punt. Prom.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.NoChartData">
     <Value>No se encontraron datos del gráfico</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.NoRecords">
-    <Value>No organizations found for your company.</Value>
+    <Value>No se encontraron organizaciones para su empresa.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.NotFound">
-    <Value>Organization Not Found</Value>
+    <Value>Organización No Encontrada</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.PersonnelCount">
-    <Value>Personnel</Value>
+    <Value>Personal</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Organizations.Title">
-    <Value>Organizations</Value>
+    <Value>Organizaciones</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Project.EvaluationCount">
     <Value>Cantidad de Evaluaciones</Value>
@@ -7612,25 +7602,25 @@
     <Value>Lista de Proyectos</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.SaveFilter">
-    <Value>Save Filter</Value>
+    <Value>Guardar Filtro</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.SelectedFilters">
-    <Value>Selected Filters</Value>
+    <Value>Filtros Seleccionados</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.AverageScore">
-    <Value>Avg. Score</Value>
+    <Value>Punt. Prom.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.EvaluationCount">
-    <Value>Evaluations</Value>
+    <Value>Evaluaciones</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.NoRecords">
-    <Value>No supervisors found for your company.</Value>
+    <Value>No se encontraron supervisores para su empresa.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.NotFound">
-    <Value>Supervisor Not Found</Value>
+    <Value>Supervisor No Encontrado</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.PersonnelCount">
-    <Value>Personnel</Value>
+    <Value>Personal</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Supervisors.TeamSize">
     <Value>Tamaño del Equipo</Value>
@@ -8881,393 +8871,1680 @@
     <Value>Puede establecer umbrales de éxito y advertencia para cada tipo de proyecto. Estos umbrales se utilizarán en los informes. Para tipos de proyecto sin configuración personalizada, se aplicarán los umbrales globales.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Content">
-    <Value>Content</Value>
+    <Value>Contenido</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.ContentRequired">
-    <Value>Content is required.</Value>
+    <Value>El contenido es obligatorio.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Create">
-    <Value>New Announcement</Value>
+    <Value>Nuevo Anuncio</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.CreateError">
-    <Value>An error occurred while creating announcement.</Value>
+    <Value>Ocurrió un error al crear el anuncio.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.CreateFirst">
-    <Value>Create First Announcement</Value>
+    <Value>Crear Primer Anuncio</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.CreateSuccess">
-    <Value>Announcement created.</Value>
+    <Value>Anuncio creado.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.DeleteError">
-    <Value>An error occurred while deleting announcement.</Value>
+    <Value>Ocurrió un error al eliminar el anuncio.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.DeleteSuccess">
-    <Value>Announcement deleted.</Value>
+    <Value>Anuncio eliminado.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Edit">
-    <Value>Edit Announcement</Value>
+    <Value>Editar Anuncio</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.ExpiryDate">
-    <Value>Expiry Date</Value>
+    <Value>Fecha de Vencimiento</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.ExpiryDateHelp">
-    <Value>No expiry if left empty</Value>
+    <Value>Sin vencimiento si se deja vacío</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.FieldTitle">
-    <Value>Title</Value>
+    <Value>Título</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.LoadError">
-    <Value>An error occurred while loading announcements.</Value>
+    <Value>Ocurrió un error al cargar los anuncios.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.NoRecords">
-    <Value>No announcements yet.</Value>
+    <Value>Aún no hay anuncios.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Pinned">
-    <Value>Pinned</Value>
+    <Value>Fijado</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Priority">
-    <Value>Priority</Value>
+    <Value>Prioridad</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.PublishDate">
-    <Value>Publish Date</Value>
+    <Value>Fecha de Publicación</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.SearchPlaceholder">
-    <Value>Search title...</Value>
+    <Value>Buscar título...</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Summary">
-    <Value>Summary</Value>
+    <Value>Resumen</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.SummaryPlaceholder">
-    <Value>Short summary for dashboard (optional)</Value>
+    <Value>Resumen corto para el panel (opcional)</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.TargetRoles">
-    <Value>Target Roles</Value>
+    <Value>Roles Destinatarios</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.TargetRolesHelp">
-    <Value>Separate with commas: Admin,QualitySpecialist</Value>
+    <Value>Separar con comas: Admin,QualitySpecialist</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.TargetRolesPlaceholder">
-    <Value>Empty = Everyone</Value>
+    <Value>Vacío = Todos</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.Title">
-    <Value>Announcements</Value>
+    <Value>Anuncios</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.TitleRequired">
-    <Value>Title is required.</Value>
+    <Value>El título es obligatorio.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.UpdateError">
-    <Value>An error occurred while updating announcement.</Value>
+    <Value>Ocurrió un error al actualizar el anuncio.</Value>
   </LocaleResource>
   <LocaleResource Name="Announcement.UpdateSuccess">
-    <Value>Announcement updated.</Value>
+    <Value>Anuncio actualizado.</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.Important">
-    <Value>Important</Value>
+    <Value>Importante</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.Info">
-    <Value>Info</Value>
+    <Value>Información</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.News">
-    <Value>News</Value>
+    <Value>Noticias</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.Success">
-    <Value>Success</Value>
+    <Value>Éxito</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.System">
-    <Value>System</Value>
+    <Value>Sistema</Value>
   </LocaleResource>
   <LocaleResource Name="AnnouncementType.Warning">
-    <Value>Warning</Value>
+    <Value>Advertencia</Value>
   </LocaleResource>
   <LocaleResource Name="Common.ProjectCode">
-    <Value>Project Code</Value>
+    <Value>Código de Proyecto</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.AddRule">
-    <Value>Add Rule</Value>
+    <Value>Agregar Regla</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.DayOfMonth">
-    <Value>Day of Month</Value>
+    <Value>Día del Mes</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.DayOfWeek">
-    <Value>Day</Value>
+    <Value>Día</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NoNotificationRules">
-    <Value>No notification rules added yet.</Value>
+    <Value>Aún no se han agregado reglas de notificación.</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.NotificationRules">
-    <Value>Notification Rules</Value>
+    <Value>Reglas de Notificación</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.Rule">
-    <Value>Rule</Value>
+    <Value>Regla</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.SendToPersonnel">
-    <Value>Also send to personnel email</Value>
+    <Value>También enviar al correo del personal</Value>
   </LocaleResource>
   <LocaleResource Name="Customer.TokenExpirationDays">
-    <Value>Link Duration (days)</Value>
+    <Value>Duración del Enlace (días)</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.DominantType">
-    <Value>Dominant Type</Value>
+    <Value>Tipo Dominante</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.EnneagramTrend">
-    <Value>Personality Analysis</Value>
+    <Value>Análisis de Personalidad</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.NoScoreData">
-    <Value>No score distribution data found.</Value>
+    <Value>No se encontraron datos de distribución de puntuación.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.NoTrendData">
-    <Value>No monthly trend data found.</Value>
+    <Value>No se encontraron datos de tendencia mensual.</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.ProjectCount">
-    <Value>Project</Value>
+    <Value>Proyecto</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.ResponseRate">
-    <Value>Response Rate</Value>
+    <Value>Tasa de Respuesta</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.SurveyTrend">
-    <Value>Survey Response Trend</Value>
+    <Value>Tendencia de Respuestas de Encuesta</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.TotalInvitations">
-    <Value>Invitation</Value>
+    <Value>Invitación</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Dashboard.TotalResponses">
-    <Value>Total Responses</Value>
+    <Value>Total de Respuestas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Evaluations.AuditDate">
-    <Value>Audit Date</Value>
+    <Value>Fecha de Auditoría</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.Menu.DealerReportCard">
-    <Value>Dealer Report Card</Value>
+    <Value>Tarjeta de Informe del Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Answer">
-    <Value>Answer</Value>
+    <Value>Respuesta</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Answers">
-    <Value>Answers</Value>
+    <Value>Respuestas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Company">
-    <Value>Company</Value>
+    <Value>Empresa</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Earned">
-    <Value>Earned</Value>
+    <Value>Ganado</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Evaluated">
-    <Value>Evaluated</Value>
+    <Value>Evaluado</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Group">
-    <Value>Group</Value>
+    <Value>Grupo</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Notes">
-    <Value>Notes</Value>
+    <Value>Notas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Organization">
-    <Value>Organization</Value>
+    <Value>Organización</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Personnel">
-    <Value>Representative</Value>
+    <Value>Representante</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Question">
-    <Value>Question</Value>
+    <Value>Pregunta</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.TotalScore">
-    <Value>Total Score</Value>
+    <Value>Puntuación Total</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPortal.MyPerformance.Weight">
-    <Value>Weight</Value>
+    <Value>Peso</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.Dealer">
-    <Value>Dealer</Value>
+    <Value>Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.EvaluationDate">
-    <Value>Evaluation Date</Value>
+    <Value>Fecha de Evaluación</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.VisitId">
-    <Value>Visit ID</Value>
+    <Value>ID de Visita</Value>
   </LocaleResource>
   <LocaleResource Name="Evaluation.VisitInfo">
-    <Value>Visit Information</Value>
+    <Value>Información de Visita</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.ConfirmDeleteVisit">
-    <Value>Are you sure you want to delete this draft visit?</Value>
+    <Value>¿Está seguro de que desea eliminar esta visita borrador?</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.ControlInfo">
-    <Value>Control Information</Value>
+    <Value>Información de Control</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.DeleteVisitError">
-    <Value>An error occurred while deleting visit.</Value>
+    <Value>Ocurrió un error al eliminar la visita.</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.NoEvaluationData">
-    <Value>No evaluation data found.</Value>
+    <Value>No se encontraron datos de evaluación.</Value>
   </LocaleResource>
   <LocaleResource Name="FieldWorker.VisitDeleted">
-    <Value>Draft visit deleted successfully.</Value>
+    <Value>Visita borrador eliminada exitosamente.</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.CallDateRange">
-    <Value>Call Date</Value>
+    <Value>Fecha de Llamada</Value>
   </LocaleResource>
   <LocaleResource Name="Listenings.CreatedAtRange">
-    <Value>Record Date</Value>
+    <Value>Fecha de Registro</Value>
   </LocaleResource>
   <LocaleResource Name="Menu.DealerReportCard">
-    <Value>Dealer Report Card</Value>
+    <Value>Tarjeta de Informe del Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Notifications.MarkAllRead">
-    <Value>Mark All Read</Value>
+    <Value>Marcar Todo como Leído</Value>
   </LocaleResource>
   <LocaleResource Name="Notifications.Title">
-    <Value>Notifications</Value>
+    <Value>Notificaciones</Value>
   </LocaleResource>
   <LocaleResource Name="Notifications.ViewAll">
-    <Value>View All</Value>
+    <Value>Ver Todo</Value>
   </LocaleResource>
   <LocaleResource Name="Priority.Highest">
-    <Value>Highest</Value>
+    <Value>Más Alta</Value>
   </LocaleResource>
   <LocaleResource Name="Priority.Lowest">
-    <Value>Lowest</Value>
+    <Value>Más Baja</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.CallSystemUrl">
-    <Value>Call System URL</Value>
+    <Value>URL del Sistema de Llamadas</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.CallSystemUrlHelp">
-    <Value>URL to redirect when Call ID is clicked. {CallId} placeholder will be replaced with actual call ID.</Value>
+    <Value>URL de redirección al hacer clic en ID de Llamada. El marcador {CallId} será reemplazado con el ID real.</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.CompanySettings">
-    <Value>Company Settings</Value>
+    <Value>Configuración de Empresa</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.Example">
-    <Value>Example</Value>
+    <Value>Ejemplo</Value>
   </LocaleResource>
   <LocaleResource Name="Profile.SaveCompanySettings">
-    <Value>Save Company Settings</Value>
+    <Value>Guardar Configuración de Empresa</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Dealer">
-    <Value>dealer</Value>
+    <Value>distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Report.DealerHierarchyHint">
-    <Value>Customer's dealers are filtered when customer is selected.</Value>
+    <Value>Los distribuidores se filtran al seleccionar el cliente.</Value>
   </LocaleResource>
   <LocaleResource Name="Report.DealerReportCard">
-    <Value>Dealer Report Card</Value>
+    <Value>Tarjeta de Informe del Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Report.DealerSelection">
-    <Value>Dealer Selection</Value>
+    <Value>Selección de Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Report.Dealers">
-    <Value>Dealers</Value>
+    <Value>Distribuidores</Value>
   </LocaleResource>
   <LocaleResource Name="Report.ExportPdf">
-    <Value>Export PDF</Value>
+    <Value>Exportar PDF</Value>
   </LocaleResource>
   <LocaleResource Name="Report.NoDealerFound">
-    <Value>No dealer found</Value>
+    <Value>No se encontró distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Report.NoEvaluationsForDealer">
-    <Value>No evaluations found for this dealer</Value>
+    <Value>No se encontraron evaluaciones para este distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Report.SelectDealerFromLeftPanel">
-    <Value>Select a dealer from the left panel to view its report card.</Value>
+    <Value>Seleccione un distribuidor del panel izquierdo para ver su tarjeta de informe.</Value>
   </LocaleResource>
   <LocaleResource Name="Report.SelectDealerToViewReport">
-    <Value>Select a dealer to view report card</Value>
+    <Value>Seleccione un distribuidor para ver la tarjeta de informe</Value>
   </LocaleResource>
   <LocaleResource Name="TrainingVideo.NoQuiz">
-    <Value>No quiz selected</Value>
+    <Value>Ningún quiz seleccionado</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.ActiveFiltersNote">
-    <Value>Active filters will be applied to the report:</Value>
+    <Value>Los filtros activos se aplicarán al informe:</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Cards">
-    <Value>Cards</Value>
+    <Value>Tarjetas</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.ControlDate">
-    <Value>Control Date</Value>
+    <Value>Fecha de Control</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.ControlTime">
-    <Value>Time</Value>
+    <Value>Hora</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Dealer">
-    <Value>Dealer</Value>
+    <Value>Distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Detail">
-    <Value>Visit Detail</Value>
+    <Value>Detalle de Visita</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.EvaluationSource">
-    <Value>Evaluation Source</Value>
+    <Value>Fuente de Evaluación</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Evaluator">
-    <Value>Evaluator</Value>
+    <Value>Evaluador</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.NoAttachments">
-    <Value>No attachments found for this visit.</Value>
+    <Value>No se encontraron archivos adjuntos para esta visita.</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.NoRecords">
-    <Value>No records found.</Value>
+    <Value>No se encontraron registros.</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Period">
-    <Value>Period</Value>
+    <Value>Período</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Personnel">
-    <Value>Evaluated</Value>
+    <Value>Evaluado</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.DetailedExcel">
-    <Value>Detailed Excel (Questions-Answers)</Value>
+    <Value>Excel Detallado (Preguntas-Respuestas)</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.DetailedExcelDesc">
-    <Value>Detailed report containing all questions and answers</Value>
+    <Value>Informe detallado con todas las preguntas y respuestas</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.GeneralExcel">
-    <Value>General Excel Export</Value>
+    <Value>Exportación Excel General</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.GeneralExcelDesc">
-    <Value>Summary of all listening records</Value>
+    <Value>Resumen de todos los registros de escucha</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.MT">
-    <Value>MT Report</Value>
+    <Value>Informe MT</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.MTDesc">
-    <Value>Success, improvement areas, process analysis and index success (4 sheets)</Value>
+    <Value>Éxito, áreas de mejora, análisis de procesos e índice de éxito (4 hojas)</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.ProjectPerformance">
-    <Value>Project Performance Report</Value>
+    <Value>Informe de Rendimiento del Proyecto</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.ProjectPerformanceDesc">
-    <Value>Period-based project average scores and rankings</Value>
+    <Value>Promedios y clasificaciones por período</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.QuestionGroupAverage">
-    <Value>Question Group Average Report</Value>
+    <Value>Informe Promedio por Grupo de Preguntas</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.QuestionGroupAverageDesc">
-    <Value>Average scores by project, period and question group</Value>
+    <Value>Puntuaciones promedio por proyecto, período y grupo de preguntas</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.VisitAudit">
-    <Value>Visit Audit Report</Value>
+    <Value>Informe de Auditoría de Visitas</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.VisitAuditDesc">
-    <Value>Project, evaluator, dealer, personnel, control date/time, comments and score info</Value>
+    <Value>Proyecto, evaluador, distribuidor, personal, fecha/hora de control, comentarios y puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.VisitCustomerEvaluation">
-    <Value>Customer Visit Evaluation Report</Value>
+    <Value>Informe de Evaluación de Visita al Cliente</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Report.VisitCustomerEvaluationDesc">
-    <Value>Company, dealer, personnel, department, control date/time and score info</Value>
+    <Value>Empresa, distribuidor, personal, departamento, fecha/hora de control y puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Reports">
-    <Value>Reports</Value>
+    <Value>Informes</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.ReportsDescription">
-    <Value>Generate reports based on current filters.</Value>
+    <Value>Generar informes basados en los filtros actuales.</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.SavedFilters">
-    <Value>Saved Filters</Value>
+    <Value>Filtros Guardados</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Score">
-    <Value>Score</Value>
+    <Value>Puntuación</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Supervisor">
     <Value>Supervisor</Value>
   </LocaleResource>
   <LocaleResource Name="Visits.Title">
-    <Value>Visits</Value>
+    <Value>Visitas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Current">
+    <Value>Actual</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.Independent">
+    <Value>Independiente (Sin Supervisor)</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.IndependentOperators">
+    <Value>Operadores Independientes</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.IndependentShort">
+    <Value>Independiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.LoadingPersonnel">
+    <Value>Cargando personal...</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveHint">
+    <Value>Use el botón en la fila del personal para mover</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MovePersonnel">
+    <Value>Mover Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveToOrg">
+    <Value>Mover a Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.MoveWithTeam">
+    <Value>Mover miembros del equipo juntos</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoOrganization">
+    <Value>No se encontró organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoPersonnel">
+    <Value>Sin personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.NoSupervisors">
+    <Value>No hay supervisores en esta organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.PersonSuffix">
+    <Value>personas</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.RemoveFromOrg">
+    <Value>Eliminar de la Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.RemoveFromTeam">
+    <Value>Eliminar del Equipo</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.SelectTargetOrg">
+    <Value>Seleccionar Organización Destino:</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.SelectTargetSupervisor">
+    <Value>Seleccionar Supervisor Destino:</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.TeamMembersExist">
+    <Value>existen miembros del equipo</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.TeamSuffix">
+    <Value>equipo</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerOrganization.UnassignedPersonnel">
+    <Value>Personal No Asignado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.OnlineSurveySettings">
+    <Value>Configuración de Encuesta en Línea</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Alternative">
+    <Value>Alternativa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Default">
+    <Value>Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Disabled">
+    <Value>Deshabilitado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Help">
+    <Value>Ayuda</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Recommended">
+    <Value>Recomendado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Closed">
+    <Value>Cerrado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Period.Open">
+    <Value>Abierto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Authentication">
+    <Value>Autenticación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ConnectionTest">
+    <Value>Prueba de Conexión</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.CreateFirst">
+    <Value>Crear Primer Perfil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.EditProfileTitle">
+    <Value>Editar Perfil SMTP</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.GmailAppPasswordHint">
+    <Value>Use &quot;Contraseña de Aplicación&quot; para Gmail.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.GraphApiHint">
+    <Value>Envía correo vía Graph API en lugar de SMTP (recomendado)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ModernAuth">
+    <Value>Método de autenticación moderno</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NewProfile">
+    <Value>Nuevo Perfil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NewProfileTitle">
+    <Value>Nuevo Perfil SMTP</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NoProfiles">
+    <Value>Aún no se encontraron perfiles SMTP.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Password">
+    <Value>Contraseña / Contraseña de Aplicación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Port">
+    <Value>Port</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Profile">
+    <Value>Perfil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileActive">
+    <Value>Perfil Activo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileName">
+    <Value>Nombre del Perfil</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.RecipientEmail">
+    <Value>Dirección de Correo del Destinatario</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SendTestEmail">
+    <Value>Enviar Correo de Prueba</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Sender">
+    <Value>Remitente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SenderEmail">
+    <Value>Correo del Remitente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SenderName">
+    <Value>Nombre del Remitente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Server">
+    <Value>Servidor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ServerSettings">
+    <Value>Configuración del Servidor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SetDefault">
+    <Value>Establecer como Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.SmtpServer">
+    <Value>Servidor SMTP</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Title">
+    <Value>Perfiles SMTP</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.UseGraphApi">
+    <Value>Usar Microsoft Graph API</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.UseSsl">
+    <Value>Usar SSL/TLS (StartTLS)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.Username">
+    <Value>Usuario / Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.BasicInfo">
+    <Value>Información Básica</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.BodyLabel">
+    <Value>Contenido (Cuerpo)</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.CreateFirst">
+    <Value>Crear Primera Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.DefaultTemplate">
+    <Value>Plantilla Predeterminada</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.DescriptionPlaceholder">
+    <Value>Breve descripción sobre esta plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.EditTemplate">
+    <Value>Editar Plantilla de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.EmailContent">
+    <Value>Contenido del Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.InsertVariable">
+    <Value>Insertar Variable</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.InsertVariableHint">
+    <Value>Haga clic en una variable para insertarla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Loading">
+    <Value>Cargando plantillas...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.NewTemplate">
+    <Value>Nueva Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.NoTemplates">
+    <Value>Aún no se encontraron plantillas de correo.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.PlaceholderHint">
+    <Value>Puede usar marcadores: {ProjectName}, {CompanyName}, etc.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Preview">
+    <Value>Vista Previa del Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.RealDataInfo">
+    <Value>Se generará enlace de encuesta real y código QR para el personal seleccionado. El correo se enviará a la dirección anterior.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.RecipientAddress">
+    <Value>Dirección de Correo del Destinatario</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectPersonnel">
+    <Value>Seleccionar personal...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectProject">
+    <Value>Seleccionar proyecto...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SelectProjectFirst">
+    <Value>Seleccione un proyecto primero</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Subject">
+    <Value>Asunto</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.SubjectLabel">
+    <Value>Asunto</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Template">
+    <Value>Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateLoading">
+    <Value>Cargando plantilla...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateName">
+    <Value>Nombre de Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TemplateType">
+    <Value>Tipo de Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TestEmail">
+    <Value>Correo de Prueba</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.TestEmailHint">
+    <Value>El correo de prueba se enviará a esta dirección</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.Title">
+    <Value>Plantillas de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.UseRealData">
+    <Value>Usar Datos Reales de Proyecto/Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="EmailTemplate.UseRealDataHint">
+    <Value>Se generará enlace de encuesta real y código QR</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Company">
+    <Value>Empresa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Dealer">
+    <Value>Distribuidor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Representative">
+    <Value>Representante</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Answer">
+    <Value>Respuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Answers">
+    <Value>Respuestas</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.AuditComment">
+    <Value>Comentario de Auditoría</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.CallId">
+    <Value>ID de Llamada</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.CallInfo">
+    <Value>Información de Llamada</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Comment">
+    <Value>Comentario</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Duration">
+    <Value>Duración</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Earned">
+    <Value>Ganado</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Evaluated">
+    <Value>Evaluado</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Evaluation">
+    <Value>evaluación(es)</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.EvaluationDetail">
+    <Value>Detalle de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Group">
+    <Value>Grupo</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Loading">
+    <Value>Cargando informe...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.NoEvaluationsInRange">
+    <Value>No se encontraron evaluaciones en este rango de fechas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Notes">
+    <Value>Notas</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Question">
+    <Value>Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Score">
+    <Value>Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Title">
+    <Value>Informe de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.TotalPrefix">
+    <Value>Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.TotalScore">
+    <Value>Puntuación Total</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvalReport.Weight">
+    <Value>Peso</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last3Months">
+    <Value>Últimos 3 Meses</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastMonth">
+    <Value>Mes Pasado</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisMonth">
+    <Value>Este Mes</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.ThisYear">
+    <Value>Este Año</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Average">
+    <Value>Promedio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.BasedOnComments">
+    <Value>(Basado en cantidad de comentarios)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ControlTime">
+    <Value>Hora de Control</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationType">
+    <Value>Tipo de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ExternalEvaluation">
+    <Value>Evaluación Externa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Highest">
+    <Value>Más Alto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Inspected">
+    <Value>Inspeccionado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.InternalEvaluation">
+    <Value>Evaluación Interna</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ListeningDetail">
+    <Value>Detalle de Escucha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Lowest">
+    <Value>Más Bajo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.MonthlyPerformance">
+    <Value>Rendimiento Mensual</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.RCard">
+    <Value>T.Roja</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.VisitInfo">
+    <Value>Información de Visita</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.YCard">
+    <Value>T.Amar.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DownloadExcel">
+    <Value>Descargar Excel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DownloadPdf">
+    <Value>Descargar PDF</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Last6Months">
+    <Value>Últimos 6 Meses</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastWeek">
+    <Value>Semana Pasada</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.LastYear">
+    <Value>Año Pasado</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.SelectDate">
+    <Value>Seleccionar Fecha</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Address">
+    <Value>Dirección</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Contact">
+    <Value>Contacto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.MinChars">
+    <Value>Al menos 6 caracteres</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OrCreateNew">
+    <Value>o Crear Nuevo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.ActiveCustomer">
+    <Value>Cliente Activo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Customer.DistrictPlaceholder">
+    <Value>Kadikoy</Value>
+  </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.EditPersonnel">
+    <Value>Editar Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.AddressPlaceholder">
+    <Value>Calle, Avenida, No.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NotesPlaceholder">
+    <Value>Notas sobre el distribuidor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.ResourceCountInfo">
+    <Value>tiene</Value>
+  </LocaleResource>
+  <LocaleResource Name="Language.TranslationResources">
+    <Value>recursos de traducción.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.AddOperator">
+    <Value>Agregar Operador</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.AddSupervisor">
+    <Value>Agregar Gerente/Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.CompanyManagers">
+    <Value>Gerentes de Empresa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.DelegateWarning">
+    <Value>tiene miembros de equipo. Seleccione un delegado para hacerse cargo.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.EditOrg">
+    <Value>Editar Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.IndependentOperatorHint">
+    <Value>Este operador será agregado como independiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.IndependentOperators">
+    <Value>Operadores Independientes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.MakeIndependent">
+    <Value>Hacer Independiente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewManager">
+    <Value>Nuevo Gerente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewOrg">
+    <Value>Nueva Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NewSupervisor">
+    <Value>Nuevo Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoIndependentOperators">
+    <Value>No hay operadores independientes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoManagers">
+    <Value>Aún no hay gerentes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NoPersonnel">
+    <Value>Aún no hay personal en esta organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.NotFound">
+    <Value>Organización no encontrada</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgCode">
+    <Value>Código de Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgName">
+    <Value>Nombre de Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Organizations">
+    <Value>Organizaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.PersonnelStructure">
+    <Value>Estructura de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.RemoveFromOrg">
+    <Value>Eliminar de la Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectDelegate">
+    <Value>Seleccionar Delegado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectFromPool">
+    <Value>Seleccionar del Pool</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectNewSupervisor">
+    <Value>Seleccionar Nuevo Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.SelectOrgHint">
+    <Value>Seleccione una organización de la izquierda para ver el personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.Supervisor">
+    <Value>Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.TeamMembersToTransfer">
+    <Value>Miembros del Equipo a Transferir</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.TransferAndRemove">
+    <Value>Transferir y Eliminar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Granted">
+    <Value>Concedido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Indefinite">
+    <Value>Indefinido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Permission.Revoked">
+    <Value>Revocado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllCustomers">
+    <Value>Todos los Clientes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Copied">
+    <Value>Copiado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.DaySuffix">
+    <Value>día(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Fetch">
+    <Value>Obtener</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.First100Records">
+    <Value>Mostrando los primeros 100 registros</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.NotSelected">
+    <Value>No Seleccionado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Question">
+    <Value>Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.RecordSuffix">
+    <Value>registro(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Red">
+    <Value>Rojo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.RedCard">
+    <Value>Tarjeta Roja</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectCustomer">
+    <Value>Seleccionar Cliente...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Yellow">
+    <Value>Amarillo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.YellowCard">
+    <Value>Tarjeta Amarilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dashboard.EndDateSuffix">
+    <Value>fin</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Day">
+    <Value>Día</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Month">
+    <Value>Mes</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.QuickSelect">
+    <Value>Selección Rápida</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Week">
+    <Value>Semana</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Year">
+    <Value>Año</Value>
+  </LocaleResource>
+  <LocaleResource Name="DateRange.Yesterday">
+    <Value>Ayer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.ClearDefault">
+    <Value>Limpiar Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.CreatedAt">
+    <Value>Fecha de Creación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.CustomerOrganization">
+    <Value>Cliente / Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Default">
+    <Value>Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DefaultNote">
+    <Value>Este filtro se aplicará automáticamente al abrir la página</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Description">
+    <Value>Descripción (Opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DescriptionOptional">
+    <Value>Descripción (Opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.DescriptionPlaceholder">
+    <Value>Explique para qué se usa este filtro...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.FilterName">
+    <Value>Nombre del Filtro</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.FilterNamePlaceholder">
+    <Value>Ej.: Informes de Enero</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.Name">
+    <Value>Nombre del Filtro</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NamePlaceholder">
+    <Value>Ej.: Informes de Enero</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NoSavedFilters">
+    <Value>Aún no hay filtros guardados.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.NoSearchResults">
+    <Value>No se encontraron filtros que coincidan con la búsqueda.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SaveFilterHint">
+    <Value>Guarde filtros para reutilizarlos rápidamente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SaveQuery">
+    <Value>Guardar Consulta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SavedFilters">
+    <Value>Filtros Guardados</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SelectCustomer">
+    <Value>Seleccionar Cliente...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SelectedFilters">
+    <Value>Filtros Seleccionados:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetAsDefault">
+    <Value>Establecer como filtro predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetAsDefaultNote">
+    <Value>Este filtro se aplicará automáticamente al abrir la página</Value>
+  </LocaleResource>
+  <LocaleResource Name="Filter.SetDefault">
+    <Value>Establecer como Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listening.CustomerOrganization">
+    <Value>Cliente / Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.Red">
+    <Value>Rojo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Penalty.Yellow">
+    <Value>Amarillo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AutoReport">
+    <Value>Informe Automático</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.EndDateFilter">
+    <Value>Filtro de Fecha Fin</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Identity">
+    <Value>Identidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Reporting">
+    <Value>Informes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.SelectFromSettings">
+    <Value>(Seleccionar desde configuración del proyecto)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.SurveyIdentity.Open">
+    <Value>Abierto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.Template">
+    <Value>Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIGenerating">
+    <Value>La IA está generando el informe, por favor espere...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIInfoText">
+    <Value>Esta función genera informes automáticos usando Google Gemini AI. La generación puede tomar 10-30 segundos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIReport">
+    <Value>Informe IA</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AnswerBasedRecords">
+    <Value>Registros Basados en Respuestas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CompareYear">
+    <Value>Año de Comparación (Opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.CurrentYearTarget">
+    <Value>Objetivo del Año Actual</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DataPreview">
+    <Value>Vista Previa de Datos (JSON)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.DownloadMd">
+    <Value>Descargar (.md)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvalAbbr">
+    <Value>eval.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationGeneralNotes">
+    <Value>Notas Generales de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationSuffix">
+    <Value>evaluación(es)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.GeneralNote">
+    <Value>Nota General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Generating">
+    <Value>Generando...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.LowScore">
+    <Value>Puntuación Baja</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoEvaluationsInRange">
+    <Value>No se encontraron evaluaciones en este rango.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.NoGeneralNotes">
+    <Value>No se encontraron notas generales.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PercentageRanking">
+    <Value>Clasificación Porcentual</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.PreviousYearTarget">
+    <Value>Objetivo del Año Anterior</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportOutput">
+    <Value>Resultado del Informe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportSettings">
+    <Value>Configuración del Informe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ReportYear">
+    <Value>Año del Informe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Response">
+    <Value>respuesta(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreDistribution">
+    <Value>Distribución de Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreExcellent">
+    <Value>Excelente (90+)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScoreGood">
+    <Value>Bueno (80-89)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.ScorePoor">
+    <Value>Poor (<60)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectCustomer">
+    <Value>Seleccionar cliente...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionSuffix">
+    <Value>selección(es)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.StretchTarget">
+    <Value>Objetivo Extendido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SuggestionSuffix">
+    <Value>sugerencia(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TargetScores">
+    <Value>Puntuaciones Objetivo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Token">
+    <Value>Token</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Visual">
+    <Value>Visual</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.ProfileManagement">
+    <Value>Gestión de Perfiles SMTP</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Anonymous">
+    <Value>Anónimo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.CommentPlaceholder">
+    <Value>Comentario (opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.CloseWindow">
+    <Value>Gracias por su participación. Puede cerrar esta ventana.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Success">
+    <Value>Su encuesta ha sido enviada exitosamente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Thanks">
+    <Value>¡Gracias!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Completed.Title">
+    <Value>Encuesta Completada</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.ErrorMessage">
+    <Value>Verifique el enlace enviado o contacte a su administrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Loading">
+    <Value>Cargando encuesta...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.QuestionsAnswered">
+    <Value>preguntas respondidas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SelectMultiple">
+    <Value>Seleccione (se permiten múltiples opciones):</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.SelectOne">
+    <Value>Seleccione una:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Submit">
+    <Value>Enviar Encuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Submitting">
+    <Value>Enviando...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Survey.Title">
+    <Value>Encuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.AIEmptyState">
+    <Value>Configure los ajustes desde el panel izquierdo y haga clic en &quot;Generar Informe&quot;.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalParticipantAssignment">
+    <Value>Asignacion de Participante Externo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentTitle">
+    <Value>Titulo de Asignacion</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DueDate">
+    <Value>Fecha Limite</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.GoBack">
+    <Value>Volver</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.QuizHint">
+    <Value>&lt;strong&gt;Correcto:&lt;/strong&gt; Seleccione UNA respuesta correcta por pregunta | &lt;strong&gt;Puntos:&lt;/strong&gt; Puntos al seleccionar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.CriteriaTotal">
+    <Value>Total de Criterios</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Maximum">
+    <Value>Máximo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.Survey">
+    <Value>Encuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Adding">
+    <Value>Añadiendo...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.AllPersonnel">
+    <Value>Todo el Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.EmailNameSurname">
+    <Value>Correo / Nombre Completo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.EvaluationSuffix">
+    <Value>Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.General">
+    <Value>General</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Group">
+    <Value>Grupo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.OrganizationOptional">
+    <Value>Organización (Opcional)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Passive">
+    <Value>Inactivo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Person">
+    <Value>persona</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PersonnelNamePlaceholder">
+    <Value>Nombre del personal...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.PersonnelSuffix">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Record">
+    <Value>registro</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SearchByName">
+    <Value>Buscar por Nombre</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectStatus">
+    <Value>Seleccionar estado...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.SelectType">
+    <Value>Seleccionar tipo...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Selected">
+    <Value>seleccionado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Showing">
+    <Value>mostrando</Value>
+  </LocaleResource>
+  <LocaleResource Name="Common.Times">
+    <Value>veces</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.ContactPlaceholder">
+    <Value>Juan García</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NamePlaceholder">
+    <Value>Distribuidor ABC</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NotSpecified">
+    <Value>Distribuidor No Especificado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotAnswered">
+    <Value>Sin Respuesta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.NotRequired">
+    <Value>No Requerido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.Weight">
+    <Value>Peso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Organization.OrgManager">
+    <Value>Gerente de Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectCode">
+    <Value>Código de Proyecto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ProjectType">
+    <Value>Tipo de Proyecto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.EvaluationComment">
+    <Value>Comentario de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Reason">
+    <Value>Razón</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectedTotalEvaluation">
+    <Value>Seleccionadas / Total evaluaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Success">
+    <Value>Éxito</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TopSubCriteria">
+    <Value>Subcriterios Más Seleccionados</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.Warning">
+    <Value>Advertencia</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.AppPassword">
+    <Value>Contraseña de Aplicación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.CreateIt">
+    <Value>cree una</Value>
+  </LocaleResource>
+  <LocaleResource Name="Smtp.NormalPasswordOk">
+    <Value>Puede usar una contraseña normal</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.DetailedReport">
+    <Value>Informe Detallado</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.GroupBased">
+    <Value>Puntuación por Grupo</Value>
+  </LocaleResource>
+  <LocaleResource Name="SurveyResult.QuestionBased">
+    <Value>Estadísticas de Preguntas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddEmailsFromLeft">
+    <Value>Puede agregar direcciones de correo desde el panel izquierdo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddNewExternalParticipant">
+    <Value>Agregar Nuevo Participante Externo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AddNewParticipant">
+    <Value>Agregar Nuevo Participante</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllChecklist">
+    <Value>Lista completa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllParticipants">
+    <Value>Todos los Participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllowSeeking">
+    <Value>Permitir avanzar/retroceder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AllowSpeedChange">
+    <Value>Permitir cambio de velocidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Allowed">
+    <Value>Permitido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Assignment">
+    <Value>Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentNamePlaceholder">
+    <Value>Nombre de asignación...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentSummary">
+    <Value>Resumen de Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AssignmentTitlePlaceholder">
+    <Value>ej.: Ene 2026 Capacitación Escucha Activa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Assignments">
+    <Value>Asignaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.AvgScore">
+    <Value>Punt. Prom.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.BackToVideos">
+    <Value>Volver a Videos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.BasicInfo">
+    <Value>Información Básica</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Completed">
+    <Value>Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Completion">
+    <Value>Finalización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CopyLink">
+    <Value>Copiar Enlace</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateAssignment">
+    <Value>Crear Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateFirstAssignment">
+    <Value>Crear Primera Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CreateWarning">
+    <Value>Por favor revise la información anterior. Esta acción no se puede deshacer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Creating">
+    <Value>Creando...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.CustomersWithEvaluationsPrefix">
+    <Value>Clientes con evaluaciones en listas de verificación del alcance del video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Default">
+    <Value>Predeterminado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DefaultTemplate">
+    <Value>Plantilla predeterminada</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.DeleteOrUndo">
+    <Value>Eliminar/Deshacer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EditAssignment">
+    <Value>Editar Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailFormat">
+    <Value>Formato: email o email;nombre;apellido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailManagement">
+    <Value>Gestión de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailNotSent">
+    <Value>Correo No Enviado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailSent">
+    <Value>Correo Enviado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailSettings">
+    <Value>Configuración de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailStatus">
+    <Value>Estado del Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailTemplate">
+    <Value>Plantilla de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmailType">
+    <Value>Tipo de Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EmptyMeansUnlimited">
+    <Value>Vacío = ilimitado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EnterEmailsFromLeft">
+    <Value>Ingrese direcciones de correo desde el panel izquierdo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.EvaluationDateRange">
+    <Value>Rango de Fechas de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExcelColumns">
+    <Value>Columnas: Email, Nombre, Apellido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExistingParticipants">
+    <Value>Participantes Existentes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.External">
+    <Value>Externo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalAssignmentPlaceholder">
+    <Value>ej.: Ene 2026 Capacitación Externa</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ExternalParticipants">
+    <Value>Participantes Externos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.FirstNotification">
+    <Value>Primera Notificación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ForwardBackward">
+    <Value>Avanzar/Retroceder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.GoToSummary">
+    <Value>Ir al Resumen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.GroupQuestion">
+    <Value>Grupo/Pregunta</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InVideoScopePrefix">
+    <Value>En el alcance del video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Internal">
+    <Value>Interno</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.InternalParticipants">
+    <Value>Participantes Internos</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LastEmail">
+    <Value>Último Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ListPersonnel">
+    <Value>Listar Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.LoadingParticipants">
+    <Value>Cargando participantes...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MaxWatch">
+    <Value>Máx Visualización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MaxWatchCount">
+    <Value>Máx Número de Visualizaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MinWatch">
+    <Value>Mín Visualización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MinWatchCount">
+    <Value>Mín Número de Visualizaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.MorePersons">
+    <Value>personas más</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NewAssignment">
+    <Value>Nueva Asignación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoAssignmentsYet">
+    <Value>Aún no hay asignaciones de capacitación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoExternalParticipantsYet">
+    <Value>Aún no hay participantes externos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoInternalParticipantsYet">
+    <Value>Aún no hay participantes internos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoMatchingParticipants">
+    <Value>No se encontraron participantes con sus filtros.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoMatchingPersonnel">
+    <Value>No se encontró personal con estos criterios</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NoParticipantsYet">
+    <Value>Aún no hay participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotAllowed">
+    <Value>No Permitido</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotCompleted">
+    <Value>No Completado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.NotStarted">
+    <Value>No Iniciado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantType">
+    <Value>Tipo de Participante</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Participants">
+    <Value>Participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ParticipantsToAdd">
+    <Value>Participantes a Agregar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonFound">
+    <Value>personas encontradas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelFilters">
+    <Value>Filtros de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelListLoading">
+    <Value>Cargando lista de personal...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.PersonnelSelection">
+    <Value>Selección de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Progress">
+    <Value>Progreso</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Reminder">
+    <Value>Recordatorio</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreCalculation">
+    <Value>Cálculo de puntuación:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreRange">
+    <Value>Rango de Puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ScoreRangeDescription">
+    <Value>Se listará el personal dentro de este rango de puntuación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SearchPersonnelInScope">
+    <Value>Buscar personal con evaluaciones en alcance del video...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SearchVideo">
+    <Value>Buscar video...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectBelowThreshold">
+    <Value>Seleccionar debajo del puntaje máximo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectTemplate">
+    <Value>Seleccionar plantilla...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectVideo">
+    <Value>Seleccionar video...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SelectedPersonnel">
+    <Value>Personal Seleccionado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SendEmail">
+    <Value>Enviar Correo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SendEmailToParticipants">
+    <Value>Enviar correo a participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Sending">
+    <Value>Enviando...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.SpeedChange">
+    <Value>Cambio de Velocidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Started">
+    <Value>Iniciado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Template">
+    <Value>Plantilla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ToBeAdded">
+    <Value>Por agregar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.TrainingVideo">
+    <Value>Video de Capacitación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Video">
+    <Value>Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoAndSettings">
+    <Value>Video y Configuración</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoScope">
+    <Value>Alcance del Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoScopeDescription">
+    <Value>Este video fue preparado para capacitación en los siguientes temas.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.VideoSelection">
+    <Value>Selección de Video</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.ViewParticipants">
+    <Value>Ver Participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Waiting">
+    <Value>Esperando</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.WatchSettings">
+    <Value>Configuración de Visualización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.WatchStatus">
+    <Value>Estado de Visualización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Watched">
+    <Value>Visto</Value>
+  </LocaleResource>
+  <LocaleResource Name="Training.Watching">
+    <Value>Viendo</Value>
   </LocaleResource>
 </Language>

@@ -113,28 +113,28 @@
                                 <div class="d-flex gap-1 align-items-center flex-wrap">
                                     <!-- ko if: panelType !== 'survey' && panelType !== 'enneagram' -->
                                     <select class="form-select form-select-sm" style="width: auto; min-width: 140px;"
-                                            data-bind="value: selectedProjectId, options: projects, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Tüm Projeler'"></select>
+                                            data-bind="value: selectedProjectId, options: projects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
                                     <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: dateRange">
-                                        <option value="">Tarih Seçin</option>
-                                        <option value="thisWeek">Bu Hafta</option>
-                                        <option value="lastWeek">Geçen Hafta</option>
-                                        <option value="thisMonth">Bu Ay</option>
-                                        <option value="lastMonth">Geçen Ay</option>
-                                        <option value="last3Months">Son 3 Ay</option>
-                                        <option value="last6Months">Son 6 Ay</option>
-                                        <option value="thisYear">Bu Yıl</option>
-                                        <option value="lastYear">Geçen Yıl</option>
+                                        <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
+                                        <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>
+                                        <option value="lastWeek">@Html.T("DateRange.LastWeek", "Geçen Hafta")</option>
+                                        <option value="thisMonth">@Html.T("DateRange.ThisMonth", "Bu Ay")</option>
+                                        <option value="lastMonth">@Html.T("DateRange.LastMonth", "Geçen Ay")</option>
+                                        <option value="last3Months">@Html.T("DateRange.Last3Months", "Son 3 Ay")</option>
+                                        <option value="last6Months">@Html.T("DateRange.Last6Months", "Son 6 Ay")</option>
+                                        <option value="thisYear">@Html.T("DateRange.ThisYear", "Bu Yıl")</option>
+                                        <option value="lastYear">@Html.T("DateRange.LastYear", "Geçen Yıl")</option>
                                     </select>
                                     <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: startDate">
                                     <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: endDate">
-                                    <button class="btn btn-sm btn-primary" data-bind="click: function() { $parent.reloadMonthlyTrendPanel(projectTypeId); }" title="Filtrele">
+                                    <button class="btn btn-sm btn-primary" data-bind="click: function() { $parent.reloadMonthlyTrendPanel(projectTypeId); }" title="@Html.T("Common.Filter", "Filtrele")">
                                         <i class="bi bi-filter"></i>
                                     </button>
                                     <!-- /ko -->
-                                    <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { $parent.exportChartToPdf('monthlyChartCard_' + projectTypeId, projectTypeName + '_Aylik_Trend'); }" title="PDF İndir">
+                                    <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { $parent.exportChartToPdf('monthlyChartCard_' + projectTypeId, projectTypeName + '_Aylik_Trend'); }" title="@Html.T("Common.DownloadPdf", "PDF İndir")">
                                         <i class="bi bi-file-earmark-pdf"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-success" data-bind="click: function() { $parent.exportMonthlyTrendPanelToExcel(projectTypeId); }" title="Excel İndir">
+                                    <button class="btn btn-sm btn-outline-success" data-bind="click: function() { $parent.exportMonthlyTrendPanelToExcel(projectTypeId); }" title="@Html.T("Common.DownloadExcel", "Excel İndir")">
                                         <i class="bi bi-file-earmark-excel"></i>
                                     </button>
                                 </div>
@@ -240,7 +240,7 @@
                         <div class="collapse mt-2" id="scoreDistributionFilter">
                             <div class="row g-2">
                                 <div class="col-12 col-md-4">
-                                    <select class="form-select form-select-sm" data-bind="value: scoreDistProjectId, optionsCaption: 'Tüm Projeler'">
+                                    <select class="form-select form-select-sm" data-bind="value: scoreDistProjectId, optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'">
                                         <!-- ko foreach: scoreDistProjects -->
                                         <option data-bind="value: id, text: name"></option>
                                         <!-- /ko -->
@@ -248,22 +248,22 @@
                                 </div>
                                 <div class="col-6 col-md-2">
                                     <select class="form-select form-select-sm" data-bind="value: scoreDistDateRange">
-                                        <option value="">Tarih Seçin</option>
-                                        <option value="thisWeek">Bu Hafta</option>
-                                        <option value="lastWeek">Geçen Hafta</option>
-                                        <option value="thisMonth">Bu Ay</option>
-                                        <option value="lastMonth">Geçen Ay</option>
-                                        <option value="last3Months">Son 3 Ay</option>
-                                        <option value="last6Months">Son 6 Ay</option>
-                                        <option value="thisYear">Bu Yıl</option>
-                                        <option value="lastYear">Geçen Yıl</option>
+                                        <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
+                                        <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>
+                                        <option value="lastWeek">@Html.T("DateRange.LastWeek", "Geçen Hafta")</option>
+                                        <option value="thisMonth">@Html.T("DateRange.ThisMonth", "Bu Ay")</option>
+                                        <option value="lastMonth">@Html.T("DateRange.LastMonth", "Geçen Ay")</option>
+                                        <option value="last3Months">@Html.T("DateRange.Last3Months", "Son 3 Ay")</option>
+                                        <option value="last6Months">@Html.T("DateRange.Last6Months", "Son 6 Ay")</option>
+                                        <option value="thisYear">@Html.T("DateRange.ThisYear", "Bu Yıl")</option>
+                                        <option value="lastYear">@Html.T("DateRange.LastYear", "Geçen Yıl")</option>
                                     </select>
                                 </div>
                                 <div class="col-6 col-md-2">
-                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistStartDate" placeholder="Başlangıç">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistStartDate" placeholder="@Html.T("Common.StartDate", "Başlangıç")">
                                 </div>
                                 <div class="col-6 col-md-2">
-                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistEndDate" placeholder="Bitiş">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: scoreDistEndDate" placeholder="@Html.T("Common.EndDate", "Bitiş")">
                                 </div>
                                 <div class="col-6 col-md-2">
                                     <button class="btn btn-sm btn-primary w-100" data-bind="click: loadScoreDistribution">
@@ -299,7 +299,7 @@
                                             <div class="d-flex gap-1">
                                                 <button class="btn btn-sm btn-outline-danger py-0 px-1"
                                                         data-bind="click: function() { $parent.exportChartToPdf('scoreDistCard_' + projectTypeId, projectTypeName + '_Puan_Dagilimi'); }"
-                                                        title="PDF İndir">
+                                                        title="@Html.T("Common.DownloadPdf", "PDF İndir")">
                                                     <i class="bi bi-file-earmark-pdf"></i>
                                                 </button>
                                             </div>
@@ -309,7 +309,7 @@
                                                 <canvas data-bind="attr: { id: 'scoreDistChart_' + projectTypeId }"></canvas>
                                             </div>
                                             <div class="text-center mt-2">
-                                                <small class="text-muted" data-bind="text: 'Başarı: ≥' + successThreshold + '% | Uyarı: ≥' + warningThreshold + '%'"></small>
+                                                <small class="text-muted" data-bind="text: '@Html.T("Report.Success", "Başarı"): ≥' + successThreshold + '% | @Html.T("Report.Warning", "Uyarı"): ≥' + warningThreshold + '%'"></small>
                                             </div>
                                         </div>
                                     </div>
@@ -329,27 +329,27 @@
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h6 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>@Html.T("CustomerPortal.Dashboard.QuestionTrend", "Soru Bazlı Başarı Trendi")</h6>
                             <div class="d-flex gap-1 align-items-center flex-wrap">
-                                <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: 'Tüm Projeler'"></select>
+                                <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
                                 <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: questionTrendDateRange">
-                                    <option value="">Tarih Seçin</option>
-                                    <option value="thisWeek">Bu Hafta</option>
-                                    <option value="lastWeek">Geçen Hafta</option>
-                                    <option value="thisMonth">Bu Ay</option>
-                                    <option value="lastMonth">Geçen Ay</option>
-                                    <option value="last3Months">Son 3 Ay</option>
-                                    <option value="last6Months">Son 6 Ay</option>
-                                    <option value="thisYear">Bu Yıl</option>
-                                    <option value="lastYear">Geçen Yıl</option>
+                                    <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
+                                    <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>
+                                    <option value="lastWeek">@Html.T("DateRange.LastWeek", "Geçen Hafta")</option>
+                                    <option value="thisMonth">@Html.T("DateRange.ThisMonth", "Bu Ay")</option>
+                                    <option value="lastMonth">@Html.T("DateRange.LastMonth", "Geçen Ay")</option>
+                                    <option value="last3Months">@Html.T("DateRange.Last3Months", "Son 3 Ay")</option>
+                                    <option value="last6Months">@Html.T("DateRange.Last6Months", "Son 6 Ay")</option>
+                                    <option value="thisYear">@Html.T("DateRange.ThisYear", "Bu Yıl")</option>
+                                    <option value="lastYear">@Html.T("DateRange.LastYear", "Geçen Yıl")</option>
                                 </select>
                                 <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: questionTrendStartDate">
                                 <input type="date" class="form-control form-control-sm" style="width: auto;" data-bind="value: questionTrendEndDate">
-                                <button class="btn btn-sm btn-primary" data-bind="click: function() { questionTrendTab() === 'groups' ? loadQuestionGroupTrend() : loadQuestionTrend(); }" title="Filtrele">
+                                <button class="btn btn-sm btn-primary" data-bind="click: function() { questionTrendTab() === 'groups' ? loadQuestionGroupTrend() : loadQuestionTrend(); }" title="@Html.T("Common.Filter", "Filtrele")">
                                     <i class="bi bi-filter"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { exportChartToPdf('questionTrendCard', 'Soru_Trendi'); }" title="PDF İndir">
+                                <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { exportChartToPdf('questionTrendCard', 'Soru_Trendi'); }" title="@Html.T("Common.DownloadPdf", "PDF İndir")">
                                     <i class="bi bi-file-earmark-pdf"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-success" data-bind="click: function() { exportChartToExcel('question-trend', 'questionTrendCard', 'Soru_Trendi'); }" title="Excel İndir">
+                                <button class="btn btn-sm btn-outline-success" data-bind="click: function() { exportChartToExcel('question-trend', 'questionTrendCard', 'Soru_Trendi'); }" title="@Html.T("Common.DownloadExcel", "Excel İndir")">
                                     <i class="bi bi-file-earmark-excel"></i>
                                 </button>
                                 <ul class="nav nav-pills nav-pills-sm mb-0">
