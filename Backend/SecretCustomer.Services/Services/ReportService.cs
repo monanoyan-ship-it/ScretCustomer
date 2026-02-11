@@ -139,9 +139,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
             // Eğer ikisi de seçiliyse filtre uygulanmaz (tümü gelir)
         }
 
@@ -341,9 +341,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         if (filter.CustomerIds?.Any() == true)
@@ -829,11 +829,11 @@ public class ReportService : IReportService
         // Project summaries - veritabanında group by
         var projectSummaries = await query
             .Where(e => e.Project != null)
-            .GroupBy(e => new { e.Project!.Id, e.Project.Name })
+            .GroupBy(e => new { e.Project!.Id, e.Project.Name, e.Project.Code })
             .Select(g => new ProjectSummaryReportDto
             {
                 ProjectId = g.Key.Id,
-                ProjectName = g.Key.Name,
+                ProjectName = g.Key.Code != null ? g.Key.Code + " - " + g.Key.Name : g.Key.Name,
                 EvaluationCount = g.Count(),
                 AverageScore = g.Where(e => e.ScorePercentage.HasValue).Any()
                     ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
@@ -1263,7 +1263,7 @@ public class ReportService : IReportService
                 QuestionText = a.Question?.Text ?? "",
                 GroupName = a.Question?.GroupName ?? "",
                 PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
-                ProjectName = a.Evaluation.Project?.Name ?? "",
+                ProjectName = a.Evaluation.Project != null ? (a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name) ?? "" : "",
                 CustomerName = a.Evaluation.Project?.Customer?.CompanyName,
                 OrganizationName = a.Evaluation.EvaluatedOrganization?.Name,
                 ChecklistName = a.Question?.Checklist?.Name,
@@ -2049,7 +2049,7 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 EvaluationDate = e.CompletedAt,
-                ProjectName = e.Project?.Name ?? "",
+                ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
                 ScorePercentage = e.ScorePercentage ?? 0,
@@ -2142,7 +2142,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
                     Year = e.CompletedAt!.Value.Year,
                     Month = e.CompletedAt.Value.Month,
@@ -2777,7 +2777,7 @@ public class ReportService : IReportService
                 PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
                     ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
                     : null,
-                ProjectName = a.Evaluation.Project?.Name ?? "",
+                ProjectName = a.Evaluation.Project != null ? (a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name) ?? "" : "",
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
                     : null,
@@ -2849,7 +2849,7 @@ public class ReportService : IReportService
             .Select(e => new EvaluationNoteDto
             {
                 EvaluationId = e.Id,
-                ProjectName = e.Project != null ? e.Project.Name : "",
+                ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : (e.EvaluatedPersonnel != null
@@ -3456,9 +3456,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         var evaluations = await query.Take(10000).ToListAsync();
@@ -3469,7 +3469,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.GroupName))
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
                     Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
                     GroupOrder = a.Question!.GroupName!.Split(' ').FirstOrDefault() ?? "",
@@ -3500,7 +3500,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null)
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
                     Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
                     GroupName = a.Question!.GroupName ?? "",
@@ -3709,9 +3709,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         // Customer filter (çoklu)
@@ -3976,9 +3976,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         var evaluations = await query.Take(50000).ToListAsync();
@@ -3988,7 +3988,7 @@ public class ReportService : IReportService
             .Select(e => new
             {
                 EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
-                ProjectName = e.AssignmentPeriod?.Name ?? e.Project?.Name ?? "",
+                ProjectName = e.AssignmentPeriod?.Name ?? (e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : ""),
                 ScorePercentage = e.ScorePercentage!.Value
             })
             .GroupBy(x => new
@@ -4144,9 +4144,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         var evaluations = await query.Take(50000).ToListAsync();
@@ -4205,7 +4205,7 @@ public class ReportService : IReportService
             .Where(e => e.ScorePercentage.HasValue)
             .Select(e => new
             {
-                ProjectName = e.Project?.Name ?? "",
+                ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 PersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                     : e.EvaluatedUnknownPersonnel ?? "-",
@@ -4295,7 +4295,7 @@ public class ReportService : IReportService
                     : (s.Answer.Evaluation.Project != null && s.Answer.Evaluation.Project.Customer != null
                         ? s.Answer.Evaluation.Project.Customer.CompanyName
                         : "-"),
-                ProjectName = s.Answer.Evaluation.Project != null ? s.Answer.Evaluation.Project.Name : "",
+                ProjectName = s.Answer.Evaluation.Project != null ? (s.Answer.Evaluation.Project.Code != null ? s.Answer.Evaluation.Project.Code + " - " + s.Answer.Evaluation.Project.Name : s.Answer.Evaluation.Project.Name) ?? "" : "",
                 EvalDate = s.Answer.Evaluation.CallDate ?? s.Answer.Evaluation.CompletedAt ?? s.Answer.Evaluation.CreatedAt,
                 Suggestion = s.SubCriteria!.Description
             })
@@ -4412,7 +4412,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && a.Question.MaxPoints > 0)
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     PersonnelName = e.EvaluatedCustomerPersonnel != null
                         ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                         : e.EvaluatedUnknownPersonnel ?? "-",
@@ -4515,7 +4515,7 @@ public class ReportService : IReportService
 
                     return new
                     {
-                        ProjectName = e.Project?.Name ?? "",
+                        ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                         GroupName = a.Question!.GroupName ?? "-",
                         QuestionText = a.Question.Text,
                         PersonnelName = e.EvaluatedCustomerPersonnel != null
@@ -4751,7 +4751,7 @@ public class ReportService : IReportService
         return new SurveyResultsDto
         {
             ProjectId = project.Id,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             CustomerName = project.Customer?.CompanyName,
             OrganizationName = project.Organization?.Name,
             TotalResponses = evaluations.Count,
@@ -5026,7 +5026,7 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 ProjectId = e.ProjectId,
-                ProjectName = e.Project.Name,
+                ProjectName = !string.IsNullOrEmpty(e.Project.Code) ? $"{e.Project.Code} - {e.Project.Name}" : e.Project.Name,
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 Score = e.ScorePercentage,
@@ -5324,7 +5324,7 @@ public class ReportService : IReportService
         return new SurveyProjectDetailDto
         {
             ProjectId = project.Id,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             CustomerName = project.Customer?.CompanyName,
             OrganizationName = project.Organization?.Name,
             TotalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
@@ -6192,7 +6192,7 @@ public class ReportService : IReportService
             return new SurveyQuestionScoreDetailResultDto
             {
                 ProjectId = projectId,
-                ProjectName = project.Name,
+                ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
                 TotalResponses = 0,
                 OverallAverageScore = null,
                 Questions = new List<SurveyQuestionScoreDetailDto>()
@@ -6319,7 +6319,7 @@ public class ReportService : IReportService
         return new SurveyQuestionScoreDetailResultDto
         {
             ProjectId = projectId,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluationIds.Count,
             OverallAverageScore = Math.Round(overallAverage, 1),
             Questions = questionDetails
@@ -6698,7 +6698,7 @@ public class ReportService : IReportService
                 .Where(a => !a.Question.IsDeleted && !string.IsNullOrEmpty(a.Question.GroupName))
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     PersonnelId = e.EvaluatedCustomerPersonnelId!.Value,
                     PersonnelName = e.EvaluatedCustomerPersonnel != null
                         ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}".Trim()
@@ -6961,7 +6961,7 @@ public class ReportService : IReportService
             {
                 EvaluationId = eval.Id,
                 ProjectId = eval.ProjectId,
-                ProjectName = eval.Project?.Name ?? "",
+                ProjectName = !string.IsNullOrEmpty(eval.Project?.Code) ? $"{eval.Project.Code} - {eval.Project.Name}" : (eval.Project?.Name ?? ""),
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 DominantType = dominantScore?.PersonalityType,
@@ -7035,7 +7035,7 @@ public class ReportService : IReportService
             ProjectId = evaluation.Project?.Id ?? 0,
             RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
             RespondentEmail = respondentEmail,
-            ProjectName = evaluation.Project?.Name ?? "",
+            ProjectName = !string.IsNullOrEmpty(evaluation.Project?.Code) ? $"{evaluation.Project.Code} - {evaluation.Project.Name}" : (evaluation.Project?.Name ?? ""),
             DominantType = dominantScore?.PersonalityType,
             DominantPercentage = dominantScore?.Percentage,
             CompletedAt = evaluation.CompletedAt,
@@ -7178,7 +7178,7 @@ public class ReportService : IReportService
             return new EnneagramDistributionResultDto
             {
                 ProjectId = projectId,
-                ProjectName = project.Name,
+                ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
                 TotalResponses = 0,
                 Distribution = new List<EnneagramDistributionDto>()
             };
@@ -7214,7 +7214,7 @@ public class ReportService : IReportService
         return new EnneagramDistributionResultDto
         {
             ProjectId = projectId,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluations.Count,
             Distribution = distribution
         };
@@ -7381,9 +7381,9 @@ public class ReportService : IReportService
             var hasOurs = filter.EvaluationSources.Contains("ours");
 
             if (hasInternal && !hasOurs)
-                query = query.Where(e => e.Project.AssignmentTypeId == AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
             else if (hasOurs && !hasInternal)
-                query = query.Where(e => e.Project.AssignmentTypeId != AssignmentTypes.Ids.CustomerPersonnel);
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
         }
 
         // Customer filter (çoklu)
@@ -7934,7 +7934,7 @@ public class ReportService : IReportService
             {
                 EvaluationId = e.Id,
                 EvaluationDate = e.CompletedAt,
-                ProjectName = e.Project?.Name ?? "",
+                ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null
@@ -8024,7 +8024,7 @@ public class ReportService : IReportService
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
-                    ProjectName = e.Project?.Name ?? "",
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
                     Year = e.CompletedAt!.Value.Year,
                     Month = e.CompletedAt.Value.Month,

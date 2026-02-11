@@ -92,7 +92,7 @@ public class DashboardService : IDashboardService
             .Select(e => new RepresentativeEvaluationDto
             {
                 Id = e.Id,
-                ProjectName = e.Project?.Name ?? "",
+                ProjectName = !string.IsNullOrEmpty(e.Project?.Code) ? $"{e.Project.Code} - {e.Project.Name}" : (e.Project?.Name ?? ""),
                 ChecklistName = e.Project?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 CompletedAt = e.CompletedAt
@@ -176,7 +176,7 @@ public class DashboardService : IDashboardService
             .Select(e => new RecentEvaluationDto
             {
                 Id = e.Id,
-                ProjectName = e.Project?.Name ?? "",
+                ProjectName = !string.IsNullOrEmpty(e.Project?.Code) ? $"{e.Project.Code} - {e.Project.Name}" : (e.Project?.Name ?? ""),
                 ChecklistName = e.Project?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
                 EvaluationDate = e.CompletedAt ?? e.CreatedAt,
@@ -454,6 +454,7 @@ public class DashboardService : IDashboardService
             {
                 p.Id,
                 p.Name,
+                p.Code,
                 p.ChecklistId
             })
             .ToListAsync();
@@ -483,7 +484,7 @@ public class DashboardService : IDashboardService
             return new ProjectTargetDto
             {
                 ProjectId = p.Id,
-                ProjectName = p.Name,
+                ProjectName = !string.IsNullOrEmpty(p.Code) ? $"{p.Code} - {p.Name}" : p.Name,
                 Target = target,
                 Completed = completed,
                 Percentage = target > 0 ? Math.Round((decimal)completed / target * 100, 1) : 0

@@ -38,7 +38,7 @@
                             <!-- Dynamic Filter Input -->
                             <!-- Project -->
                             <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: function(item) { return item.code ? item.name + ' (' + item.code + ')' : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                             </div>
                             <!-- Evaluator (text) -->
                             <div data-bind="visible: selectedFilterType() === 'evaluator'" class="mb-2">

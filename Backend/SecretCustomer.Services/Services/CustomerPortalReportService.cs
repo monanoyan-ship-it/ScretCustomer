@@ -161,7 +161,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             {
                 EvaluationId = e.Id,
                 ProjectId = e.ProjectId,
-                ProjectName = e.Project.Name,
+                ProjectName = !string.IsNullOrEmpty(e.Project.Code) ? $"{e.Project.Code} - {e.Project.Name}" : e.Project.Name,
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 Score = e.ScorePercentage,
@@ -297,7 +297,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         return new SurveyProjectDetailDto
         {
             ProjectId = project.Id,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             OrganizationName = project.Organization?.Name,
             TotalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
             TotalResponses = evaluations.Count,
@@ -419,7 +419,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             return new SurveyQuestionScoreDetailResultDto
             {
                 ProjectId = projectId,
-                ProjectName = project.Name,
+                ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
                 TotalResponses = 0,
                 OverallAverageScore = null,
                 Questions = new List<SurveyQuestionScoreDetailDto>()
@@ -540,7 +540,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         return new SurveyQuestionScoreDetailResultDto
         {
             ProjectId = projectId,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluationIds.Count,
             OverallAverageScore = Math.Round(overallAverage, 1),
             Questions = questionDetails
@@ -689,7 +689,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             {
                 EvaluationId = eval.Id,
                 ProjectId = eval.ProjectId,
-                ProjectName = eval.Project?.Name ?? "",
+                ProjectName = !string.IsNullOrEmpty(eval.Project?.Code) ? $"{eval.Project.Code} - {eval.Project.Name}" : (eval.Project?.Name ?? ""),
                 RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
                 RespondentEmail = respondentEmail,
                 DominantType = dominantScore?.PersonalityType,
@@ -764,7 +764,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         {
             EvaluationId = evaluation.Id,
             ProjectId = evaluation.Project?.Id ?? 0,
-            ProjectName = evaluation.Project?.Name ?? "",
+            ProjectName = !string.IsNullOrEmpty(evaluation.Project?.Code) ? $"{evaluation.Project.Code} - {evaluation.Project.Name}" : (evaluation.Project?.Name ?? ""),
             RespondentName = string.IsNullOrWhiteSpace(respondentName) ? null : respondentName,
             RespondentEmail = respondentEmail,
             DominantType = dominantScore?.PersonalityType,
@@ -806,7 +806,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             return new EnneagramDistributionResultDto
             {
                 ProjectId = projectId,
-                ProjectName = project.Name,
+                ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
                 TotalResponses = 0,
                 Distribution = new List<EnneagramDistributionDto>()
             };
@@ -841,7 +841,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         return new EnneagramDistributionResultDto
         {
             ProjectId = projectId,
-            ProjectName = project.Name,
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluations.Count,
             Distribution = distribution
         };

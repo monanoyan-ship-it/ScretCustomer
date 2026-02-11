@@ -209,7 +209,7 @@ function CustomerInternalEvaluationsViewModel() {
             filter.value = self.tempFilter.projectId();
             var project = self.projects().find(function(p) { return p.id == filter.value; });
             label = 'Proje';
-            displayValue = project ? (project.code ? project.name + ' (' + project.code + ')' : project.name) : filter.value;
+            displayValue = project ? (project.code ? project.code + ' - ' + project.name : project.name) : filter.value;
         } else if (type === 'evaluator') {
             filter.value = self.tempFilter.evaluatorName();
             label = 'Dinleyen';
@@ -485,7 +485,7 @@ function CustomerInternalEvaluationsViewModel() {
 
             if (f.type === 'project') {
                 var project = self.projects().find(function(p) { return p.id == f.value; });
-                if (project) displayValue = project.code ? project.name + ' (' + project.code + ')' : project.name;
+                if (project) displayValue = project.code ? project.code + ' - ' + project.name : project.name;
             } else if (f.type === 'organization') {
                 var org = self.organizations().find(function(o) { return o.id == f.value; });
                 if (org) displayValue = org.name;

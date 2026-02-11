@@ -2768,7 +2768,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 ap.Name,
                 ap.StartDate,
                 ap.EndDate,
-                ProjectName = ap.Assignment.Project.Name
+                ProjectName = ap.Assignment.Project.Code != null ? ap.Assignment.Project.Code + " - " + ap.Assignment.Project.Name : ap.Assignment.Project.Name
             })
             .ToListAsync();
 
@@ -2862,7 +2862,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 e.YellowCardCount,
                 e.RedCardCount,
                 e.CallDate,
-                ProjectName = e.Project!.Name
+                ProjectName = e.Project!.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name
             })
             .ToListAsync();
 
@@ -3224,7 +3224,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var genelRaporAnswers = await genelRaporQuery
             .Select(a => new
             {
-                ProjectName = a.Evaluation.Project.Name,
+                ProjectName = a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name,
                 PersonnelId = a.Evaluation.EvaluatedCustomerPersonnelId,
                 PersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
                     ? a.Evaluation.EvaluatedCustomerPersonnel.FirstName + " " + a.Evaluation.EvaluatedCustomerPersonnel.LastName

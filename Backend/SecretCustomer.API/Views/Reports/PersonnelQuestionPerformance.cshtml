@@ -36,7 +36,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small mb-1">@Html.T("Common.Project", "Proje")</label>
-                    <select class="form-select form-select-sm" data-bind="value: selectedProjectId, options: filteredProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.AllProjects", "Tum Projeler")'"></select>
+                    <select class="form-select form-select-sm" data-bind="value: selectedProjectId, options: filteredProjects, optionsValue: 'id', optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsCaption: '@Html.T("Common.AllProjects", "Tum Projeler")'"></select>
                 </div>
                 <div class="col-md-3 d-flex align-items-end gap-1">
                     <button class="btn btn-primary btn-sm" data-bind="click: loadReport, disable: isLoading">

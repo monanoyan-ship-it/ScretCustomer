@@ -45,7 +45,7 @@ function PerformanceByPeriodViewModel() {
             filter.value = self.tempFilter.projectId();
             var project = self.projects().find(function(p) { return p.id == filter.value; });
             label = 'Proje';
-            displayValue = project ? project.name : filter.value;
+            displayValue = project ? (project.code ? project.code + ' - ' + project.name : project.name) : filter.value;
         } else if (type === 'organization') {
             filter.value = self.tempFilter.organizationId();
             var org = self.organizations().find(function(o) { return o.id == filter.value; });

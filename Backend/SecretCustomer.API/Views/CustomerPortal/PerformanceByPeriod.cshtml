@@ -57,7 +57,7 @@
                 <!-- ko if: selectedFilterType() === 'project' -->
                 <div class="col-md-4">
                     <label class="form-label">@Html.T("Common.Project", "Proje")</label>
-                    <select class="form-select" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.SelectProject", "Proje Seçin")'"></select>
+                    <select class="form-select" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsCaption: '@Html.T("Common.SelectProject", "Proje Seçin")'"></select>
                 </div>
                 <!-- /ko -->
 

@@ -113,7 +113,7 @@
                                 <div class="d-flex gap-1 align-items-center flex-wrap">
                                     <!-- ko if: panelType !== 'survey' && panelType !== 'enneagram' -->
                                     <select class="form-select form-select-sm" style="width: auto; min-width: 140px;"
-                                            data-bind="value: selectedProjectId, options: projects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
+                                            data-bind="value: selectedProjectId, options: projects, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
                                     <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: dateRange">
                                         <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
                                         <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>
@@ -329,7 +329,7 @@
                         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                             <h6 class="mb-0"><i class="bi bi-bar-chart-line me-2"></i>@Html.T("CustomerPortal.Dashboard.QuestionTrend", "Soru Bazlı Başarı Trendi")</h6>
                             <div class="d-flex gap-1 align-items-center flex-wrap">
-                                <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
+                                <select class="form-select form-select-sm" style="width: auto; min-width: 140px;" data-bind="value: questionTrendProjectId, options: questionTrendProjects, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'"></select>
                                 <select class="form-select form-select-sm" style="width: auto; min-width: 120px;" data-bind="value: questionTrendDateRange">
                                     <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
                                     <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>

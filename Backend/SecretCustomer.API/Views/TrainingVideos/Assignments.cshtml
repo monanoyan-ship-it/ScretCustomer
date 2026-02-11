@@ -565,7 +565,7 @@
                                     <!-- Proje -->
                                     <div class="mb-3">
                                         <label class="form-label">@Html.T("Common.Project", "Proje")</label>
-                                        <select class="form-select" data-bind="value: formProjectId, options: filteredProjects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.AllProjects", "Tum projeler...")'"></select>
+                                        <select class="form-select" data-bind="value: formProjectId, options: filteredProjects, optionsValue: 'id', optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsCaption: '@Html.T("Common.AllProjects", "Tum projeler...")'"></select>
                                         <small class="text-muted" data-bind="visible: filteredProjects().length > 0">
                                             @Html.T("Training.InVideoScopePrefix", "Video kapsamindaki") <strong data-bind="text: filteredProjects().length"></strong> @Html.T("Common.Project", "proje")
                                         </small>

@@ -131,7 +131,9 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Project != null ? e.Project.Name : null,
+                ProjectName = e.Project != null
+                    ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                    : null,
                 ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
                 ScoringMethod = e.Project != null && e.Project.Checklist != null
                     ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
@@ -187,7 +189,9 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Project != null ? e.Project.Name : null,
+                ProjectName = e.Project != null
+                    ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                    : null,
                 ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
                 ScoringMethod = e.Project != null && e.Project.Checklist != null
                     ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
@@ -244,7 +248,9 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Project != null ? e.Project.Name : null,
+                ProjectName = e.Project != null
+                    ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                    : null,
                 ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
                 ScoringMethod = e.Project != null && e.Project.Checklist != null
                     ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
@@ -299,7 +305,9 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Project != null ? e.Project.Name : null,
+                ProjectName = e.Project != null
+                    ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                    : null,
                 ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
                 ScoringMethod = e.Project != null && e.Project.Checklist != null
                     ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
@@ -352,7 +360,9 @@ public class EvaluationService : IEvaluationService
                 FormOpenedAt = e.FormOpenedAt,
                 ControlDate = e.ControlDate,
                 ControlTime = e.ControlTime,
-                ProjectName = e.Project != null ? e.Project.Name : null,
+                ProjectName = e.Project != null
+                    ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                    : null,
                 ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
                 ScoringMethod = e.Project != null && e.Project.Checklist != null
                     ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
@@ -546,7 +556,7 @@ public class EvaluationService : IEvaluationService
             AssignmentId = assignmentId,
             EvaluationId = null, // Yeni evaluation oluşturulacak
             Status = "New",
-            ProjectName = project.Name ?? "",
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : (project.Name ?? ""),
             CustomerName = project.Customer?.CompanyName,
             ChecklistId = project.ChecklistId,
             ChecklistName = project.Checklist?.Name ?? "",
@@ -624,7 +634,7 @@ public class EvaluationService : IEvaluationService
             ProjectId = project.Id,
             EvaluationId = evaluation.Id,
             Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
-            ProjectName = project.Name ?? "",
+            ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : (project.Name ?? ""),
             CustomerName = project.Customer?.CompanyName,
             ChecklistId = project.ChecklistId,
             ChecklistName = project.Checklist?.Name ?? "",
@@ -1489,7 +1499,7 @@ public class EvaluationService : IEvaluationService
             FormOpenedAt = evaluation.FormOpenedAt,
             ControlDate = evaluation.ControlDate,
             ControlTime = evaluation.ControlTime,
-            ProjectName = evaluation.Project?.Name,
+            ProjectName = !string.IsNullOrEmpty(evaluation.Project?.Code) ? $"{evaluation.Project.Code} - {evaluation.Project.Name}" : evaluation.Project?.Name,
             ChecklistName = evaluation.Project?.Checklist?.Name,
             ScoringMethod = evaluation.Project?.Checklist != null
                 ? ScoringMethods.GetById(evaluation.Project.Checklist.ScoringMethodId)?.SystemName

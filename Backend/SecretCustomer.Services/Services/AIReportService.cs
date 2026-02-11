@@ -204,7 +204,7 @@ public class AIReportService : IAIReportService
             .Select(e => new EvaluationData
             {
                 EvaluationId = e.Id,
-                ProjectName = e.Project.Name,
+                ProjectName = e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name,
                 PersonnelId = e.EvaluatedCustomerPersonnelId,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FullName : null,
                 CompletedAt = e.CompletedAt,

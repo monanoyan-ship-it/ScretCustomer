@@ -328,7 +328,7 @@ function AssignmentsViewModel() {
                 if (!project) return;
                 filter.label = T('Project.Title', 'Proje');
                 filter.value = projectId;
-                filter.displayValue = project.name;
+                filter.displayValue = project.code ? project.code + ' - ' + project.name : project.name;
                 self.tempFilter.projectId('');
                 break;
             case 'status':

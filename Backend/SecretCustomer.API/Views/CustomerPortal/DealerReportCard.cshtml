@@ -117,7 +117,7 @@
                                     </div>
 
                                     <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                                        <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                                     </div>
 
                                     <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">

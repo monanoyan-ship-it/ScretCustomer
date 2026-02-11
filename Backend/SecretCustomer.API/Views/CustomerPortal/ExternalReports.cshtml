@@ -35,7 +35,7 @@
 
                             <!-- Project Filter -->
                             <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.SelectProject", "Proje seçin...")'"></select>
+                                <select class="form-select form-select-sm" data-bind="options: projects, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.SelectProject", "Proje seçin...")'"></select>
                             </div>
 
                             <!-- Organization Filter -->

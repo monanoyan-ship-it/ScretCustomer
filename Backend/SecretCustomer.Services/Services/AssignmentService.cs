@@ -900,7 +900,7 @@ public class AssignmentService : IAssignmentService
         return projects.Select(p => new ProjectAssignmentSummaryDto
         {
             ProjectId = p.Id,
-            ProjectName = p.Name,
+            ProjectName = !string.IsNullOrEmpty(p.Code) ? $"{p.Code} - {p.Name}" : p.Name,
             TotalAssignments = p.Assignments.Count,
             CompletedAssignments = p.Assignments.Count(a => a.IsCompleted),
             PendingAssignments = p.Assignments.Count(a => !a.IsCompleted),

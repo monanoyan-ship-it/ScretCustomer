@@ -1228,7 +1228,7 @@ public class TrainingVideoService : ITrainingVideoService
             InProgressParticipants = inProgress,
             CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
             SourceProjectId = assignment.SourceProjectId,
-            SourceProjectName = assignment.SourceProject?.Name,
+            SourceProjectName = !string.IsNullOrEmpty(assignment.SourceProject?.Code) ? $"{assignment.SourceProject.Code} - {assignment.SourceProject.Name}" : assignment.SourceProject?.Name,
             ScoreThreshold = assignment.ScoreThreshold,
             SourceStartDate = assignment.SourceStartDate,
             SourceEndDate = assignment.SourceEndDate,

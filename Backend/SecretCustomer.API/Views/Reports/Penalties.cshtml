@@ -49,7 +49,7 @@
                         </div>
                         <!-- Project -->
                         <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                            <select class="form-select form-select-sm" data-bind="options: filteredProjectsForFilter, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
+                            <select class="form-select form-select-sm" data-bind="options: filteredProjectsForFilter, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
                         </div>
                         <!-- Checklist -->
                         <div data-bind="visible: selectedFilterType() === 'checklist'" class="mb-2">

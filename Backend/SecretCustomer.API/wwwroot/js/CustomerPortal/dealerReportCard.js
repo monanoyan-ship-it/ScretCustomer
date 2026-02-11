@@ -141,7 +141,7 @@ function CustomerDealerReportCardViewModel() {
                     return;
                 }
                 filter.value = projectId;
-                filter.displayValue = project.name;
+                filter.displayValue = project.code ? project.code + ' - ' + project.name : project.name;
                 self.tempFilter.projectId(null);
                 break;
 

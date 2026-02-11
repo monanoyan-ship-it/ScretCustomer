@@ -134,7 +134,7 @@ function InternalAssignmentsViewModel() {
                 if (!projectId) return;
                 var project = self.projects().find(function(p) { return String(p.id) === String(projectId); });
                 filter.value = projectId;
-                filter.displayValue = project ? project.name : projectId;
+                filter.displayValue = project ? (project.code ? project.code + ' - ' + project.name : project.name) : projectId;
                 self.tempFilter.projectId(null);
                 break;
 

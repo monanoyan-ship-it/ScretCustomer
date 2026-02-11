@@ -304,7 +304,7 @@ function ListeningsViewModel() {
                 var project = self.allProjects().find(function(p) { return p.id === projectId; });
                 if (!project) return;
                 filter.value = projectId;
-                filter.displayValue = project.name;
+                filter.displayValue = project.code ? project.code + ' - ' + project.name : project.name;
                 self.tempFilter.projectId(null);
                 break;
 

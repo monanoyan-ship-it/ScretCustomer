@@ -51,7 +51,7 @@
                         </div>
                         <!-- Project -->
                         <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
-                            <select class="form-select form-select-sm" data-bind="options: projectsForFilter, optionsText: 'name', optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                            <select class="form-select form-select-sm" data-bind="options: projectsForFilter, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                         </div>
                         <!-- Project Type -->
                         <div data-bind="visible: selectedFilterType() === 'projectType'" class="mb-2">

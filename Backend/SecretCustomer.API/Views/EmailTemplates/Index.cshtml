@@ -163,7 +163,7 @@
                     <div data-bind="visible: useRealData">
                         <div class="mb-3">
                             <label class="form-label">@Html.T("Common.Project", "Proje") <span class="text-danger">*</span></label>
-                            <select class="form-select" data-bind="value: selectedProjectId, options: testProjects, optionsText: function(p) { return p.name + (p.customerName ? ' (' + p.customerName + ')' : ''); }, optionsValue: 'id', optionsCaption: '@Html.T("EmailTemplate.SelectProject", "Proje seçin...")'"></select>
+                            <select class="form-select" data-bind="value: selectedProjectId, options: testProjects, optionsText: function(p) { return (p.code ? p.code + ' - ' : '') + p.name + (p.customerName ? ' (' + p.customerName + ')' : ''); }, optionsValue: 'id', optionsCaption: '@Html.T("EmailTemplate.SelectProject", "Proje seçin...")'"></select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">@Html.T("Common.Personnel", "Personel") <span class="text-danger">*</span></label>
