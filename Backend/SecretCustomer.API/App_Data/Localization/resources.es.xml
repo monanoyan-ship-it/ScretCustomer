@@ -8996,6 +8996,9 @@
   <LocaleResource Name="Customer.SendToPersonnel">
     <Value>También enviar al correo del personal</Value>
   </LocaleResource>
+  <LocaleResource Name="Customer.SendToSupervisor">
+    <Value>También enviar al líder del equipo</Value>
+  </LocaleResource>
   <LocaleResource Name="Customer.TokenExpirationDays">
     <Value>Duración del Enlace (días)</Value>
   </LocaleResource>

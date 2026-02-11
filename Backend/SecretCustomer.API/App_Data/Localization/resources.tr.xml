@@ -9002,6 +9002,9 @@
   <LocaleResource Name="Customer.SendToPersonnel">
     <Value>Personelin kendi e-postasına da gönder</Value>
   </LocaleResource>
+  <LocaleResource Name="Customer.SendToSupervisor">
+    <Value>Personelin takım liderine de gönder</Value>
+  </LocaleResource>
   <LocaleResource Name="Customer.TokenExpirationDays">
     <Value>Link Süresi (gün)</Value>
   </LocaleResource>

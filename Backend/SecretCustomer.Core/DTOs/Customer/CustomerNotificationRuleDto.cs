@@ -9,6 +9,7 @@ public class CustomerNotificationRuleDto
     public int? DayOfMonth { get; set; }
     public string? Emails { get; set; }
     public bool SendToPersonnel { get; set; }
+    public bool SendToSupervisor { get; set; }
     public int? EmailTemplateId { get; set; }
     public string? EmailTemplateName { get; set; }
     public int TokenExpirationDays { get; set; }
@@ -23,6 +24,7 @@ public class CreateCustomerNotificationRuleDto
     public int? DayOfMonth { get; set; }
     public string? Emails { get; set; }
     public bool SendToPersonnel { get; set; }
+    public bool SendToSupervisor { get; set; }
     public int? EmailTemplateId { get; set; }
     public int TokenExpirationDays { get; set; } = 30;
     public bool IsActive { get; set; } = true;
@@ -36,6 +38,7 @@ public class UpdateCustomerNotificationRuleDto
     public int? DayOfMonth { get; set; }
     public string? Emails { get; set; }
     public bool SendToPersonnel { get; set; }
+    public bool SendToSupervisor { get; set; }
     public int? EmailTemplateId { get; set; }
     public int TokenExpirationDays { get; set; } = 30;
     public bool IsActive { get; set; }

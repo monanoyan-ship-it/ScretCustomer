@@ -264,6 +264,7 @@ public class CustomerService : ICustomerService
                     DayOfMonth = ruleDto.DayOfMonth,
                     Emails = ruleDto.Emails,
                     SendToPersonnel = ruleDto.SendToPersonnel,
+                    SendToSupervisor = ruleDto.SendToSupervisor,
                     EmailTemplateId = ruleDto.EmailTemplateId,
                     TokenExpirationDays = ruleDto.TokenExpirationDays,
                     IsActive = ruleDto.IsActive,
@@ -345,6 +346,7 @@ public class CustomerService : ICustomerService
                     existing.DayOfMonth = ruleDto.DayOfMonth;
                     existing.Emails = ruleDto.Emails;
                     existing.SendToPersonnel = ruleDto.SendToPersonnel;
+                    existing.SendToSupervisor = ruleDto.SendToSupervisor;
                     existing.EmailTemplateId = ruleDto.EmailTemplateId;
                     existing.TokenExpirationDays = ruleDto.TokenExpirationDays;
                     existing.IsActive = ruleDto.IsActive;
@@ -362,6 +364,7 @@ public class CustomerService : ICustomerService
                     DayOfMonth = ruleDto.DayOfMonth,
                     Emails = ruleDto.Emails,
                     SendToPersonnel = ruleDto.SendToPersonnel,
+                    SendToSupervisor = ruleDto.SendToSupervisor,
                     EmailTemplateId = ruleDto.EmailTemplateId,
                     TokenExpirationDays = ruleDto.TokenExpirationDays,
                     IsActive = ruleDto.IsActive,
@@ -425,6 +428,7 @@ public class CustomerService : ICustomerService
                 DayOfMonth = r.DayOfMonth,
                 Emails = r.Emails,
                 SendToPersonnel = r.SendToPersonnel,
+                SendToSupervisor = r.SendToSupervisor,
                 EmailTemplateId = r.EmailTemplateId,
                 EmailTemplateName = r.EmailTemplate?.Name,
                 TokenExpirationDays = r.TokenExpirationDays,

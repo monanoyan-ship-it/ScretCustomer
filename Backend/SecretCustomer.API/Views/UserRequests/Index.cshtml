@@ -279,6 +279,11 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.Organization", "Organizasyon")</label>
+                        <select class="form-select" data-bind="options: $parent.availableOrganizations, optionsText: 'name', optionsValue: 'id', value: $parent.approveOrganizationId, optionsCaption: '@Html.T("Common.SelectOptional", "Seciniz (opsiyonel)")'"></select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">@Html.T("CustomerPersonnel.Supervisor", "Supervizor")</label>
                         <select class="form-select" data-bind="options: $parent.availableSupervisors, optionsText: 'name', optionsValue: 'id', value: $parent.approveSupervisorId, optionsCaption: '@Html.T("Common.SelectOptional", "Seciniz (opsiyonel)")'"></select>
                     </div>

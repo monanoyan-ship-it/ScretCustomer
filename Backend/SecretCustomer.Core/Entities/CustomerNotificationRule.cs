@@ -39,6 +39,12 @@ public class CustomerNotificationRule : BaseEntity
     public bool SendToPersonnel { get; set; }
 
     /// <summary>
+    /// true ise değerlendirilen personelin takım liderinin (süpervizörün) e-posta adresine de gönderilir
+    /// (Sadece "Her Kayıtta" sıklığında)
+    /// </summary>
+    public bool SendToSupervisor { get; set; }
+
+    /// <summary>
     /// Bu kural için kullanılacak e-posta şablonu
     /// </summary>
     public int? EmailTemplateId { get; set; }

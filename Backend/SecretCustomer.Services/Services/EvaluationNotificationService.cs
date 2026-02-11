@@ -129,9 +129,27 @@ public class EvaluationNotificationService : IEvaluationNotificationService
                             recipients.Add(personnelEmail);
                     }
 
+                    // Takım liderine (süpervizöre) gönder
+                    if (rule.SendToSupervisor && evaluation.EvaluatedCustomerPersonnelId != null)
+                    {
+                        var supervisorEmails = await _context.CustomerPersonnelOrganizations
+                            .AsNoTracking()
+                            .Where(cpo => cpo.CustomerPersonnelId == evaluation.EvaluatedCustomerPersonnelId
+                                       && cpo.SupervisorId != null)
+                            .Select(cpo => cpo.Supervisor!.Email)
+                            .Distinct()
+                            .ToListAsync();
+
+                        foreach (var email in supervisorEmails.Where(e => !string.IsNullOrWhiteSpace(e)))
+                        {
+                            if (!recipients.Contains(email.Trim(), StringComparer.OrdinalIgnoreCase))
+                                recipients.Add(email.Trim());
+                        }
+                    }
+
                     if (!recipients.Any())
                     {
-                        await _auditLog.LogWarningAsync($"Kural #{rule.Id} için alıcı bulunamadı (Emails boş, SendToPersonnel={rule.SendToPersonnel})", LogCategory);
+                        await _auditLog.LogWarningAsync($"Kural #{rule.Id} için alıcı bulunamadı (Emails boş, SendToPersonnel={rule.SendToPersonnel}, SendToSupervisor={rule.SendToSupervisor})", LogCategory);
                         continue;
                     }
 

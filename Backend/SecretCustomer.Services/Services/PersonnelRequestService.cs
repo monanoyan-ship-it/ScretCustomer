@@ -157,11 +157,14 @@ public class PersonnelRequestService : IPersonnelRequestService
         _context.CustomerPersonnel.Add(personnel);
         await _context.SaveChangesAsync();
 
+        // Organizasyon: DTO'dan gelirse override et, yoksa request'tekini kullan
+        var organizationId = dto.CustomerOrganizationId ?? request.CustomerOrganizationId;
+
         // Junction table'a organizasyon ataması ekle
         var orgAssignment = new CustomerPersonnelOrganization
         {
             CustomerPersonnelId = personnel.Id,
-            CustomerOrganizationId = request.CustomerOrganizationId,
+            CustomerOrganizationId = organizationId,
             SupervisorId = dto.SupervisorId,
             AssignedAt = DateTime.UtcNow,
             Notes = $"PersonnelRequest #{request.Id} onayıyla oluşturuldu",
@@ -189,7 +192,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         var fullName = $"{request.FirstName} {request.LastName}";
         var evaluationsToUpdate = await _context.Evaluations
             .Include(e => e.Project)
-            .Where(e => e.Id != request.EvaluationId && // İlgili değerlendirmeyi zaten güncelledik
+            .Where(e => e.Id != request.EvaluationId &&
                        e.Project.CustomerId == request.CustomerId &&
                        e.EvaluatedUnknownPersonnel != null &&
                        (e.EvaluatedUnknownPersonnel.ToLower() == fullName.ToLower() ||
@@ -199,15 +202,66 @@ public class PersonnelRequestService : IPersonnelRequestService
         foreach (var evaluation in evaluationsToUpdate)
         {
             evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
-            evaluation.EvaluatedUnknownPersonnel = null; // Artık tanımlı personel
+            evaluation.EvaluatedUnknownPersonnel = null;
         }
 
         _logger.LogInformation("Updated {Count} additional evaluations with new personnel ID {PersonnelId}",
             evaluationsToUpdate.Count, personnel.Id);
 
+        // 5. Aynı ad-soyad + aynı firma altındaki DİĞER bekleyen personel taleplerini de onayla
+        var otherPendingRequests = await _context.PersonnelRequests
+            .Include(pr => pr.Evaluation)
+            .Where(pr => pr.Id != request.Id &&
+                        pr.CustomerId == request.CustomerId &&
+                        pr.Status == ApprovalStatuses.Ids.Pending &&
+                        !pr.IsDeleted &&
+                        pr.FirstName.ToLower() == request.FirstName.ToLower() &&
+                        pr.LastName.ToLower() == request.LastName.ToLower())
+            .ToListAsync();
+
+        foreach (var otherRequest in otherPendingRequests)
+        {
+            otherRequest.Status = ApprovalStatuses.Ids.Approved;
+            otherRequest.ReviewedByUserId = reviewedByUserId;
+            otherRequest.ReviewedAt = DateTime.UtcNow;
+            otherRequest.CreatedPersonnelId = personnel.Id;
+
+            // Bu talebin değerlendirmesine de personeli ata
+            if (otherRequest.Evaluation != null)
+            {
+                otherRequest.Evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
+                otherRequest.Evaluation.EvaluatedUnknownPersonnel = null;
+            }
+
+            // Farklı organizasyondaysa, o organizasyon için de atama ekle (zaten yoksa)
+            if (otherRequest.CustomerOrganizationId != organizationId)
+            {
+                var existingAssignment = await _context.CustomerPersonnelOrganizations
+                    .AnyAsync(cpo => cpo.CustomerPersonnelId == personnel.Id &&
+                                    cpo.CustomerOrganizationId == otherRequest.CustomerOrganizationId);
+                if (!existingAssignment)
+                {
+                    _context.CustomerPersonnelOrganizations.Add(new CustomerPersonnelOrganization
+                    {
+                        CustomerPersonnelId = personnel.Id,
+                        CustomerOrganizationId = otherRequest.CustomerOrganizationId,
+                        AssignedAt = DateTime.UtcNow,
+                        Notes = $"PersonnelRequest #{otherRequest.Id} toplu onayıyla oluşturuldu",
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+        }
+
+        if (otherPendingRequests.Any())
+        {
+            _logger.LogInformation("Auto-approved {Count} other pending requests for {FullName} (Customer: {CustomerId})",
+                otherPendingRequests.Count, fullName, request.CustomerId);
+        }
+
         await _context.SaveChangesAsync();
 
-        // 4. Talep eden kullanıcıya bildirim (SignalR push + email)
+        // 6. Talep eden kullanıcıya bildirim (SignalR push + email)
         await _notificationCreator.CreateAsync(
             request.RequestedByUserId,
             NotificationTypes.Ids.Success,
@@ -217,6 +271,24 @@ public class PersonnelRequestService : IPersonnelRequestService
             relatedEntityId: request.Id,
             relatedEntityType: "PersonnelRequest",
             senderUserId: reviewedByUserId);
+
+        // Toplu onaylanan taleplerin sahiplerine de bildirim gönder
+        var notifiedUserIds = new HashSet<int> { request.RequestedByUserId };
+        foreach (var otherRequest in otherPendingRequests)
+        {
+            if (notifiedUserIds.Add(otherRequest.RequestedByUserId))
+            {
+                await _notificationCreator.CreateAsync(
+                    otherRequest.RequestedByUserId,
+                    NotificationTypes.Ids.Success,
+                    "Personel Talebi Onaylandı",
+                    $"Personel talebiniz onaylandı: {otherRequest.FullName}",
+                    actionUrl: $"/Evaluations?id={otherRequest.EvaluationId}",
+                    relatedEntityId: otherRequest.Id,
+                    relatedEntityType: "PersonnelRequest",
+                    senderUserId: reviewedByUserId);
+            }
+        }
 
         _logger.LogInformation("Personnel request approved: {Id} - {FullName}, Created Personnel: {PersonnelId}",
             request.Id, request.FullName, personnel.Id);

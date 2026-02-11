@@ -54,6 +54,7 @@ public class ApprovePersonnelRequestDto
     public int Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string? Email { get; set; } // Varsayılan: username@temp.com
+    public int? CustomerOrganizationId { get; set; } // Belirtilirse request'teki organizasyonu override eder
     public int? SupervisorId { get; set; }
 }
 

@@ -9005,6 +9005,9 @@
   <LocaleResource Name="Customer.SendToPersonnel">
     <Value>Also send to personnel email</Value>
   </LocaleResource>
+  <LocaleResource Name="Customer.SendToSupervisor">
+    <Value>Also send to personnel's team leader</Value>
+  </LocaleResource>
   <LocaleResource Name="Customer.TokenExpirationDays">
     <Value>Link Duration (days)</Value>
   </LocaleResource>

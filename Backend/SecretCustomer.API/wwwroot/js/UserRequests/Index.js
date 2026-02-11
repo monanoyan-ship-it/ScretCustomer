@@ -55,6 +55,8 @@ function UserRequestsViewModel() {
     self.approvingRequest = ko.observable(null);
     self.approveUsername = ko.observable('');
     self.approveEmail = ko.observable('');
+    self.approveOrganizationId = ko.observable(null);
+    self.availableOrganizations = ko.observableArray([]);
     self.approveSupervisorId = ko.observable(null);
     self.availableSupervisors = ko.observableArray([]);
 
@@ -310,19 +312,40 @@ function UserRequestsViewModel() {
         self.approvingRequest(request);
         self.approveUsername('');
         self.approveEmail('');
+        self.approveOrganizationId(request.customerOrganizationId ? String(request.customerOrganizationId) : null);
+        self.availableOrganizations([]);
         self.approveSupervisorId(null);
         self.availableSupervisors([]);
 
+        // Load organizations for the customer
+        if (request.customerId) {
+            $.get('/api/customer-organizations/by-customer/' + request.customerId)
+                .done(function(orgs) {
+                    self.availableOrganizations(orgs || []);
+                });
+        }
+
         // Load supervisors for the organization
-        if (request.customerOrganizationId) {
-            $.get('/api/personnel-requests/supervisors/' + request.customerOrganizationId)
+        self.loadSupervisorsForOrg(request.customerOrganizationId);
+
+        self.isApproveModalOpen(true);
+    };
+
+    self.loadSupervisorsForOrg = function(orgId) {
+        self.approveSupervisorId(null);
+        self.availableSupervisors([]);
+        if (orgId) {
+            $.get('/api/personnel-requests/supervisors/' + orgId)
                 .done(function(supervisors) {
                     self.availableSupervisors(supervisors || []);
                 });
         }
-
-        self.isApproveModalOpen(true);
     };
+
+    // Organizasyon değişince süpervizörleri yeniden yükle
+    self.approveOrganizationId.subscribe(function(newOrgId) {
+        self.loadSupervisorsForOrg(newOrgId);
+    });
 
     self.closeApproveModal = function() {
         self.isApproveModalOpen(false);
@@ -343,6 +366,7 @@ function UserRequestsViewModel() {
             data: JSON.stringify({
                 username: self.approveUsername(),
                 email: self.approveEmail() || null,
+                customerOrganizationId: self.approveOrganizationId() ? parseInt(self.approveOrganizationId(), 10) : null,
                 supervisorId: self.approveSupervisorId() || null
             })
         })

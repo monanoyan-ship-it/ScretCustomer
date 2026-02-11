@@ -275,6 +275,7 @@ function CustomersViewModel() {
             dayOfMonth: ko.observable(rule && rule.dayOfMonth ? String(rule.dayOfMonth) : null),
             emails: ko.observable(rule ? (rule.emails || '') : ''),
             sendToPersonnel: ko.observable(rule ? rule.sendToPersonnel : false),
+            sendToSupervisor: ko.observable(rule ? rule.sendToSupervisor : false),
             emailTemplateId: ko.observable(rule && rule.emailTemplateId ? String(rule.emailTemplateId) : null),
             tokenExpirationDays: ko.observable(rule ? (rule.tokenExpirationDays || 30) : 30),
             isActive: ko.observable(rule ? rule.isActive : true)
@@ -526,6 +527,7 @@ function CustomersViewModel() {
                     dayOfMonth: ko.unwrap(rule.dayOfMonth) ? parseInt(ko.unwrap(rule.dayOfMonth), 10) : null,
                     emails: ko.unwrap(rule.emails) || null,
                     sendToPersonnel: ko.unwrap(rule.sendToPersonnel) || false,
+                    sendToSupervisor: ko.unwrap(rule.sendToSupervisor) || false,
                     emailTemplateId: ko.unwrap(rule.emailTemplateId) ? parseInt(ko.unwrap(rule.emailTemplateId), 10) : null,
                     tokenExpirationDays: parseInt(ko.unwrap(rule.tokenExpirationDays), 10) || 30,
                     isActive: ko.unwrap(rule.isActive)
