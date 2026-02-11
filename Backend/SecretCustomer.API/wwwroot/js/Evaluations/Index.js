@@ -411,6 +411,7 @@ function EvaluationsViewModel() {
     self.duration = ko.observable('');
     self.controlTime = ko.observable('');
     self.descriptions = ko.observableArray([ko.observable('')]); // Her eleman observable
+    self.pastDescriptions = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
     self.evaluatedPersonnelId = ko.observable(null);
@@ -491,6 +492,15 @@ function EvaluationsViewModel() {
             self.descriptions.splice(index, 1);
         }
     };
+
+    // Geçmiş açıklamalar (autocomplete)
+    self.loadPastDescriptions = function() {
+        fetch('/api/evaluations/past-descriptions', { credentials: 'include' })
+            .then(function(r) { return r.ok ? r.json() : []; })
+            .then(function(data) { self.pastDescriptions(data); })
+            .catch(function() { /* ignore */ });
+    };
+    self.loadPastDescriptions();
 
     // Dönem seçimi
     self.selectedPeriodId = ko.observable(null);

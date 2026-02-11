@@ -37,6 +37,14 @@ public class EvaluationsApiController : BaseApiController
         _context = context;
     }
 
+    [HttpGet("past-descriptions")]
+    [Authorize]
+    public async Task<IActionResult> GetPastDescriptions()
+    {
+        var descriptions = await _evaluationService.GetPastDescriptionsAsync();
+        return Ok(descriptions);
+    }
+
     /// <summary>
     /// Tum degerlendirmeleri getirir (yonetici) - Çoklu filtre desteği
     /// </summary>

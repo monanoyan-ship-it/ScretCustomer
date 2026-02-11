@@ -151,6 +151,11 @@ public class EvaluationDetailReportDto : EvaluationReportDto
     /// Genel notlar
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Açıklamalar (DescriptionsJson'dan deserialize)
+    /// </summary>
+    public List<string>? Descriptions { get; set; }
 }
 
 /// <summary>

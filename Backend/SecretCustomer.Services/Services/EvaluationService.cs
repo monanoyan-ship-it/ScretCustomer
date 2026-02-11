@@ -1729,4 +1729,34 @@ public class EvaluationService : IEvaluationService
 
         return (true, $"Puan yeniden hesaplandı: %{result.Percentage:F1}");
     }
+
+    public async Task<List<string>> GetPastDescriptionsAsync()
+    {
+        var recentDescriptions = await _context.Evaluations
+            .AsNoTracking()
+            .Where(e => !e.IsDeleted && e.DescriptionsJson != null && e.DescriptionsJson != "")
+            .OrderByDescending(e => e.CreatedAt)
+            .Take(500)
+            .Select(e => e.DescriptionsJson!)
+            .ToListAsync();
+
+        var allDescriptions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var json in recentDescriptions)
+        {
+            try
+            {
+                var descriptions = System.Text.Json.JsonSerializer.Deserialize<List<string>>(json);
+                if (descriptions != null)
+                {
+                    foreach (var d in descriptions.Where(d => !string.IsNullOrWhiteSpace(d)))
+                    {
+                        allDescriptions.Add(d.Trim());
+                    }
+                }
+            }
+            catch { /* JSON parse hatası - devam et */ }
+        }
+
+        return allDescriptions.OrderBy(d => d).ToList();
+    }
 }

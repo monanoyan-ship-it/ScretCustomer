@@ -549,7 +549,10 @@ public class ReportService : IReportService
             EvaluationComment = evaluation.EvaluationComment,
 
             // Genel notlar (şimdilik null - entity'de yoksa)
-            Notes = null
+            Notes = null,
+
+            // Açıklamalar (DescriptionsJson'dan)
+            Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson)
         };
 
         return dto;
@@ -716,6 +719,19 @@ public class ReportService : IReportService
         row++;
         worksheet.Cell(row, 1).Value = detail.Comment ?? "-";
         worksheet.Range(row, 1, row, 6).Merge();
+
+        // ===== AÇIKLAMALAR =====
+        if (detail.Descriptions?.Any() == true)
+        {
+            row += 2; // Boş satır
+            worksheet.Cell(row, 1).Value = "Açıklamalar";
+            worksheet.Cell(row, 1).Style.Font.Bold = true;
+            worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+            row++;
+            worksheet.Cell(row, 1).Value = string.Join("\n", detail.Descriptions);
+            worksheet.Range(row, 1, row, 6).Merge();
+            worksheet.Cell(row, 1).Style.Alignment.WrapText = true;
+        }
 
         // Sütun genişlikleri
         worksheet.Column(1).Width = 25; // Grup
@@ -1716,6 +1732,18 @@ public class ReportService : IReportService
         }
 
         return parts.Count > 0 ? string.Join("\n", parts) : null;
+    }
+
+    private static List<string>? DeserializeDescriptions(string? descriptionsJson)
+    {
+        if (string.IsNullOrWhiteSpace(descriptionsJson))
+            return null;
+        try
+        {
+            var descriptions = System.Text.Json.JsonSerializer.Deserialize<List<string>>(descriptionsJson);
+            return descriptions?.Where(d => !string.IsNullOrWhiteSpace(d)).ToList();
+        }
+        catch { return null; }
     }
 
     // ===== TEMSİLCİ KARNESİ (Video 4) =====
@@ -7668,6 +7696,19 @@ public class ReportService : IReportService
         row++;
         worksheet.Cell(row, 1).Value = detail.Comment ?? "-";
         worksheet.Range(row, 1, row, 6).Merge();
+
+        // ===== AÇIKLAMALAR =====
+        if (detail.Descriptions?.Any() == true)
+        {
+            row += 2; // Boş satır
+            worksheet.Cell(row, 1).Value = "Açıklamalar";
+            worksheet.Cell(row, 1).Style.Font.Bold = true;
+            worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+            row++;
+            worksheet.Cell(row, 1).Value = string.Join("\n", detail.Descriptions);
+            worksheet.Range(row, 1, row, 6).Merge();
+            worksheet.Cell(row, 1).Style.Alignment.WrapText = true;
+        }
 
         // Sütun genişlikleri
         worksheet.Column(1).Width = 25; // Grup

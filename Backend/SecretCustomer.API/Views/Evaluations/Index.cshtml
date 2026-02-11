@@ -1070,9 +1070,12 @@
                                                 <!-- Açıklamalar -->
                                                 <div class="col-md-8">
                                                     <label class="form-label">@Html.T("Evaluation.Descriptions", "Açıklamalar")</label>
+                                                    <datalist id="descriptionSuggestions" data-bind="foreach: pastDescriptions">
+                                                        <option data-bind="value: $data"></option>
+                                                    </datalist>
                                                     <!-- ko foreach: descriptions -->
                                                     <div class="input-group mb-1">
-                                                        <input type="text" class="form-control" data-bind="textInput: $data" placeholder="@Html.T("Evaluation.DescriptionPlaceholder", "Açıklama girin...")">
+                                                        <input type="text" class="form-control" list="descriptionSuggestions" data-bind="textInput: $data" placeholder="@Html.T("Evaluation.DescriptionPlaceholder", "Açıklama girin...")" autocomplete="off">
                                                         <!-- ko if: $index() === $parent.descriptions().length - 1 -->
                                                         <button type="button" class="btn btn-outline-success" data-bind="click: $parent.addDescription" title="@Html.T("Common.Add", "Ekle")">
                                                             <i class="bi bi-plus"></i>

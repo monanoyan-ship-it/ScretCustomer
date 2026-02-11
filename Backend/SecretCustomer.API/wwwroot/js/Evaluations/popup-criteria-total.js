@@ -25,6 +25,7 @@ var EvaluationPopupViewModel = function() {
 
     // Açıklamalar
     self.descriptions = ko.observableArray([ko.observable('')]);
+    self.pastDescriptions = ko.observableArray([]);
 
     self.addDescription = function() {
         self.descriptions.push(ko.observable(''));
@@ -35,6 +36,15 @@ var EvaluationPopupViewModel = function() {
             self.descriptions.splice(index, 1);
         }
     };
+
+    // Geçmiş açıklamalar (autocomplete)
+    self.loadPastDescriptions = function() {
+        fetch('/api/evaluations/past-descriptions', { credentials: 'include' })
+            .then(function(r) { return r.ok ? r.json() : []; })
+            .then(function(data) { self.pastDescriptions(data); })
+            .catch(function() { /* ignore */ });
+    };
+    self.loadPastDescriptions();
 
     // CallId kontrolü
     self.callIdExists = ko.observable(false);

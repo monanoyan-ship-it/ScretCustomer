@@ -82,6 +82,11 @@ public interface IEvaluationService
     /// Eski bug nedeniyle 0 kalan puanları düzeltmek için kullanılır
     /// </summary>
     Task<(bool Success, string Message)> RecalculateScoreAsync(int evaluationId);
+
+    /// <summary>
+    /// Geçmiş değerlendirmelerden benzersiz açıklamaları getirir (autocomplete için)
+    /// </summary>
+    Task<List<string>> GetPastDescriptionsAsync();
 }
 
 /// <summary>
