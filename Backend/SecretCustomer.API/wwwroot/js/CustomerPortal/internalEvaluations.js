@@ -652,13 +652,26 @@ function CustomerInternalEvaluationsViewModel() {
     // Export Reports
     self.buildExportFilter = function() {
         var params = self.buildQueryParams();
-        return {
-            projectId: params.projectId ? parseInt(params.projectId) : null,
-            organizationId: params.organizationId ? parseInt(params.organizationId) : null,
-            startDate: params.startDate || null,
-            endDate: params.endDate || null,
+        var filter = {
             evaluationSources: ['internal'] // İç dinlemeler
         };
+
+        // ProjectIds (çoğul array)
+        if (params.projectIds && params.projectIds.length > 0) {
+            filter.projectIds = params.projectIds.map(function(id) { return parseInt(id); });
+        }
+
+        // OrganizationIds (çoğul array)
+        if (params.organizationIds && params.organizationIds.length > 0) {
+            filter.organizationIds = params.organizationIds.map(function(id) { return parseInt(id); });
+        }
+
+        // DateRanges (DTO List<DateRangeFilter> formatında)
+        if (params.startDate || params.endDate) {
+            filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null }];
+        }
+
+        return filter;
     };
 
     self.getTimestamp = function() {
