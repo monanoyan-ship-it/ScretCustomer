@@ -13,15 +13,18 @@ public class PersonnelRequestService : IPersonnelRequestService
     private readonly ApplicationDbContext _context;
     private readonly ILogger<PersonnelRequestService> _logger;
     private readonly INotificationCreatorService _notificationCreator;
+    private readonly ILocalizationService _localizationService;
 
     public PersonnelRequestService(
         ApplicationDbContext context,
         ILogger<PersonnelRequestService> logger,
-        INotificationCreatorService notificationCreator)
+        INotificationCreatorService notificationCreator,
+        ILocalizationService localizationService)
     {
         _context = context;
         _logger = logger;
         _notificationCreator = notificationCreator;
+        _localizationService = localizationService;
     }
 
     public async Task<(List<PersonnelRequestDto> Items, int TotalCount)> GetAllAsync(PersonnelRequestFilterDto filter)
@@ -110,8 +113,8 @@ public class PersonnelRequestService : IPersonnelRequestService
             await _notificationCreator.CreateBulkAsync(
                 adminIds,
                 NotificationTypes.Ids.Info,
-                "Yeni Personel Talebi",
-                $"Yeni personel talebi: {request.FullName}",
+                await _localizationService.GetResourceAsync("PersonnelRequest.New"),
+                $"{await _localizationService.GetResourceAsync("PersonnelRequest.New")}: {request.FullName}",
                 actionUrl: $"/UserRequests?tab=personnel&id={request.Id}",
                 relatedEntityId: request.Id,
                 relatedEntityType: "PersonnelRequest",
@@ -265,7 +268,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         await _notificationCreator.CreateAsync(
             request.RequestedByUserId,
             NotificationTypes.Ids.Success,
-            "Personel Talebi Onaylandı",
+            await _localizationService.GetResourceAsync("PersonnelRequest.Approved"),
             $"Personel talebiniz onaylandı: {request.FullName}",
             actionUrl: $"/Evaluations?id={request.EvaluationId}",
             relatedEntityId: request.Id,
@@ -281,7 +284,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 await _notificationCreator.CreateAsync(
                     otherRequest.RequestedByUserId,
                     NotificationTypes.Ids.Success,
-                    "Personel Talebi Onaylandı",
+                    await _localizationService.GetResourceAsync("PersonnelRequest.Approved"),
                     $"Personel talebiniz onaylandı: {otherRequest.FullName}",
                     actionUrl: $"/Evaluations?id={otherRequest.EvaluationId}",
                     relatedEntityId: otherRequest.Id,
@@ -367,7 +370,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         await _notificationCreator.CreateAsync(
             request.RequestedByUserId,
             NotificationTypes.Ids.Warning,
-            "Personel Talebi Reddedildi",
+            await _localizationService.GetResourceAsync("PersonnelRequest.Rejected"),
             notificationMessage,
             actionUrl: $"/Evaluations?id={request.EvaluationId}",
             relatedEntityId: request.Id,

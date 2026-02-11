@@ -1625,29 +1625,25 @@ public class EvaluationService : IEvaluationService
         _context.PersonnelRequests.Add(personnelRequest);
         await _context.SaveChangesAsync();
 
-        // Admin'lere bildirim gönder
-        var admins = await _context.Users
+        // Admin'lere bildirim gönder (NotificationCreatorService üzerinden - SignalR push + email)
+        var notificationCreator = _serviceProvider.GetRequiredService<INotificationCreatorService>();
+        var adminIds = await _context.Users
             .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
             .Select(u => u.Id)
             .ToListAsync();
 
-        foreach (var adminId in admins)
+        if (adminIds.Any())
         {
-            var notification = new Notification
-            {
-                RecipientUserId = adminId,
-                NotificationTypeId = NotificationTypes.Ids.Info,
-                ChannelId = NotificationChannels.Ids.InApp,
-                PriorityId = NotificationPriorities.Ids.Normal,
-                Title = "PersonnelRequest.New",
-                Message = $"Yeni personel talebi: {personnelRequest.FullName}",
-                ActionUrl = $"/UserRequests?tab=personnel&id={personnelRequest.Id}",
-                IsRead = false
-            };
-            _context.Notifications.Add(notification);
+            await notificationCreator.CreateBulkAsync(
+                adminIds,
+                NotificationTypes.Ids.Info,
+                await _localizationService.GetResourceAsync("PersonnelRequest.New"),
+                $"{await _localizationService.GetResourceAsync("PersonnelRequest.New")}: {personnelRequest.FullName}",
+                actionUrl: $"/UserRequests?tab=personnel&id={personnelRequest.Id}",
+                relatedEntityId: personnelRequest.Id,
+                relatedEntityType: "PersonnelRequest",
+                senderUserId: requestedByUserId);
         }
-
-        await _context.SaveChangesAsync();
         return null; // Başarılı, warning yok
     }
 

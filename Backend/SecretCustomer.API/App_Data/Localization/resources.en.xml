@@ -5212,6 +5212,15 @@
   <LocaleResource Name="Menu.UserRequests">
     <Value>User Requests</Value>
   </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.New">
+    <Value>New Personnel Request</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approved">
+    <Value>Personnel Request Approved</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Rejected">
+    <Value>Personnel Request Rejected</Value>
+  </LocaleResource>
   <LocaleResource Name="PersonnelRequest.Name">
     <Value>Name</Value>
   </LocaleResource>

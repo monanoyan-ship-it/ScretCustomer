@@ -5210,6 +5210,15 @@
   <LocaleResource Name="Menu.UserRequests">
     <Value>Kullanıcı Talepleri</Value>
   </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.New">
+    <Value>Yeni Personel Talebi</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approved">
+    <Value>Personel Talebi Onaylandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Rejected">
+    <Value>Personel Talebi Reddedildi</Value>
+  </LocaleResource>
   <LocaleResource Name="PersonnelRequest.Name">
     <Value>Ad Soyad</Value>
   </LocaleResource>

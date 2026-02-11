@@ -5074,6 +5074,15 @@
   <LocaleResource Name="Menu.UserRequests">
     <Value>Benutzeranfragen</Value>
   </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.New">
+    <Value>Neue Personalanfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Approved">
+    <Value>Personalanfrage genehmigt</Value>
+  </LocaleResource>
+  <LocaleResource Name="PersonnelRequest.Rejected">
+    <Value>Personalanfrage abgelehnt</Value>
+  </LocaleResource>
   <LocaleResource Name="PersonnelRequest.Name">
     <Value>Name</Value>
   </LocaleResource>
