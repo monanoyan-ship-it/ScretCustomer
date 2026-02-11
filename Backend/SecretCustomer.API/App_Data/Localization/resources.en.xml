@@ -4878,6 +4878,9 @@
   <LocaleResource Name="Evaluation.PersonnelRequired">
     <Value>Personnel selection is required</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CallIdRequired">
+    <Value>Call ID is required</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.CallDateRequired">
     <Value>Call Date is required</Value>
   </LocaleResource>

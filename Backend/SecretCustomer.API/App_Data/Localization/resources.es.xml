@@ -4728,6 +4728,9 @@
   <LocaleResource Name="Evaluation.PersonnelRequired">
     <Value>La selección de personal es obligatoria</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CallIdRequired">
+    <Value>El ID de llamada es obligatorio</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.CallDateRequired">
     <Value>La fecha de llamada es obligatoria</Value>
   </LocaleResource>

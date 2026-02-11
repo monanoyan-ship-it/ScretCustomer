@@ -537,6 +537,12 @@ var EvaluationPopupViewModel = function() {
             toastr.error('Personel seçimi zorunludur');
             return;
         }
+        if (!self.callId() || !self.callId().trim()) {
+            self.errorMessage('Çağrı ID zorunludur');
+            self.isSaving(false);
+            toastr.error('Çağrı ID zorunludur');
+            return;
+        }
         if (!self.callDate()) {
             self.errorMessage('Çağrı Tarihi zorunludur');
             self.isSaving(false);

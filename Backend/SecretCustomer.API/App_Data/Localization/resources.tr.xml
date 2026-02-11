@@ -4876,6 +4876,9 @@
   <LocaleResource Name="Evaluation.PersonnelRequired">
     <Value>Personel seçimi zorunludur</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CallIdRequired">
+    <Value>Çağrı ID zorunludur</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.CallDateRequired">
     <Value>Çağrı Tarihi zorunludur</Value>
   </LocaleResource>

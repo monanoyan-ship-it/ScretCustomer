@@ -772,6 +772,10 @@ var FieldWorkerVisitPopupViewModel = function() {
             errors.push(T('FieldWorker.DealerRequired', 'Bayi seçimi zorunludur'));
         }
 
+        if (!self.callId() || !self.callId().trim()) {
+            errors.push(T('Evaluation.CallIdRequired', 'Çağrı ID zorunludur'));
+        }
+
         // Ziyaret tarihi (callDate yerine controlDate kullanıyoruz ama zaten formda var)
         if (!self.callDate()) {
             errors.push(T('FieldWorker.VisitDateRequired', 'Ziyaret Tarihi zorunludur'));

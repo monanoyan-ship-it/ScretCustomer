@@ -4740,6 +4740,9 @@
   <LocaleResource Name="Evaluation.PersonnelRequired">
     <Value>Personalauswahl ist erforderlich</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CallIdRequired">
+    <Value>Anruf-ID ist erforderlich</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.CallDateRequired">
     <Value>Anrufdatum ist erforderlich</Value>
   </LocaleResource>

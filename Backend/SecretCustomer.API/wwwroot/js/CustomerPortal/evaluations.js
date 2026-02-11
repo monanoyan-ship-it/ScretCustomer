@@ -1343,6 +1343,9 @@ function EvaluationsViewModel() {
             errors.push(T('Evaluation.PersonnelRequired', 'Personel seçimi zorunludur'));
         }
 
+        if (!self.callId() || !self.callId().trim()) {
+            errors.push(T('Evaluation.CallIdRequired', 'Çağrı ID zorunludur'));
+        }
         if (!self.callDate()) {
             errors.push(T('Evaluation.CallDateRequired', 'Çağrı Tarihi zorunludur'));
         }
