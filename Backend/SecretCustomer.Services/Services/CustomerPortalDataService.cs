@@ -809,8 +809,26 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
-        var projects = await _context.Projects
-            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted)
+        var projectQuery = _context.Projects
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
+
+        // Operator/Supervisor: sadece kendi değerlendirmelerinin olduğu projeler
+        if (allowedPersonnelIds != null)
+        {
+            var projectIdsWithPersonnel = await _context.Evaluations
+                .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
+                           allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
+                           e.Project != null &&
+                           e.Project.CustomerId == customerId &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed)
+                .Select(e => e.ProjectId)
+                .Distinct()
+                .ToListAsync();
+
+            projectQuery = projectQuery.Where(p => projectIdsWithPersonnel.Contains(p.Id));
+        }
+
+        var projects = await projectQuery
             .Select(p => new { p.Id, p.Name })
             .OrderBy(p => p.Name)
             .ToListAsync();
