@@ -336,11 +336,20 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
-    /// Mevcut kullanicinin degerlendirmelerini getirir
+    /// Mevcut kullanicinin degerlendirmelerini getirir - Server-side filtre desteği
     /// </summary>
     [HttpGet("evaluator")]
     [Authorize]
-    public async Task<IActionResult> GetByEvaluator()
+    public async Task<IActionResult> GetByEvaluator(
+        [FromQuery] List<int>? projectIds = null,
+        [FromQuery] List<string>? statuses = null,
+        [FromQuery] string? status = null,
+        [FromQuery] string? search = null,
+        [FromQuery] string? personnel = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
+        [FromQuery] DateTime? controlStartDate = null,
+        [FromQuery] DateTime? controlEndDate = null)
     {
         try
         {
@@ -352,16 +361,60 @@ public class EvaluationsApiController : BaseApiController
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
-            // CustomerPersonnel kullanıcıları için EvaluatorCustomerPersonnelId ile filtrele
-            IEnumerable<EvaluationDto> evaluations;
-            if (userType == "CustomerPersonnel")
-            {
-                evaluations = await _evaluationService.GetByEvaluatorCustomerPersonnelIdAsync(userId);
-            }
-            else
-            {
-                evaluations = await _evaluationService.GetByEvaluatorIdAsync(userId);
-            }
+            var query = BuildEvaluatorQuery(userId, userType,
+                status, search, personnel,
+                startDate, endDate, controlStartDate, controlEndDate,
+                projectIds, statuses: statuses);
+
+            var evaluations = await query
+                .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+                .Select(e => new EvaluationDto
+                {
+                    Id = e.Id,
+                    ProjectId = e.ProjectId,
+                    AssignmentPeriodId = e.AssignmentPeriodId,
+                    AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
+                    EvaluatorId = e.EvaluatorId,
+                    EvaluatorName = e.EvaluatorCustomerPersonnel != null
+                        ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                        : (e.Evaluator != null ? e.Evaluator.FirstName + " " + e.Evaluator.LastName : null),
+                    Status = EvaluationStatuses.GetById(e.StatusId) != null ? EvaluationStatuses.GetById(e.StatusId)!.SystemName : "",
+                    TotalScore = e.TotalScore,
+                    MaxScore = e.MaxScore,
+                    ScorePercentage = e.ScorePercentage,
+                    StartedAt = e.StartedAt,
+                    CompletedAt = e.CompletedAt,
+                    Notes = e.Notes,
+                    EvaluationComment = e.EvaluationComment,
+                    CallId = e.CallId,
+                    CallDate = e.CallDate,
+                    CallTime = e.CallTime,
+                    Duration = e.Duration,
+                    EvaluatedPersonnelId = e.EvaluatedCustomerPersonnelId,
+                    EvaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                        : e.EvaluatedUnknownPersonnel,
+                    EvaluatedUnknownPersonnel = e.EvaluatedUnknownPersonnel,
+                    DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                    CustomerName = e.EvaluatedCustomerPersonnel != null && e.EvaluatedCustomerPersonnel.Customer != null
+                        ? e.EvaluatedCustomerPersonnel.Customer.CompanyName : null,
+                    YellowCardCount = e.YellowCardCount,
+                    RedCardCount = e.RedCardCount,
+                    FormOpenedAt = e.FormOpenedAt,
+                    ControlDate = e.ControlDate,
+                    ControlTime = e.ControlTime,
+                    ProjectName = e.Project != null
+                        ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name)
+                        : null,
+                    ChecklistName = e.Project != null && e.Project.Checklist != null ? e.Project.Checklist.Name : null,
+                    ScoringMethod = e.Project != null && e.Project.Checklist != null
+                        ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId) != null
+                            ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
+                            : null
+                        : null,
+                    CreatedAt = e.CreatedAt
+                })
+                .ToListAsync();
 
             return Ok(evaluations);
         }
@@ -986,7 +1039,6 @@ public class EvaluationsApiController : BaseApiController
         [FromQuery] string? status = null,
         [FromQuery] string? search = null,
         [FromQuery] string? personnel = null,
-        [FromQuery] string? projectName = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] DateTime? controlStartDate = null,
@@ -1002,116 +1054,15 @@ public class EvaluationsApiController : BaseApiController
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
-            // Kullanıcının erişebildiği değerlendirmeleri getir
-            IQueryable<Evaluation> query;
-            if (userType == "CustomerPersonnel")
-            {
-                query = _context.Evaluations
-                    .Include(e => e.Project).ThenInclude(p => p.Checklist)
-                    .Include(e => e.EvaluatedPersonnel)
-                    .Include(e => e.EvaluatedCustomerPersonnel)
-                    .Where(e => !e.IsDeleted && e.EvaluatorCustomerPersonnelId == userId);
-            }
-            else
-            {
-                query = _context.Evaluations
-                    .Include(e => e.Project).ThenInclude(p => p.Checklist)
-                    .Include(e => e.EvaluatedPersonnel)
-                    .Include(e => e.EvaluatedCustomerPersonnel)
-                    .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
-            }
-
-            // Çoklu filtreler (OR mantığı)
-            if (projectIds?.Any() == true)
-                query = query.Where(e => projectIds.Contains(e.ProjectId));
-
-            if (customerIds?.Any() == true)
-                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                    customerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
-
-            if (organizationIds?.Any() == true)
-                query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
-                    e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                        organizationIds.Contains(oa.CustomerOrganizationId)));
-
-            if (evaluatorIds?.Any() == true)
-                query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
-
-            if (checklistIds?.Any() == true)
-                query = query.Where(e => checklistIds.Contains(e.Project.ChecklistId));
-
-            // Çoklu status filtresi
-            if (statuses?.Any() == true)
-            {
-                var statusIds = statuses
-                    .Select(s => EvaluationStatuses.GetBySystemName(s))
-                    .Where(s => s != null)
-                    .Select(s => s!.Id)
-                    .ToList();
-                if (statusIds.Any())
-                    query = query.Where(e => statusIds.Contains(e.StatusId));
-            }
-            // Tekil status filtresi (geriye uyumluluk)
-            else if (!string.IsNullOrEmpty(status))
-            {
-                var statusType = EvaluationStatuses.GetBySystemName(status);
-                if (statusType != null)
-                {
-                    query = query.Where(e => e.StatusId == statusType.Id);
-                }
-            }
-
-            if (!string.IsNullOrEmpty(search))
-            {
-                var searchLower = search.ToLower();
-                query = query.Where(e =>
-                    (e.Project != null && e.Project.Name.ToLower().Contains(searchLower)) ||
-                    (e.Project.Checklist != null && e.Project.Checklist.Name.ToLower().Contains(searchLower)) ||
-                    (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(searchLower)) ||
-                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
-                    (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
-            }
-
-            if (!string.IsNullOrEmpty(personnel))
-            {
-                var personnelLower = personnel.ToLower();
-                query = query.Where(e =>
-                    (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(personnelLower)) ||
-                    (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(personnelLower)) ||
-                    (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(personnelLower)));
-            }
-
-            // Proje adı filtresi
-            if (!string.IsNullOrEmpty(projectName))
-            {
-                query = query.Where(e => e.Project != null && e.Project.Name == projectName);
-            }
-
-            // Çağrı tarihi filtresi (CallDate)
-            if (startDate.HasValue)
-            {
-                var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= start);
-            }
-            if (endDate.HasValue)
-            {
-                var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= end);
-            }
-
-            // Değerlendirme tarihi filtresi (CreatedAt)
-            if (controlStartDate.HasValue)
-            {
-                var cStart = DateTime.SpecifyKind(controlStartDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt >= cStart);
-            }
-            if (controlEndDate.HasValue)
-            {
-                var cEnd = DateTime.SpecifyKind(controlEndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt <= cEnd);
-            }
+            var query = BuildEvaluatorQuery(userId, userType,
+                status, search, personnel,
+                startDate, endDate, controlStartDate, controlEndDate,
+                projectIds, customerIds, organizationIds, evaluatorIds, checklistIds, statuses);
 
             var evaluations = await query
+                .Include(e => e.Project).ThenInclude(p => p.Checklist)
+                .Include(e => e.EvaluatedPersonnel)
+                .Include(e => e.EvaluatedCustomerPersonnel)
                 .OrderByDescending(e => e.CreatedAt)
                 .ToListAsync();
 
@@ -1248,6 +1199,116 @@ public class EvaluationsApiController : BaseApiController
             _logger.LogError(ex, "Error deleting draft evaluation {EvaluationId}", id);
             return StatusCode(500, CreateErrorResponse("Taslak silinirken hata oluştu.", ex));
         }
+    }
+
+    /// <summary>
+    /// Evaluator bazlı sorgu oluşturur - GetByEvaluator ve ExportToExcel ortak kullanır
+    /// </summary>
+    private IQueryable<Evaluation> BuildEvaluatorQuery(
+        int userId, string? userType,
+        string? status, string? search, string? personnel,
+        DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
+        List<int>? projectIds = null, List<int>? customerIds = null,
+        List<int>? organizationIds = null, List<int>? evaluatorIds = null,
+        List<int>? checklistIds = null, List<string>? statuses = null)
+    {
+        IQueryable<Evaluation> query;
+        if (userType == "CustomerPersonnel")
+        {
+            query = _context.Evaluations
+                .Where(e => !e.IsDeleted && e.EvaluatorCustomerPersonnelId == userId);
+        }
+        else
+        {
+            query = _context.Evaluations
+                .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
+        }
+
+        // Çoklu filtreler
+        if (projectIds?.Any() == true)
+            query = query.Where(e => projectIds.Contains(e.ProjectId));
+
+        if (customerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                customerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
+
+        if (organizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    organizationIds.Contains(oa.CustomerOrganizationId)));
+
+        if (evaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && evaluatorIds.Contains(e.EvaluatorId.Value));
+
+        if (checklistIds?.Any() == true)
+            query = query.Where(e => checklistIds.Contains(e.Project.ChecklistId));
+
+        // Çoklu status filtresi
+        if (statuses?.Any() == true)
+        {
+            var statusIds = statuses
+                .Select(s => EvaluationStatuses.GetBySystemName(s))
+                .Where(s => s != null)
+                .Select(s => s!.Id)
+                .ToList();
+            if (statusIds.Any())
+                query = query.Where(e => statusIds.Contains(e.StatusId));
+        }
+        // Tekil status filtresi (geriye uyumluluk)
+        else if (!string.IsNullOrEmpty(status))
+        {
+            var statusType = EvaluationStatuses.GetBySystemName(status);
+            if (statusType != null)
+            {
+                query = query.Where(e => e.StatusId == statusType.Id);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(e =>
+                (e.Project != null && e.Project.Name.ToLower().Contains(searchLower)) ||
+                (e.Project.Checklist != null && e.Project.Checklist.Name.ToLower().Contains(searchLower)) ||
+                (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(searchLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(searchLower)) ||
+                (e.CallId != null && e.CallId.ToLower().Contains(searchLower)));
+        }
+
+        if (!string.IsNullOrEmpty(personnel))
+        {
+            var personnelLower = personnel.ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedPersonnel != null && (e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName).ToLower().Contains(personnelLower)) ||
+                (e.EvaluatedCustomerPersonnel != null && (e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName).ToLower().Contains(personnelLower)) ||
+                (e.EvaluatedUnknownPersonnel != null && e.EvaluatedUnknownPersonnel.ToLower().Contains(personnelLower)));
+        }
+
+        // Çağrı tarihi filtresi (CallDate)
+        if (startDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= start);
+        }
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= end);
+        }
+
+        // Değerlendirme tarihi filtresi (CreatedAt)
+        if (controlStartDate.HasValue)
+        {
+            var cStart = DateTime.SpecifyKind(controlStartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CreatedAt >= cStart);
+        }
+        if (controlEndDate.HasValue)
+        {
+            var cEnd = DateTime.SpecifyKind(controlEndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CreatedAt <= cEnd);
+        }
+
+        return query;
     }
 
 }

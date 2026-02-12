@@ -163,10 +163,10 @@
                     <!-- ko if: evalSelectedFilterType() === 'project' -->
                     <!-- Project Filter Input -->
                     <div class="d-flex gap-1">
-                        <select class="form-select form-select-sm" style="width: auto; min-width: 200px;" data-bind="value: evalTempFilter.projectName">
+                        <select class="form-select form-select-sm" style="width: auto; min-width: 200px;" data-bind="value: evalTempFilter.projectId">
                             <option value="">@Html.T("Common.Select", "Seçiniz")</option>
                             <!-- ko foreach: availableProjects -->
-                            <option data-bind="value: $data, text: $data"></option>
+                            <option data-bind="value: id, text: name"></option>
                             <!-- /ko -->
                         </select>
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">

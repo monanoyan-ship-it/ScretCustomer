@@ -56,7 +56,7 @@ function AssignmentsViewModel() {
         return false;
     });
 
-    // Add filter
+    // Add filter - tüm filtre tipleri çoğul değer destekler
     self.addFilter = function() {
         var type = self.selectedFilterType();
         if (!type) return;
@@ -69,23 +69,19 @@ function AssignmentsViewModel() {
             filter.value = self.tempFilter.searchTerm();
             label = 'Arama';
             displayValue = filter.value;
-            self.tempFilter.searchTerm('');
         } else if (type === 'video') {
             filter.value = self.tempFilter.videoId();
             var video = ko.utils.arrayFirst(self.videos(), function(v) { return v.id == filter.value; });
             label = 'Video';
             displayValue = video ? video.title : filter.value;
-            self.tempFilter.videoId('');
         } else if (type === 'status') {
             filter.value = self.tempFilter.status();
             label = 'Durum';
             displayValue = filter.value === 'true' ? 'Aktif' : 'Pasif';
-            self.tempFilter.status('');
         } else if (type === 'participantType') {
             filter.value = self.tempFilter.participantType();
             label = 'Tip';
             displayValue = filter.value === 'internal' ? 'Ic' : 'Dis';
-            self.tempFilter.participantType('');
         } else if (type === 'dateRange') {
             filter.dateRangeType = self.tempFilter.dateRangeType();
             filter.startDate = self.tempFilter.startDate();
@@ -98,22 +94,28 @@ function AssignmentsViewModel() {
             } else {
                 displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
             }
-            self.tempFilter.startDate('');
-            self.tempFilter.endDate('');
-            self.tempFilter.dateRangeType('');
             // Tarih filtreleri için dateType'a göre ayrı tip kullan
             type = 'dateRange_' + filter.dateType; // dateRange_start veya dateRange_due
             filter.type = type;
         }
 
-        // Remove existing filter of same type
-        self.activeFilters.remove(function(f) { return f.type === type; });
-
         filter.label = label;
         filter.displayValue = displayValue;
         self.activeFilters.push(filter);
-        self.selectedFilterType('');
+        self.resetTempFilter();
         self.search(); // Filtre eklenince otomatik ara
+    };
+
+    // Temp filter değerlerini sıfırla
+    self.resetTempFilter = function() {
+        self.selectedFilterType('');
+        self.tempFilter.searchTerm('');
+        self.tempFilter.videoId('');
+        self.tempFilter.status('');
+        self.tempFilter.participantType('');
+        self.tempFilter.startDate('');
+        self.tempFilter.endDate('');
+        self.tempFilter.dateRangeType('');
     };
 
     // Remove filter
@@ -265,7 +267,7 @@ function AssignmentsViewModel() {
         return false;
     });
 
-    // Add participant filter
+    // Add participant filter - tüm filtre tipleri çoğul değer destekler
     self.addParticipantFilter = function() {
         var type = self.participantSelectedFilterType();
         if (!type) return;
@@ -278,27 +280,29 @@ function AssignmentsViewModel() {
             filter.value = self.participantTempFilter.searchText();
             label = 'Isim';
             displayValue = filter.value;
-            self.participantTempFilter.searchText('');
         } else if (type === 'video') {
             filter.value = self.participantTempFilter.videoId();
             var video = ko.utils.arrayFirst(self.videos(), function(v) { return v.id == filter.value; });
             label = 'Video';
             displayValue = video ? video.title : filter.value;
-            self.participantTempFilter.videoId('');
         } else if (type === 'status') {
             filter.value = self.participantTempFilter.status();
             label = 'Durum';
             displayValue = self.participantStatusLabels[filter.value] || filter.value;
-            self.participantTempFilter.status('');
         }
-
-        // Remove existing filter of same type
-        self.participantActiveFilters.remove(function(f) { return f.type === type; });
 
         filter.label = label;
         filter.displayValue = displayValue;
         self.participantActiveFilters.push(filter);
+        self.participantResetTempFilter();
+    };
+
+    // Participant temp filter değerlerini sıfırla
+    self.participantResetTempFilter = function() {
         self.participantSelectedFilterType('');
+        self.participantTempFilter.searchText('');
+        self.participantTempFilter.videoId('');
+        self.participantTempFilter.status('');
     };
 
     // Remove participant filter

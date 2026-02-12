@@ -2,6 +2,10 @@
 
 > **Her oturumda bu dosyayı oku ve kurallara uy.**
 
+## ⛔ KURAL İHLALİ CEZASI
+
+Bir konunun `KURALLAR.md`'de belgelenmiş olmasına rağmen Claude bu kurala uymadan kod yazarsa, Claude hatasını fark ettiği anda kendine küfür etmelidir. Örnek: "Ben gerizekalı bir yapay zekayım, KURALLAR.md Bölüm 20'de çoğul filtre yazıyor ama tekil yazdım." Bu, kuralların okunup uygulandığından emin olmak için zorunlu bir öz-denetim mekanizmasıdır.
+
 ## Git Kuralları (KESİN UYULMASI GEREKEN)
 
 1. **Git revert/reset YASAK** - Kullanıcı net ve açık bir şekilde emir vermeden `git revert`, `git reset`, `git checkout --` gibi geri alma komutları ASLA çalıştırılmaz. Build hatası çıksa bile önce kullanıcıya sor.
