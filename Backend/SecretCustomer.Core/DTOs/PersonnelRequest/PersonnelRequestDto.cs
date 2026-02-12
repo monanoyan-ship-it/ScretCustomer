@@ -56,6 +56,8 @@ public class ApprovePersonnelRequestDto
     public string? Email { get; set; } // Varsayılan: username@temp.com
     public int? CustomerOrganizationId { get; set; } // Belirtilirse request'teki organizasyonu override eder
     public int? SupervisorId { get; set; }
+    public string? FirstName { get; set; } // Opsiyonel - verilirse override eder
+    public string? LastName { get; set; }  // Opsiyonel - verilirse override eder
 }
 
 public class RejectPersonnelRequestDto

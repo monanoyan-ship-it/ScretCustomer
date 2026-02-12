@@ -53,6 +53,8 @@ function UserRequestsViewModel() {
     // Personnel Approve Modal
     self.isApproveModalOpen = ko.observable(false);
     self.approvingRequest = ko.observable(null);
+    self.approveFirstName = ko.observable('');
+    self.approveLastName = ko.observable('');
     self.approveUsername = ko.observable('');
     self.approveEmail = ko.observable('');
     self.approveOrganizationId = ko.observable(null);
@@ -310,6 +312,8 @@ function UserRequestsViewModel() {
     // ==================== PERSONNEL APPROVE MODAL ====================
     self.showApprovePersonnelModal = function(request) {
         self.approvingRequest(request);
+        self.approveFirstName(request.firstName || '');
+        self.approveLastName(request.lastName || '');
         self.approveUsername('');
         self.approveEmail('');
         self.approveOrganizationId(request.customerOrganizationId ? String(request.customerOrganizationId) : null);
@@ -366,6 +370,8 @@ function UserRequestsViewModel() {
             data: JSON.stringify({
                 username: self.approveUsername(),
                 email: self.approveEmail() || null,
+                firstName: self.approveFirstName() || null,
+                lastName: self.approveLastName() || null,
                 customerOrganizationId: self.approveOrganizationId() ? parseInt(self.approveOrganizationId(), 10) : null,
                 supervisorId: self.approveSupervisorId() || null
             })

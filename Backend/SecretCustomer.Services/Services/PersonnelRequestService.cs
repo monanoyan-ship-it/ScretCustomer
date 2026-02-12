@@ -138,6 +138,16 @@ public class PersonnelRequestService : IPersonnelRequestService
         if (request.Status != ApprovalStatuses.Ids.Pending)
             throw new InvalidOperationException("Only pending requests can be approved");
 
+        // Orijinal adı sakla (toplu eşleşme için)
+        var originalFirstName = request.FirstName;
+        var originalLastName = request.LastName;
+
+        // Admin ad/soyad düzelttiyse güncelle
+        if (!string.IsNullOrWhiteSpace(dto.FirstName))
+            request.FirstName = dto.FirstName.Trim();
+        if (!string.IsNullOrWhiteSpace(dto.LastName))
+            request.LastName = dto.LastName.Trim();
+
         // Email varsayılanı: username@temp.com
         var email = string.IsNullOrEmpty(dto.Email) ? $"{dto.Username}@temp.com" : dto.Email;
 
@@ -192,14 +202,15 @@ public class PersonnelRequestService : IPersonnelRequestService
         }
 
         // 4. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş DİĞER evaluation'ları da güncelle
-        var fullName = $"{request.FirstName} {request.LastName}";
+        // Orijinal ad/soyadla eşleştir (düzeltilmiş değil - çünkü diğer kayıtlar da eski adla kaydedilmiş)
+        var originalFullName = $"{originalFirstName} {originalLastName}";
         var evaluationsToUpdate = await _context.Evaluations
             .Include(e => e.Project)
             .Where(e => e.Id != request.EvaluationId &&
                        e.Project.CustomerId == request.CustomerId &&
                        e.EvaluatedUnknownPersonnel != null &&
-                       (e.EvaluatedUnknownPersonnel.ToLower() == fullName.ToLower() ||
-                        e.EvaluatedUnknownPersonnel.ToLower() == $"{request.FirstName.ToLower()} {request.LastName.ToLower()}"))
+                       (e.EvaluatedUnknownPersonnel.ToLower() == originalFullName.ToLower() ||
+                        e.EvaluatedUnknownPersonnel.ToLower() == $"{originalFirstName.ToLower()} {originalLastName.ToLower()}"))
             .ToListAsync();
 
         foreach (var evaluation in evaluationsToUpdate)
@@ -212,14 +223,15 @@ public class PersonnelRequestService : IPersonnelRequestService
             evaluationsToUpdate.Count, personnel.Id);
 
         // 5. Aynı ad-soyad + aynı firma altındaki DİĞER bekleyen personel taleplerini de onayla
+        // Orijinal ad/soyadla eşleştir (diğer talepler de eski adla kaydedilmiş)
         var otherPendingRequests = await _context.PersonnelRequests
             .Include(pr => pr.Evaluation)
             .Where(pr => pr.Id != request.Id &&
                         pr.CustomerId == request.CustomerId &&
                         pr.Status == ApprovalStatuses.Ids.Pending &&
                         !pr.IsDeleted &&
-                        pr.FirstName.ToLower() == request.FirstName.ToLower() &&
-                        pr.LastName.ToLower() == request.LastName.ToLower())
+                        pr.FirstName.ToLower() == originalFirstName.ToLower() &&
+                        pr.LastName.ToLower() == originalLastName.ToLower())
             .ToListAsync();
 
         foreach (var otherRequest in otherPendingRequests)
@@ -228,6 +240,10 @@ public class PersonnelRequestService : IPersonnelRequestService
             otherRequest.ReviewedByUserId = reviewedByUserId;
             otherRequest.ReviewedAt = DateTime.UtcNow;
             otherRequest.CreatedPersonnelId = personnel.Id;
+
+            // Diğer taleplerin ad/soyadını da düzeltilmiş hale güncelle
+            otherRequest.FirstName = request.FirstName;
+            otherRequest.LastName = request.LastName;
 
             // Bu talebin değerlendirmesine de personeli ata
             if (otherRequest.Evaluation != null)
@@ -259,7 +275,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         if (otherPendingRequests.Any())
         {
             _logger.LogInformation("Auto-approved {Count} other pending requests for {FullName} (Customer: {CustomerId})",
-                otherPendingRequests.Count, fullName, request.CustomerId);
+                otherPendingRequests.Count, originalFullName, request.CustomerId);
         }
 
         await _context.SaveChangesAsync();
