@@ -284,6 +284,19 @@ function MyPerformanceViewModel() {
         toastr.success('Panoya kopyalandi');
     };
 
+    // Dosya adı için TR karakter temizleme
+    function sanitizeName(name) {
+        if (!name) return '';
+        var map = { 'ç': 'c', 'ğ': 'g', 'ı': 'i', 'ö': 'o', 'ş': 's', 'ü': 'u', 'Ç': 'C', 'Ğ': 'G', 'İ': 'I', 'Ö': 'O', 'Ş': 'S', 'Ü': 'U' };
+        return name.replace(/[çğıöşüÇĞİÖŞÜ]/g, function(c) { return map[c] || c; }).replace(/[^a-zA-Z0-9_-]/g, '_');
+    }
+
+    function getExportFileName(ext) {
+        var name = self.reportCard() ? sanitizeName(self.reportCard().personnelName) : '';
+        var date = new Date().toISOString().slice(0, 10);
+        return 'Karne-' + name + '_' + date + '.' + ext;
+    }
+
     // Export to Excel
     self.exportToExcel = function() {
         self.isExporting(true);
@@ -298,7 +311,7 @@ function MyPerformanceViewModel() {
                 var downloadUrl = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = downloadUrl;
-                a.download = 'Karneme_' + new Date().toISOString().slice(0, 10) + '.xlsx';
+                a.download = getExportFileName('xlsx');
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -327,7 +340,7 @@ function MyPerformanceViewModel() {
                 var downloadUrl = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = downloadUrl;
-                a.download = 'Karneme_' + new Date().toISOString().slice(0, 10) + '.docx';
+                a.download = getExportFileName('docx');
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -356,7 +369,7 @@ function MyPerformanceViewModel() {
                 var downloadUrl = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = downloadUrl;
-                a.download = 'performansim.pdf';
+                a.download = getExportFileName('pdf');
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
