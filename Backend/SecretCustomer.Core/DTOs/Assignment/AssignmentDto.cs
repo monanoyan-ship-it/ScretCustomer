@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.DTOs.Assignment;
 
 /// <summary>
@@ -44,7 +46,7 @@ public class AssignmentListDto
         : !string.IsNullOrEmpty(ExternalEmail) ? "External"
         : "Unassigned";
 
-    public int DaysRemaining => (DueDate - DateTime.UtcNow).Days;
+    public int DaysRemaining => (DueDate - TurkeyTime.Now).Days;
 }
 
 public class AssignmentDto
@@ -70,8 +72,8 @@ public class AssignmentDto
 
     // Status
     public string Status { get; set; } = "Pending";
-    public bool IsExpired => !IsCompleted && DueDate < DateTime.UtcNow;
-    public int DaysRemaining => (DueDate - DateTime.UtcNow).Days;
+    public bool IsExpired => !IsCompleted && DueDate < TurkeyTime.Now;
+    public int DaysRemaining => (DueDate - TurkeyTime.Now).Days;
 
     // Evaluation Info
     public int? EvaluationId { get; set; }

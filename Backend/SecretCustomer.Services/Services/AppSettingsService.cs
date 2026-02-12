@@ -4,6 +4,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Text.Json;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -66,14 +67,14 @@ public class AppSettingsService : IAppSettingsService
                 Description = description,
                 EntityId = entityId,
                 EntityType = entityType,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
             _context.AppSettings.Add(setting);
         }
         else
         {
             setting.Value = value;
-            setting.UpdatedAt = DateTime.UtcNow;
+            setting.UpdatedAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();

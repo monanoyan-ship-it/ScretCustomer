@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Helpers;
 using System.Reflection;
 
 namespace SecretCustomer.Data;
@@ -616,11 +617,11 @@ public class ApplicationDbContext : DbContext
         {
             if (entry.State == EntityState.Added)
             {
-                entry.Entity.CreatedAt = DateTime.UtcNow;
+                entry.Entity.CreatedAt = TurkeyTime.Now;
             }
             else if (entry.State == EntityState.Modified)
             {
-                entry.Entity.UpdatedAt = DateTime.UtcNow;
+                entry.Entity.UpdatedAt = TurkeyTime.Now;
             }
         }
 

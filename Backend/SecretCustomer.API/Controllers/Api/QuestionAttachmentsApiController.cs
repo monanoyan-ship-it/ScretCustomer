@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Question;
@@ -6,6 +6,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -235,7 +236,7 @@ public class QuestionAttachmentsApiController : BaseApiController
 
             // Veritabanından sil (soft delete)
             attachment.IsDeleted = true;
-            attachment.UpdatedAt = DateTime.UtcNow;
+            attachment.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Attachment {AttachmentId} deleted", id);
@@ -265,7 +266,7 @@ public class QuestionAttachmentsApiController : BaseApiController
             }
 
             attachment.Order = newOrder;
-            attachment.UpdatedAt = DateTime.UtcNow;
+            attachment.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.QuestionAttachment.OrderUpdateSuccess") });

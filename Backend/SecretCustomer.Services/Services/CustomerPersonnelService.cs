@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -180,8 +181,8 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         {
             CustomerPersonnelId = personnelId,
             CustomerOrganizationId = newOrganizationId,
-            AssignedAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
+            AssignedAt = TurkeyTime.Now,
+            CreatedAt = TurkeyTime.Now
         };
         await _personnelOrgRepository.AddAsync(newAssignment);
     }
@@ -232,7 +233,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             RoleId = CustomerPersonnelRoles.GetBySystemName(createDto.Role)?.Id ?? CustomerPersonnelRoles.Ids.Operator,
             IsActive = createDto.IsActive,
             Notes = createDto.Notes,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         var createdPersonnel = await _personnelRepository.CreateAsync(personnel);
@@ -316,7 +317,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 
         // Update password
         personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(changePasswordDto.NewPassword);
-        personnel.UpdatedAt = DateTime.UtcNow;
+        personnel.UpdatedAt = TurkeyTime.Now;
 
         await _personnelRepository.UpdateAsync(personnel);
     }
@@ -331,7 +332,7 @@ public class CustomerPersonnelService : ICustomerPersonnelService
 
         // Admin reset - no old password verification needed
         personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(resetPasswordDto.NewPassword);
-        personnel.UpdatedAt = DateTime.UtcNow;
+        personnel.UpdatedAt = TurkeyTime.Now;
 
         await _personnelRepository.UpdateAsync(personnel);
     }

@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Checklist;
 using SecretCustomer.Core.DTOs.Report;
@@ -7,6 +7,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -685,7 +686,7 @@ public class ChecklistService : IChecklistService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        var fileName = $"Checklist_{checklist.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        var fileName = $"Checklist_{checklist.Name.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
         return new ExcelExportDto
         {

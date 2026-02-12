@@ -46,7 +46,7 @@
         <div class="row">
             @foreach (var item in Model)
             {
-                var isExpired = !item.IsCompleted && item.DueDate < DateTime.UtcNow;
+                var isExpired = !item.IsCompleted && item.DueDate < SecretCustomer.Core.Helpers.TurkeyTime.Now;
                 var borderClass = item.IsCompleted ? "border-success" : (isExpired ? "border-warning" : "border-primary");
                 var headerClass = item.IsCompleted ? "bg-success text-white" : (isExpired ? "bg-warning" : "bg-primary text-white");
 

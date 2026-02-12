@@ -200,7 +200,7 @@ public class AssignmentService : IAssignmentService
         string? status = null,
         string? searchTerm = null)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var query = _context.Assignments
             .Where(a => !a.IsDeleted)
             .AsQueryable();
@@ -353,7 +353,7 @@ public class AssignmentService : IAssignmentService
                     AssignmentId = assignment.Id,
                     CustomerDealerId = dealerId,
                     SortOrder = sortOrder++,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 };
                 _context.AssignmentCustomerDealers.Add(assignmentDealer);
             }
@@ -394,7 +394,7 @@ public class AssignmentService : IAssignmentService
         assignment.ExternalEmail = dto.ExternalEmail;
         assignment.ExternalName = dto.ExternalName;
         assignment.DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc);
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -405,7 +405,7 @@ public class AssignmentService : IAssignmentService
         if (assignment == null) return false;
 
         assignment.IsDeleted = true;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -488,7 +488,7 @@ public class AssignmentService : IAssignmentService
         // Çoklu Status filtrelemesi (OR mantığı)
         if (filter.Statuses?.Any() == true)
         {
-            var now = DateTime.UtcNow;
+            var now = TurkeyTime.Now;
             var statusPredicates = new List<System.Linq.Expressions.Expression<Func<Assignment, bool>>>();
 
             foreach (var status in filter.Statuses)
@@ -536,7 +536,7 @@ public class AssignmentService : IAssignmentService
         // Son tarih filtresi (semantic date filtering - Projects pattern)
         if (!string.IsNullOrEmpty(filter.DueDateFilter))
         {
-            var today = DateTime.UtcNow.Date;
+            var today = TurkeyTime.Now.Date;
             var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
             var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
@@ -590,7 +590,7 @@ public class AssignmentService : IAssignmentService
         }
 
         if (filter.IsExpired == true)
-            query = query.Where(a => !a.IsCompleted && a.DueDate < DateTime.UtcNow);
+            query = query.Where(a => !a.IsCompleted && a.DueDate < TurkeyTime.Now);
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
@@ -657,8 +657,8 @@ public class AssignmentService : IAssignmentService
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
         assignment.IsCompleted = true;
-        assignment.CompletedAt = DateTime.UtcNow;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.CompletedAt = TurkeyTime.Now;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -695,7 +695,7 @@ public class AssignmentService : IAssignmentService
             throw new KeyNotFoundException($"Atama bulunamadı: {id}");
 
         assignment.IsDeleted = true;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -738,7 +738,7 @@ public class AssignmentService : IAssignmentService
         // Assignment'ı yeniden aç
         assignment.IsCompleted = false;
         assignment.CompletedAt = null;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         // İlişkili Evaluation'ları da InProgress yap
         foreach (var evaluation in assignment.Project.Evaluations)
@@ -747,7 +747,7 @@ public class AssignmentService : IAssignmentService
             {
                 evaluation.StatusId = EvaluationStatuses.Ids.InProgress;
                 evaluation.CompletedAt = null;
-                evaluation.UpdatedAt = DateTime.UtcNow;
+                evaluation.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -796,7 +796,7 @@ public class AssignmentService : IAssignmentService
         if (dto.NewDueDate.HasValue)
             assignment.DueDate = DateTime.SpecifyKind(dto.NewDueDate.Value, DateTimeKind.Utc);
 
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         // Audit Log
@@ -820,7 +820,7 @@ public class AssignmentService : IAssignmentService
             throw new InvalidOperationException("Tamamlanmış atamanın tarihi değiştirilemez.");
 
         assignment.DueDate = DateTime.SpecifyKind(newDueDate, DateTimeKind.Utc);
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         // Audit Log
@@ -844,7 +844,7 @@ public class AssignmentService : IAssignmentService
         foreach (var assignment in assignments)
         {
             assignment.IsDeleted = true;
-            assignment.UpdatedAt = DateTime.UtcNow;
+            assignment.UpdatedAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();
@@ -866,7 +866,7 @@ public class AssignmentService : IAssignmentService
             query = query.Where(a => a.ProjectId == projectId.Value);
 
         var assignments = await query.ToListAsync();
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         var completed = assignments.Where(a => a.IsCompleted).ToList();
         var evaluationScores = completed
@@ -920,7 +920,7 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate < DateTime.UtcNow)
+            .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate < TurkeyTime.Now)
             .OrderBy(a => a.DueDate)
             .ToListAsync();
 
@@ -929,12 +929,12 @@ public class AssignmentService : IAssignmentService
 
     public async Task<IEnumerable<AssignmentDto>> GetUpcomingDueAsync(int daysAhead = 3)
     {
-        var deadline = DateTime.UtcNow.AddDays(daysAhead);
+        var deadline = TurkeyTime.Now.AddDays(daysAhead);
         var assignments = await _context.Assignments
             .Include(a => a.Project)
             .Include(a => a.Checklist)
             .Include(a => a.AssignedUser)
-            .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate >= DateTime.UtcNow && a.DueDate <= deadline)
+            .Where(a => !a.IsDeleted && !a.IsCompleted && a.DueDate >= TurkeyTime.Now && a.DueDate <= deadline)
             .OrderBy(a => a.DueDate)
             .ToListAsync();
 
@@ -960,7 +960,7 @@ public class AssignmentService : IAssignmentService
     {
         var evaluation = assignment.Project?.Evaluations?.FirstOrDefault();
         var status = assignment.IsCompleted ? "Completed"
-            : assignment.DueDate < DateTime.UtcNow ? "Expired"
+            : assignment.DueDate < TurkeyTime.Now ? "Expired"
             : evaluation != null && evaluation.StatusId == EvaluationStatuses.Ids.Draft ? "InProgress"
             : "Pending";
 
@@ -1053,7 +1053,7 @@ public class AssignmentService : IAssignmentService
             TargetCount = dto.TargetCount,
             Notes = dto.Notes,
             StatusId = PeriodStatuses.Ids.Open,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AssignmentPeriods.Add(period);
@@ -1094,7 +1094,7 @@ public class AssignmentService : IAssignmentService
         period.TargetCount = dto.TargetCount;
         period.Notes = dto.Notes;
         period.StatusId = PeriodStatuses.GetBySystemName(dto.Status)?.Id ?? PeriodStatuses.Ids.Open;
-        period.UpdatedAt = DateTime.UtcNow;
+        period.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -1111,7 +1111,7 @@ public class AssignmentService : IAssignmentService
             throw new KeyNotFoundException("Dönem bulunamadı");
 
         period.StatusId = PeriodStatuses.Ids.Closed;
-        period.UpdatedAt = DateTime.UtcNow;
+        period.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -1128,7 +1128,7 @@ public class AssignmentService : IAssignmentService
             throw new KeyNotFoundException("Dönem bulunamadı");
 
         period.StatusId = PeriodStatuses.Ids.Open;
-        period.UpdatedAt = DateTime.UtcNow;
+        period.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -1148,7 +1148,7 @@ public class AssignmentService : IAssignmentService
             throw new InvalidOperationException("Bu dönemde değerlendirmeler var, silinemez");
 
         period.IsDeleted = true;
-        period.UpdatedAt = DateTime.UtcNow;
+        period.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -1230,7 +1230,7 @@ public class AssignmentService : IAssignmentService
         // Son tarih filtresi (semantic date filtering - Projects pattern)
         if (!string.IsNullOrEmpty(filter.DueDateFilter))
         {
-            var today = DateTime.UtcNow.Date;
+            var today = TurkeyTime.Now.Date;
             var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
             var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
@@ -1312,7 +1312,7 @@ public class AssignmentService : IAssignmentService
             TotalAssignments = assignments.Count,
             CompletedAssignments = assignments.Count(a => a.IsCompleted),
             PendingAssignments = assignments.Count(a => !a.IsCompleted),
-            OverdueAssignments = assignments.Count(a => a.DueDate < DateTime.UtcNow && !a.IsCompleted),
+            OverdueAssignments = assignments.Count(a => a.DueDate < TurkeyTime.Now && !a.IsCompleted),
             CompletionRate = assignments.Count > 0
                 ? Math.Round((decimal)assignments.Count(a => a.IsCompleted) / assignments.Count * 100, 1)
                 : 0
@@ -1389,7 +1389,7 @@ public class AssignmentService : IAssignmentService
                     DueDate = DateTime.SpecifyKind(dto.DueDate, DateTimeKind.Utc),
                     TypeId = AssignmentTypes.Ids.CustomerPersonnel,
                     UniqueLink = Guid.NewGuid().ToString("N"),
-                    CreatedAt = DateTime.UtcNow,
+                    CreatedAt = TurkeyTime.Now,
                     IsCompleted = false,
                     IsDeleted = false
                 };
@@ -1497,7 +1497,7 @@ public class AssignmentService : IAssignmentService
             AssignmentId = assignmentId,
             CustomerDealerId = customerDealerId,
             SortOrder = maxSortOrder + 1,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AssignmentCustomerDealers.Add(assignmentDealer);
@@ -1534,7 +1534,7 @@ public class AssignmentService : IAssignmentService
             throw new InvalidOperationException("Bu şube için ziyaret yapılmış, çıkarılamaz");
 
         assignmentDealer.IsDeleted = true;
-        assignmentDealer.UpdatedAt = DateTime.UtcNow;
+        assignmentDealer.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }

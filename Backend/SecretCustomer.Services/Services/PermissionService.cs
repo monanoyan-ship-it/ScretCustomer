@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -53,8 +54,8 @@ public class PermissionService : IPermissionService
                 .FirstOrDefaultAsync(up =>
                     up.UserId == userId &&
                     up.PermissionId == permission.Id &&
-                    (!up.ValidFrom.HasValue || up.ValidFrom <= DateTime.UtcNow) &&
-                    (!up.ValidUntil.HasValue || up.ValidUntil >= DateTime.UtcNow));
+                    (!up.ValidFrom.HasValue || up.ValidFrom <= TurkeyTime.Now) &&
+                    (!up.ValidUntil.HasValue || up.ValidUntil >= TurkeyTime.Now));
 
             if (userPermission != null)
             {
@@ -98,8 +99,8 @@ public class PermissionService : IPermissionService
                 .FirstOrDefaultAsync(up =>
                     up.UserId == userId &&
                     up.PermissionId == permission.Id &&
-                    (!up.ValidFrom.HasValue || up.ValidFrom <= DateTime.UtcNow) &&
-                    (!up.ValidUntil.HasValue || up.ValidUntil >= DateTime.UtcNow));
+                    (!up.ValidFrom.HasValue || up.ValidFrom <= TurkeyTime.Now) &&
+                    (!up.ValidUntil.HasValue || up.ValidUntil >= TurkeyTime.Now));
 
             if (userPermission != null)
             {
@@ -139,8 +140,8 @@ public class PermissionService : IPermissionService
             .Where(up =>
                 up.UserId == userId &&
                 up.IsGranted &&
-                (!up.ValidFrom.HasValue || up.ValidFrom <= DateTime.UtcNow) &&
-                (!up.ValidUntil.HasValue || up.ValidUntil >= DateTime.UtcNow))
+                (!up.ValidFrom.HasValue || up.ValidFrom <= TurkeyTime.Now) &&
+                (!up.ValidUntil.HasValue || up.ValidUntil >= TurkeyTime.Now))
             .Include(up => up.Permission)
             .Select(up => up.Permission)
             .ToListAsync();
@@ -168,7 +169,7 @@ public class PermissionService : IPermissionService
         {
             existing.IsGranted = true;
             existing.ScopeId = scopeId;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = TurkeyTime.Now;
         }
         else
         {
@@ -220,7 +221,7 @@ public class PermissionService : IPermissionService
         {
             existing.IsGranted = isGranted;
             existing.ScopeId = scopeId;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = TurkeyTime.Now;
         }
         else
         {

@@ -158,7 +158,7 @@ public class SurveyApiController : ControllerBase
                     Email = person.Email!,
                     StatusId = SurveyInvitationStatuses.Ids.Pending,
                     IsReminder = dto.SendReminders,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 };
                 _context.SurveyInvitations.Add(invitation);
                 await _context.SaveChangesAsync();
@@ -168,7 +168,7 @@ public class SurveyApiController : ControllerBase
                 if (result.Success)
                 {
                     invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = DateTime.UtcNow;
+                    invitation.SentAt = TurkeyTime.Now;
                     successCount++;
                     _logger.LogInformation("Survey invitation sent to {Email} for project {ProjectId}",
                         person.Email, projectId);
@@ -287,7 +287,7 @@ public class SurveyApiController : ControllerBase
             if (invitation != null)
             {
                 invitation.IsOpened = true;
-                invitation.OpenedAt = DateTime.UtcNow;
+                invitation.OpenedAt = TurkeyTime.Now;
                 await _context.SaveChangesAsync();
             }
         }
@@ -346,7 +346,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Proje bitiş tarihine göre expiration kontrolü
-        if (project.EndDate < DateTime.UtcNow)
+        if (project.EndDate < TurkeyTime.Now)
         {
             return BadRequest(new { message = "Anket süresi dolmuş." });
         }
@@ -361,7 +361,7 @@ public class SurveyApiController : ControllerBase
         if (!invitation.IsOpened)
         {
             invitation.IsOpened = true;
-            invitation.OpenedAt = DateTime.UtcNow;
+            invitation.OpenedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
         }
 
@@ -512,10 +512,10 @@ public class SurveyApiController : ControllerBase
                 EvaluatedCustomerPersonnelId = personnel.Id,
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = tokenData.CreatedAt,
-                CompletedAt = DateTime.UtcNow,
+                CompletedAt = TurkeyTime.Now,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 Notes = "Online anket ile dolduruldu",
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
 
             _context.Evaluations.Add(evaluation);
@@ -541,7 +541,7 @@ public class SurveyApiController : ControllerBase
                 if (surveyInvitation != null)
                 {
                     surveyInvitation.IsCompleted = true;
-                    surveyInvitation.CompletedAt = DateTime.UtcNow;
+                    surveyInvitation.CompletedAt = TurkeyTime.Now;
                 }
             }
             catch (Exception ex)
@@ -582,7 +582,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Proje bitiş tarihine göre expiration kontrolü
-        if (project.EndDate < DateTime.UtcNow)
+        if (project.EndDate < TurkeyTime.Now)
         {
             return BadRequest(new { message = "Anket süresi dolmuş." });
         }
@@ -602,11 +602,11 @@ public class SurveyApiController : ControllerBase
                 EvaluatedCustomerPersonnelId = null, // External - personnel yok
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = invitation.OpenedAt ?? invitation.CreatedAt,
-                CompletedAt = DateTime.UtcNow,
+                CompletedAt = TurkeyTime.Now,
                 StatusId = EvaluationStatuses.Ids.Completed,
                 Notes = $"Dış katılımcı anketi: {invitation.Email}" +
                         (!string.IsNullOrWhiteSpace(invitation.FullName) ? $" ({invitation.FullName})" : ""),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
 
             _context.Evaluations.Add(evaluation);
@@ -620,7 +620,7 @@ public class SurveyApiController : ControllerBase
 
             // External invitation'ı tamamlandı olarak işaretle
             invitation.IsCompleted = true;
-            invitation.CompletedAt = DateTime.UtcNow;
+            invitation.CompletedAt = TurkeyTime.Now;
             invitation.EvaluationId = evaluation.Id;
 
             await _context.SaveChangesAsync();
@@ -689,7 +689,7 @@ public class SurveyApiController : ControllerBase
                 QuestionId = answerDto.QuestionId,
                 AnswerNumeric = answerDto.Score,
                 Notes = answerDto.Comment,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
 
             _context.Answers.Add(answer);
@@ -704,8 +704,8 @@ public class SurveyApiController : ControllerBase
                     {
                         AnswerId = answer.Id,
                         SubCriteriaId = subCriteriaId,
-                        SelectedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow
+                        SelectedAt = TurkeyTime.Now,
+                        CreatedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -1110,7 +1110,7 @@ public class SurveyApiController : ControllerBase
                 if (result.Success)
                 {
                     invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = DateTime.UtcNow;
+                    invitation.SentAt = TurkeyTime.Now;
                     invitation.Email = person.Email!; // Güncel email'i kaydet
                     invitation.ErrorMessage = null;
                     successCount++;
@@ -1176,8 +1176,8 @@ public class SurveyApiController : ControllerBase
         text = text.Replace(EmailPlaceholders.EndDate, project.EndDate.ToString("dd.MM.yyyy"));
 
         // Sistem
-        text = text.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        text = text.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        text = text.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        text = text.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
         text = text.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         return text;
@@ -1306,7 +1306,7 @@ public class SurveyApiController : ControllerBase
                     LastName = recipient.LastName,
                     Token = token,
                     StatusId = SurveyInvitationStatuses.Ids.Pending,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 };
                 _context.SurveyExternalInvitations.Add(invitation);
                 await _context.SaveChangesAsync();
@@ -1323,7 +1323,7 @@ public class SurveyApiController : ControllerBase
                 if (result.Success)
                 {
                     invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = DateTime.UtcNow;
+                    invitation.SentAt = TurkeyTime.Now;
                     successCount++;
                     _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId}",
                         recipient.Email, projectId);
@@ -1521,7 +1521,7 @@ public class SurveyApiController : ControllerBase
                 if (result.Success)
                 {
                     invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = DateTime.UtcNow;
+                    invitation.SentAt = TurkeyTime.Now;
                     invitation.ErrorMessage = null;
                     successCount++;
                     _logger.LogInformation("Retry: External survey invitation sent to {Email} for project {ProjectId}",
@@ -1656,7 +1656,7 @@ public class SurveyApiController : ControllerBase
                 if (result.Success)
                 {
                     invitation.AttemptCount++;
-                    invitation.SentAt = DateTime.UtcNow;
+                    invitation.SentAt = TurkeyTime.Now;
                     successCount++;
                     _logger.LogInformation("Reminder sent to external {Email} for project {ProjectId}",
                         invitation.Email, projectId);
@@ -1811,7 +1811,7 @@ public class SurveyApiController : ControllerBase
                     LastName = recipient.LastName,
                     Token = token,
                     StatusId = SurveyInvitationStatuses.Ids.Pending,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 };
                 _context.SurveyExternalInvitations.Add(invitation);
                 await _context.SaveChangesAsync();
@@ -1830,7 +1830,7 @@ public class SurveyApiController : ControllerBase
                     if (result.Success)
                     {
                         invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                        invitation.SentAt = DateTime.UtcNow;
+                        invitation.SentAt = TurkeyTime.Now;
                         successCount++;
                         _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId} (file upload)",
                             recipient.Email, projectId);
@@ -2321,8 +2321,8 @@ public class SurveyApiController : ControllerBase
         text = text.Replace(EmailPlaceholders.EndDate, project.EndDate.ToString("dd.MM.yyyy"));
 
         // Sistem
-        text = text.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        text = text.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        text = text.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        text = text.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
         text = text.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         return text;

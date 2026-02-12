@@ -7,6 +7,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -222,8 +223,8 @@ public class NotificationsApiController : BaseApiController
             ScheduledAt = dto.ScheduledAt,
             ExpiresAt = dto.ExpiresAt,
             GroupId = dto.GroupId,
-            IsSent = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow,
-            SentAt = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow ? DateTime.UtcNow : null
+            IsSent = dto.ScheduledAt == null || dto.ScheduledAt <= TurkeyTime.Now,
+            SentAt = dto.ScheduledAt == null || dto.ScheduledAt <= TurkeyTime.Now ? TurkeyTime.Now : null
         };
 
         _context.Notifications.Add(notification);
@@ -243,8 +244,8 @@ public class NotificationsApiController : BaseApiController
         var priorityId = NotificationPriorities.GetBySystemName(dto.Priority)?.Id ?? NotificationPriorities.Ids.Normal;
         var senderId = GetCurrentUserId();
         var groupId = Guid.NewGuid().ToString();
-        var isSent = dto.ScheduledAt == null || dto.ScheduledAt <= DateTime.UtcNow;
-        var sentAt = isSent ? DateTime.UtcNow : (DateTime?)null;
+        var isSent = dto.ScheduledAt == null || dto.ScheduledAt <= TurkeyTime.Now;
+        var sentAt = isSent ? TurkeyTime.Now : (DateTime?)null;
 
         var notifications = dto.RecipientUserIds.Select(recipientId => new Notification
         {
@@ -287,7 +288,7 @@ public class NotificationsApiController : BaseApiController
         if (!notification.IsRead)
         {
             notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
+            notification.ReadAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             // SignalR ile unread count güncelle
@@ -313,7 +314,7 @@ public class NotificationsApiController : BaseApiController
         foreach (var notification in notifications)
         {
             notification.IsRead = true;
-            notification.ReadAt = DateTime.UtcNow;
+            notification.ReadAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();
@@ -351,7 +352,7 @@ public class NotificationsApiController : BaseApiController
     public async Task<IActionResult> GetSummary()
     {
         var userId = GetCurrentUserId();
-        var today = DateTime.UtcNow.Date;
+        var today = TurkeyTime.Now.Date;
 
         var summary = new NotificationSummaryDto
         {

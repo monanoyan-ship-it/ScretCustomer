@@ -1,4 +1,5 @@
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.Entities;
 
@@ -35,7 +36,7 @@ public class Announcement : BaseEntity
     /// <summary>
     /// Yayınlanma tarihi
     /// </summary>
-    public DateTime PublishDate { get; set; } = DateTime.UtcNow;
+    public DateTime PublishDate { get; set; } = TurkeyTime.Now;
 
     /// <summary>
     /// Bitiş tarihi (opsiyonel)

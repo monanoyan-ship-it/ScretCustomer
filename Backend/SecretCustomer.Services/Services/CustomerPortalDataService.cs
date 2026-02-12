@@ -276,7 +276,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Distinct()
             .ToListAsync();
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
 
         // Takımın aldığı değerlendirmeleri al
@@ -354,8 +354,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var totalEvaluations = evaluations.Count;
         var averageScore = evaluations.Any() ? evaluations.Average(e => e.ScorePercentage ?? 0) : 0;
 
-        var thisMonth = DateTime.UtcNow.Month;
-        var thisYear = DateTime.UtcNow.Year;
+        var thisMonth = TurkeyTime.Now.Month;
+        var thisYear = TurkeyTime.Now.Year;
         var thisMonthEvaluations = evaluations.Count(e =>
             e.CreatedAt.Month == thisMonth && e.CreatedAt.Year == thisYear);
 
@@ -370,7 +370,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, int? projectId, int? projectTypeId, DateTime? startDate, DateTime? endDate)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
         var effectiveStartDate = startDate.HasValue
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
@@ -397,7 +397,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         if (projectTypeId.HasValue)
         {
-            evaluationsQuery = evaluationsQuery.Where(e => e.Project!.Checklist!.ChecklistTypeId == projectTypeId.Value);
+            evaluationsQuery = evaluationsQuery.Where(e => e.Project!.ProjectTypeId == projectTypeId.Value);
         }
 
         if (allowedPersonnelIds != null)
@@ -446,7 +446,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
         var effectiveStartDate = startDate.HasValue
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
@@ -804,7 +804,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetQuestionGroupTrendAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? projectIds, DateTime? startDate, DateTime? endDate)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var effectiveStartDate = startDate.HasValue
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -930,7 +930,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetQuestionTrendAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? projectIds, string? groupName, DateTime? startDate, DateTime? endDate)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var effectiveStartDate = startDate.HasValue
             ? DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc)
             : new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -1097,12 +1097,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var scores = await evaluationsQuery
             .Select(e => new
             {
-                ChecklistTypeId = e.Project!.Checklist!.ChecklistTypeId,
+                ProjectTypeId = e.Project!.ProjectTypeId,
                 Score = e.ScorePercentage ?? 0
             })
             .ToListAsync();
 
-        var groupedByType = scores.GroupBy(s => s.ChecklistTypeId).ToList();
+        var groupedByType = scores.GroupBy(s => s.ProjectTypeId).ToList();
         if (groupedByType.Count == 0)
             return new List<object>();
 
@@ -1113,16 +1113,16 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var threshold = thresholds.FirstOrDefault(t => t.ProjectTypeId == g.Key);
             var successThreshold = threshold?.SuccessThreshold ?? 80m;
             var warningThreshold = threshold?.WarningThreshold ?? 60m;
-            var checklistType = ChecklistTypes.GetById(g.Key);
+            var projectType = ProjectTypes.GetById(g.Key);
 
             var typeScores = g.Select(s => s.Score).ToList();
 
             return new
             {
                 projectTypeId = g.Key,
-                projectTypeName = threshold?.ProjectTypeName ?? checklistType?.Description ?? "Bilinmeyen",
-                projectTypeIcon = threshold?.ProjectTypeIcon ?? checklistType?.Icon ?? "bi-folder",
-                projectTypeColor = threshold?.ProjectTypeColor ?? checklistType?.CssClass ?? "bg-secondary",
+                projectTypeName = threshold?.ProjectTypeName ?? projectType?.Description ?? "Bilinmeyen",
+                projectTypeIcon = threshold?.ProjectTypeIcon ?? projectType?.Icon ?? "bi-folder",
+                projectTypeColor = threshold?.ProjectTypeColor ?? projectType?.CssClass ?? "bg-secondary",
                 successThreshold,
                 warningThreshold,
                 success = typeScores.Count(s => s >= successThreshold),
@@ -1146,7 +1146,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.Project.Checklist!.ChecklistTypeId == projectTypeId &&
+                        e.Project.ProjectTypeId == projectTypeId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (startDate.HasValue)
@@ -1220,7 +1220,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Include(e => e.EvaluatedOrganization)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.Project.Checklist!.ChecklistTypeId == projectTypeId &&
+                        e.Project.ProjectTypeId == projectTypeId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (startDate.HasValue)
@@ -1315,7 +1315,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        var fileName = $"PuanDagilimi_{categoryLabel.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        var fileName = $"PuanDagilimi_{categoryLabel.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return (stream.ToArray(), fileName);
     }
 
@@ -1456,8 +1456,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetProjectPerformanceAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, List<int>? projectIds, List<int>? organizationIds, bool? isInternal)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
+        var start = startDate ?? TurkeyTime.Now.AddMonths(-3);
+        var end = endDate ?? TurkeyTime.Now;
 
         // UTC'ye çevir
         if (start.Kind == DateTimeKind.Unspecified)
@@ -1532,8 +1532,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetReportSummaryAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, List<int>? projectIds, List<int>? organizationIds, bool? isInternal)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
+        var start = startDate ?? TurkeyTime.Now.AddMonths(-3);
+        var end = endDate ?? TurkeyTime.Now;
 
         if (start.Kind == DateTimeKind.Unspecified)
             start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
@@ -1602,8 +1602,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetEvaluationsByScoreRangeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, List<int>? projectIds, List<int>? organizationIds, decimal minScore, decimal maxScore, bool? isInternal)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-3);
-        var end = endDate ?? DateTime.UtcNow;
+        var start = startDate ?? TurkeyTime.Now.AddMonths(-3);
+        var end = endDate ?? TurkeyTime.Now;
 
         if (start.Kind == DateTimeKind.Unspecified)
             start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
@@ -1664,8 +1664,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetReportMonthlyTrendAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, List<int>? projectIds, List<int>? organizationIds, bool? isInternal)
     {
-        var start = startDate ?? DateTime.UtcNow.AddMonths(-6);
-        var end = endDate ?? DateTime.UtcNow;
+        var start = startDate ?? TurkeyTime.Now.AddMonths(-6);
+        var end = endDate ?? TurkeyTime.Now;
 
         if (start.Kind == DateTimeKind.Unspecified)
             start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
@@ -2186,7 +2186,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             Name = name,
             FilterData = filterDataJson,
             IsDefault = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.SavedFilters.Add(filter);
@@ -2213,7 +2213,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetOrganizationsMonthlyTrendAsync(int customerId, List<int>? allowedOrgIds, List<int>? organizationIds, DateTime? startDate, DateTime? endDate)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         // Default: Bu haftanın başı (Pazartesi) - Bugün
         DateTime start;
@@ -2440,7 +2440,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetMyTrainingsAsync(int personnelId)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         var trainings = await _context.TrainingVideoParticipants
             .Include(p => p.Assignment)
@@ -2497,7 +2497,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (participant == null)
             return null;
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         // İlk izlemeye başlama
         if (participant.StatusId == 1 && watchedSeconds > 0)
@@ -2538,7 +2538,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (participant == null)
             return null;
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         // MaxWatchCount kontrolü
         var maxWatches = participant.Assignment.MaxWatchCount;
@@ -2577,7 +2577,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<object> GetStaffTrainingsAsync(int customerId, List<int>? allowedPersonnelIds)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         var query = _context.TrainingVideoParticipants
             .Include(p => p.CustomerPersonnel)
@@ -2647,7 +2647,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
 
         evaluation.IsDeleted = true;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return (true, null, null);
@@ -2669,7 +2669,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             return (false, "Sadece taslak durumundaki değerlendirmeler silinebilir.", 400);
 
         evaluation.IsDeleted = true;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return (true, null, null);
@@ -3440,6 +3440,6 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        return (stream.ToArray(), $"SurecAnalizi_{DateTime.Now:dd.MM.yyyyHHmmss}.xlsx");
+        return (stream.ToArray(), $"SurecAnalizi_{TurkeyTime.Now:dd.MM.yyyyHHmmss}.xlsx");
     }
 }

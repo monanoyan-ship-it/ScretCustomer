@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.DTOs.Report;
@@ -249,7 +249,7 @@ public class CustomerService : ICustomerService
             EvaluationNotificationFrequencyId = createCustomerDto.EvaluationNotificationFrequencyId,
             EvaluationNotificationTemplateId = createCustomerDto.EvaluationNotificationTemplateId,
             NotificationEmails = createCustomerDto.NotificationEmails,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         // Bildirim kurallarını ekle
@@ -268,7 +268,7 @@ public class CustomerService : ICustomerService
                     EmailTemplateId = ruleDto.EmailTemplateId,
                     TokenExpirationDays = ruleDto.TokenExpirationDays,
                     IsActive = ruleDto.IsActive,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 });
             }
         }
@@ -350,7 +350,7 @@ public class CustomerService : ICustomerService
                     existing.EmailTemplateId = ruleDto.EmailTemplateId;
                     existing.TokenExpirationDays = ruleDto.TokenExpirationDays;
                     existing.IsActive = ruleDto.IsActive;
-                    existing.UpdatedAt = DateTime.UtcNow;
+                    existing.UpdatedAt = TurkeyTime.Now;
                 }
             }
 
@@ -368,7 +368,7 @@ public class CustomerService : ICustomerService
                     EmailTemplateId = ruleDto.EmailTemplateId,
                     TokenExpirationDays = ruleDto.TokenExpirationDays,
                     IsActive = ruleDto.IsActive,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = TurkeyTime.Now
                 });
             }
         }
@@ -505,7 +505,7 @@ public class CustomerService : ICustomerService
 
         sheet.Cell(2, 1).Value = exportDateLabel + ":";
         sheet.Cell(2, 1).Style.Font.Bold = true;
-        sheet.Cell(2, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        sheet.Cell(2, 2).Value = TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         int row = 4;
 
@@ -619,7 +619,7 @@ public class CustomerService : ICustomerService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        var fileName = $"{customer.CompanyName.Replace(" ", "_")}_Personel_{DateTime.Now:yyyyMMdd}.xlsx";
+        var fileName = $"{customer.CompanyName.Replace(" ", "_")}_Personel_{TurkeyTime.Now:yyyyMMdd}.xlsx";
 
         return new ExcelExportDto
         {

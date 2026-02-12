@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using NPOI.XWPF.UserModel;
 using SecretCustomer.Core.DTOs.Auth;
@@ -746,7 +746,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Degerlendirme_Detay_{evaluationId}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+            FileName = $"Degerlendirme_Detay_{evaluationId}_{TurkeyTime.Now:yyyyMMddHHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -952,7 +952,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Degerlendirmeler_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Degerlendirmeler_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -1025,7 +1025,7 @@ public class ReportService : IReportService
         summarySheet.Cell(1, 1).Value = "Toplam Değerlendirme";
         summarySheet.Cell(1, 2).Value = evaluations.Count;
         summarySheet.Cell(2, 1).Value = "Rapor Tarihi";
-        summarySheet.Cell(2, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        summarySheet.Cell(2, 2).Value = TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         // Detailed answers sheet
         var detailSheet = workbook.Worksheets.Add("Detaylı Cevaplar");
@@ -1075,7 +1075,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Detayli_Degerlendirmeler_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Detayli_Degerlendirmeler_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -1491,7 +1491,7 @@ public class ReportService : IReportService
         summarySheet.Cell(4, 1).Value = await _localizationService.GetResourceAsync("Report.AffectedEvaluations", defaultValue: "Etkilenen Değerlendirme");
         summarySheet.Cell(4, 2).Value = penaltyAnswers.Select(a => a.EvaluationId).Distinct().Count();
         summarySheet.Cell(5, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi");
-        summarySheet.Cell(5, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        summarySheet.Cell(5, 2).Value = TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm");
         summarySheet.Columns().AdjustToContents();
         ExcelHelper.ApplyLongTextColumnStyles(summarySheet);
 
@@ -1680,7 +1680,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"CezaliKL_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"CezaliKL_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -2397,7 +2397,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.xlsx",
+            FileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -2469,7 +2469,7 @@ public class ReportService : IReportService
 
         // Sağ alt: Tarih değeri
         var dateValueCell = headerTable.GetRow(1).GetCell(1);
-        dateValueCell.SetText(DateTime.Now.ToString("dd.MM.yyyy"));
+        dateValueCell.SetText(TurkeyTime.Now.ToString("dd.MM.yyyy"));
 
         // Boş paragraf
         doc.CreateParagraph();
@@ -2608,7 +2608,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"MT_Karne_{safePersonnelName}_{DateTime.Now:yyyyMMdd}.docx",
+            FileName = $"MT_Karne_{safePersonnelName}_{TurkeyTime.Now:yyyyMMdd}.docx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         };
@@ -3169,7 +3169,7 @@ public class ReportService : IReportService
         summarySheet.Cell(summaryRow, 2).Value = report.Summary.UniquePersonnel;
         summaryRow++;
         summarySheet.Cell(summaryRow, 1).Value = await _localizationService.GetResourceAsync("Report.ReportDate", defaultValue: "Rapor Tarihi:");
-        summarySheet.Cell(summaryRow, 2).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        summarySheet.Cell(summaryRow, 2).Value = TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm");
 
         summarySheet.Columns().AdjustToContents();
         ExcelHelper.ApplyLongTextColumnStyles(summarySheet);
@@ -3272,7 +3272,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Oneriler_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Oneriler_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -3349,7 +3349,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Cagri_Denetleme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Cagri_Denetleme_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -3612,7 +3612,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Soru_Grubu_Ortalama_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Soru_Grubu_Ortalama_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -3885,7 +3885,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Musteri_Degerlendirme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Musteri_Degerlendirme_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -4052,7 +4052,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Proje_Performans_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Proje_Performans_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -4171,7 +4171,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"MT_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"MT_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -4875,7 +4875,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Anket_Sonuclari_{results.ProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Anket_Sonuclari_{results.ProjectName}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -5193,7 +5193,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Anket_Yanitlari_{safeProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Anket_Yanitlari_{safeProjectName}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -5385,7 +5385,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Grup_Puanlari_{detail.ProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Grup_Puanlari_{detail.ProjectName}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -5567,7 +5567,7 @@ public class ReportService : IReportService
         var safeProjectName = string.Join("_", results.ProjectName.Split(Path.GetInvalidFileNameChars()));
         return new ExcelExportDto
         {
-            FileName = $"Soru_Istatistikleri_{safeProjectName}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Soru_Istatistikleri_{safeProjectName}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -5726,7 +5726,7 @@ public class ReportService : IReportService
         var filePrefix = includeComments ? "Tam_Detay" : "Detay";
         return new ExcelExportDto
         {
-            FileName = $"{filePrefix}_{project.Name}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"{filePrefix}_{project.Name}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -5741,7 +5741,7 @@ public class ReportService : IReportService
         DateTime? startDate = null,
         DateTime? endDate = null)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var todayStart = now.Date;
         var weekStart = todayStart.AddDays(-(int)todayStart.DayOfWeek + (int)DayOfWeek.Monday);
         if (todayStart.DayOfWeek == DayOfWeek.Sunday) weekStart = weekStart.AddDays(-7);
@@ -6156,7 +6156,7 @@ public class ReportService : IReportService
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
 
-        var fileName = $"SoruPuanDagilimi_{project.Name.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.xlsx";
+        var fileName = $"SoruPuanDagilimi_{project.Name.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.xlsx";
 
         return new ExcelExportDto
         {
@@ -6442,7 +6442,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"PuanDetayi_{safeProjectName}_{DateTime.Now:yyyyMMdd}.xlsx",
+            FileName = $"PuanDetayi_{safeProjectName}_{TurkeyTime.Now:yyyyMMdd}.xlsx",
             FileContent = stream.ToArray()
         };
     }
@@ -6780,7 +6780,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Personel_Soru_Performans_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Personel_Soru_Performans_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -7088,7 +7088,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Enneagram_Sonuclari_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Enneagram_Sonuclari_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -7285,7 +7285,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Ziyaret_Denetleme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Ziyaret_Denetleme_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -7549,7 +7549,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Musteri_Ziyaret_Degerlendirme_Raporu_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Musteri_Ziyaret_Degerlendirme_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -7723,7 +7723,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Ziyaret_Degerlendirme_Detay_{evaluationId}_{DateTime.Now:yyyyMMddHHmmss}.xlsx",
+            FileName = $"Ziyaret_Degerlendirme_Detay_{evaluationId}_{TurkeyTime.Now:yyyyMMddHHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -8278,7 +8278,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.xlsx",
+            FileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -8322,7 +8322,7 @@ public class ReportService : IReportService
 
         headerTable.GetRow(1).GetCell(0).SetText($"Kod: {report.DealerCode ?? "-"} | İl: {report.City ?? "-"} / {report.District ?? "-"}");
         var dateValueCell = headerTable.GetRow(1).GetCell(1);
-        dateValueCell.SetText(DateTime.Now.ToString("dd.MM.yyyy"));
+        dateValueCell.SetText(TurkeyTime.Now.ToString("dd.MM.yyyy"));
 
         doc.CreateParagraph();
 
@@ -8429,7 +8429,7 @@ public class ReportService : IReportService
 
         return new ExcelExportDto
         {
-            FileName = $"Sube_Karne_{safeDealerName}_{DateTime.Now:yyyyMMdd}.docx",
+            FileName = $"Sube_Karne_{safeDealerName}_{TurkeyTime.Now:yyyyMMdd}.docx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         };

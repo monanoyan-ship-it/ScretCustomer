@@ -5,6 +5,7 @@ using SecretCustomer.Core.DTOs.Permission;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -259,7 +260,7 @@ public class PermissionsApiController : BaseApiController
                 existing.IsGranted = dto.IsGranted;
                 existing.ScopeId = dto.ScopeId;
                 existing.Notes = dto.Notes;
-                existing.UpdatedAt = DateTime.UtcNow;
+                existing.UpdatedAt = TurkeyTime.Now;
             }
             else
             {
@@ -475,7 +476,7 @@ public class PermissionsApiController : BaseApiController
                 existing.ValidFrom = dto.ValidFrom;
                 existing.ValidUntil = dto.ValidUntil;
                 existing.Notes = dto.Notes;
-                existing.UpdatedAt = DateTime.UtcNow;
+                existing.UpdatedAt = TurkeyTime.Now;
             }
             else
             {

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -52,14 +53,14 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
 
     public async Task<ExcelTemplate> CreateAsync(ExcelTemplate template)
     {
-        template.CreatedAt = DateTime.UtcNow;
-        template.UpdatedAt = DateTime.UtcNow;
+        template.CreatedAt = TurkeyTime.Now;
+        template.UpdatedAt = TurkeyTime.Now;
 
         // Set CreatedAt for columns as well
         foreach (var column in template.Columns)
         {
-            column.CreatedAt = DateTime.UtcNow;
-            column.UpdatedAt = DateTime.UtcNow;
+            column.CreatedAt = TurkeyTime.Now;
+            column.UpdatedAt = TurkeyTime.Now;
         }
 
         _context.ExcelTemplates.Add(template);
@@ -70,7 +71,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
 
     public async Task<ExcelTemplate> UpdateAsync(ExcelTemplate template)
     {
-        template.UpdatedAt = DateTime.UtcNow;
+        template.UpdatedAt = TurkeyTime.Now;
 
         // Get existing template with columns
         var existingTemplate = await _context.ExcelTemplates
@@ -118,14 +119,14 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
                 existingColumn.DropdownOptions = column.DropdownOptions;
                 existingColumn.SampleValue = column.SampleValue;
                 existingColumn.Description = column.Description;
-                existingColumn.UpdatedAt = DateTime.UtcNow;
+                existingColumn.UpdatedAt = TurkeyTime.Now;
             }
             else
             {
                 // Add new column
                 column.ExcelTemplateId = template.Id;
-                column.CreatedAt = DateTime.UtcNow;
-                column.UpdatedAt = DateTime.UtcNow;
+                column.CreatedAt = TurkeyTime.Now;
+                column.UpdatedAt = TurkeyTime.Now;
                 existingTemplate.Columns.Add(column);
             }
         }
@@ -146,7 +147,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
 
         // Soft delete
         template.IsDeleted = true;
-        template.UpdatedAt = DateTime.UtcNow;
+        template.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 

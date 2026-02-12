@@ -1,4 +1,5 @@
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.Entities;
 
@@ -54,6 +55,6 @@ public class AppSettings
     /// </summary>
     public string? EntityType { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TurkeyTime.Now;
     public DateTime? UpdatedAt { get; set; }
 }

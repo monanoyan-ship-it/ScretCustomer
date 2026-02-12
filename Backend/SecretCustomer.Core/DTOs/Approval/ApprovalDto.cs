@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Report;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.DTOs.Approval;
 
@@ -29,7 +30,7 @@ public class ApprovalDto
     public int ApprovalLevel { get; set; }
     public int RequiredApprovalLevels { get; set; }
     public DateTime CreatedAt { get; set; }
-    public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status == "Pending";
+    public bool IsOverdue => DueDate.HasValue && DueDate.Value < TurkeyTime.Now && Status == "Pending";
 }
 
 /// <summary>
@@ -48,7 +49,7 @@ public class ApprovalListDto
     public string Priority { get; set; } = string.Empty;
     public int? RelatedEntityId { get; set; }
     public string? RelatedEntityType { get; set; }
-    public bool IsOverdue => DueDate.HasValue && DueDate.Value < DateTime.UtcNow && Status == "Pending";
+    public bool IsOverdue => DueDate.HasValue && DueDate.Value < TurkeyTime.Now && Status == "Pending";
 }
 
 /// <summary>

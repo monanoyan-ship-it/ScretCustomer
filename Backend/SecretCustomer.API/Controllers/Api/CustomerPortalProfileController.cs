@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -142,7 +143,7 @@ public class CustomerPortalProfileController : BaseApiController
             if (dto.PhoneNumber != null)
                 personnel.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? null : dto.PhoneNumber.Trim();
 
-            personnel.UpdatedAt = DateTime.UtcNow;
+            personnel.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("CustomerPersonnel {Id} updated their profile", userId);
@@ -209,7 +210,7 @@ public class CustomerPortalProfileController : BaseApiController
 
             // Şifreyi güncelle
             personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            personnel.UpdatedAt = DateTime.UtcNow;
+            personnel.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("CustomerPersonnel {Id} changed their password", userId);
@@ -335,7 +336,7 @@ public class CustomerPortalProfileController : BaseApiController
 
             // CallSystemUrl güncelle
             customer.CallSystemUrl = string.IsNullOrWhiteSpace(dto.CallSystemUrl) ? null : dto.CallSystemUrl.Trim();
-            customer.UpdatedAt = DateTime.UtcNow;
+            customer.UpdatedAt = TurkeyTime.Now;
 
             await _context.SaveChangesAsync();
 

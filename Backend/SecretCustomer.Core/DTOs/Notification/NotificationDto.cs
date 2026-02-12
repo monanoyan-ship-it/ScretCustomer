@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Report;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.DTOs.Notification;
 
@@ -46,7 +47,7 @@ public class NotificationListDto
 
     private static string GetTimeAgo(DateTime dateTime)
     {
-        var diff = DateTime.UtcNow - dateTime;
+        var diff = TurkeyTime.Now - dateTime;
         if (diff.TotalMinutes < 1) return "Az önce";
         if (diff.TotalMinutes < 60) return $"{(int)diff.TotalMinutes} dakika önce";
         if (diff.TotalHours < 24) return $"{(int)diff.TotalHours} saat önce";

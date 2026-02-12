@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -288,7 +289,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             Level = level,
             Order = dto.Order,
             IsActive = dto.IsActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.CustomerOrganizations.Add(org);
@@ -335,7 +336,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         org.ParentId = dto.ParentId;
         org.Order = dto.Order;
         org.IsActive = dto.IsActive;
-        org.UpdatedAt = DateTime.UtcNow;
+        org.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -412,7 +413,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         // Parent ve level güncelle
         org.ParentId = newParentId;
         org.Level = newLevel;
-        org.UpdatedAt = DateTime.UtcNow;
+        org.UpdatedAt = TurkeyTime.Now;
 
         // Alt organizasyonların level'larını güncelle
         await UpdateChildrenLevelsAsync(organizationId, newLevel + 1);
@@ -443,7 +444,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         foreach (var child in children)
         {
             child.Level = level;
-            child.UpdatedAt = DateTime.UtcNow;
+            child.UpdatedAt = TurkeyTime.Now;
             await UpdateChildrenLevelsAsync(child.Id, level + 1);
         }
     }
@@ -627,7 +628,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         foreach (var assignment in assignments)
         {
             assignment.SupervisorId = supervisorId;
-            assignment.UpdatedAt = DateTime.UtcNow;
+            assignment.UpdatedAt = TurkeyTime.Now;
             await _personnelOrgRepository.UpdateAsync(assignment);
         }
     }
@@ -663,7 +664,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
         foreach (var memberAssignment in teamMemberAssignments)
         {
             memberAssignment.SupervisorId = newSupervisorId;
-            memberAssignment.UpdatedAt = DateTime.UtcNow;
+            memberAssignment.UpdatedAt = TurkeyTime.Now;
             await _personnelOrgRepository.UpdateAsync(memberAssignment);
         }
 
@@ -738,8 +739,8 @@ public class CustomerOrganizationService : ICustomerOrganizationService
             CustomerOrganizationId = organizationId,
             SupervisorId = supervisorId,
             Notes = notes,
-            AssignedAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
+            AssignedAt = TurkeyTime.Now,
+            CreatedAt = TurkeyTime.Now
         };
 
         await _personnelOrgRepository.AddAsync(assignment);
@@ -770,7 +771,7 @@ public class CustomerOrganizationService : ICustomerOrganizationService
 
         assignment.SupervisorId = dto.SupervisorId;
         assignment.Notes = dto.Notes;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         await _personnelOrgRepository.UpdateAsync(assignment);
 

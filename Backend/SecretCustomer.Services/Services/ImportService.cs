@@ -7,6 +7,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -155,9 +156,9 @@ public class ImportService : IImportService
                                     CustomerPersonnelId = existingPersonnel.Id,
                                     CustomerOrganizationId = organization.Id,
                                     SupervisorId = null, // CSV'den supervisor bilgisi gelmiyorsa null
-                                    AssignedAt = DateTime.UtcNow,
+                                    AssignedAt = TurkeyTime.Now,
                                     Notes = "CSV Import ile atandı",
-                                    CreatedAt = DateTime.UtcNow
+                                    CreatedAt = TurkeyTime.Now
                                 };
 
                                 await _personnelOrgRepository.AddAsync(assignment);
@@ -185,7 +186,7 @@ public class ImportService : IImportService
                             existingPersonnel.RoleId = ParseRole(importDto.Role);
                             existingPersonnel.CustomerId = customer.Id;
                             // OrganizationId artık junction table'da - doğrudan set etme
-                            existingPersonnel.UpdatedAt = DateTime.UtcNow;
+                            existingPersonnel.UpdatedAt = TurkeyTime.Now;
 
                             await _customerPersonnelRepository.UpdateAsync(existingPersonnel);
 
@@ -200,9 +201,9 @@ public class ImportService : IImportService
                                         CustomerPersonnelId = existingPersonnel.Id,
                                         CustomerOrganizationId = organization.Id,
                                         SupervisorId = null, // Update durumunda supervisor belirlenemiyor
-                                        AssignedAt = DateTime.UtcNow,
+                                        AssignedAt = TurkeyTime.Now,
                                         Notes = "CSV Import ile güncellendi ve atandı",
-                                        CreatedAt = DateTime.UtcNow
+                                        CreatedAt = TurkeyTime.Now
                                     };
                                     await _personnelOrgRepository.AddAsync(assignment);
                                 }
@@ -264,7 +265,7 @@ public class ImportService : IImportService
                             LastName = lastName,
                             RoleId = role,
                             IsActive = true,
-                            CreatedAt = DateTime.UtcNow
+                            CreatedAt = TurkeyTime.Now
                         };
 
                         var created = await _customerPersonnelRepository.CreateAsync(newPersonnel);
@@ -278,9 +279,9 @@ public class ImportService : IImportService
                                 CustomerPersonnelId = created.Id,
                                 CustomerOrganizationId = organization.Id,
                                 SupervisorId = supervisorId,
-                                AssignedAt = DateTime.UtcNow,
+                                AssignedAt = TurkeyTime.Now,
                                 Notes = "CSV Import ile oluşturuldu",
-                                CreatedAt = DateTime.UtcNow
+                                CreatedAt = TurkeyTime.Now
                             };
                             await _personnelOrgRepository.AddAsync(assignment);
                         }
@@ -365,7 +366,7 @@ public class ImportService : IImportService
             Level = 0,
             Order = 0,
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = TurkeyTime.Now,
             Description = "CSV Import ile oluşturuldu"
         };
 
@@ -426,7 +427,7 @@ public class ImportService : IImportService
             CompanyName = companyName,
             TaxNumber = GenerateTempTaxNumber(companyName),
             IsActive = true,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = TurkeyTime.Now,
             Notes = "CSV Import ile oluşturuldu"
         };
 
@@ -588,10 +589,10 @@ public class ImportService : IImportService
             var checklist = new Checklist
             {
                 Name = checklistName,
-                Description = description ?? $"CSV Import ile oluşturuldu - {DateTime.Now:dd.MM.yyyy HH:mm}",
+                Description = description ?? $"CSV Import ile oluşturuldu - {TurkeyTime.Now:dd.MM.yyyy HH:mm}",
                 CustomerId = customerId,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
 
             _context.Checklists.Add(checklist);
@@ -663,7 +664,7 @@ public class ImportService : IImportService
                         PenaltyTypeId = ParsePenaltyType(importDto.PenaltyType),
                         IsRequired = importDto.IsRequired,
                         HelpText = string.IsNullOrWhiteSpace(importDto.HelpText) ? null : importDto.HelpText,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = TurkeyTime.Now
                     };
 
                     _context.Questions.Add(question);
@@ -689,7 +690,7 @@ public class ImportService : IImportService
                                 Description = trimmedText,
                                 WeightPoints = 0,
                                 Order = subOrder,
-                                CreatedAt = DateTime.UtcNow
+                                CreatedAt = TurkeyTime.Now
                             };
 
                             _context.QuestionSubCriteria.Add(subCriteria);

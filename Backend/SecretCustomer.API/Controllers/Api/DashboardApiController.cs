@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -217,8 +218,8 @@ public class DashboardApiController : BaseApiController
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
             // Varsayılan: mevcut yıl ve ay
-            var targetYear = year ?? DateTime.UtcNow.Year;
-            var targetMonth = month ?? DateTime.UtcNow.Month;
+            var targetYear = year ?? TurkeyTime.Now.Year;
+            var targetMonth = month ?? TurkeyTime.Now.Month;
 
             // Hedef kullanıcı ID'lerini belirle (role göre)
             var targetUserIds = new List<int>();

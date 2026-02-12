@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -82,7 +83,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User> UpdateAsync(User user)
     {
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = TurkeyTime.Now;
         _context.Users.Update(user);
         await _context.SaveChangesAsync();
         return user;
@@ -94,7 +95,7 @@ public class UserRepository : IUserRepository
         if (user != null)
         {
             user.IsDeleted = true;
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
         }
     }
@@ -106,7 +107,7 @@ public class UserRepository : IUserRepository
             return false;
 
         user.PasswordHash = newPasswordHash;
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }

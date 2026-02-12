@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -110,7 +111,7 @@ public class LocalizationService : ILocalizationService
         existing.IsDefault = language.IsDefault;
         existing.IsActive = language.IsActive;
         existing.DisplayOrder = language.DisplayOrder;
-        existing.UpdatedAt = DateTime.UtcNow;
+        existing.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
         ClearLanguageCache();
@@ -228,7 +229,7 @@ public class LocalizationService : ILocalizationService
         if (existing != null)
         {
             existing.ResourceValue = resourceValue;
-            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedAt = TurkeyTime.Now;
         }
         else
         {
@@ -348,7 +349,7 @@ public class LocalizationService : ILocalizationService
     {
         // Cookie'ye kaydet
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", languageId.ToString(),
-            new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+            new CookieOptions { Expires = TurkeyTime.Now.AddYears(1) });
 
         // Kullanıcı giriş yapmışsa, tercihini veritabanına da kaydet
         SaveUserLanguagePreference(languageId);
@@ -400,7 +401,7 @@ public class LocalizationService : ILocalizationService
         if (user?.PreferredLanguageId != null)
         {
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", user.PreferredLanguageId.Value.ToString(),
-                new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+                new CookieOptions { Expires = TurkeyTime.Now.AddYears(1) });
             return;
         }
 
@@ -409,7 +410,7 @@ public class LocalizationService : ILocalizationService
         if (customerPersonnel?.PreferredLanguageId != null)
         {
             _httpContextAccessor.HttpContext?.Response.Cookies.Append("Language", customerPersonnel.PreferredLanguageId.Value.ToString(),
-                new CookieOptions { Expires = DateTime.UtcNow.AddYears(1) });
+                new CookieOptions { Expires = TurkeyTime.Now.AddYears(1) });
         }
     }
 

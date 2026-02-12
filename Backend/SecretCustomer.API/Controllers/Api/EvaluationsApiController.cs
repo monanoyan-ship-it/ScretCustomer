@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -901,7 +901,7 @@ public class EvaluationsApiController : BaseApiController
             }
 
             // 3. Referans numarası oluştur
-            var year = DateTime.UtcNow.Year;
+            var year = TurkeyTime.Now.Year;
             var count = await _context.Approvals.CountAsync(a => a.CreatedAt.Year == year) + 1;
             var referenceNumber = $"REV-{year}-{count:D4}";
 
@@ -918,7 +918,7 @@ public class EvaluationsApiController : BaseApiController
                 RelatedEntityType = "EvaluationRevert",
                 RequestedByUserId = userType == "CustomerPersonnel" ? null : userId,
                 RequestedByCustomerPersonnelId = userType == "CustomerPersonnel" ? userId : null,
-                RequestedAt = DateTime.UtcNow,
+                RequestedAt = TurkeyTime.Now,
                 PriorityId = NotificationPriorities.Ids.Normal
             };
 
@@ -1119,7 +1119,7 @@ public class EvaluationsApiController : BaseApiController
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            var fileName = $"Dinlemeler_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            var fileName = $"Dinlemeler_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
         catch (Exception ex)
@@ -1186,7 +1186,7 @@ public class EvaluationsApiController : BaseApiController
 
             // Soft delete
             evaluation.IsDeleted = true;
-            evaluation.UpdatedAt = DateTime.UtcNow;
+            evaluation.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Taslak değerlendirme silindi: EvaluationId={EvaluationId}, UserId={UserId}, IsAdmin={IsAdmin}",

@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -36,7 +38,7 @@ public class ProjectFile : BaseEntity
     /// <summary>
     /// Yukleme tarihi
     /// </summary>
-    public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UploadedAt { get; set; } = TurkeyTime.Now;
 
     /// <summary>
     /// Yukleyen kullanici

@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -47,7 +49,7 @@ public class Language
     /// </summary>
     public int DisplayOrder { get; set; } = 0;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TurkeyTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Repositories;
 
 namespace SecretCustomer.Data.Repositories;
@@ -38,7 +39,7 @@ public class AnswerRepository : IAnswerRepository
 
     public async Task<Answer> UpdateAsync(Answer answer)
     {
-        answer.UpdatedAt = DateTime.UtcNow;
+        answer.UpdatedAt = TurkeyTime.Now;
         _context.Answers.Update(answer);
         await _context.SaveChangesAsync();
         return answer;
@@ -50,7 +51,7 @@ public class AnswerRepository : IAnswerRepository
         if (answer == null) return false;
 
         answer.IsDeleted = true;
-        answer.UpdatedAt = DateTime.UtcNow;
+        answer.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }

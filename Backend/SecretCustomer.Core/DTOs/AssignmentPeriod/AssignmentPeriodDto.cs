@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.DTOs.AssignmentPeriod;
 
@@ -26,10 +27,10 @@ public class AssignmentPeriodDto
     public decimal ProgressPercentage => TargetCount > 0 ? Math.Round((decimal)CompletedCount / TargetCount * 100, 1) : 0;
 
     // Kalan gün
-    public int RemainingDays => (EndDate - DateTime.UtcNow).Days;
+    public int RemainingDays => (EndDate - TurkeyTime.Now).Days;
 
     // Dönem sona erdi mi
-    public bool IsExpired => EndDate < DateTime.UtcNow;
+    public bool IsExpired => EndDate < TurkeyTime.Now;
 }
 
 /// <summary>

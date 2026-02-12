@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -179,9 +180,9 @@ public class PersonnelRequestService : IPersonnelRequestService
             CustomerPersonnelId = personnel.Id,
             CustomerOrganizationId = organizationId,
             SupervisorId = dto.SupervisorId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = TurkeyTime.Now,
             Notes = $"PersonnelRequest #{request.Id} onayıyla oluşturuldu",
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
         _context.CustomerPersonnelOrganizations.Add(orgAssignment);
         await _context.SaveChangesAsync();
@@ -189,7 +190,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         // 2. Request güncelle
         request.Status = ApprovalStatuses.Ids.Approved;
         request.ReviewedByUserId = reviewedByUserId;
-        request.ReviewedAt = DateTime.UtcNow;
+        request.ReviewedAt = TurkeyTime.Now;
         request.CreatedPersonnelId = personnel.Id;
 
         // 3. İLGİLİ DEĞERLENDİRMEYE personeli ata (en önemli adım)
@@ -238,7 +239,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         {
             otherRequest.Status = ApprovalStatuses.Ids.Approved;
             otherRequest.ReviewedByUserId = reviewedByUserId;
-            otherRequest.ReviewedAt = DateTime.UtcNow;
+            otherRequest.ReviewedAt = TurkeyTime.Now;
             otherRequest.CreatedPersonnelId = personnel.Id;
 
             // Diğer taleplerin ad/soyadını da düzeltilmiş hale güncelle
@@ -264,9 +265,9 @@ public class PersonnelRequestService : IPersonnelRequestService
                     {
                         CustomerPersonnelId = personnel.Id,
                         CustomerOrganizationId = otherRequest.CustomerOrganizationId,
-                        AssignedAt = DateTime.UtcNow,
+                        AssignedAt = TurkeyTime.Now,
                         Notes = $"PersonnelRequest #{otherRequest.Id} toplu onayıyla oluşturuldu",
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -330,7 +331,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         // 1. Request güncelle
         request.Status = ApprovalStatuses.Ids.Rejected;
         request.ReviewedByUserId = reviewedByUserId;
-        request.ReviewedAt = DateTime.UtcNow;
+        request.ReviewedAt = TurkeyTime.Now;
         request.RejectReason = dto.RejectReason;
 
         string notificationMessage;

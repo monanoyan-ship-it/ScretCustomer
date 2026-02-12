@@ -6,6 +6,7 @@ using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using SecretCustomer.Services.Helpers;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -36,7 +37,7 @@ public class AuthService : IAuthService
                 throw new UnauthorizedAccessException("Hesabınız pasif durumda. Yöneticinize başvurun.");
 
             // Son giriş tarihini güncelle
-            user.LastLoginAt = DateTime.UtcNow;
+            user.LastLoginAt = TurkeyTime.Now;
             await _userRepository.UpdateAsync(user);
 
             var token = _jwtHelper.GenerateToken(user);
@@ -227,7 +228,7 @@ public class AuthService : IAuthService
 
         // Token oluştur (6 haneli kod)
         var resetToken = GenerateResetToken();
-        var tokenExpiry = DateTime.UtcNow.AddHours(1); // 1 saat geçerli
+        var tokenExpiry = TurkeyTime.Now.AddHours(1); // 1 saat geçerli
 
         // Token'ı kaydet
         user.PasswordResetToken = resetToken;
@@ -269,7 +270,7 @@ public class AuthService : IAuthService
         }
 
         // Token süresi kontrolü
-        if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < DateTime.UtcNow)
+        if (user.PasswordResetTokenExpiry == null || user.PasswordResetTokenExpiry < TurkeyTime.Now)
         {
             return new ResetPasswordResultDto
             {

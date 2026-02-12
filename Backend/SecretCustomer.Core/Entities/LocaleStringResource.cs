@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -22,7 +24,7 @@ public class LocaleStringResource
     /// </summary>
     public string ResourceValue { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TurkeyTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     // Navigation

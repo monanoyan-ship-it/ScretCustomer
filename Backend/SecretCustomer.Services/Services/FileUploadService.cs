@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -88,7 +89,7 @@ public class FileUploadService : IFileUploadService
             }
 
             // Generate unique filename
-            var uniqueFileName = $"{answerId}_{DateTime.UtcNow:yyyyMMddHHmmss}{extension}";
+            var uniqueFileName = $"{answerId}_{TurkeyTime.Now:yyyyMMddHHmmss}{extension}";
             var filePath = Path.Combine(_answersUploadPath, uniqueFileName);
 
             // Save file
@@ -242,7 +243,7 @@ public class FileUploadService : IFileUploadService
             }
 
             // Generate unique filename
-            var uniqueFileName = $"eval_{evaluationId}_{DateTime.UtcNow:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension}";
+            var uniqueFileName = $"eval_{evaluationId}_{TurkeyTime.Now:yyyyMMddHHmmss}_{Guid.NewGuid():N}{extension}";
             var filePath = Path.Combine(_evaluationsUploadPath, uniqueFileName);
 
             // Save file

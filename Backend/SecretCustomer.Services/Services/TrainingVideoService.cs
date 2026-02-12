@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -197,7 +198,7 @@ public class TrainingVideoService : ITrainingVideoService
         video.Title = dto.Title;
         video.Description = dto.Description;
         video.IsActive = dto.IsActive;
-        video.UpdatedAt = DateTime.UtcNow;
+        video.UpdatedAt = TurkeyTime.Now;
 
         // İzleme kontrol ayarları
         video.MinWatchPercentage = dto.MinWatchPercentage;
@@ -236,7 +237,7 @@ public class TrainingVideoService : ITrainingVideoService
             return false;
 
         video.IsDeleted = true;
-        video.UpdatedAt = DateTime.UtcNow;
+        video.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;
@@ -489,7 +490,7 @@ public class TrainingVideoService : ITrainingVideoService
         assignment.MaxWatchCount = dto.MaxWatchCount;
         assignment.AllowSpeedChange = dto.AllowSpeedChange;
         assignment.AllowSeeking = dto.AllowSeeking;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
 
         // İç katılımcıları kaldır
         if (dto.RemoveParticipantIds?.Any() == true)
@@ -501,7 +502,7 @@ public class TrainingVideoService : ITrainingVideoService
             foreach (var participant in participantsToRemove)
             {
                 participant.IsDeleted = true;
-                participant.UpdatedAt = DateTime.UtcNow;
+                participant.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -521,7 +522,7 @@ public class TrainingVideoService : ITrainingVideoService
                     {
                         CustomerPersonnelId = personnelId,
                         StatusId = 1,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -537,7 +538,7 @@ public class TrainingVideoService : ITrainingVideoService
             foreach (var external in externalToRemove)
             {
                 external.IsDeleted = true;
-                external.UpdatedAt = DateTime.UtcNow;
+                external.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -560,7 +561,7 @@ public class TrainingVideoService : ITrainingVideoService
                         LastName = external.LastName,
                         Token = Guid.NewGuid().ToString("N"),
                         StatusId = 1,
-                        CreatedAt = DateTime.UtcNow
+                        CreatedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -578,7 +579,7 @@ public class TrainingVideoService : ITrainingVideoService
             return false;
 
         assignment.IsDeleted = true;
-        assignment.UpdatedAt = DateTime.UtcNow;
+        assignment.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;
@@ -859,7 +860,7 @@ public class TrainingVideoService : ITrainingVideoService
                 .FirstOrDefaultAsync();
         }
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var sentCount = 0;
 
         foreach (var p in participants)
@@ -958,8 +959,8 @@ public class TrainingVideoService : ITrainingVideoService
         }
 
         // Sistem bilgileri
-        content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        content = content.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
         content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         return content;
@@ -1001,8 +1002,8 @@ public class TrainingVideoService : ITrainingVideoService
         content = content.Replace(EmailPlaceholders.RecipientEmail, participant.Email ?? "");
 
         // Sistem bilgileri
-        content = content.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        content = content.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        content = content.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        content = content.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
         content = content.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         // Eski format desteği (geriye uyumluluk) {{Placeholder}}
@@ -1049,7 +1050,7 @@ public class TrainingVideoService : ITrainingVideoService
             .OrderByDescending(p => p.Assignment.DueDate)
             .ToListAsync();
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         return participants.Select(p => new MyTrainingDto
         {
@@ -1087,7 +1088,7 @@ public class TrainingVideoService : ITrainingVideoService
         if (participant == null)
             return null;
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
 
         return new MyTrainingDto
         {
@@ -1125,7 +1126,7 @@ public class TrainingVideoService : ITrainingVideoService
         if (participant.StatusId == TrainingVideoParticipantStatuses.Ids.Pending && dto.WatchedSeconds > 0)
         {
             participant.StatusId = TrainingVideoParticipantStatuses.Ids.InProgress;
-            participant.StartedAt = DateTime.UtcNow;
+            participant.StartedAt = TurkeyTime.Now;
         }
 
         participant.WatchedSeconds = dto.WatchedSeconds;
@@ -1135,10 +1136,10 @@ public class TrainingVideoService : ITrainingVideoService
         {
             participant.IsCompleted = true;
             participant.StatusId = TrainingVideoParticipantStatuses.Ids.Completed;
-            participant.CompletedAt = DateTime.UtcNow;
+            participant.CompletedAt = TurkeyTime.Now;
         }
 
-        participant.UpdatedAt = DateTime.UtcNow;
+        participant.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;
@@ -1537,7 +1538,7 @@ public class TrainingVideoService : ITrainingVideoService
                 LastName = item.LastName?.Trim(),
                 Token = Guid.NewGuid().ToString("N"),
                 StatusId = 1, // Pending
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = TurkeyTime.Now
             };
 
             _context.TrainingVideoExternalParticipants.Add(participant);
@@ -1586,7 +1587,7 @@ public class TrainingVideoService : ITrainingVideoService
             return false;
 
         participant.IsDeleted = true;
-        participant.UpdatedAt = DateTime.UtcNow;
+        participant.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;
@@ -1652,7 +1653,7 @@ public class TrainingVideoService : ITrainingVideoService
         if (!participant.IsOpened)
         {
             participant.IsOpened = true;
-            participant.OpenedAt = DateTime.UtcNow;
+            participant.OpenedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
         }
 
@@ -1672,7 +1673,7 @@ public class TrainingVideoService : ITrainingVideoService
             CurrentWatchCount = participant.WatchCount,
             WatchedSeconds = participant.WatchedSeconds,
             IsCompleted = participant.IsCompleted,
-            IsExpired = DateTime.UtcNow > assignment.DueDate,
+            IsExpired = TurkeyTime.Now > assignment.DueDate,
             ParticipantName = participant.FullName
         };
     }
@@ -1697,7 +1698,7 @@ public class TrainingVideoService : ITrainingVideoService
         if (participant.StatusId == 1 && dto.WatchedSeconds > 0)
         {
             participant.StatusId = 2; // InProgress
-            participant.StartedAt = DateTime.UtcNow;
+            participant.StartedAt = TurkeyTime.Now;
         }
 
         // İzleme süresi güncelle
@@ -1719,11 +1720,11 @@ public class TrainingVideoService : ITrainingVideoService
             {
                 participant.IsCompleted = true;
                 participant.StatusId = 3; // Completed
-                participant.CompletedAt = DateTime.UtcNow;
+                participant.CompletedAt = TurkeyTime.Now;
             }
         }
 
-        participant.UpdatedAt = DateTime.UtcNow;
+        participant.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;
@@ -1775,20 +1776,20 @@ public class TrainingVideoService : ITrainingVideoService
         {
             TrainingVideoExternalParticipantId = participant.Id,
             EmailTemplateId = templateId,
-            SentAt = DateTime.UtcNow,
+            SentAt = TurkeyTime.Now,
             SentByUserId = sentByUserId,
             EmailTypeId = emailTypeId,
             IsSuccess = true,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
         _context.TrainingVideoExternalEmailLogs.Add(emailLog);
 
         // Participant güncelle
         participant.EmailSentCount++;
-        participant.LastEmailSentAt = DateTime.UtcNow;
+        participant.LastEmailSentAt = TurkeyTime.Now;
         if (!participant.FirstEmailSentAt.HasValue)
         {
-            participant.FirstEmailSentAt = DateTime.UtcNow;
+            participant.FirstEmailSentAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();

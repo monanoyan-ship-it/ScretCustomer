@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services.DataServices;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services.DataServices;
 
@@ -28,7 +29,7 @@ public class LocaleStringResourceDataService : ILocaleStringResourceDataService
 
     public async Task UpdateAsync(LocaleStringResource entity)
     {
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = TurkeyTime.Now;
         _context.LocaleStringResources.Update(entity);
         await _context.SaveChangesAsync();
     }

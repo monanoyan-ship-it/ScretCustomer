@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Helpers;
 
@@ -88,7 +89,7 @@ public static class EncryptionHelper
     /// </summary>
     public static string CreateSurveyToken(int projectId, int personnelId)
     {
-        var payload = $"{projectId}:{personnelId}:{DateTime.UtcNow.Ticks}";
+        var payload = $"{projectId}:{personnelId}:{TurkeyTime.Now.Ticks}";
         return Encrypt(payload);
     }
 
@@ -130,7 +131,7 @@ public class SurveyTokenData
     /// </summary>
     public bool IsExpired(int expirationDays = 30)
     {
-        return CreatedAt.AddDays(expirationDays) < DateTime.UtcNow;
+        return CreatedAt.AddDays(expirationDays) < TurkeyTime.Now;
     }
 
     /// <summary>
@@ -139,6 +140,6 @@ public class SurveyTokenData
     public bool IsExpiredByDate(DateTime? expirationDate)
     {
         if (!expirationDate.HasValue) return false;
-        return DateTime.UtcNow > expirationDate.Value;
+        return TurkeyTime.Now > expirationDate.Value;
     }
 }

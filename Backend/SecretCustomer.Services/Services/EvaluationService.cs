@@ -9,6 +9,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -386,8 +387,8 @@ public class EvaluationService : IEvaluationService
             ChecklistId = project.ChecklistId,
             EvaluatorId = evaluatorId,
             StatusId = EvaluationStatuses.Ids.InProgress,
-            StartedAt = DateTime.UtcNow,
-            FormOpenedAt = DateTime.UtcNow
+            StartedAt = TurkeyTime.Now,
+            FormOpenedAt = TurkeyTime.Now
         };
 
         var created = await _evaluationRepository.CreateAsync(evaluation);
@@ -410,8 +411,8 @@ public class EvaluationService : IEvaluationService
             EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
             EvaluatorCustomerPersonnelId = dto.EvaluatorCustomerPersonnelId > 0 ? dto.EvaluatorCustomerPersonnelId : null,
             StatusId = EvaluationStatuses.Ids.InProgress,
-            StartedAt = DateTime.UtcNow,
-            FormOpenedAt = DateTime.UtcNow,
+            StartedAt = TurkeyTime.Now,
+            FormOpenedAt = TurkeyTime.Now,
             CallId = dto.CallId,
             CallDate = ToUtc(dto.CallDate),
             CallTime = dto.CallTime,
@@ -458,7 +459,7 @@ public class EvaluationService : IEvaluationService
 
         evaluation.Notes = dto.Notes;
         evaluation.EvaluationComment = dto.EvaluationComment;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
         return await MapToDtoAsync(evaluation);
@@ -716,8 +717,8 @@ public class EvaluationService : IEvaluationService
                 EvaluatorId = dto.EvaluatorId > 0 ? dto.EvaluatorId : null,
                 EvaluatorCustomerPersonnelId = dto.EvaluatorCustomerPersonnelId > 0 ? dto.EvaluatorCustomerPersonnelId : null,
                 StatusId = EvaluationStatuses.Ids.InProgress,
-                StartedAt = DateTime.UtcNow,
-                FormOpenedAt = dto.FormOpenedAt ?? DateTime.UtcNow
+                StartedAt = TurkeyTime.Now,
+                FormOpenedAt = dto.FormOpenedAt ?? TurkeyTime.Now
             };
             _context.Evaluations.Add(evaluation);
         }
@@ -766,7 +767,7 @@ public class EvaluationService : IEvaluationService
                     answer.SubCriteriaSelections.Add(new AnswerSubCriteriaSelection
                     {
                         SubCriteriaId = subCriteriaId,
-                        SelectedAt = DateTime.UtcNow
+                        SelectedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -801,11 +802,11 @@ public class EvaluationService : IEvaluationService
         evaluation.CustomerDealerId = dto.CustomerDealerId > 0 ? dto.CustomerDealerId : null;
         evaluation.YellowCardCount = scoreResult.YellowCardCount;
         evaluation.RedCardCount = scoreResult.RedCardCount;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
 
         if (targetStatusId == EvaluationStatuses.Ids.Completed)
         {
-            evaluation.CompletedAt = DateTime.UtcNow;
+            evaluation.CompletedAt = TurkeyTime.Now;
             // Not: Assignment tamamlandı olarak işaretlenmiyor
             // Aynı atamaya sınırsız dinleme (evaluation) eklenebilir
         }
@@ -1140,7 +1141,7 @@ public class EvaluationService : IEvaluationService
         answer.IsPenaltyApplied = dto.ApplyPenalty;
         answer.AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(dto.SelectedPenaltyType)?.Id
             ?? PenaltyTypes.Ids.None;
-        answer.UpdatedAt = DateTime.UtcNow;
+        answer.UpdatedAt = TurkeyTime.Now;
     }
 
     /// <summary>
@@ -1304,13 +1305,13 @@ public class EvaluationService : IEvaluationService
         // Durumu taslağa çevir
         evaluation.StatusId = EvaluationStatuses.Ids.Draft;
         evaluation.CompletedAt = null;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
 
         // Not: Assignment artık tamamlandı olarak işaretlenmediği için
         // reopen'da da güncellemesine gerek yok
 
         // Değişiklik logunu kaydet (Notes alanına ekle)
-        var logEntry = $"\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] Taslağa alındı. Önceki durum: {previousStatus}. Neden: {reason ?? "Belirtilmedi"}";
+        var logEntry = $"\n[{TurkeyTime.Now:yyyy-MM-dd HH:mm}] Taslağa alındı. Önceki durum: {previousStatus}. Neden: {reason ?? "Belirtilmedi"}";
         evaluation.Notes = (evaluation.Notes ?? "") + logEntry;
 
         await _context.SaveChangesAsync();
@@ -1360,10 +1361,10 @@ public class EvaluationService : IEvaluationService
 
         // Durumu iptal et
         evaluation.StatusId = EvaluationStatuses.Ids.Cancelled;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
 
         // Değişiklik logunu kaydet
-        var logEntry = $"\n[{DateTime.UtcNow:yyyy-MM-dd HH:mm}] İptal edildi. Önceki durum: {previousStatusName}. Neden: {reason ?? "Belirtilmedi"}";
+        var logEntry = $"\n[{TurkeyTime.Now:yyyy-MM-dd HH:mm}] İptal edildi. Önceki durum: {previousStatusName}. Neden: {reason ?? "Belirtilmedi"}";
         evaluation.Notes = (evaluation.Notes ?? "") + logEntry;
 
         await _context.SaveChangesAsync();

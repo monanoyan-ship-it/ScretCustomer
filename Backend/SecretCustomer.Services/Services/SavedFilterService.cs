@@ -3,6 +3,7 @@ using SecretCustomer.Core.DTOs.SavedFilter;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -77,7 +78,7 @@ public class SavedFilterService : ISavedFilterService
             throw new KeyNotFoundException("Filtre bulunamadı.");
 
         filter.IsDeleted = true;
-        filter.UpdatedAt = DateTime.UtcNow;
+        filter.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -94,7 +95,7 @@ public class SavedFilterService : ISavedFilterService
             if (filter != null)
             {
                 filter.IsDefault = true;
-                filter.UpdatedAt = DateTime.UtcNow;
+                filter.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -113,7 +114,7 @@ public class SavedFilterService : ISavedFilterService
         foreach (var f in defaults)
         {
             f.IsDefault = false;
-            f.UpdatedAt = DateTime.UtcNow;
+            f.UpdatedAt = TurkeyTime.Now;
         }
     }
 

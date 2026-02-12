@@ -6,6 +6,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using SecretCustomer.Services.Helpers;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -128,7 +129,7 @@ public class EmailTemplatesApiController : ControllerBase
             IsActive = dto.IsActive,
             IsDefault = dto.IsDefault,
             CustomerId = dto.CustomerId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         // Eğer varsayılan yapılıyorsa, diğer varsayılanları kaldır
@@ -179,7 +180,7 @@ public class EmailTemplatesApiController : ControllerBase
         template.TemplateTypeId = dto.TemplateTypeId;
         template.IsActive = dto.IsActive;
         template.CustomerId = dto.CustomerId;
-        template.UpdatedAt = DateTime.UtcNow;
+        template.UpdatedAt = TurkeyTime.Now;
 
         // Varsayılan değişikliği
         if (dto.IsDefault && !template.IsDefault)
@@ -214,7 +215,7 @@ public class EmailTemplatesApiController : ControllerBase
         }
 
         template.IsDeleted = true;
-        template.UpdatedAt = DateTime.UtcNow;
+        template.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return Ok(new { success = true, message = "Şablon silindi." });
@@ -243,7 +244,7 @@ public class EmailTemplatesApiController : ControllerBase
             IsActive = false,
             IsDefault = false,
             CustomerId = template.CustomerId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.EmailTemplates.Add(newTemplate);
@@ -304,11 +305,11 @@ public class EmailTemplatesApiController : ControllerBase
         body = body.Replace(EmailPlaceholders.RecipientEmail, "ahmet@example.com");
         body = body.Replace(EmailPlaceholders.ProjectName, "2025 Müşteri Memnuniyeti Anketi");
         body = body.Replace(EmailPlaceholders.SurveyName, "Hizmet Kalitesi Değerlendirmesi");
-        body = body.Replace(EmailPlaceholders.DueDate, DateTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.StartDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.EndDate, DateTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-        body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+        body = body.Replace(EmailPlaceholders.DueDate, TurkeyTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.StartDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.EndDate, TurkeyTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        body = body.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
         body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         var subject = dto.Subject;
@@ -391,8 +392,8 @@ public class EmailTemplatesApiController : ControllerBase
             body = body.Replace(EmailPlaceholders.DueDate, project.EndDate.ToString("dd.MM.yyyy"));
             body = body.Replace(EmailPlaceholders.StartDate, project.StartDate.ToString("dd.MM.yyyy"));
             body = body.Replace(EmailPlaceholders.EndDate, project.EndDate.ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+            body = body.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
             body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
             subject = "[TEST] " + template.Subject;
@@ -416,11 +417,11 @@ public class EmailTemplatesApiController : ControllerBase
             body = body.Replace(EmailPlaceholders.RecipientEmail, dto.ToEmail);
             body = body.Replace(EmailPlaceholders.ProjectName, "Test Projesi");
             body = body.Replace(EmailPlaceholders.SurveyName, "Test Anketi");
-            body = body.Replace(EmailPlaceholders.DueDate, DateTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.StartDate, DateTime.Now.ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.EndDate, DateTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.CurrentDate, DateTime.Now.ToString("dd.MM.yyyy"));
-            body = body.Replace(EmailPlaceholders.CurrentYear, DateTime.Now.Year.ToString());
+            body = body.Replace(EmailPlaceholders.DueDate, TurkeyTime.Now.AddDays(7).ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.StartDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.EndDate, TurkeyTime.Now.AddMonths(1).ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+            body = body.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
             body = body.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
             subject = "[TEST] " + template.Subject;

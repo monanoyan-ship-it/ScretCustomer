@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services.DataServices;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services.DataServices;
 
@@ -28,7 +29,7 @@ public class LanguageDataService : ILanguageDataService
 
     public async Task UpdateAsync(Language entity)
     {
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = TurkeyTime.Now;
         _context.Languages.Update(entity);
         await _context.SaveChangesAsync();
     }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Project;
@@ -6,6 +6,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -142,7 +143,7 @@ public class ProjectFilesApiController : BaseApiController
                 FileSize = file.Length,
                 ContentType = file.ContentType,
                 Description = description,
-                UploadedAt = DateTime.UtcNow,
+                UploadedAt = TurkeyTime.Now,
                 UploadedById = userId
             };
 
@@ -264,7 +265,7 @@ public class ProjectFilesApiController : BaseApiController
 
             // Veritabanindan sil (soft delete)
             projectFile.IsDeleted = true;
-            projectFile.UpdatedAt = DateTime.UtcNow;
+            projectFile.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Project file {FileId} deleted", id);
@@ -294,7 +295,7 @@ public class ProjectFilesApiController : BaseApiController
             }
 
             projectFile.Description = dto.Description;
-            projectFile.UpdatedAt = DateTime.UtcNow;
+            projectFile.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.ProjectFile.DescriptionUpdateSuccess") });

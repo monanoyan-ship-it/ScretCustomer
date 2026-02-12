@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.Entities;
 
@@ -68,5 +69,5 @@ public class AuditLog
     public string? StackTrace { get; set; }
 
     /// <summary>Log oluşturulma zamanı</summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = TurkeyTime.Now;
 }

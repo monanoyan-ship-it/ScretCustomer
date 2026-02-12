@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -204,7 +205,7 @@ public class SupportRequestService : ISupportRequestService
 
         request.AdminResponse = dto.AdminResponse;
         request.RespondedByUserId = adminUserId;
-        request.RespondedAt = DateTime.UtcNow;
+        request.RespondedAt = TurkeyTime.Now;
         request.StatusId = SupportRequestStatuses.Ids.Resolved;
         request.IsReadByUser = false; // Cevap geldi, kullanıcı henüz okumadı
 

@@ -1,4 +1,5 @@
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.Entities;
 
@@ -85,7 +86,7 @@ public class Approval : BaseEntity
     /// <summary>
     /// Talep tarihi
     /// </summary>
-    public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+    public DateTime RequestedAt { get; set; } = TurkeyTime.Now;
 
     /// <summary>
     /// Gerekli onay tarihi (son tarih)

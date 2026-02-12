@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Data;
 using SecretCustomer.Services.Services;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -316,7 +317,7 @@ public class SmtpApiController : ControllerBase
             </ul>
             <hr>
             <p style='font-size: 12px; color: #666;'>
-                Bu bir test emailidir. Gönderim zamanı: " + DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + @"
+                Bu bir test emailidir. Gönderim zamanı: " + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + @"
             </p>
         </div>
     </div>

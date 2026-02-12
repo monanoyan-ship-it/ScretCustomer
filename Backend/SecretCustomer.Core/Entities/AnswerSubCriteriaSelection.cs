@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -20,5 +22,5 @@ public class AnswerSubCriteriaSelection : BaseEntity
     /// <summary>
     /// Seçim tarihi
     /// </summary>
-    public DateTime SelectedAt { get; set; } = DateTime.UtcNow;
+    public DateTime SelectedAt { get; set; } = TurkeyTime.Now;
 }

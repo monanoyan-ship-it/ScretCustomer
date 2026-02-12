@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -136,7 +137,7 @@ public class UserService : IUserService
             LastName = createUserDto.LastName,
             RoleId = createUserDto.RoleId,
             IsActive = createUserDto.IsActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         var createdUser = await _userRepository.CreateAsync(user);

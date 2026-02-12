@@ -1,3 +1,5 @@
+using SecretCustomer.Core.Helpers;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -21,7 +23,7 @@ public class CustomerPersonnelOrganization : BaseEntity
     /// <summary>
     /// Atama tarihi
     /// </summary>
-    public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+    public DateTime AssignedAt { get; set; } = TurkeyTime.Now;
 
     /// <summary>
     /// Atama ile ilgili notlar

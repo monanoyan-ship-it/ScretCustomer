@@ -618,7 +618,7 @@ public class CustomerPortalApiController : ControllerBase
         worksheet.Range(1, 1, 1, 6).Merge();
 
         // Row 2: Date
-        worksheet.Cell(2, 1).Value = DateTime.Now.ToString("dd.MM.yyyy HH:mm");
+        worksheet.Cell(2, 1).Value = TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm");
         worksheet.Cell(2, 1).Style.Font.FontColor = XLColor.Gray;
 
         // Row 4+: Chart image
@@ -680,7 +680,7 @@ public class CustomerPortalApiController : ControllerBase
         workbook.SaveAs(stream);
         stream.Position = 0;
 
-        var fileName = $"{title.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        var fileName = $"{title.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
@@ -1674,7 +1674,7 @@ public class CustomerPortalApiController : ControllerBase
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            var fileName = $"EnCokSecilenAltKriterler_{DateTime.Now:yyyyMMdd}.xlsx";
+            var fileName = $"EnCokSecilenAltKriterler_{TurkeyTime.Now:yyyyMMdd}.xlsx";
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
         catch (Exception ex)
@@ -1758,7 +1758,7 @@ public class CustomerPortalApiController : ControllerBase
             workbook.SaveAs(stream);
             stream.Position = 0;
 
-            var fileName = $"EnCokOnerilenSorular_{DateTime.Now:yyyyMMdd}.xlsx";
+            var fileName = $"EnCokOnerilenSorular_{TurkeyTime.Now:yyyyMMdd}.xlsx";
             return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
         catch (Exception ex)
@@ -2181,7 +2181,7 @@ public class CustomerPortalApiController : ControllerBase
             var html = GenerateReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            return File(pdfBytes, "application/pdf", $"Karneme_{DateTime.Now:yyyyMMdd}.pdf");
+            return File(pdfBytes, "application/pdf", $"Karneme_{TurkeyTime.Now:yyyyMMdd}.pdf");
         }
         catch (Exception ex)
         {
@@ -2230,7 +2230,7 @@ public class CustomerPortalApiController : ControllerBase
             var html = GenerateReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            return File(pdfBytes, "application/pdf", $"TemsilciKarnesi_{personnelName.Value.FirstName}_{personnelName.Value.LastName}_{DateTime.Now:yyyyMMdd}.pdf");
+            return File(pdfBytes, "application/pdf", $"TemsilciKarnesi_{personnelName.Value.FirstName}_{personnelName.Value.LastName}_{TurkeyTime.Now:yyyyMMdd}.pdf");
         }
         catch (Exception ex)
         {
@@ -2330,7 +2330,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("</tbody></table></div>");
         }
 
-        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");
         sb.AppendLine("</body></html>");
 
         return sb.ToString();
@@ -3127,7 +3127,7 @@ public class CustomerPortalApiController : ControllerBase
             var html = GenerateDealerReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            var fileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            var fileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.pdf";
             return File(pdfBytes, "application/pdf", fileName);
         }
         catch (Exception ex)
@@ -3228,7 +3228,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("</tbody></table></div>");
         }
 
-        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");
         sb.AppendLine("</body></html>");
         return sb.ToString();
     }

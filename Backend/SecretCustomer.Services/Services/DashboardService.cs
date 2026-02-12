@@ -7,6 +7,7 @@ using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Globalization;
 using static SecretCustomer.Core.Interfaces.Services.IDashboardService;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -41,7 +42,7 @@ public class DashboardService : IDashboardService
         var averageScore = completedEvaluations.Average(e => e.ScorePercentage ?? 0);
 
         // Önceki ay karşılaştırması
-        var previousMonth = DateTime.UtcNow.AddMonths(-1);
+        var previousMonth = TurkeyTime.Now.AddMonths(-1);
         var previousMonthEvals = await _evaluationRepository.GetAllAsync(
             previousMonth.AddMonths(-1), previousMonth);
         var previousMonthCompleted = previousMonthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
@@ -108,7 +109,7 @@ public class DashboardService : IDashboardService
             return new ScorecardDto();
         }
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var currentMonthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var lastMonthStart = currentMonthStart.AddMonths(-1);
         var lastMonthEnd = currentMonthStart.AddDays(-1);
@@ -208,7 +209,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     public async Task<DailyMetricsDto> GetDailyMetricsAsync(int? userId = null)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var today = now.Date;
         var weekStart = today.AddDays(-(int)today.DayOfWeek + (int)DayOfWeek.Monday);
         if (today.DayOfWeek == DayOfWeek.Sunday) weekStart = weekStart.AddDays(-7);
@@ -297,7 +298,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     public async Task<UserPerformanceDto> GetUserPerformanceAsync(int? currentUserId = null)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var today = now.Date;
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
@@ -399,7 +400,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     public async Task<TargetProgressDto> GetTargetProgressAsync(int? userId = null)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var today = now.Date;
 
         // Günlük hedef
@@ -511,7 +512,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     public async Task<UserProjectBreakdownDto> GetUserProjectBreakdownAsync(int userId)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Kullanıcı bilgisi
@@ -556,7 +557,7 @@ public class DashboardService : IDashboardService
 
     public async Task<UserProjectBreakdownDto> GetUserProjectBreakdownTodayAsync(int userId)
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var todayStart = new DateTime(now.Year, now.Month, now.Day, 0, 0, 0, DateTimeKind.Utc);
 
         var user = await _context.Users.FindAsync(userId);
@@ -602,7 +603,7 @@ public class DashboardService : IDashboardService
     /// </summary>
     public async Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync()
     {
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
 
         // Firma bazlı gruplama

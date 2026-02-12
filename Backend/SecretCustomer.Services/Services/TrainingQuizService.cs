@@ -5,6 +5,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -153,7 +154,7 @@ public class TrainingQuizService : ITrainingQuizService
         quiz.ShuffleOptions = dto.ShuffleOptions;
         quiz.ShowResults = dto.ShowResults;
         quiz.IsActive = dto.IsActive;
-        quiz.UpdatedAt = DateTime.UtcNow;
+        quiz.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -167,7 +168,7 @@ public class TrainingQuizService : ITrainingQuizService
             throw new Exception("Anket bulunamadı");
 
         quiz.IsDeleted = true;
-        quiz.UpdatedAt = DateTime.UtcNow;
+        quiz.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -228,7 +229,7 @@ public class TrainingQuizService : ITrainingQuizService
         question.HelpText = dto.HelpText;
         question.Order = dto.Order;
         question.QuestionTypeId = dto.QuestionTypeId;
-        question.UpdatedAt = DateTime.UtcNow;
+        question.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -242,7 +243,7 @@ public class TrainingQuizService : ITrainingQuizService
             throw new Exception("Soru bulunamadı");
 
         question.IsDeleted = true;
-        question.UpdatedAt = DateTime.UtcNow;
+        question.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -259,7 +260,7 @@ public class TrainingQuizService : ITrainingQuizService
             if (question != null)
             {
                 question.Order = i + 1;
-                question.UpdatedAt = DateTime.UtcNow;
+                question.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -307,7 +308,7 @@ public class TrainingQuizService : ITrainingQuizService
         option.Order = dto.Order;
         option.WeightPoints = dto.WeightPoints;
         option.IsCorrect = dto.IsCorrect;
-        option.UpdatedAt = DateTime.UtcNow;
+        option.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -321,7 +322,7 @@ public class TrainingQuizService : ITrainingQuizService
             throw new Exception("Seçenek bulunamadı");
 
         option.IsDeleted = true;
-        option.UpdatedAt = DateTime.UtcNow;
+        option.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
     }
@@ -338,7 +339,7 @@ public class TrainingQuizService : ITrainingQuizService
             if (option != null)
             {
                 option.Order = i + 1;
-                option.UpdatedAt = DateTime.UtcNow;
+                option.UpdatedAt = TurkeyTime.Now;
             }
         }
 
@@ -488,8 +489,8 @@ public class TrainingQuizService : ITrainingQuizService
             TrainingQuizId = dto.QuizId,
             TrainingVideoParticipantId = dto.ParticipantId,
             TrainingVideoExternalParticipantId = dto.ExternalParticipantId,
-            StartedAt = DateTime.UtcNow,
-            CompletedAt = DateTime.UtcNow,
+            StartedAt = TurkeyTime.Now,
+            CompletedAt = TurkeyTime.Now,
             StatusId = TrainingQuizResponseStatuses.Ids.Completed,
             AttemptNumber = previousAttempts + 1
         };
@@ -745,7 +746,7 @@ public class TrainingQuizService : ITrainingQuizService
 
         return new Core.DTOs.Report.ExcelExportDto
         {
-            FileName = $"Anket_Yanitlari_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileName = $"Anket_Yanitlari_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
             FileContent = stream.ToArray(),
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
@@ -838,7 +839,7 @@ public class TrainingQuizService : ITrainingQuizService
         if (currentQuiz != null)
         {
             currentQuiz.TrainingVideoId = null;
-            currentQuiz.UpdatedAt = DateTime.UtcNow;
+            currentQuiz.UpdatedAt = TurkeyTime.Now;
         }
 
         // Yeni quiz atanacaksa
@@ -855,7 +856,7 @@ public class TrainingQuizService : ITrainingQuizService
                 throw new Exception("Bu anket başka bir videoya atanmış");
 
             newQuiz.TrainingVideoId = videoId;
-            newQuiz.UpdatedAt = DateTime.UtcNow;
+            newQuiz.UpdatedAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();

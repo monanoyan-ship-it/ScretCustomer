@@ -1,4 +1,5 @@
 ﻿using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Core.Entities;
 
@@ -18,7 +19,7 @@ public class CustomerPersonnelTaskAssignment : BaseEntity
     /// <summary>
     /// Atama tarihi
     /// </summary>
-    public DateTime AssignedDate { get; set; } = DateTime.UtcNow;
+    public DateTime AssignedDate { get; set; } = TurkeyTime.Now;
 
     /// <summary>
     /// Tamamlanma tarihi

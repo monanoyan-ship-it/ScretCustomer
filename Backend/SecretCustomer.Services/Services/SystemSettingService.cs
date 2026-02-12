@@ -3,6 +3,7 @@ using SecretCustomer.Core.DTOs.SystemSetting;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -94,7 +95,7 @@ public class SystemSettingService : ISystemSettingService
         setting.Value = dto.Value;
         if (dto.Description != null)
             setting.Description = dto.Description;
-        setting.UpdatedAt = DateTime.UtcNow;
+        setting.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -119,7 +120,7 @@ public class SystemSettingService : ISystemSettingService
         else
         {
             setting.Value = value;
-            setting.UpdatedAt = DateTime.UtcNow;
+            setting.UpdatedAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();
@@ -135,7 +136,7 @@ public class SystemSettingService : ISystemSettingService
             return false;
 
         setting.IsDeleted = true;
-        setting.UpdatedAt = DateTime.UtcNow;
+        setting.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return true;

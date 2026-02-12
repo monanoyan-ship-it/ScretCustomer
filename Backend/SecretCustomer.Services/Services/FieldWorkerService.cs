@@ -4,6 +4,7 @@ using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -24,7 +25,7 @@ public class FieldWorkerService : IFieldWorkerService
         if (user == null)
             throw new InvalidOperationException("Kullanıcı bulunamadı");
 
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var todayStart = now.Date;
         var weekStart = now.Date.AddDays(-(int)now.DayOfWeek);
 
@@ -451,7 +452,7 @@ public class FieldWorkerService : IFieldWorkerService
                 VisitId = visitId,
                 EvaluatorId = userId,
                 StatusId = EvaluationStatuses.Ids.InProgress,
-                StartedAt = DateTime.UtcNow,
+                StartedAt = TurkeyTime.Now,
                 CreatedBy = user.Username
             };
             _context.Evaluations.Add(evaluation);
@@ -503,7 +504,7 @@ public class FieldWorkerService : IFieldWorkerService
                     answer.SubCriteriaSelections.Add(new AnswerSubCriteriaSelection
                     {
                         SubCriteriaId = subCriteriaId,
-                        SelectedAt = DateTime.UtcNow
+                        SelectedAt = TurkeyTime.Now
                     });
                 }
             }
@@ -527,11 +528,11 @@ public class FieldWorkerService : IFieldWorkerService
         evaluation.ScorePercentage = scoreResult.Percentage;
         evaluation.YellowCardCount = scoreResult.YellowCardCount;
         evaluation.RedCardCount = scoreResult.RedCardCount;
-        evaluation.UpdatedAt = DateTime.UtcNow;
+        evaluation.UpdatedAt = TurkeyTime.Now;
 
         if (!dto.IsDraft)
         {
-            evaluation.CompletedAt = DateTime.UtcNow;
+            evaluation.CompletedAt = TurkeyTime.Now;
         }
 
         await _context.SaveChangesAsync();
@@ -690,7 +691,7 @@ public class FieldWorkerService : IFieldWorkerService
 
     public async Task<string> GenerateVisitIdAsync()
     {
-        var year = DateTime.UtcNow.Year;
+        var year = TurkeyTime.Now.Year;
         var prefix = $"ZYR-{year}-";
 
         // Bu yılki son ziyaret ID'sini bul

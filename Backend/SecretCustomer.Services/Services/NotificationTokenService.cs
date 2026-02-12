@@ -4,6 +4,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -66,7 +67,7 @@ public class NotificationTokenService : INotificationTokenService
             var payload = Decrypt(token);
             if (payload == null) return null;
 
-            if (payload.ExpiresAt < DateTime.UtcNow)
+            if (payload.ExpiresAt < TurkeyTime.Now)
             {
                 _logger.LogWarning("Notification token expired. ExpiresAt: {ExpiresAt}", payload.ExpiresAt);
                 return null;

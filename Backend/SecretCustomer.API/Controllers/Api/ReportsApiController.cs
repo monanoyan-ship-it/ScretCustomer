@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.AI;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -674,7 +675,7 @@ public class ReportsApiController : BaseApiController
             var html = GeneratePersonnelReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            var fileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            var fileName = $"TemsilciKarnesi_{report.PersonnelName.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.pdf";
             return File(pdfBytes, "application/pdf", fileName);
         }
         catch (Exception ex)
@@ -1612,7 +1613,7 @@ public class ReportsApiController : BaseApiController
             var html = GenerateDealerReportCardHtml(report);
             var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
 
-            var fileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+            var fileName = $"SubeKarnesi_{report.DealerName.Replace(" ", "_")}_{TurkeyTime.Now:yyyyMMdd}.pdf";
             return File(pdfBytes, "application/pdf", fileName);
         }
         catch (Exception ex)
@@ -1759,7 +1760,7 @@ public class ReportsApiController : BaseApiController
             sb.AppendLine("</tbody></table></div>");
         }
 
-        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");
         sb.AppendLine("</body></html>");
         return sb.ToString();
     }
@@ -1868,7 +1869,7 @@ public class ReportsApiController : BaseApiController
             sb.AppendLine("</tbody></table></div>");
         }
 
-        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {DateTime.Now:dd.MM.yyyy HH:mm}</p>");
+        sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");
         sb.AppendLine("</body></html>");
         return sb.ToString();
     }

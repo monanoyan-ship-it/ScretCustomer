@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -53,7 +54,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -88,7 +89,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -123,7 +124,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -146,7 +147,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -168,7 +169,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -191,7 +192,7 @@ public class AuditLogService : IAuditLogService
             UserAgent = userAgent,
             RequestUrl = requestUrl,
             HttpMethod = httpMethod,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = TurkeyTime.Now
         };
 
         _context.AuditLogs.Add(log);
@@ -265,7 +266,7 @@ public class AuditLogService : IAuditLogService
 
     public async Task<int> DeleteOldLogsAsync(int daysToKeep)
     {
-        var cutoffDate = DateTime.UtcNow.AddDays(-daysToKeep);
+        var cutoffDate = TurkeyTime.Now.AddDays(-daysToKeep);
         var oldLogs = await _context.AuditLogs
             .Where(l => l.CreatedAt < cutoffDate)
             .ToListAsync();

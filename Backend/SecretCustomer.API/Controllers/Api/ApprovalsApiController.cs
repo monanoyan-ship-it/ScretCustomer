@@ -7,6 +7,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -126,7 +127,7 @@ public class ApprovalsApiController : BaseApiController
         }
 
         if (filter.IsOverdue.HasValue && filter.IsOverdue.Value)
-            query = query.Where(a => a.DueDate.HasValue && a.DueDate.Value < DateTime.UtcNow && a.StatusId == ApprovalStatuses.Ids.Pending);
+            query = query.Where(a => a.DueDate.HasValue && a.DueDate.Value < TurkeyTime.Now && a.StatusId == ApprovalStatuses.Ids.Pending);
 
         if (!string.IsNullOrEmpty(filter.SearchTerm))
         {
@@ -286,7 +287,7 @@ public class ApprovalsApiController : BaseApiController
             RequestedByUserId = userType == "CustomerPersonnel" ? null : currentUserId,
             RequestedByCustomerPersonnelId = userType == "CustomerPersonnel" ? currentUserId : null,
             ApproverUserId = dto.ApproverUserId,
-            RequestedAt = DateTime.UtcNow,
+            RequestedAt = TurkeyTime.Now,
             DueDate = dto.DueDate,
             PriorityId = NotificationPriorities.GetBySystemName(dto.Priority)?.Id ?? NotificationPriorities.Ids.Normal,
             AutoApproveHours = dto.AutoApproveHours,
@@ -336,7 +337,7 @@ public class ApprovalsApiController : BaseApiController
 
         approval.StatusId = dto.Approved ? ApprovalStatuses.Ids.Approved : ApprovalStatuses.Ids.Rejected;
         approval.ApprovedByUserId = userId;
-        approval.RespondedAt = DateTime.UtcNow;
+        approval.RespondedAt = TurkeyTime.Now;
         approval.ResponseNote = dto.Note;
 
         // === HOOK: Taslağa Alma Talebi Onayı ===
@@ -444,7 +445,7 @@ public class ApprovalsApiController : BaseApiController
     public async Task<IActionResult> GetSummary()
     {
         var userId = GetCurrentUserId();
-        var now = DateTime.UtcNow;
+        var now = TurkeyTime.Now;
         var today = now.Date;
 
         var summary = new ApprovalSummaryDto
@@ -486,7 +487,7 @@ public class ApprovalsApiController : BaseApiController
 
     private async Task<string> GenerateApprovalNumber()
     {
-        var year = DateTime.UtcNow.Year;
+        var year = TurkeyTime.Now.Year;
         var count = await _context.Approvals.CountAsync(a => a.CreatedAt.Year == year) + 1;
         return $"APR-{year}-{count:D4}";
     }

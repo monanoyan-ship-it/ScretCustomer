@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services.DataServices;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services.DataServices;
 
@@ -28,7 +29,7 @@ public class UserPermissionDataService : IUserPermissionDataService
 
     public async Task UpdateAsync(UserPermission entity)
     {
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = TurkeyTime.Now;
         _context.UserPermissions.Update(entity);
         await _context.SaveChangesAsync();
     }
@@ -39,7 +40,7 @@ public class UserPermissionDataService : IUserPermissionDataService
         if (entity != null)
         {
             entity.IsDeleted = true;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
         }
     }

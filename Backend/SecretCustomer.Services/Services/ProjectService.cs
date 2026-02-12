@@ -5,6 +5,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -118,7 +119,7 @@ public class ProjectService : IProjectService
 
         return projects.Select(p =>
         {
-            var daysRemaining = (p.EndDate - DateTime.UtcNow).Days;
+            var daysRemaining = (p.EndDate - TurkeyTime.Now).Days;
 
             // İlerleme: Sadece OnlineSurvey için hesaplanır
             decimal completionPercentage = -1;
@@ -324,7 +325,7 @@ public class ProjectService : IProjectService
         // Bitiş tarihi filtresi (proje bitiş tarihine göre)
         if (!string.IsNullOrEmpty(filter.EndingDateFilter))
         {
-            var today = DateTime.UtcNow.Date;
+            var today = TurkeyTime.Now.Date;
             var todayStart = DateTime.SpecifyKind(today, DateTimeKind.Utc);
             var todayEnd = DateTime.SpecifyKind(today.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
@@ -548,7 +549,7 @@ public class ProjectService : IProjectService
         project.ReminderEmailTemplateId = dto.ReminderEmailTemplateId;
         project.SendReminderEmails = dto.SendReminderEmails;
         project.ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd;
-        project.UpdatedAt = DateTime.UtcNow;
+        project.UpdatedAt = TurkeyTime.Now;
 
         // Update team members
         if (dto.TeamMembers != null)
@@ -581,7 +582,7 @@ public class ProjectService : IProjectService
                         ProjectId = project.Id,
                         UserId = memberDto.UserId,
                         Role = memberDto.Role ?? "Evaluator",
-                        AssignedAt = DateTime.UtcNow,
+                        AssignedAt = TurkeyTime.Now,
                         IsActive = true
                     });
                     newMemberUserIds.Add(memberDto.UserId);
@@ -595,7 +596,7 @@ public class ProjectService : IProjectService
         if (dto.TeamMembers != null)
         {
             var newMemberIds = project.TeamMembers
-                .Where(m => !m.IsDeleted && m.AssignedAt >= DateTime.UtcNow.AddSeconds(-5))
+                .Where(m => !m.IsDeleted && m.AssignedAt >= TurkeyTime.Now.AddSeconds(-5))
                 .Select(m => m.UserId)
                 .ToList();
 
@@ -622,7 +623,7 @@ public class ProjectService : IProjectService
             return false;
 
         project.IsDeleted = true;
-        project.UpdatedAt = DateTime.UtcNow;
+        project.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -635,7 +636,7 @@ public class ProjectService : IProjectService
 
         project.IsActive = false;
         project.StatusId = ProjectStatuses.Ids.Completed;
-        project.UpdatedAt = DateTime.UtcNow;
+        project.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         return MapToDto(project);
@@ -652,9 +653,9 @@ public class ProjectService : IProjectService
         {
             project.StatusId = statusItem.Id;
             if (!string.IsNullOrEmpty(dto.Notes))
-                project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": " + dto.Notes;
+                project.Notes = (project.Notes ?? "") + "\n" + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm") + ": " + dto.Notes;
 
-            project.UpdatedAt = DateTime.UtcNow;
+            project.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
         }
 
@@ -679,8 +680,8 @@ public class ProjectService : IProjectService
 
         project.StatusId = ProjectStatuses.Ids.Completed;
         project.IsActive = false;
-        project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": Proje tamamlandi";
-        project.UpdatedAt = DateTime.UtcNow;
+        project.Notes = (project.Notes ?? "") + "\n" + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm") + ": Proje tamamlandi";
+        project.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         // Proje ekibine bildirim
@@ -710,8 +711,8 @@ public class ProjectService : IProjectService
 
         project.StatusId = ProjectStatuses.Ids.Cancelled;
         project.IsActive = false;
-        project.Notes = (project.Notes ?? "") + "\n" + DateTime.UtcNow.ToString("dd.MM.yyyy HH:mm") + ": Proje iptal edildi" + (string.IsNullOrEmpty(reason) ? "" : " - " + reason);
-        project.UpdatedAt = DateTime.UtcNow;
+        project.Notes = (project.Notes ?? "") + "\n" + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm") + ": Proje iptal edildi" + (string.IsNullOrEmpty(reason) ? "" : " - " + reason);
+        project.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
         // Proje ekibine bildirim
@@ -779,7 +780,7 @@ public class ProjectService : IProjectService
 
         // Get daily statistics
         var start = startDate ?? detail.StartDate;
-        var end = endDate ?? DateTime.UtcNow;
+        var end = endDate ?? TurkeyTime.Now;
 
         var evaluations = await _context.Evaluations
             .Where(e => e.ProjectId == projectId && !e.IsDeleted)
@@ -842,11 +843,11 @@ public class ProjectService : IProjectService
 
     public async Task<IEnumerable<ProjectDto>> GetUpcomingDeadlinesAsync(int daysAhead = 7)
     {
-        var deadline = DateTime.UtcNow.AddDays(daysAhead);
+        var deadline = TurkeyTime.Now.AddDays(daysAhead);
         var projects = await _context.Projects
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
-            .Where(p => p.EndDate <= deadline && p.EndDate >= DateTime.UtcNow && p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
+            .Where(p => p.EndDate <= deadline && p.EndDate >= TurkeyTime.Now && p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
             .OrderBy(p => p.EndDate)
             .ToListAsync();
 
@@ -855,7 +856,7 @@ public class ProjectService : IProjectService
 
     public async Task<string> GenerateProjectCodeAsync()
     {
-        var year = DateTime.UtcNow.Year;
+        var year = TurkeyTime.Now.Year;
         var prefix = $"PRJ-{year}-";
 
         var lastProject = await _context.Projects

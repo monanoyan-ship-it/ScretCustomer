@@ -7,6 +7,7 @@ using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 using System.Security.Claims;
+using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -42,7 +43,7 @@ public class AnnouncementsApiController : BaseApiController
         try
         {
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
-            var now = DateTime.UtcNow;
+            var now = TurkeyTime.Now;
 
             var query = _context.Announcements
                 .Include(a => a.CreatedByUser)
@@ -102,7 +103,7 @@ public class AnnouncementsApiController : BaseApiController
         try
         {
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value ?? "";
-            var now = DateTime.UtcNow;
+            var now = TurkeyTime.Now;
 
             var announcements = await _context.Announcements
                 .Where(a => a.IsActive)
@@ -242,7 +243,7 @@ public class AnnouncementsApiController : BaseApiController
                 Summary = dto.Summary,
                 TypeId = dto.TypeId,
                 Priority = dto.Priority,
-                PublishDate = dto.PublishDate ?? DateTime.UtcNow,
+                PublishDate = dto.PublishDate ?? TurkeyTime.Now,
                 ExpiryDate = dto.ExpiryDate,
                 IsActive = dto.IsActive,
                 IsPinned = dto.IsPinned,
@@ -357,7 +358,7 @@ public class AnnouncementsApiController : BaseApiController
             announcement.IsActive = dto.IsActive;
             announcement.IsPinned = dto.IsPinned;
             announcement.TargetRoles = dto.TargetRoles;
-            announcement.UpdatedAt = DateTime.UtcNow;
+            announcement.UpdatedAt = TurkeyTime.Now;
 
             await _context.SaveChangesAsync();
 
@@ -388,7 +389,7 @@ public class AnnouncementsApiController : BaseApiController
             }
 
             announcement.IsDeleted = true;
-            announcement.UpdatedAt = DateTime.UtcNow;
+            announcement.UpdatedAt = TurkeyTime.Now;
             await _context.SaveChangesAsync();
 
             _logger.LogInformation("Announcement {Id} deleted", id);
