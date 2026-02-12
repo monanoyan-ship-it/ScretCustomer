@@ -1079,6 +1079,122 @@ function CustomerDashboardViewModel() {
         });
     };
 
+    // ===== ALL EVALUATIONS MODAL (tamamen izole, başka hiçbir şeyi etkilemez) =====
+    self.isAllEvalsModalOpen = ko.observable(false);
+    self.isAllEvalsLoading = ko.observable(false);
+    self.allEvalsItems = ko.observableArray([]);
+    self.allEvalsTotal = ko.observable(0);
+    self.allEvalsPage = ko.observable(1);
+    self.allEvalsPageSize = 20;
+    self.allEvalsProjects = ko.observableArray([]);
+    self.allEvalsProjectId = ko.observable('');
+    self.allEvalsStartDate = ko.observable('');
+    self.allEvalsEndDate = ko.observable('');
+    self.allEvalsDateRange = ko.observable('');
+
+    self.allEvalsDateRange.subscribe(function(val) {
+        applyDateRange(val, self.allEvalsStartDate, self.allEvalsEndDate);
+    });
+
+    self.allEvalsTotalPages = ko.computed(function() {
+        return Math.ceil(self.allEvalsTotal() / self.allEvalsPageSize);
+    });
+
+    self.getEvalStatusBadgeClass = function(status) {
+        switch (status) {
+            case 'Completed': return 'bg-success';
+            case 'Draft': return 'bg-secondary';
+            case 'InProgress': return 'bg-info';
+            case 'Pending': return 'bg-warning text-dark';
+            case 'Cancelled': return 'bg-danger';
+            default: return 'bg-secondary';
+        }
+    };
+
+    self.openAllEvalsModal = function() {
+        self.allEvalsPage(1);
+        self.isAllEvalsModalOpen(true);
+        // Proje listesini bağımsız olarak yükle (questionTrendProjects'e DOKUNMA)
+        if (self.allEvalsProjects().length === 0) {
+            customerApiFetch('/api/customer/portal/projects')
+                .then(function(r) { return r.ok ? r.json() : []; })
+                .then(function(data) { self.allEvalsProjects(data || []); })
+                .catch(function() {});
+        }
+        self.loadAllEvals(1);
+    };
+
+    self.closeAllEvalsModal = function() {
+        self.isAllEvalsModalOpen(false);
+        self.allEvalsItems([]);
+        self.allEvalsTotal(0);
+    };
+
+    self.filterAllEvals = function() {
+        self.allEvalsPage(1);
+        self.loadAllEvals(1);
+    };
+
+    self.resetAllEvalsFilters = function() {
+        self.allEvalsProjectId('');
+        self.allEvalsDateRange('');
+        self.allEvalsStartDate('');
+        self.allEvalsEndDate('');
+        self.allEvalsPage(1);
+        self.loadAllEvals(1);
+    };
+
+    self.loadAllEvals = function(page) {
+        self.isAllEvalsLoading(true);
+        self.allEvalsPage(page);
+
+        var url = '/api/customer/portal/evaluations?page=' + page + '&pageSize=' + self.allEvalsPageSize;
+        if (self.allEvalsProjectId()) url += '&projectId=' + self.allEvalsProjectId();
+        if (self.allEvalsStartDate()) url += '&startDate=' + self.allEvalsStartDate();
+        if (self.allEvalsEndDate()) url += '&endDate=' + self.allEvalsEndDate();
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Evaluations API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(data) {
+                self.allEvalsItems(data.items || []);
+                self.allEvalsTotal(data.totalCount || 0);
+                self.isAllEvalsLoading(false);
+            })
+            .catch(function(error) {
+                console.error('All evaluations load error:', error);
+                self.isAllEvalsLoading(false);
+            });
+    };
+
+    self.exportAllEvals = function() {
+        var url = '/api/customer/portal/evaluations/export?_=1';
+        if (self.allEvalsProjectId()) url += '&projectId=' + self.allEvalsProjectId();
+        if (self.allEvalsStartDate()) url += '&startDate=' + self.allEvalsStartDate();
+        if (self.allEvalsEndDate()) url += '&endDate=' + self.allEvalsEndDate();
+
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Export error: ' + r.status);
+                return r.blob();
+            })
+            .then(function(blob) {
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'Degerlendirmeler.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(a.href);
+            })
+            .catch(function(error) {
+                console.error('Excel export error:', error);
+                toastr.error('Excel indirme hatası');
+            });
+    };
+
     // Initialize
     self.loadDashboard();
     self.loadQuestionGroupTrend();

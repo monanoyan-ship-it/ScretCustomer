@@ -25,7 +25,8 @@ public interface ICustomerPortalDataService
 
     // ===== EVALUATIONS =====
     Task<object> GetRecentEvaluationsAsync(int customerId, List<int>? allowedPersonnelIds, int count);
-    Task<object> GetEvaluationsAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int page, int pageSize);
+    Task<object> GetEvaluationsAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int page, int pageSize, int? projectId = null, DateTime? startDate = null, DateTime? endDate = null);
+    Task<(byte[] FileContent, string FileName)> ExportAllEvaluationsToExcelAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate);
     Task<object> GetInternalEvaluationsAsync(int customerId, string? role, int? personnelId,
         int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
         List<int>? projectIds, List<string>? evaluatorNames, List<string>? personnelNames,

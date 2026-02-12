@@ -1370,7 +1370,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         return result;
     }
 
-    public async Task<object> GetEvaluationsAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int page, int pageSize)
+    public async Task<object> GetEvaluationsAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int page, int pageSize, int? projectId = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.Evaluations
             .Include(e => e.Project)
@@ -1380,16 +1380,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                         e.StatusId != EvaluationStatuses.Ids.Cancelled); // Taslaklar dahil, iptal edilenler hariç
 
         // Rol bazlı filtreleme
-        // Manager/Supervisor: Kendi yaptıkları değerlendirmeler (EvaluatorCustomerPersonnelId)
-        // Operator: Kendilerinin değerlendirildiği kayıtlar (EvaluatedCustomerPersonnelId)
         if (role == "CustomerOperator" && personnelId.HasValue)
         {
-            // Operator: Sadece kendisinin değerlendirildiği kayıtlar
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
         }
         else if (role == "CustomerSupervisor" && personnelId.HasValue)
         {
-            // Supervisor: Kendi yaptığı değerlendirmeler + allowedPersonnelIds'deki personelin değerlendirildiği kayıtlar
             if (allowedPersonnelIds != null)
             {
                 query = query.Where(e =>
@@ -1397,18 +1393,25 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
             }
         }
-        // Manager ve Admin: Tüm kayıtları görür (ek filtre yok)
+
+        // Modal filtreleri (CallDate bazlı - ExternalEvaluations ile aynı pattern)
+        if (projectId.HasValue)
+            query = query.Where(e => e.ProjectId == projectId.Value);
+        if (startDate.HasValue)
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= startDate.Value.Date);
+        if (endDate.HasValue)
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value < endDate.Value.Date.AddDays(1));
 
         var totalCount = await query.CountAsync();
 
         var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CreatedAt,
+                evaluationDate = e.CallDate,
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 scoringMethodId = e.Project.Checklist != null ? e.Project.Checklist.ScoringMethodId : 1,
@@ -1437,6 +1440,78 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             pageSize,
             totalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
         };
+    }
+
+    public async Task<(byte[] FileContent, string FileName)> ExportAllEvaluationsToExcelAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate)
+    {
+        var query = _context.Evaluations
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Checklist)
+            .Where(e => e.Project != null &&
+                        e.Project.CustomerId == customerId &&
+                        e.StatusId != EvaluationStatuses.Ids.Cancelled);
+
+        if (role == "CustomerOperator" && personnelId.HasValue)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
+        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            if (allowedPersonnelIds != null)
+                query = query.Where(e =>
+                    e.EvaluatorCustomerPersonnelId == personnelId.Value ||
+                    (e.EvaluatedCustomerPersonnelId.HasValue && allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value)));
+        }
+
+        if (projectId.HasValue)
+            query = query.Where(e => e.ProjectId == projectId.Value);
+        if (startDate.HasValue)
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= startDate.Value.Date);
+        if (endDate.HasValue)
+            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value < endDate.Value.Date.AddDays(1));
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CallDate)
+            .Select(e => new
+            {
+                evaluationDate = e.CallDate,
+                projectName = e.Project!.Name,
+                checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
+                score = e.ScorePercentage ?? 0,
+                statusId = e.StatusId
+            })
+            .ToListAsync();
+
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Değerlendirmeler");
+
+        worksheet.Cell(1, 1).Value = "Tarih";
+        worksheet.Cell(1, 2).Value = "Proje";
+        worksheet.Cell(1, 3).Value = "Checklist";
+        worksheet.Cell(1, 4).Value = "Puan";
+        worksheet.Cell(1, 5).Value = "Durum";
+
+        var headerRange = worksheet.Range(1, 1, 1, 5);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        for (int i = 0; i < evaluations.Count; i++)
+        {
+            var row = i + 2;
+            var eval = evaluations[i];
+            worksheet.Cell(row, 1).Value = eval.evaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            worksheet.Cell(row, 2).Value = eval.projectName;
+            worksheet.Cell(row, 3).Value = eval.checklistName;
+            worksheet.Cell(row, 4).Value = eval.score;
+            worksheet.Cell(row, 5).Value = GetStatusText(eval.statusId);
+        }
+
+        worksheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        var fileName = $"Degerlendirmeler_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
+        return (stream.ToArray(), fileName);
     }
 
     private static string GetStatusText(int statusId)

@@ -844,10 +844,10 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
-    /// Tüm değerlendirmeler (sayfalı)
+    /// Tüm değerlendirmeler (sayfalı + filtreli)
     /// </summary>
     [HttpGet("evaluations")]
-    public async Task<IActionResult> GetEvaluations([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    public async Task<IActionResult> GetEvaluations([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -857,8 +857,26 @@ public class CustomerPortalApiController : ControllerBase
         var personnelId = GetPersonnelId();
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var result = await _cpDataService.GetEvaluationsAsync(customerId.Value, role, personnelId, allowedPersonnelIds, page, pageSize);
+        var result = await _cpDataService.GetEvaluationsAsync(customerId.Value, role, personnelId, allowedPersonnelIds, page, pageSize, projectId, startDate, endDate);
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Tüm değerlendirmeler Excel export
+    /// </summary>
+    [HttpGet("evaluations/export")]
+    public async Task<IActionResult> ExportAllEvaluations([FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        var role = GetPersonnelRole();
+        var personnelId = GetPersonnelId();
+        var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+
+        var result = await _cpDataService.ExportAllEvaluationsToExcelAsync(customerId.Value, role, personnelId, allowedPersonnelIds, projectId, startDate, endDate);
+        return File(result.FileContent, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", result.FileName);
     }
 
     private static string GetStatusText(int statusId)

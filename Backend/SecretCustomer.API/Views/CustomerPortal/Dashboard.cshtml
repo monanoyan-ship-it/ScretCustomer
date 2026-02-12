@@ -394,7 +394,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white border-0 py-2 d-flex justify-content-between align-items-center">
                 <h6 class="mb-0"><i class="bi bi-clock-history me-2"></i>@Html.T("Report.RecentEvaluations", "Son Değerlendirmeler")</h6>
-                <a href="/CustomerPortal/ExternalEvaluations" class="btn btn-sm btn-outline-success py-1">
+                <a href="#" class="btn btn-sm btn-outline-success py-1" data-bind="click: openAllEvalsModal">
                     @Html.T("Common.ViewAll", "Tümünü Gör") <i class="bi bi-arrow-right"></i>
                 </a>
             </div>
@@ -528,6 +528,140 @@
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isScoreModalOpen }, style: { display: isScoreModalOpen() ? 'block' : 'none' }"></div>
+
+    <!-- All Evaluations Modal -->
+    <div class="modal fade" data-bind="css: { show: isAllEvalsModalOpen }, style: { display: isAllEvalsModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-success">
+                    <h5 class="modal-title text-white">
+                        <i class="bi bi-clipboard-check me-2"></i>
+                        @Html.T("Report.AllEvaluations", "Tüm Değerlendirmeler")
+                        <span class="badge bg-light text-dark ms-2" data-bind="text: allEvalsTotal"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeAllEvalsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Filters -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-12 col-md-3">
+                            <select class="form-select form-select-sm" data-bind="value: allEvalsProjectId">
+                                <option value="">@Html.T("Common.AllProjects", "Tüm Projeler")</option>
+                                <!-- ko foreach: allEvalsProjects -->
+                                <option data-bind="value: id, text: name"></option>
+                                <!-- /ko -->
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <select class="form-select form-select-sm" data-bind="value: allEvalsDateRange">
+                                <option value="">@Html.T("DateRange.SelectDate", "Tarih Seçin")</option>
+                                <option value="thisWeek">@Html.T("DateRange.ThisWeek", "Bu Hafta")</option>
+                                <option value="lastWeek">@Html.T("DateRange.LastWeek", "Geçen Hafta")</option>
+                                <option value="thisMonth">@Html.T("DateRange.ThisMonth", "Bu Ay")</option>
+                                <option value="lastMonth">@Html.T("DateRange.LastMonth", "Geçen Ay")</option>
+                                <option value="last3Months">@Html.T("DateRange.Last3Months", "Son 3 Ay")</option>
+                                <option value="last6Months">@Html.T("DateRange.Last6Months", "Son 6 Ay")</option>
+                                <option value="thisYear">@Html.T("DateRange.ThisYear", "Bu Yıl")</option>
+                                <option value="lastYear">@Html.T("DateRange.LastYear", "Geçen Yıl")</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" class="form-control form-control-sm" data-bind="value: allEvalsStartDate" placeholder="@Html.T("Common.StartDate", "Başlangıç")">
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" class="form-control form-control-sm" data-bind="value: allEvalsEndDate" placeholder="@Html.T("Common.EndDate", "Bitiş")">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm btn-primary flex-grow-1" data-bind="click: filterAllEvals">
+                                    <i class="bi bi-filter me-1"></i>@Html.T("Common.Filter", "Filtrele")
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" data-bind="click: resetAllEvalsFilters" title="@Html.T("Common.Reset", "Sıfırla")">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div data-bind="visible: isAllEvalsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">@Html.T("Common.Loading", "Yükleniyor...")</span>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div data-bind="visible: !isAllEvalsLoading()">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Common.Date", "Tarih")</th>
+                                        <th>@Html.T("Common.Project", "Proje")</th>
+                                        <th>@Html.T("Common.Checklist", "Checklist")</th>
+                                        <th class="text-center">@Html.T("Common.Score", "Puan")</th>
+                                        <th class="text-center">@Html.T("Common.Status", "Durum")</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: allEvalsItems">
+                                    <tr>
+                                        <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                        <td data-bind="text: projectName"></td>
+                                        <td data-bind="text: checklistName"></td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score)"></span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge" data-bind="text: statusText, css: $root.getEvalStatusBadgeClass(status)"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- No Data -->
+                        <div data-bind="visible: allEvalsItems().length === 0 && !isAllEvalsLoading()" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2">@Html.T("CustomerPortal.Dashboard.NoEvaluations", "Henüz değerlendirme bulunmuyor.")</p>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div data-bind="visible: allEvalsTotalPages() > 1" class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="text-muted">
+                                @Html.T("Common.ShowingXofY", "Gösterilen"): <span data-bind="text: allEvalsItems().length"></span> / <span data-bind="text: allEvalsTotal"></span>
+                            </div>
+                            <nav>
+                                <ul class="pagination pagination-sm mb-0">
+                                    <li class="page-item" data-bind="css: { disabled: allEvalsPage() <= 1 }">
+                                        <a class="page-link" href="#" data-bind="click: function() { loadAllEvals(allEvalsPage() - 1); }">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link" data-bind="text: allEvalsPage() + ' / ' + allEvalsTotalPages()"></span>
+                                    </li>
+                                    <li class="page-item" data-bind="css: { disabled: allEvalsPage() >= allEvalsTotalPages() }">
+                                        <a class="page-link" href="#" data-bind="click: function() { loadAllEvals(allEvalsPage() + 1); }">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bind="click: exportAllEvals">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeAllEvalsModal">
+                        <i class="bi bi-x-lg me-1"></i>@Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isAllEvalsModalOpen }, style: { display: isAllEvalsModalOpen() ? 'block' : 'none' }"></div>
 </div>
 
 @section Scripts {
