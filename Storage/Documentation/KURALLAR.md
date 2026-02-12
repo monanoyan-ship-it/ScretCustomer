@@ -2168,3 +2168,29 @@ curl http://localhost:5060/health
 - Her yeni iş için AYRI commit izni gerekir
 - Push için de ayrı izin gerekir
 - Şüphen varsa SOR: "Commit edeyim mi?"
+
+## 29. CustomerPortal Değerlendirme Tarihleri (ZORUNLU!)
+
+⛔ **CustomerPortal'da değerlendirme tarihi olarak ASLA `CreatedAt`, `StartedAt`, `CompletedAt` KULLANMA!** ⛔
+
+Müşteri portalında müşterinin görmesi gereken tarih **dinleme/denetim tarihi**dir, sistemin kayıt tarihi DEĞİL.
+
+### Doğru Kullanım:
+| Durum | Kullanılacak Alan |
+|-------|-------------------|
+| İç Değerlendirme (call auditing) | `e.CallDate` |
+| Dış Değerlendirme (call + visit) | `e.CallDate ?? e.ControlDate` |
+| Karma sorgu (tüm tipler, survey hariç) | `e.CallDate ?? e.ControlDate` |
+| Survey/Enneagram panelleri | `e.CreatedAt` (bunlarda CallDate/ControlDate YOK) |
+| Tüm tipleri yükleyen sorgu (survey dahil) | `e.CallDate ?? e.ControlDate ?? e.CreatedAt` (fallback) |
+
+### Nerede Geçerli:
+- `CustomerPortalDataService.cs` - TÜM metotlar
+- `CustomerPortalReportService.cs` - TÜM metotlar
+- WHERE filtreleri, ORDER BY sıralaması, SELECT display alanları, GROUP BY gruplandırması
+
+### Neden:
+- `CreatedAt` = sistemin kaydı oluşturduğu an (iç veri, müşteriyi ilgilendirmez)
+- `CallDate` = dinlemenin yapıldığı tarih (müşterinin bilmesi gereken)
+- `ControlDate` = denetimin yapıldığı tarih (müşterinin bilmesi gereken)
+- Müşteri "ben bu dinlemeyi ne zaman yaptığımı neden bilsin?" → BİLMESİN, CallDate görsün
