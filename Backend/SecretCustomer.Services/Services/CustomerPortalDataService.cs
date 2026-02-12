@@ -284,7 +284,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.EvaluatedCustomerPersonnelId.HasValue &&
                         teamMemberIds.Contains(e.EvaluatedCustomerPersonnelId.Value) &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CreatedAt >= startDate)
+                        (e.CallDate ?? e.ControlDate) >= startDate)
             .ToListAsync();
 
         // Aylık trend verisi oluştur
@@ -294,7 +294,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var monthStart = startDate.AddMonths(i);
             var monthEnd = monthStart.AddMonths(1);
 
-            var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var monthEvals = evaluations.Where(e => (e.CallDate ?? e.ControlDate) >= monthStart && (e.CallDate ?? e.ControlDate) < monthEnd).ToList();
             var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
             var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
 
@@ -357,7 +357,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var thisMonth = TurkeyTime.Now.Month;
         var thisYear = TurkeyTime.Now.Year;
         var thisMonthEvaluations = evaluations.Count(e =>
-            e.CreatedAt.Month == thisMonth && e.CreatedAt.Year == thisYear);
+            (e.CallDate ?? e.ControlDate)?.Month == thisMonth && (e.CallDate ?? e.ControlDate)?.Year == thisYear);
 
         return new
         {
@@ -382,12 +382,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CreatedAt >= effectiveStartDate);
+                        (e.CallDate ?? e.ControlDate) >= effectiveStartDate);
 
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) <= end);
         }
 
         if (projectId.HasValue)
@@ -423,7 +423,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var monthStart = loopStart.AddMonths(i);
             var monthEnd = monthStart.AddMonths(1);
 
-            var monthEvals = evaluations.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var monthEvals = evaluations.Where(e => (e.CallDate ?? e.ControlDate) >= monthStart && (e.CallDate ?? e.ControlDate) < monthEnd).ToList();
             var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
             var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
 
@@ -458,12 +458,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.CreatedAt >= effectiveStartDate);
+                        (e.CallDate ?? e.ControlDate ?? e.CreatedAt) >= effectiveStartDate);
 
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate ?? e.CreatedAt) <= end);
         }
 
         if (allowedPersonnelIds != null)
@@ -772,7 +772,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var monthStart = loopStart.AddMonths(i);
             var monthEnd = monthStart.AddMonths(1);
 
-            var monthEvals = evals.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
+            var monthEvals = evals.Where(e => (e.CallDate ?? e.ControlDate) >= monthStart && (e.CallDate ?? e.ControlDate) < monthEnd).ToList();
             var withScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
             var avgScore = withScore.Any() ? withScore.Average(e => (double)e.ScorePercentage!.Value) : 0;
 
@@ -840,7 +840,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(a => a.Evaluation.Project != null &&
                         a.Evaluation.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        a.Evaluation.CreatedAt >= effectiveStartDate &&
+                        (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) >= effectiveStartDate &&
                         a.Question.GroupName != null &&
                         a.Question.GroupName != "" &&
                         a.EarnedPoints.HasValue &&
@@ -849,7 +849,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
+            answersQuery = answersQuery.Where(a => (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) <= end);
         }
 
         if (projectIds?.Any() == true)
@@ -867,7 +867,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var answers = await answersQuery
             .Select(a => new
             {
-                a.Evaluation.CreatedAt,
+                EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate,
                 a.Question.GroupName,
                 a.EarnedPoints,
                 a.Question.WeightPoints
@@ -900,8 +900,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
                 var monthAnswers = answers.Where(a =>
                     a.GroupName == groupName &&
-                    a.CreatedAt >= monthStart &&
-                    a.CreatedAt < monthEnd).ToList();
+                    a.EvalDate >= monthStart &&
+                    a.EvalDate < monthEnd).ToList();
 
                 double avgScore = 0;
                 if (monthAnswers.Any())
@@ -942,7 +942,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(a => a.Evaluation.Project != null &&
                         a.Evaluation.Project.CustomerId == customerId &&
                         a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
-                        a.Evaluation.CreatedAt >= effectiveStartDate &&
+                        (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) >= effectiveStartDate &&
                         a.EarnedPoints.HasValue &&
                         a.Question.WeightPoints > 0 &&
                         a.Question.ScoringTypeId == ScoringTypes.Ids.Scored);
@@ -950,7 +950,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            answersQuery = answersQuery.Where(a => a.Evaluation.CreatedAt <= end);
+            answersQuery = answersQuery.Where(a => (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) <= end);
         }
 
         if (projectIds?.Any() == true)
@@ -973,7 +973,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var answers = await answersQuery
             .Select(a => new
             {
-                a.Evaluation.CreatedAt,
+                EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate,
                 a.QuestionId,
                 QuestionText = a.Question.Text,
                 a.Question.GroupName,
@@ -1023,8 +1023,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
                 var monthAnswers = answers.Where(a =>
                     a.QuestionId == question.QuestionId &&
-                    a.CreatedAt >= monthStart &&
-                    a.CreatedAt < monthEnd).ToList();
+                    a.EvalDate >= monthStart &&
+                    a.EvalDate < monthEnd).ToList();
 
                 double avgScore = 0;
                 if (monthAnswers.Any())
@@ -1079,12 +1079,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) <= end);
         }
 
         if (allowedPersonnelIds != null)
@@ -1152,12 +1152,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) <= end);
         }
 
         if (allowedPersonnelIds != null)
@@ -1190,13 +1190,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var total = await evaluationsQuery.CountAsync();
 
         var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.StartedAt ?? e.CreatedAt,
+                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -1226,12 +1226,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt >= start);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) >= start);
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            evaluationsQuery = evaluationsQuery.Where(e => e.CreatedAt <= end);
+            evaluationsQuery = evaluationsQuery.Where(e => (e.CallDate ?? e.ControlDate) <= end);
         }
 
         if (allowedPersonnelIds != null)
@@ -1266,10 +1266,10 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
 
         var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.StartedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Select(e => new
             {
-                evaluationDate = e.StartedAt ?? e.CreatedAt,
+                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -1300,7 +1300,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             var row = i + 2;
             var eval = evaluations[i];
-            worksheet.Cell(row, 1).Value = eval.evaluationDate.ToString("dd.MM.yyyy");
+            worksheet.Cell(row, 1).Value = eval.evaluationDate?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 2).Value = eval.projectName;
             worksheet.Cell(row, 3).Value = eval.personnelName;
             worksheet.Cell(row, 4).Value = eval.organizationName;
@@ -1339,12 +1339,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
 
         var evaluations = await evaluationsQuery
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Take(count)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CompletedAt ?? e.CreatedAt,
+                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 personnelName = e.EvaluatedCustomerPersonnel != null
@@ -1554,8 +1554,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var evalQuery = _context.Evaluations
             .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
+                && (e.CallDate ?? e.ControlDate) >= start
+                && (e.CallDate ?? e.ControlDate) <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
@@ -1620,8 +1620,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var query = _context.Evaluations
             .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
+                && (e.CallDate ?? e.ControlDate) >= start
+                && (e.CallDate ?? e.ControlDate) <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
@@ -1691,8 +1691,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Include(e => e.EvaluatedPersonnel)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
+                && (e.CallDate ?? e.ControlDate) >= start
+                && (e.CallDate ?? e.ControlDate) <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && e.ScorePercentage.HasValue
                 && e.ScorePercentage >= minScore
@@ -1718,12 +1718,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             query = query.Where(e => e.EvaluatedOrganizationId.HasValue && organizationIds.Contains(e.EvaluatedOrganizationId.Value));
 
         var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Take(100)
             .Select(e => new
             {
                 evaluationId = e.Id,
-                evaluationDate = e.CreatedAt,
+                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project != null ? e.Project.Name : "-",
                 personnelName = e.EvaluatedPersonnel != null
                     ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
@@ -1752,8 +1752,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var query = _context.Evaluations
             .Include(e => e.Project).ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null && e.Project.CustomerId == customerId
-                && e.CreatedAt >= start
-                && e.CreatedAt <= end
+                && (e.CallDate ?? e.ControlDate) >= start
+                && (e.CallDate ?? e.ControlDate) <= end
                 && e.StatusId == EvaluationStatuses.Ids.Completed
                 && !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId));
 
@@ -1779,7 +1779,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         // Aylara göre grupla
         var monthlyData = evaluations
-            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
+            .Where(e => (e.CallDate ?? e.ControlDate).HasValue)
+            .GroupBy(e => new { (e.CallDate ?? e.ControlDate)!.Value.Year, (e.CallDate ?? e.ControlDate)!.Value.Month })
             .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
             .Select(g => new
             {
@@ -1973,13 +1974,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
 
         var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate)
             .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
             .Take(pageSize ?? 20)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CreatedAt,
+                evaluationDate = e.CallDate,
                 projectName = e.Project.Name,
                 projectCode = e.Project.Code,
                 evaluatorName = e.EvaluatorCustomerPersonnel != null
@@ -2152,13 +2153,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var averageScore = await query.Where(e => e.ScorePercentage.HasValue).AverageAsync(e => (double?)e.ScorePercentage) ?? 0;
 
         var evaluations = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Skip(((page ?? 1) - 1) * (pageSize ?? 20))
             .Take(pageSize ?? 20)
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CreatedAt,
+                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project.Name,
                 projectTypeId = e.Project.ProjectTypeId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
@@ -3304,14 +3305,14 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var startUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
             genelRaporQuery = genelRaporQuery.Where(a =>
                 (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.EndDate >= startUtc) ||
-                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) >= startUtc));
+                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) >= startUtc));
         }
         if (endDate.HasValue)
         {
             var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
             genelRaporQuery = genelRaporQuery.Where(a =>
                 (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.StartDate <= endUtc) ||
-                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt) <= endUtc));
+                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) <= endUtc));
         }
 
         var genelRaporAnswers = await genelRaporQuery
@@ -3332,7 +3333,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 WeightPoints = a.Question.WeightPoints,
                 PeriodName = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.Name : null,
                 PeriodStartDate = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.StartDate : (DateTime?)null,
-                EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt
+                EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate
             })
             .ToListAsync();
 
@@ -3450,15 +3451,15 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             {
                 ProjectPeriod = a.PeriodName != null
                     ? $"{a.ProjectName} {a.PeriodName}"
-                    : $"{a.ProjectName} {a.EvalDate.Year}-{a.EvalDate.Month:D2}",
+                    : $"{a.ProjectName} {a.EvalDate?.Year}-{a.EvalDate?.Month:D2}",
                 a.PersonnelId,
                 a.PersonnelName,
                 a.OrgName,
                 a.GroupName,
-                Year = a.PeriodStartDate?.Year ?? a.EvalDate.Year,
+                Year = a.PeriodStartDate?.Year ?? a.EvalDate?.Year ?? 0,
                 YearMonth = a.PeriodStartDate != null
                     ? $"{a.PeriodStartDate.Value.Year}{a.PeriodStartDate.Value.Month:D2}"
-                    : $"{a.EvalDate.Year}{a.EvalDate.Month:D2}"
+                    : $"{a.EvalDate?.Year}{a.EvalDate?.Month:D2}"
             })
             .Select(g =>
             {
