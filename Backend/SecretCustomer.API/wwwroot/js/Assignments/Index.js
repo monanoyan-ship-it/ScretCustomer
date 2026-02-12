@@ -856,7 +856,7 @@ function AssignmentsViewModel() {
     self.openReassignModal = function(assignment) {
         self.reassignData().reset();
         self.reassignData().assignmentId(assignment.id);
-        var modal = new bootstrap.Modal(document.getElementById('reassignModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('reassignModal'));
         modal.show();
     };
 
@@ -908,7 +908,7 @@ function AssignmentsViewModel() {
     self.openUpdateDueDateModal = function(assignment) {
         self.updateDueDateData().assignmentId(assignment.id);
         self.updateDueDateData().newDueDate(assignment.dueDate ? assignment.dueDate.split('T')[0] : '');
-        var modal = new bootstrap.Modal(document.getElementById('updateDueDateModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('updateDueDateModal'));
         modal.show();
     };
 
@@ -1060,7 +1060,7 @@ function AssignmentsViewModel() {
         self.periodForm().startDate(startOfMonth.toISOString().split('T')[0]);
         self.periodForm().endDate(endOfMonth.toISOString().split('T')[0]);
 
-        var modal = new bootstrap.Modal(document.getElementById('addPeriodModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addPeriodModal'));
         modal.show();
     };
 
@@ -1138,7 +1138,7 @@ function AssignmentsViewModel() {
             })
             .then(function(data) {
                 self.selectedDetail(data);
-                var modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal'));
                 modal.show();
             })
             .catch(function(error) {
@@ -1184,7 +1184,7 @@ function AssignmentsViewModel() {
                 self.addDealerModal.isLoading(false);
             });
 
-        var modal = new bootstrap.Modal(document.getElementById('addDealerModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addDealerModal'));
         modal.show();
     };
 
@@ -1266,7 +1266,7 @@ function AssignmentsViewModel() {
     // ===== Evaluation Modal =====
     self.openEvaluation = function(assignment) {
         self.selectedEvaluation(assignment);
-        var modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('evaluationModal'));
         modal.show();
     };
 

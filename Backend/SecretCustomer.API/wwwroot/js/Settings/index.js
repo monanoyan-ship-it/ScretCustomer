@@ -60,7 +60,7 @@ function SettingsViewModel() {
         self.form.valueTypeId('0');
         self.form.category('General');
         self.form.description('');
-        new bootstrap.Modal(document.getElementById('settingModal')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('settingModal')).show();
     };
 
     // Open edit modal
@@ -71,7 +71,7 @@ function SettingsViewModel() {
         self.form.valueTypeId(String(setting.valueTypeId));
         self.form.category(setting.category);
         self.form.description(setting.description || '');
-        new bootstrap.Modal(document.getElementById('settingModal')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('settingModal')).show();
     };
 
     // Save setting

@@ -351,7 +351,7 @@ function InternalAssignmentsViewModel() {
         self.projectPickerSearch('');
         self.isProjectPickerOpen(false);
 
-        var modal = new bootstrap.Modal(document.getElementById('createModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('createModal'));
         modal.show();
     };
 
@@ -435,7 +435,7 @@ function InternalAssignmentsViewModel() {
                 self.createResult(result);
                 bootstrap.Modal.getInstance(document.getElementById('createModal')).hide();
 
-                var resultModal = new bootstrap.Modal(document.getElementById('resultModal'));
+                var resultModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('resultModal'));
                 resultModal.show();
 
                 self.loadAssignments();
@@ -460,7 +460,7 @@ function InternalAssignmentsViewModel() {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 self.selectedDetail(data);
-                var modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal'));
                 modal.show();
             })
             .catch(function(error) {

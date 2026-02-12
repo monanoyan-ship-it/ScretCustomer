@@ -138,7 +138,7 @@ function SupportRequestsViewModel() {
                     respondedByUserName: data.respondedByUserName
                 });
                 self.responseText('');
-                var modal = new bootstrap.Modal(document.getElementById('requestDetailModal'));
+                var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('requestDetailModal'));
                 modal.show();
             })
             .catch(function(error) {

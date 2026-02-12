@@ -47,14 +47,14 @@
         // Start evaluation
         self.startEvaluation = function (assignment) {
             self.selectedAssignment(assignment);
-            const modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('evaluationModal'));
             modal.show();
         };
 
         // View completed evaluation
         self.viewEvaluation = function (assignment) {
             self.selectedAssignment(assignment);
-            const modal = new bootstrap.Modal(document.getElementById('evaluationModal'));
+            const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('evaluationModal'));
             modal.show();
         };
 

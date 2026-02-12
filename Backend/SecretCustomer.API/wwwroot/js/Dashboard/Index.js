@@ -396,7 +396,7 @@ function DashboardViewModel() {
         });
 
         // Show modal
-        var modal = new bootstrap.Modal(document.getElementById('userProjectDetailModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('userProjectDetailModal'));
         modal.show();
 
         // Load data
@@ -428,7 +428,7 @@ function DashboardViewModel() {
             projects: []
         });
 
-        var modal = new bootstrap.Modal(document.getElementById('userProjectDetailModal'));
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('userProjectDetailModal'));
         modal.show();
 
         fetch('/api/dashboard/user-projects-today/' + userId, { credentials: 'include' })

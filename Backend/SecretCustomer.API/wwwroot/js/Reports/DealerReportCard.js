@@ -337,7 +337,7 @@ function DealerReportCardViewModel() {
             .then(function(response) { return response.json(); })
             .then(function(data) {
                 self.selectedDetail(data);
-                var modal = new bootstrap.Modal(document.getElementById('detailModal'));
+                var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal'));
                 modal.show();
             })
             .catch(function(error) {

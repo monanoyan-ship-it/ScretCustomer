@@ -225,7 +225,7 @@
         };
 
         self.showCompletedChoiceModal = function () {
-            var modal = new bootstrap.Modal(document.getElementById('completedChoiceModal'));
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('completedChoiceModal'));
             modal.show();
         };
 

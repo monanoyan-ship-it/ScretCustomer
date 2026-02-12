@@ -82,7 +82,7 @@ function SmtpProfilesViewModel() {
         self.isEditing(false);
         self.editingProfileId(null);
         self.resetForm();
-        new bootstrap.Modal(document.getElementById('profileModal')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('profileModal')).show();
     };
 
     // Open edit modal
@@ -105,7 +105,7 @@ function SmtpProfilesViewModel() {
         self.form.useGraphApi(profile.useGraphApi !== false);
         self.showPassword(false);
         self.showClientSecret(false);
-        new bootstrap.Modal(document.getElementById('profileModal')).show();
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('profileModal')).show();
     };
 
     // Save profile

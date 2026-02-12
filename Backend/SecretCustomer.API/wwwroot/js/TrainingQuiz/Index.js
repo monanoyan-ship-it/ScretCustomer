@@ -137,7 +137,7 @@
             self.formShowResults(true);
             self.formQuestions([]);
 
-            var modal = new bootstrap.Modal(document.getElementById('quizModal'));
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('quizModal'));
             modal.show();
         };
 
@@ -180,7 +180,7 @@
                     });
                     self.formQuestions(questions);
 
-                    var modal = new bootstrap.Modal(document.getElementById('quizModal'));
+                    var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('quizModal'));
                     modal.show();
                 },
                 error: function () {
@@ -439,7 +439,7 @@
             self.selectedQuizTitle(quiz.title);
             self.loadResponses(quiz.id);
 
-            var modal = new bootstrap.Modal(document.getElementById('responsesModal'));
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('responsesModal'));
             modal.show();
         };
 

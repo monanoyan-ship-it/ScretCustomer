@@ -96,7 +96,7 @@
         // Show detail modal
         self.showDetail = function (log) {
             self.selectedLog(log);
-            var modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal'));
             modal.show();
         };
 
