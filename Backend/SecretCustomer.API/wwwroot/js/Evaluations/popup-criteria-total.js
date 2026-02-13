@@ -23,12 +23,12 @@ var EvaluationPopupViewModel = function() {
     self.availablePeriods = ko.observableArray([]);
     self.selectedPeriodId = ko.observable(null);
 
-    // Açıklamalar
-    self.descriptions = ko.observableArray([ko.observable('')]);
+    // Açıklamalar (wrapper object pattern - KnockoutJS foreach write-back için)
+    self.descriptions = ko.observableArray([{text: ko.observable('')}]);
     self.pastDescriptions = ko.observableArray([]);
 
     self.addDescription = function() {
-        self.descriptions.push(ko.observable(''));
+        self.descriptions.push({text: ko.observable('')});
     };
 
     self.removeDescription = function(index) {
@@ -67,11 +67,11 @@ var EvaluationPopupViewModel = function() {
         if (!formData) return;
 
         self.isCheckingCallId(true);
-        var customerId = formData.customerId;
         var evaluationId = config.evaluationId || formData.evaluationId;
+        var projectId = formData.projectId;
 
-        var url = '/api/evaluations/check-callid?callId=' + encodeURIComponent(callId);
-        if (customerId) url += '&customerId=' + customerId;
+        var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
+            '&projectId=' + (projectId || 0);
         if (evaluationId) url += '&evaluationId=' + evaluationId;
 
         fetch(url, { credentials: 'include' })
@@ -299,7 +299,7 @@ var EvaluationPopupViewModel = function() {
 
                 // Açıklamaları yükle
                 if (data.descriptions && data.descriptions.length > 0) {
-                    self.descriptions(data.descriptions.map(function(d) { return ko.observable(d); }));
+                    self.descriptions(data.descriptions.map(function(d) { return {text: ko.observable(d)}; }));
                 }
 
                 // Personel listesini yükle
@@ -428,6 +428,38 @@ var EvaluationPopupViewModel = function() {
             return;
         }
 
+        // CallId duplicate kontrolü (async)
+        var callIdVal = self.callId();
+        if (callIdVal && callIdVal.length >= 3) {
+            var projectId = self.formData() ? self.formData().projectId : null;
+            var evaluationId = config.evaluationId || (self.formData() ? self.formData().evaluationId : null);
+            var checkUrl = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callIdVal) +
+                '&projectId=' + (projectId || 0);
+            if (evaluationId) checkUrl += '&evaluationId=' + evaluationId;
+
+            fetch(checkUrl, { credentials: 'include' })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.exists === true) {
+                        toastr.error('Bu Çağrı ID (' + callIdVal + ') daha önce kaydedilmiş.');
+                        self.callIdExists(true);
+                    } else {
+                        self.callIdExists(false);
+                        self._buildAndShowSummary(personnelName);
+                    }
+                })
+                .catch(function() {
+                    // API hatası durumunda devam et
+                    self._buildAndShowSummary(personnelName);
+                });
+            return;
+        }
+
+        self._buildAndShowSummary(personnelName);
+    };
+
+    // Summary oluşturma (showSummary'den ayrıldı - callId kontrolü sonrası çağrılır)
+    self._buildAndShowSummary = function(personnelName) {
         // Cevapları hazırla
         var answersArray = [];
         var index = 1;
@@ -459,7 +491,7 @@ var EvaluationPopupViewModel = function() {
 
         // Açıklamaları string array'e çevir
         var descriptionsArray = self.descriptions().map(function(d) {
-            return typeof d === 'function' ? d() : d;
+            return d.text();
         }).filter(function(d) { return d && d.trim(); });
 
         // Summary data oluştur
@@ -574,7 +606,7 @@ var EvaluationPopupViewModel = function() {
 
         // Açıklamaları string array'e çevir
         var descriptionsArray = self.descriptions().map(function(d) {
-            return typeof d === 'function' ? d() : d;
+            return d.text();
         }).filter(function(d) { return d && d.trim(); });
 
         // isInternal parametresine göre evaluator ID'yi belirle

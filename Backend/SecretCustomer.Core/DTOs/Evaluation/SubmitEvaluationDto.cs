@@ -243,4 +243,6 @@ public class UpdateDraftDto
     public string? Notes { get; set; }
 
     public string? EvaluationComment { get; set; }
+
+    public List<string>? Descriptions { get; set; }
 }

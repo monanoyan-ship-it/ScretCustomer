@@ -439,7 +439,7 @@ function EvaluationsViewModel() {
     self.callTime = ko.observable('');
     self.duration = ko.observable('');
     self.controlTime = ko.observable('');
-    self.descriptions = ko.observableArray([ko.observable('')]); // Her eleman observable
+    self.descriptions = ko.observableArray([{text: ko.observable('')}]); // Wrapper object pattern
     self.pastDescriptions = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
@@ -512,7 +512,7 @@ function EvaluationsViewModel() {
 
     // Açıklama ekle
     self.addDescription = function() {
-        self.descriptions.push(ko.observable(''));
+        self.descriptions.push({text: ko.observable('')});
     };
 
     // Açıklama kaldır
@@ -944,7 +944,7 @@ function EvaluationsViewModel() {
         self.callTime('');
         self.duration('');
         self.controlTime('');
-        self.descriptions([ko.observable('')]); // En az bir boş açıklama observable ile başla
+        self.descriptions([{text: ko.observable('')}]); // Wrapper object pattern
         self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
@@ -1211,9 +1211,9 @@ function EvaluationsViewModel() {
                 if (data.duration) self.duration(data.duration);
                 if (data.descriptions && data.descriptions.length > 0) {
                     // Her string'i observable'a çevir
-                    self.descriptions(data.descriptions.map(function(d) { return ko.observable(d); }));
+                    self.descriptions(data.descriptions.map(function(d) { return {text: ko.observable(d)}; }));
                 } else {
-                    self.descriptions([ko.observable('')]); // En az bir boş açıklama
+                    self.descriptions([{text: ko.observable('')}]); // Wrapper object pattern
                 }
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
@@ -1450,7 +1450,7 @@ function EvaluationsViewModel() {
 
         // Boş olmayan açıklamaları filtrele (observable'ları unwrap et)
         var filteredDescriptions = self.descriptions().map(function(d) {
-            return ko.unwrap(d); // observable ise değerini al
+            return d.text();
         }).filter(function(d) {
             return d && d.trim().length > 0;
         });
@@ -1522,14 +1522,14 @@ function EvaluationsViewModel() {
                 resolve(false);
                 return;
             }
-            var assignmentId = self.formData() ? self.formData().assignmentId : null;
+            var projectId = self.formData() ? self.formData().projectId : null;
             var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!assignmentId) {
+            if (!projectId) {
                 resolve(false);
                 return;
             }
             var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&assignmentId=' + assignmentId;
+                      '&projectId=' + projectId;
             if (evaluationId) {
                 url += '&evaluationId=' + evaluationId;
             }
@@ -1704,7 +1704,7 @@ function EvaluationsViewModel() {
 
         // Açıklamaları al (boş olmayanlar)
         var filteredDescriptions = self.descriptions().map(function(d) {
-            return ko.unwrap(d);
+            return d.text();
         }).filter(function(d) {
             return d && d.trim().length > 0;
         });

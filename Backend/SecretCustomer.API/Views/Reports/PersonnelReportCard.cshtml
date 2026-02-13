@@ -471,6 +471,18 @@
                         </div>
                     </div>
 
+                    <!-- Descriptions -->
+                    <div data-bind="visible: $data.descriptions && $data.descriptions.length > 0" class="card mt-3">
+                        <div class="card-header bg-secondary text-white">
+                            <h6 class="mb-0"><i class="bi bi-list-ul"></i> @Html.T("Evaluation.Descriptions", "Aciklamalar")</h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="mb-0" data-bind="foreach: $data.descriptions">
+                                <li data-bind="text: $data"></li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Evaluation Comment -->
                     <div data-bind="visible: $data.evaluationComment" class="card mt-3">
                         <div class="card-header bg-info text-white">

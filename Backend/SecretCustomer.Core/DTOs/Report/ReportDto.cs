@@ -706,6 +706,11 @@ public class EvaluationNoteDto
     /// Denetim yorumu (Evaluation.EvaluationComment)
     /// </summary>
     public string? EvaluationComment { get; set; }
+
+    /// <summary>
+    /// Açıklamalar (DescriptionsJson'dan deserialize edilmiş)
+    /// </summary>
+    public List<string>? Descriptions { get; set; }
 }
 
 /// <summary>

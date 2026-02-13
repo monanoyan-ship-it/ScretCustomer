@@ -459,6 +459,7 @@ public class EvaluationService : IEvaluationService
 
         evaluation.Notes = dto.Notes;
         evaluation.EvaluationComment = dto.EvaluationComment;
+        evaluation.DescriptionsJson = SerializeDescriptions(dto.Descriptions);
         evaluation.UpdatedAt = TurkeyTime.Now;
 
         await _context.SaveChangesAsync();

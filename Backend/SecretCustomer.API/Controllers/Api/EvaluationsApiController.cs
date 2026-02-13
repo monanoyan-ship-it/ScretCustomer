@@ -464,22 +464,21 @@ public class EvaluationsApiController : BaseApiController
     /// </summary>
     [HttpGet("check-call-id")]
     [Authorize]
-    public async Task<IActionResult> CheckCallIdExists([FromQuery] string callId, [FromQuery] int assignmentId, [FromQuery] int? evaluationId = null)
+    public async Task<IActionResult> CheckCallIdExists([FromQuery] string callId, [FromQuery] int projectId, [FromQuery] int? evaluationId = null)
     {
         try
         {
             if (string.IsNullOrWhiteSpace(callId))
                 return Ok(new { exists = false });
 
-            // Assignment'tan CustomerId'yi al
-            var assignment = await _context.Assignments
-                .Include(a => a.Project)
-                .FirstOrDefaultAsync(a => a.Id == assignmentId && !a.IsDeleted);
+            // Project'ten CustomerId'yi al
+            var project = await _context.Projects
+                .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
 
-            if (assignment?.Project?.CustomerId == null)
+            if (project?.CustomerId == null)
                 return Ok(new { exists = false });
 
-            var customerId = assignment.Project.CustomerId.Value;
+            var customerId = project.CustomerId.Value;
 
             // Aynı müşteriye ait aynı CallId'li başka dinleme var mı?
             var exists = await _context.Evaluations

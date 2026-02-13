@@ -412,6 +412,7 @@
                                     <th>@Html.T("Common.Personnel", "Personel")</th>
                                     <th>@Html.T("Common.Score", "Puan")</th>
                                     <th>@Html.T("Report.GeneralNote", "Genel Not")</th>
+                                    <th>@Html.T("Evaluation.Descriptions", "Aciklamalar")</th>
                                     <th>@Html.T("Report.EvaluationComment", "Denetim Yorumu")</th>
                                 </tr>
                             </thead>
@@ -451,6 +452,18 @@
                                         </div>
                                         <!-- /ko -->
                                         <!-- ko ifnot: notes -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td style="max-width: 250px;">
+                                        <!-- ko if: descriptions && descriptions.length > 0 -->
+                                        <div class="small p-2 rounded" style="background-color: #f0f0f0;">
+                                            <ul class="mb-0 ps-3" data-bind="foreach: descriptions">
+                                                <li data-bind="text: $data" style="word-break: break-word;"></li>
+                                            </ul>
+                                        </div>
+                                        <!-- /ko -->
+                                        <!-- ko if: !descriptions || descriptions.length === 0 -->
                                         <span class="text-muted">-</span>
                                         <!-- /ko -->
                                     </td>

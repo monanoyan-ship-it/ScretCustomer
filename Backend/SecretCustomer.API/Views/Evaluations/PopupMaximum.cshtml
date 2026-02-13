@@ -306,7 +306,7 @@
                                         </datalist>
                                         <!-- ko foreach: descriptions -->
                                         <div class="input-group mb-1">
-                                            <input type="text" class="form-control" list="descriptionSuggestions" data-bind="textInput: $data" placeholder="@Html.T("Evaluation.DescriptionPlaceholder", "Açıklama girin...")" autocomplete="off">
+                                            <input type="text" class="form-control" list="descriptionSuggestions" data-bind="textInput: text" placeholder="@Html.T("Evaluation.DescriptionPlaceholder", "Açıklama girin...")" autocomplete="off">
                                             <!-- ko if: $index() === $parent.descriptions().length - 1 -->
                                             <button type="button" class="btn btn-outline-success" data-bind="click: $parent.addDescription" title="@Html.T("Common.Add", "Ekle")">
                                                 <i class="bi bi-plus"></i>
@@ -747,5 +747,5 @@
 @section Scripts {
     <script src="~/js/Shared/app.config.js"></script>
     <script src="~/js/Shared/api.service.js"></script>
-    <script src="~/js/Evaluations/popup-maximum.js"></script>
+    <script src="~/js/Evaluations/popup-maximum.js" asp-append-version="true"></script>
 }

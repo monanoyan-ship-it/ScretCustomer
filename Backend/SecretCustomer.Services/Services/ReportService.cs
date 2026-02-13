@@ -1083,8 +1083,16 @@ public class ReportService : IReportService
 
     private EvaluationReportDto MapToReportDto(Core.Entities.Evaluation evaluation)
     {
-        // Tüm yorumları topla: soru notları + genel değerlendirme yorumu
+        // Tüm yorumları topla: açıklamalar + soru notları + genel değerlendirme yorumu
         var allComments = new List<string>();
+
+        // Açıklamaları ekle (DescriptionsJson)
+        if (!string.IsNullOrWhiteSpace(evaluation.DescriptionsJson))
+        {
+            var descriptions = DeserializeDescriptions(evaluation.DescriptionsJson);
+            if (descriptions?.Any() == true)
+                allComments.AddRange(descriptions);
+        }
 
         // Soru notlarını ekle (Notes alanı dolu olanlar)
         if (evaluation.Answers != null)
@@ -1521,6 +1529,7 @@ public class ReportService : IReportService
 
         headersList.Add(await _localizationService.GetResourceAsync("Report.Evaluated", defaultValue: "Denetlenen"));
         headersList.Add(await _localizationService.GetResourceAsync("Common.Note", defaultValue: "Not"));
+        headersList.Add(await _localizationService.GetResourceAsync("Evaluation.EvaluationComment", defaultValue: "Denetim Yorumu"));
 
         var headers = headersList.ToArray();
 
@@ -1574,12 +1583,26 @@ public class ReportService : IReportService
                     : a.Evaluation.EvaluatedUnknownPersonnel ?? "");
             penaltiesSheet.Cell(row, col++).Value = evaluatedName;
             penaltiesSheet.Cell(row, col++).Value = a.Notes ?? "";
+            // Denetim Yorumu: DescriptionsJson + EvaluationComment birleşik
+            var allDescriptions = new List<string>();
+            if (!string.IsNullOrWhiteSpace(a.Evaluation.DescriptionsJson))
+            {
+                var descriptions = DeserializeDescriptions(a.Evaluation.DescriptionsJson);
+                if (descriptions?.Any() == true)
+                    allDescriptions.AddRange(descriptions);
+            }
+            if (!string.IsNullOrWhiteSpace(a.Evaluation.EvaluationComment))
+            {
+                allDescriptions.Add(a.Evaluation.EvaluationComment);
+            }
+            penaltiesSheet.Cell(row, col++).Value = allDescriptions.Count > 0 ? string.Join(", ", allDescriptions) : "";
             row++;
         }
         penaltiesSheet.Columns().AdjustToContents();
-        // CallId: 3, SubCriteria: 11, Not: son sütun (excludeEvaluator'a göre 14 veya 15)
+        // CallId: 3, SubCriteria: 11, Not: excludeEvaluator'a göre 14 veya 15, Denetim Yorumu: +1
         var noteCol = excludeEvaluator ? 14 : 15;
-        ExcelHelper.ApplyLongTextColumnStyles(penaltiesSheet, callIdColumns: new[] { 3 }, noteColumns: new[] { noteCol }, subCriteriaColumns: new[] { 11 });
+        var commentCol = noteCol + 1;
+        ExcelHelper.ApplyLongTextColumnStyles(penaltiesSheet, callIdColumns: new[] { 3 }, noteColumns: new[] { noteCol, commentCol }, subCriteriaColumns: new[] { 11 });
 
         // Top questions sheet - Seçilen alt kriterler ile birlikte
         var questionsSheet = workbook.Worksheets.Add("En Çok Ceza Alan Sorular");
@@ -2864,6 +2887,22 @@ public class ReportService : IReportService
             })
             .ToListAsync();
 
+        // Populate Descriptions from DescriptionsJson
+        if (evaluationNotes.Any())
+        {
+            var evalIds = evaluationNotes.Select(n => n.EvaluationId).ToList();
+            var descriptionsRaw = await _context.Evaluations
+                .Where(e => evalIds.Contains(e.Id) && e.DescriptionsJson != null)
+                .Select(e => new { e.Id, e.DescriptionsJson })
+                .ToListAsync();
+            foreach (var note in evaluationNotes)
+            {
+                var raw = descriptionsRaw.FirstOrDefault(d => d.Id == note.EvaluationId);
+                if (raw != null)
+                    note.Descriptions = DeserializeDescriptions(raw.DescriptionsJson);
+            }
+        }
+
         summary.EvaluationNotesCount = evaluationNotes.Count;
 
         return new SuggestionsReportResultDto
@@ -3199,6 +3238,7 @@ public class ReportService : IReportService
         headersList.Add(await _localizationService.GetResourceAsync("Report.Personnel", defaultValue: "Personel"));
         headersList.Add(await _localizationService.GetResourceAsync("Common.CallId", defaultValue: "Çağrı ID"));
         headersList.Add(await _localizationService.GetResourceAsync("Report.Penalty", defaultValue: "Ceza"));
+        headersList.Add(await _localizationService.GetResourceAsync("Evaluation.EvaluationComment", defaultValue: "Denetim Yorumu"));
 
         var headers = headersList.ToArray();
 
@@ -3207,6 +3247,31 @@ public class ReportService : IReportService
             detailsSheet.Cell(1, i + 1).Value = headers[i];
             detailsSheet.Cell(1, i + 1).Style.Font.Bold = true;
             detailsSheet.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Build evaluation comment lookup (DescriptionsJson + EvaluationComment)
+        var suggestionEvalIds = report.Suggestions.Select(s => s.EvaluationId).Distinct().ToList();
+        var evalCommentLookup = new Dictionary<int, string>();
+        if (suggestionEvalIds.Any())
+        {
+            var evalCommentData = await _context.Evaluations
+                .Where(e => suggestionEvalIds.Contains(e.Id))
+                .Select(e => new { e.Id, e.DescriptionsJson, e.EvaluationComment })
+                .ToListAsync();
+            foreach (var ec in evalCommentData)
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(ec.DescriptionsJson))
+                {
+                    var descriptions = DeserializeDescriptions(ec.DescriptionsJson);
+                    if (descriptions?.Any() == true)
+                        parts.AddRange(descriptions);
+                }
+                if (!string.IsNullOrWhiteSpace(ec.EvaluationComment))
+                    parts.Add(ec.EvaluationComment);
+                if (parts.Count > 0)
+                    evalCommentLookup[ec.Id] = string.Join(", ", parts);
+            }
         }
 
         int row = 2;
@@ -3232,13 +3297,15 @@ public class ReportService : IReportService
             detailsSheet.Cell(row, col++).Value = item.EvaluatedPersonnelName ?? "";
             detailsSheet.Cell(row, col++).Value = item.CallId ?? "";
             detailsSheet.Cell(row, col++).Value = item.PenaltyType ?? "";
+            detailsSheet.Cell(row, col++).Value = evalCommentLookup.TryGetValue(item.EvaluationId, out var comment) ? comment : "";
             row++;
         }
 
         detailsSheet.Columns().AdjustToContents();
-        // Notlar: 6, Öneri: 7, CallId: excludeEvaluator'a göre 12 veya 13
+        // Notlar: 6, Öneri: 7, CallId: excludeEvaluator'a göre 12 veya 13, Denetim Yorumu: son kolon
         var callIdCol = excludeEvaluator ? 12 : 13;
-        ExcelHelper.ApplyLongTextColumnStyles(detailsSheet, callIdColumns: new[] { callIdCol }, noteColumns: new[] { 6, 7 });
+        var evalCommentCol = callIdCol + 2;
+        ExcelHelper.ApplyLongTextColumnStyles(detailsSheet, callIdColumns: new[] { callIdCol }, noteColumns: new[] { 6, 7, evalCommentCol });
 
         // Top Questions sheet
         var questionsSheet = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.TopSuggestedQuestions", defaultValue: "Top Önerilen Sorular"));
