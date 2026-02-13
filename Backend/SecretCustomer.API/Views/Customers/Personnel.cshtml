@@ -1,4 +1,4 @@
-﻿@{
+@{
     Layout = "_LayoutPopup";
     ViewData["Title"] = Html.T("Menu.CustomerPersonnel", "Müşteri Personeli");
     var customerId = ViewBag.CustomerId;
@@ -245,7 +245,7 @@
 </script>
 
 @section Scripts {
-    <script src="~/js/Shared/api.service.js"></script>
-    <script src="~/js/Shared/delete-confirmation.js"></script>
-    <script src="~/js/Customers/personnel.js"></script>
+    <script src="~/js/Shared/api.service.js" asp-append-version="true"></script>
+    <script src="~/js/Shared/delete-confirmation.js" asp-append-version="true"></script>
+    <script src="~/js/Customers/personnel.js" asp-append-version="true"></script>
 }

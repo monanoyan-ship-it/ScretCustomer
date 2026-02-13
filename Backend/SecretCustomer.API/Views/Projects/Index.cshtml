@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = Html.T("Project.Title", "Proje Yönetimi");
 }
 
@@ -1211,7 +1211,7 @@
             projectTypeId: @(ViewBag.ProjectTypeId != null ? ViewBag.ProjectTypeId.ToString() : "null")
         };
     </script>
-    <script src="~/js/Shared/enums.service.js"></script>
-    <script src="~/js/Shared/delete-confirmation.js"></script>
+    <script src="~/js/Shared/enums.service.js" asp-append-version="true"></script>
+    <script src="~/js/Shared/delete-confirmation.js" asp-append-version="true"></script>
     <script src="~/js/Projects/Index.js" asp-append-version="true"></script>
 }

@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = @Html.T("Menu.PersonnelReportCard", "Temsilci Karnesi");
     var selectedPersonnelId = ViewBag.SelectedPersonnelId as Guid?;
 }
@@ -502,7 +502,7 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/Reports/PersonnelReportCard.js"></script>
+    <script src="~/js/Reports/PersonnelReportCard.js" asp-append-version="true"></script>
     <script>
         var initialPersonnelId = '@(selectedPersonnelId?.ToString() ?? "")';
     </script>
