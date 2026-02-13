@@ -220,6 +220,7 @@ builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificatio
 builder.Services.AddSingleton<INotificationTokenService, NotificationTokenService>();
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 builder.Services.AddScoped<ITrainingQuizService, TrainingQuizService>();
+builder.Services.AddScoped<IGmService, GmService>();
 
 // SignalR
 builder.Services.AddSignalR();

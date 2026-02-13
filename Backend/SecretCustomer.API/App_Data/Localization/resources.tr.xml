@@ -10568,4 +10568,24 @@
   <LocaleResource Name="Training.Watching">
     <Value>İzliyor</Value>
   </LocaleResource>
+
+  <!-- Gölge Müşteri -->
+  <LocaleResource Name="Menu.GolgeMusteri">
+    <Value>Gölge Müşteri</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.HedefFirmalar">
+    <Value>Hedef Firmalar</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Sorular">
+    <Value>Sorular</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Donemler">
+    <Value>Dönemler</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Takip">
+    <Value>Takip</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Aramalarim">
+    <Value>Aramalarım</Value>
+  </LocaleResource>
 </Language>

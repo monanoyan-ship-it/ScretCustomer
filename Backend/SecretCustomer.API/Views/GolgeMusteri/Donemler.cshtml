@@ -1,0 +1,323 @@
+@{
+    ViewData["Title"] = Html.T("GolgeMusteri.Donemler", "Dönemler");
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div id="donemler-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-calendar3 me-2"></i>@Html.T("GolgeMusteri.Donemler", "Dönemler")
+            </h4>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="/">@Html.T("Menu.Dashboard", "Ana Sayfa")</a></li>
+                    <li class="breadcrumb-item active">@Html.T("GolgeMusteri.Donemler", "Dönemler")</li>
+                </ol>
+            </nav>
+        </div>
+        <button class="btn btn-primary" data-bind="click: showCreateModal">
+            <i class="bi bi-plus me-1"></i> Yeni Dönem
+        </button>
+    </div>
+
+    <!-- Filtre -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <select class="form-select form-select-sm" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: selectedCustomerId, optionsCaption: '-- Müşteri --'"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Dönem Listesi -->
+    <div data-bind="visible: !isLoading() && !selectedDonem()">
+        <div class="row g-3" data-bind="foreach: donemler">
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0" data-bind="text: ad"></h6>
+                            <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
+                        </div>
+                        <p class="text-muted small mb-2" data-bind="text: customerName"></p>
+                        <div class="small">
+                            <div><i class="bi bi-calendar me-1"></i> <span data-bind="text: new Date(baslangicTarihi).toLocaleDateString('tr-TR')"></span> - <span data-bind="text: new Date(bitisTarihi).toLocaleDateString('tr-TR')"></span></div>
+                            <div class="mt-1">
+                                <span class="badge bg-light text-dark me-1"><i class="bi bi-people me-1"></i><span data-bind="text: personelSayisi"></span> Personel</span>
+                                <span class="badge bg-light text-dark me-1"><i class="bi bi-question-circle me-1"></i><span data-bind="text: soruSayisi"></span> Soru</span>
+                                <span class="badge bg-light text-dark"><i class="bi bi-ticket me-1"></i><span data-bind="text: kuponSayisi"></span> Kupon</span>
+                            </div>
+                            <!-- ko if: toplamAtama > 0 -->
+                            <div class="mt-2">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" data-bind="style: { width: Math.round(tamamlananAtama / toplamAtama * 100) + '%' }"></div>
+                                </div>
+                                <small class="text-muted"><span data-bind="text: tamamlananAtama"></span>/<span data-bind="text: toplamAtama"></span> tamamlandı</small>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group btn-group-sm w-100">
+                            <button class="btn btn-outline-primary" data-bind="click: $parent.openDonem" title="Detay">
+                                <i class="bi bi-eye me-1"></i> Detay
+                            </button>
+                            <!-- ko if: durumId === 1 -->
+                            <button class="btn btn-outline-secondary" data-bind="click: $parent.showEditModal" title="Düzenle">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" data-bind="click: $parent.deleteDonem" title="Sil">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-bind="visible: !isLoading() && donemler().length === 0" class="text-center text-muted py-4">
+            <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+            Henüz dönem oluşturulmamış.
+        </div>
+    </div>
+
+    <!-- Dönem Detay -->
+    <div data-bind="visible: selectedDonem()">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <button class="btn btn-sm btn-outline-secondary me-2" data-bind="click: closeDonem">
+                    <i class="bi bi-arrow-left me-1"></i> Geri
+                </button>
+                <strong data-bind="text: selectedDonem() ? selectedDonem().ad : ''"></strong>
+                <span class="badge ms-2" data-bind="text: selectedDonem() ? selectedDonem().durumText : '', attr: { class: 'badge ms-2 ' + (selectedDonem() ? selectedDonem().durumCss : '') }"></span>
+            </div>
+            <div>
+                <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                <button class="btn btn-success btn-sm" data-bind="click: aktifEt">
+                    <i class="bi bi-play-fill me-1"></i> Aktif Et
+                </button>
+                <!-- /ko -->
+                <!-- ko if: selectedDonem() && selectedDonem().durumId === 2 -->
+                <button class="btn btn-primary btn-sm" data-bind="click: tamamla">
+                    <i class="bi bi-check-circle me-1"></i> Tamamla
+                </button>
+                <!-- /ko -->
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-personel">
+                    <i class="bi bi-people me-1"></i> Personel <span class="badge bg-primary ms-1" data-bind="text: donemDetail() ? donemDetail().personeller.length : 0"></span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-soru">
+                    <i class="bi bi-question-circle me-1"></i> Sorular <span class="badge bg-primary ms-1" data-bind="text: donemDetail() ? donemDetail().sorular.length : 0"></span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-kupon">
+                    <i class="bi bi-ticket me-1"></i> Kuponlar <span class="badge bg-primary ms-1" data-bind="text: donemDetail() ? donemDetail().kuponlar.length : 0"></span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Personel Tab -->
+            <div class="tab-pane fade show active" id="tab-personel">
+                <div class="card border-top-0 rounded-top-0">
+                    <div class="card-body">
+                        <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <select class="form-select form-select-sm" data-bind="options: availableUsers, optionsText: function(u) { return u.firstName + ' ' + u.lastName; }, optionsValue: 'id', value: newPersonelUserId, optionsCaption: '-- Personel Seçin --'"></select>
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-primary" data-bind="click: addPersonel, disable: !newPersonelUserId()">
+                                    <i class="bi bi-plus"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Personel</th>
+                                    <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                                    <th style="width: 60px;"></th>
+                                    <!-- /ko -->
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: donemDetail() ? donemDetail().personeller : []">
+                                <tr>
+                                    <td data-bind="text: userName || '-'"></td>
+                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 1 -->
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removePersonel">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </td>
+                                    <!-- /ko -->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Soru Tab -->
+            <div class="tab-pane fade" id="tab-soru">
+                <div class="card border-top-0 rounded-top-0">
+                    <div class="card-body">
+                        <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-5">
+                                <select class="form-select form-select-sm" data-bind="options: availableSorular, optionsText: function(s) { return s.hedefFirmaAdi + ' - ' + s.soruMetni.substring(0, 50); }, optionsValue: 'id', value: newSoruId, optionsCaption: '-- Soru Seçin --'"></select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control form-control-sm" data-bind="value: newSoruAranma" min="1" placeholder="Aranma">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-primary" data-bind="click: addSoru, disable: !newSoruId()">
+                                    <i class="bi bi-plus"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Firma</th>
+                                    <th>Soru</th>
+                                    <th>Aranma</th>
+                                    <th>Kuponlu</th>
+                                    <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                                    <th style="width: 60px;"></th>
+                                    <!-- /ko -->
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: donemDetail() ? donemDetail().sorular : []">
+                                <tr>
+                                    <td data-bind="text: hedefFirmaAdi || '-'"></td>
+                                    <td><small data-bind="text: soruMetni ? (soruMetni.length > 60 ? soruMetni.substring(0,60)+'...' : soruMetni) : '-'"></small></td>
+                                    <td><span class="badge bg-info" data-bind="text: aranmaSayisi"></span></td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark" data-bind="visible: isKuponlu">Kuponlu</span>
+                                        <span data-bind="visible: !isKuponlu">-</span>
+                                    </td>
+                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 1 -->
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removeSoru">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </td>
+                                    <!-- /ko -->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kupon Tab -->
+            <div class="tab-pane fade" id="tab-kupon">
+                <div class="card border-top-0 rounded-top-0">
+                    <div class="card-body">
+                        <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <textarea class="form-control form-control-sm" rows="3" data-bind="value: newKuponText" placeholder="Kupon kodlarını her satıra bir tane olacak şekilde girin..."></textarea>
+                            </div>
+                            <div class="col-auto d-flex align-items-end">
+                                <button class="btn btn-sm btn-primary" data-bind="click: addKuponlar, disable: !newKuponText()">
+                                    <i class="bi bi-plus"></i> Ekle
+                                </button>
+                            </div>
+                        </div>
+                        <!-- /ko -->
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Kupon Kodu</th>
+                                    <th>Kullanıldı</th>
+                                    <!-- ko if: selectedDonem() && selectedDonem().durumId === 1 -->
+                                    <th style="width: 60px;"></th>
+                                    <!-- /ko -->
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: donemDetail() ? donemDetail().kuponlar : []">
+                                <tr>
+                                    <td><code data-bind="text: kuponKodu"></code></td>
+                                    <td>
+                                        <span class="badge" data-bind="css: isUsed ? 'bg-success' : 'bg-secondary', text: isUsed ? 'Evet' : 'Hayır'"></span>
+                                    </td>
+                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 1 -->
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removeKupon">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    </td>
+                                    <!-- /ko -->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dönem Oluştur/Düzenle Modal -->
+    <div class="modal fade" id="donemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-bind="text: isEditing() ? 'Dönem Düzenle' : 'Yeni Dönem'"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3" data-bind="visible: !isEditing()">
+                        <label class="form-label">Müşteri <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="options: customers, optionsText: 'companyName', optionsValue: 'id', value: form.customerId, optionsCaption: '-- Seçin --'"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dönem Adı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: form.ad" maxlength="200" placeholder="Örn: Mart 2026">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: form.baslangicTarihi">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: form.bitisTarihi">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveDonem, disable: isSaving">
+                        <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/GolgeMusteri/donemler.js" asp-append-version="true"></script>
+}

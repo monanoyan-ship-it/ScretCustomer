@@ -1727,3 +1727,45 @@ public static class TrainingQuizResponseStatuses
         public const int Completed = 3;
     }
 }
+
+// ============================================================
+// GOLGE MUSTERI - DONEM DURUMLARI
+// ============================================================
+public static class GmDonemDurumlari
+{
+    public static readonly TypeItem Taslak = new(1, "Taslak", "GmDonemDurum.Taslak", "Taslak", "bi-file-earmark", "bg-secondary", 1, isDefault: true);
+    public static readonly TypeItem Aktif = new(2, "Aktif", "GmDonemDurum.Aktif", "Aktif", "bi-play-circle", "bg-success", 2);
+    public static readonly TypeItem Tamamlandi = new(3, "Tamamlandi", "GmDonemDurum.Tamamlandi", "Tamamlandı", "bi-check-circle", "bg-primary", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Taslak, Aktif, Tamamlandi };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Taslak = 1;
+        public const int Aktif = 2;
+        public const int Tamamlandi = 3;
+    }
+}
+
+// ============================================================
+// GOLGE MUSTERI - ATAMA DURUMLARI
+// ============================================================
+public static class GmAtamaDurumlari
+{
+    public static readonly TypeItem Beklemede = new(1, "Beklemede", "GmAtamaDurum.Beklemede", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Tamamlandi = new(2, "Tamamlandi", "GmAtamaDurum.Tamamlandi", "Tamamlandı", "bi-check-circle", "bg-success", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { Beklemede, Tamamlandi };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Beklemede = 1;
+        public const int Tamamlandi = 2;
+    }
+}

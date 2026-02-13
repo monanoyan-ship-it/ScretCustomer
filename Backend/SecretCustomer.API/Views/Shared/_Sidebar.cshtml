@@ -167,6 +167,39 @@
                 </div>
             </li>
 
+            <!-- ==================== GÖLGE MÜŞTERİ (Admin Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin()">
+                <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
+                   data-bs-toggle="collapse" href="#menuGolgeMusteri" role="button" aria-expanded="false">
+                    <span><i class="bi bi-telephone-outbound me-2"></i>@Html.T("Menu.GolgeMusteri", "Gölge Müşteri")</span>
+                    <i class="bi bi-chevron-down collapse-icon"></i>
+                </a>
+                <div class="collapse" id="menuGolgeMusteri">
+                    <ul class="nav flex-column submenu">
+                        <li>
+                            <a href="/GolgeMusteri/HedefFirmalar" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-building me-2"></i>@Html.T("GolgeMusteri.HedefFirmalar", "Hedef Firmalar")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/GolgeMusteri/Sorular" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-question-circle me-2"></i>@Html.T("GolgeMusteri.Sorular", "Sorular")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/GolgeMusteri/Donemler" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-calendar3 me-2"></i>@Html.T("GolgeMusteri.Donemler", "Dönemler")
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/GolgeMusteri/Takip" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
+                                <i class="bi bi-clipboard-data me-2"></i>@Html.T("GolgeMusteri.Takip", "Takip")
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+
             <!-- ==================== RAPORLAR (Admin Only) ==================== -->
             <li class="nav-item" data-bind="visible: isAdmin()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
@@ -308,6 +341,14 @@
                         </li>
                     </ul>
                 </div>
+            </li>
+
+            <!-- Aramalarım - QualitySpecialist & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
+                <a href="/GolgeMusteri/Aramalarim" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-telephone me-2"></i>
+                    @Html.T("GolgeMusteri.Aramalarim", "Aramalarım")
+                </a>
             </li>
 
             <!-- Notifications - Non-Admin users -->

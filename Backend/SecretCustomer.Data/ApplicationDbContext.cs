@@ -123,6 +123,15 @@ public class ApplicationDbContext : DbContext
     // SMTP Profiles (SMTP Profilleri)
     public DbSet<SmtpProfile> SmtpProfiles { get; set; }
 
+    // Gölge Müşteri (GM)
+    public DbSet<GmHedefFirma> GmHedefFirmalar { get; set; }
+    public DbSet<GmSoru> GmSorular { get; set; }
+    public DbSet<GmDonem> GmDonemler { get; set; }
+    public DbSet<GmDonemKupon> GmDonemKuponlar { get; set; }
+    public DbSet<GmDonemPersonel> GmDonemPersoneller { get; set; }
+    public DbSet<GmDonemSoru> GmDonemSorular { get; set; }
+    public DbSet<GmAtama> GmAtamalar { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -207,6 +216,15 @@ public class ApplicationDbContext : DbContext
 
         // SMTP Profiles
         modelBuilder.Entity<SmtpProfile>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Gölge Müşteri (GM)
+        modelBuilder.Entity<GmHedefFirma>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmSoru>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDonem>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDonemKupon>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDonemPersonel>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDonemSoru>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmAtama>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 
