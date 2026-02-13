@@ -367,7 +367,7 @@ public class EvaluationsApiController : BaseApiController
                 projectIds, statuses: statuses);
 
             var evaluations = await query
-                .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+                .OrderByDescending(e => e.CreatedAt)
                 .Select(e => new EvaluationDto
                 {
                     Id = e.Id,

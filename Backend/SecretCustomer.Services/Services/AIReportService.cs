@@ -200,14 +200,14 @@ public class AIReportService : IAIReportService
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => projectIds.Contains(e.ProjectId))
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
-            .Where(e => e.CompletedAt >= startDate && e.CompletedAt <= endDate)
+            .Where(e => e.CreatedAt >= startDate && e.CreatedAt <= endDate)
             .Select(e => new EvaluationData
             {
                 EvaluationId = e.Id,
                 ProjectName = e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name,
                 PersonnelId = e.EvaluatedCustomerPersonnelId,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FullName : null,
-                CompletedAt = e.CompletedAt,
+                CreatedAt = e.CreatedAt,
                 ScorePercentage = e.ScorePercentage ?? 0
             })
             .ToListAsync();
@@ -222,7 +222,7 @@ public class AIReportService : IAIReportService
             .Include(a => a.Evaluation)
             .Where(a => projectIds.Contains(a.Evaluation.ProjectId))
             .Where(a => a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
-            .Where(a => a.Evaluation.CompletedAt >= startDate && a.Evaluation.CompletedAt <= endDate)
+            .Where(a => a.Evaluation.CreatedAt >= startDate && a.Evaluation.CreatedAt <= endDate)
             .Where(a => a.Question != null && a.EarnedPoints.HasValue && a.Question.WeightPoints > 0)
             .GroupBy(a => a.Question!.Text)
             .Select(g => new QuestionAverage
@@ -244,7 +244,7 @@ public class AIReportService : IAIReportService
         var monthlyScores = new Dictionary<int, decimal?>();
         for (int month = 1; month <= 12; month++)
         {
-            var monthEvals = evaluations.Where(e => e.CompletedAt?.Month == month).ToList();
+            var monthEvals = evaluations.Where(e => e.CreatedAt.Month == month).ToList();
             if (monthEvals.Any())
             {
                 monthlyScores[month] = Math.Round(monthEvals.Average(e => e.ScorePercentage), 2);
@@ -455,7 +455,7 @@ public class AIReportService : IAIReportService
         public string ProjectName { get; set; } = string.Empty;
         public int? PersonnelId { get; set; }
         public string? PersonnelName { get; set; }
-        public DateTime? CompletedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
         public decimal ScorePercentage { get; set; }
     }
 

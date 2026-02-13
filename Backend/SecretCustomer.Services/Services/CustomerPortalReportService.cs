@@ -67,8 +67,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             // Son yanıt tarihi
             var lastResponse = await _context.Evaluations
                 .Where(e => e.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
-                .OrderByDescending(e => e.CompletedAt)
-                .Select(e => e.CompletedAt)
+                .OrderByDescending(e => e.CreatedAt)
+                .Select(e => (DateTime?)e.CreatedAt)
                 .FirstOrDefaultAsync();
 
             result.Add(new SurveyProjectListItemDto
@@ -114,17 +114,17 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         if (startDate.HasValue)
         {
             var startDateUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc);
+            query = query.Where(e => e.CreatedAt >= startDateUtc);
         }
 
         if (endDate.HasValue)
         {
             var endDateUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc);
+            query = query.Where(e => e.CreatedAt <= endDateUtc);
         }
 
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Take(count)
             .ToListAsync();
 
@@ -196,7 +196,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.CustomerOrganization)
             .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
 
         // Davetiye sayısı
@@ -578,8 +578,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             var lastResponse = await _context.Evaluations
                 .Where(e => e.ProjectId == project.Id &&
                            e.StatusId == EvaluationStatuses.Ids.Completed)
-                .OrderByDescending(e => e.CompletedAt)
-                .Select(e => e.CompletedAt)
+                .OrderByDescending(e => e.CreatedAt)
+                .Select(e => (DateTime?)e.CreatedAt)
                 .FirstOrDefaultAsync();
 
             result.Add(new EnneagramProjectListItemDto
@@ -639,7 +639,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         var totalCount = await query.CountAsync();
 
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

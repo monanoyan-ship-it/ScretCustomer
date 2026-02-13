@@ -151,10 +151,9 @@ public class PublicReportApiController : ControllerBase
             .Where(e => !e.IsDeleted
                 && e.Project != null
                 && e.Project.CustomerId == customerId
-                && e.CompletedAt != null
-                && e.CompletedAt >= startDate
-                && e.CompletedAt < endDate)
-            .OrderByDescending(e => e.CompletedAt)
+                && e.CreatedAt >= startDate
+                && e.CreatedAt < endDate)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new
             {
                 e.Id,
@@ -194,10 +193,9 @@ public class PublicReportApiController : ControllerBase
             .Include(e => e.CustomerDealer)
             .Where(e => !e.IsDeleted
                 && e.EvaluatedCustomerPersonnelId == customerPersonnelId
-                && e.CompletedAt != null
-                && e.CompletedAt >= startDate
-                && e.CompletedAt < endDate)
-            .OrderByDescending(e => e.CompletedAt)
+                && e.CreatedAt >= startDate
+                && e.CreatedAt < endDate)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new
             {
                 e.Id,

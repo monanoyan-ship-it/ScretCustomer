@@ -96,7 +96,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatorId == evaluatorId && !e.IsDeleted)
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -154,7 +154,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatorCustomerPersonnelId == customerPersonnelId && !e.IsDeleted)
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -213,7 +213,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatedCustomerPersonnelId == customerPersonnelId && !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,

@@ -250,9 +250,9 @@ public class EvaluationNotificationService : IEvaluationNotificationService
                     .Where(e => !e.IsDeleted
                         && e.Project.CustomerId == rule.CustomerId
                         && e.StatusId == EvaluationStatuses.Ids.Completed
-                        && e.CompletedAt >= periodStartUtc
-                        && e.CompletedAt < periodEndUtc)
-                    .OrderByDescending(e => e.CompletedAt)
+                        && e.CreatedAt >= periodStartUtc
+                        && e.CreatedAt < periodEndUtc)
+                    .OrderByDescending(e => e.CreatedAt)
                     .ToListAsync();
 
                 if (!evaluations.Any())

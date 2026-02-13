@@ -55,8 +55,7 @@ public class DashboardService : IDashboardService
 
         // Son 12 ay trend
         var last12Months = completedEvaluations
-            .Where(e => e.CompletedAt.HasValue)
-            .GroupBy(e => new { e.CompletedAt!.Value.Year, e.CompletedAt!.Value.Month })
+            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
             .Select(g => new MonthlyTrendDto
             {
                 Year = g.Key.Year,
@@ -120,7 +119,7 @@ public class DashboardService : IDashboardService
 
         // Bu ay
         var currentMonthEvals = completedEvaluations
-            .Where(e => e.CompletedAt >= currentMonthStart)
+            .Where(e => e.CreatedAt >= currentMonthStart)
             .ToList();
         var currentMonthCount = currentMonthEvals.Count;
         var currentMonthAverage = currentMonthEvals.Any()
@@ -129,7 +128,7 @@ public class DashboardService : IDashboardService
 
         // Geçen ay
         var lastMonthEvals = completedEvaluations
-            .Where(e => e.CompletedAt >= lastMonthStart && e.CompletedAt < currentMonthStart)
+            .Where(e => e.CreatedAt >= lastMonthStart && e.CreatedAt < currentMonthStart)
             .ToList();
         var lastMonthCount = lastMonthEvals.Count;
         var lastMonthAverage = lastMonthEvals.Any()
@@ -172,7 +171,7 @@ public class DashboardService : IDashboardService
 
         // Son 5 değerlendirme
         var recentEvaluations = completedEvaluations
-            .OrderByDescending(e => e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Take(5)
             .Select(e => new RecentEvaluationDto
             {
@@ -180,7 +179,7 @@ public class DashboardService : IDashboardService
                 ProjectName = !string.IsNullOrEmpty(e.Project?.Code) ? $"{e.Project.Code} - {e.Project.Name}" : (e.Project?.Name ?? ""),
                 ChecklistName = e.Project?.Checklist?.Name ?? "",
                 ScorePercentage = e.ScorePercentage,
-                EvaluationDate = e.CompletedAt ?? e.CreatedAt,
+                EvaluationDate = e.CreatedAt,
                 Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? ""
             })
             .ToList();
@@ -226,7 +225,7 @@ public class DashboardService : IDashboardService
 
         // Bugün
         var todayEvaluations = await baseQuery
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .Where(e => e.CreatedAt.Date == today)
             .ToListAsync();
 
         var todayCount = todayEvaluations.Count;
@@ -236,7 +235,7 @@ public class DashboardService : IDashboardService
 
         // Bu hafta
         var weekEvaluations = await baseQuery
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= weekStart && e.CompletedAt.Value.Date <= today)
+            .Where(e => e.CreatedAt.Date >= weekStart && e.CreatedAt.Date <= today)
             .ToListAsync();
 
         var weekCount = weekEvaluations.Count;
@@ -246,7 +245,7 @@ public class DashboardService : IDashboardService
 
         // Bu ay
         var monthEvaluations = await baseQuery
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.CreatedAt >= monthStart)
             .CountAsync();
 
         // Günlük hedef yüzdesi
@@ -258,8 +257,8 @@ public class DashboardService : IDashboardService
             .ToList();
 
         var trendData = await baseQuery
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date >= today.AddDays(-6))
-            .GroupBy(e => e.CompletedAt!.Value.Date)
+            .Where(e => e.CreatedAt.Date >= today.AddDays(-6))
+            .GroupBy(e => e.CreatedAt.Date)
             .Select(g => new
             {
                 Date = g.Key,
@@ -305,7 +304,7 @@ public class DashboardService : IDashboardService
         // Bugün en çok değerlendirme yapanlar
         var topToday = await _context.Evaluations
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .Where(e => e.CreatedAt.Date == today)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
             {
@@ -333,7 +332,7 @@ public class DashboardService : IDashboardService
         // Bu ay en çok değerlendirme yapanlar
         var topMonth = await _context.Evaluations
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.CreatedAt >= monthStart)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
             {
@@ -361,7 +360,7 @@ public class DashboardService : IDashboardService
         // Kullanıcı sıralaması (aylık)
         var rankData = await _context.Evaluations
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed && e.EvaluatorId.HasValue)
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.CreatedAt >= monthStart)
             .GroupBy(e => e.EvaluatorId!.Value)
             .Select(g => new
             {
@@ -414,7 +413,7 @@ public class DashboardService : IDashboardService
 
         // Bugün yapılanlar
         var todayCompleted = await baseQuery
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value.Date == today)
+            .Where(e => e.CreatedAt.Date == today)
             .CountAsync();
 
         // Aktif dönem
@@ -439,9 +438,8 @@ public class DashboardService : IDashboardService
 
             // Dönemdeki tamamlanan değerlendirmeler
             var periodQuery = baseQuery
-                .Where(e => e.CompletedAt.HasValue &&
-                           e.CompletedAt.Value >= activePeriod.StartDate &&
-                           e.CompletedAt.Value <= activePeriod.EndDate);
+                .Where(e => e.CreatedAt >= activePeriod.StartDate &&
+                           e.CreatedAt <= activePeriod.EndDate);
             periodCompleted = await periodQuery.CountAsync();
 
             periodPercentage = periodTarget > 0 ? Math.Min(100, (decimal)periodCompleted / periodTarget * 100) : 0;
@@ -611,7 +609,7 @@ public class DashboardService : IDashboardService
             .Include(e => e.Project)
                 .ThenInclude(p => p!.Customer)
             .Where(e => !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .Where(e => e.CompletedAt.HasValue && e.CompletedAt.Value >= monthStart)
+            .Where(e => e.CreatedAt >= monthStart)
             .Where(e => e.Project != null && e.Project.CustomerId != null)
             .GroupBy(e => new
             {

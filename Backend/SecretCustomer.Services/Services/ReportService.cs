@@ -220,8 +220,8 @@ public class ReportService : IReportService
                 ? query.OrderBy(e => e.Evaluator != null ? e.Evaluator.FirstName : "")
                 : query.OrderByDescending(e => e.Evaluator != null ? e.Evaluator.FirstName : ""),
             "calldate" => isAsc
-                ? query.OrderBy(e => e.CallDate ?? e.CompletedAt)
-                : query.OrderByDescending(e => e.CallDate ?? e.CompletedAt),
+                ? query.OrderBy(e => e.CallDate ?? e.CreatedAt)
+                : query.OrderByDescending(e => e.CallDate ?? e.CreatedAt),
             "duration" => isAsc
                 ? query.OrderBy(e => e.Duration)
                 : query.OrderByDescending(e => e.Duration),
@@ -457,7 +457,7 @@ public class ReportService : IReportService
                     .Select(oa => $"{oa.Supervisor!.FirstName} {oa.Supervisor.LastName}")
                     .Distinct())
                 : null,
-            EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
+            EvaluationDate = evaluation.ControlDate ?? evaluation.CreatedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
             TotalScore = evaluation.TotalScore,
@@ -797,9 +797,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Veritabanında aggregate - memory'ye çekmeden
@@ -1011,9 +1011,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         var evaluations = await query.Take(1000).ToListAsync();
@@ -1139,7 +1139,7 @@ public class ReportService : IReportService
             PeriodName = evaluation.AssignmentPeriod != null
                 ? evaluation.AssignmentPeriod.StartDate.ToString("yyyyMM")
                 : (evaluation.CallDate.HasValue ? FormatMonthYear(evaluation.CallDate.Value) : null),
-            EvaluationDate = evaluation.ControlDate ?? evaluation.CompletedAt,
+            EvaluationDate = evaluation.ControlDate ?? evaluation.CreatedAt,
             CompletedAt = evaluation.CompletedAt,
             CreatedAt = evaluation.CreatedAt,
             TotalScore = evaluation.TotalScore,
@@ -1236,9 +1236,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) >= minStart);
+                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) <= maxEnd);
+                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
         }
 
         var penaltyAnswers = await query.ToListAsync();
@@ -1257,7 +1257,7 @@ public class ReportService : IReportService
 
         // Detailed penalties with pagination
         var penalties = penaltyAnswers
-            .OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt)
+            .OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt)
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .Select(a => new PenaltyDetailDto
@@ -1284,13 +1284,11 @@ public class ReportService : IReportService
                         ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
                         : a.Evaluation.EvaluatedUnknownPersonnel),
                 DealerName = a.Evaluation.CustomerDealer != null ? a.Evaluation.CustomerDealer.Name : null,
-                EvaluationDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt,
+                EvaluationDate = a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt,
                 Notes = a.Notes,
                 PeriodName = a.Evaluation.AssignmentPeriod != null
                     ? a.Evaluation.AssignmentPeriod.Name
-                    : ((a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt) != null
-                        ? (a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt)!.Value.ToString("yyyyMM")
-                        : null),
+                    : (a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt).ToString("yyyyMM"),
                 SelectedSubCriteria = a.SubCriteriaSelections
                     .Where(s => s.SubCriteria != null)
                     .Select(s => s.SubCriteria.Description)
@@ -1367,11 +1365,10 @@ public class ReportService : IReportService
 
         // Monthly trend (last 12 months)
         var monthlyTrend = penaltyAnswers
-            .Where(a => a.Evaluation.ControlDate.HasValue || a.Evaluation.CompletedAt.HasValue)
             .GroupBy(a => new
             {
-                Year = (a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt!.Value).Year,
-                Month = (a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt!.Value).Month
+                Year = (a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt).Year,
+                Month = (a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt).Month
             })
             .Select(g => new PenaltyMonthlyTrendDto
             {
@@ -1479,9 +1476,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) >= minStart);
+                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => (a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate) <= maxEnd);
+                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
         }
 
         var penaltyAnswers = await query.ToListAsync();
@@ -1544,15 +1541,15 @@ public class ReportService : IReportService
         var redCardText = await _localizationService.GetResourceAsync("Report.RedCard", defaultValue: "Kırmızı Kart");
 
         int row = 2;
-        foreach (var a in penaltyAnswers.OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt))
+        foreach (var a in penaltyAnswers.OrderByDescending(a => a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt))
         {
             int col = 1;
-            var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt;
-            penaltiesSheet.Cell(row, col++).Value = evalDate?.ToString("dd.MM.yyyy") ?? "";
+            var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt;
+            penaltiesSheet.Cell(row, col++).Value = evalDate.ToString("dd.MM.yyyy");
             // Periyot: AssignmentPeriod varsa adı, yoksa YYYYMM formatında
             var periodName = a.Evaluation.AssignmentPeriod != null
                 ? a.Evaluation.AssignmentPeriod.Name
-                : (evalDate.HasValue ? evalDate.Value.ToString("yyyyMM") : "");
+                : evalDate.ToString("yyyyMM");
             penaltiesSheet.Cell(row, col++).Value = periodName;
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallId ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallTime ?? "";
@@ -1631,7 +1628,7 @@ public class ReportService : IReportService
             .Where(a => a.Question != null)
             .SelectMany(a =>
             {
-                var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CompletedAt ?? a.Evaluation.CreatedAt;
+                var evalDate = a.Evaluation.ControlDate ?? a.Evaluation.CreatedAt;
                 var periodName = a.Evaluation.AssignmentPeriod?.Name ?? evalDate.ToString("yyyyMM");
                 var penaltyType = a.AppliedPenaltyTypeId == PenaltyTypes.Ids.YellowCard ? "YellowCard" : "RedCard";
 
@@ -1977,9 +1974,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         var evaluations = await query.ToListAsync();
@@ -2029,8 +2026,7 @@ public class ReportService : IReportService
 
         // Aylık trend (son 12 ay)
         var monthlyTrend = evaluations
-            .Where(e => e.CompletedAt.HasValue)
-            .GroupBy(e => new { e.CompletedAt!.Value.Year, e.CompletedAt.Value.Month })
+            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
             .Select(g => new PersonnelMonthlyTrendDto
             {
                 Year = g.Key.Year,
@@ -2067,11 +2063,11 @@ public class ReportService : IReportService
 
         // Değerlendirmeler (filtreye göre tümü)
         var recentEvaluations = evaluations
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new PersonnelEvaluationSummaryDto
             {
                 EvaluationId = e.Id,
-                EvaluationDate = e.CompletedAt,
+                EvaluationDate = e.CreatedAt,
                 ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
@@ -2160,15 +2156,14 @@ public class ReportService : IReportService
 
         // Süreç analizi: Proje + Soru + Periyot bazlı ortalama puan ve hata sayısı
         var processAnalysis = evaluations
-            .Where(e => e.CompletedAt.HasValue)
             .SelectMany(e => e.Answers
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
-                    Year = e.CompletedAt!.Value.Year,
-                    Month = e.CompletedAt.Value.Month,
+                    Year = e.CreatedAt.Year,
+                    Month = e.CreatedAt.Month,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     WeightPoints = a.Question.WeightPoints,
                     IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
@@ -2720,9 +2715,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CompletedAt >= minStart);
+                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CompletedAt <= maxEnd);
+                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
         }
 
         if (!string.IsNullOrEmpty(filter.SearchText))
@@ -2739,7 +2734,7 @@ public class ReportService : IReportService
 
         // Get paginated results
         var suggestions = await query
-            .OrderByDescending(a => a.Evaluation.CompletedAt)
+            .OrderByDescending(a => a.Evaluation.CreatedAt)
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .ToListAsync();
@@ -2810,7 +2805,7 @@ public class ReportService : IReportService
                         ? $"{a.Evaluation.EvaluatedPersonnel.FirstName} {a.Evaluation.EvaluatedPersonnel.LastName}"
                         : a.Evaluation.EvaluatedUnknownPersonnel),
                 DealerName = a.Evaluation.CustomerDealer != null ? a.Evaluation.CustomerDealer.Name : null,
-                EvaluationDate = a.Evaluation.CompletedAt ?? a.Evaluation.ControlDate,
+                EvaluationDate = a.Evaluation.CreatedAt,
                 CallId = a.Evaluation.CallId,
                 IsPenaltyApplied = a.IsPenaltyApplied,
                 PenaltyType = a.AppliedPenaltyTypeId != PenaltyTypes.Ids.None ? PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName : null,
@@ -2862,13 +2857,13 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CompletedAt >= minStart);
+                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CompletedAt <= maxEnd);
+                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CreatedAt <= maxEnd);
         }
 
         var evaluationNotes = await evaluationNotesQuery
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new EvaluationNoteDto
             {
                 EvaluationId = e.Id,
@@ -2879,7 +2874,7 @@ public class ReportService : IReportService
                         ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
                         : e.EvaluatedUnknownPersonnel),
                 DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
-                EvaluationDate = e.CompletedAt ?? e.ControlDate,
+                EvaluationDate = e.CreatedAt,
                 CallId = e.CallId,
                 ScorePercentage = e.ScorePercentage,
                 Notes = e.Notes,
@@ -2962,9 +2957,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CompletedAt >= minStart);
+                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CompletedAt <= maxEnd);
+                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
         }
 
         var answers = await query.ToListAsync();
@@ -3077,9 +3072,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(s => s.Answer.Evaluation.CompletedAt >= minStart);
+                query = query.Where(s => s.Answer.Evaluation.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(s => s.Answer.Evaluation.CompletedAt <= maxEnd);
+                query = query.Where(s => s.Answer.Evaluation.CreatedAt <= maxEnd);
         }
 
         var selections = await query.ToListAsync();
@@ -3154,9 +3149,9 @@ public class ReportService : IReportService
                 var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
                 if (minStart != DateTime.MinValue)
-                    answerQuery = answerQuery.Where(a => a.Evaluation.CompletedAt >= minStart);
+                    answerQuery = answerQuery.Where(a => a.Evaluation.CreatedAt >= minStart);
                 if (maxEnd != DateTime.MaxValue)
-                    answerQuery = answerQuery.Where(a => a.Evaluation.CompletedAt <= maxEnd);
+                    answerQuery = answerQuery.Where(a => a.Evaluation.CreatedAt <= maxEnd);
             }
 
             var questionEvalCounts = await answerQuery
@@ -3492,9 +3487,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Customer filter (çoklu)
@@ -3537,8 +3532,8 @@ public class ReportService : IReportService
                 .Select(a => new
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
-                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
-                    Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CreatedAt),
+                    Year = (e.CallDate ?? e.CreatedAt).Year,
                     GroupOrder = a.Question!.GroupName!.Split(' ').FirstOrDefault() ?? "",
                     GroupName = a.Question.GroupName,
                     EarnedPoints = a.EarnedPoints ?? 0,
@@ -3568,8 +3563,8 @@ public class ReportService : IReportService
                 .Select(a => new
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
-                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CompletedAt ?? e.CreatedAt),
-                    Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                    PeriodName = e.AssignmentPeriod?.Name ?? FormatMonthYear(e.CallDate ?? e.CreatedAt),
+                    Year = (e.CallDate ?? e.CreatedAt).Year,
                     GroupName = a.Question!.GroupName ?? "",
                     QuestionOrder = a.Question!.Order,
                     QuestionText = a.Question.Text,
@@ -3747,9 +3742,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Status filter (çoklu)
@@ -3821,7 +3816,7 @@ public class ReportService : IReportService
             query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
 
         var evaluations = await query
-            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
             .Take(10000)
             .ToListAsync();
 
@@ -3863,7 +3858,7 @@ public class ReportService : IReportService
             var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName ?? "";
 
             // Değerlendirilen: Period varsa period adı, yoksa AyYıl + Company
-            var evalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt;
+            var evalDate = e.CallDate ?? e.CreatedAt;
             var degerlendirilenmStr = e.AssignmentPeriod != null
                 ? e.AssignmentPeriod.Name
                 : $"{FormatMonthYear(evalDate)} - {customerName}";
@@ -4021,9 +4016,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Status filter (çoklu)
@@ -4095,7 +4090,7 @@ public class ReportService : IReportService
             query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
 
         var evaluations = await query
-            .OrderByDescending(e => e.CallDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
             .Take(10000)
             .ToListAsync();
 
@@ -4138,7 +4133,7 @@ public class ReportService : IReportService
             var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName ?? "";
 
             // Değerlendirilen: Period varsa period adı, yoksa AyYıl + Company
-            var evalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt;
+            var evalDate = e.CallDate ?? e.CreatedAt;
             var degerlendirilenmStr = e.AssignmentPeriod != null
                 ? e.AssignmentPeriod.Name
                 : $"{FormatMonthYear(evalDate)} - {customerName}";
@@ -4293,9 +4288,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Customer filter (çoklu)
@@ -4335,7 +4330,7 @@ public class ReportService : IReportService
         var projectData = evaluations
             .Select(e => new
             {
-                EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                EvalDate = e.CallDate ?? e.CreatedAt,
                 ProjectName = e.AssignmentPeriod?.Name ?? (e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : ""),
                 ScorePercentage = e.ScorePercentage!.Value
             })
@@ -4466,9 +4461,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Customer filter (çoklu)
@@ -4558,7 +4553,7 @@ public class ReportService : IReportService
                     ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                     : e.EvaluatedUnknownPersonnel ?? "-",
                 Department = e.EvaluatedOrganization?.Name ?? e.Project?.Customer?.CompanyName ?? "-",
-                Year = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).Year,
+                Year = (e.CallDate ?? e.CreatedAt).Year,
                 Score = e.ScorePercentage!.Value
             })
             .GroupBy(x => new { x.ProjectName, x.PersonnelName, x.Department, x.Year })
@@ -4644,7 +4639,7 @@ public class ReportService : IReportService
                         ? s.Answer.Evaluation.Project.Customer.CompanyName
                         : "-"),
                 ProjectName = s.Answer.Evaluation.Project != null ? (s.Answer.Evaluation.Project.Code != null ? s.Answer.Evaluation.Project.Code + " - " + s.Answer.Evaluation.Project.Name : s.Answer.Evaluation.Project.Name) ?? "" : "",
-                EvalDate = s.Answer.Evaluation.CallDate ?? s.Answer.Evaluation.CompletedAt ?? s.Answer.Evaluation.CreatedAt,
+                EvalDate = s.Answer.Evaluation.CallDate ?? s.Answer.Evaluation.CreatedAt,
                 Suggestion = s.SubCriteria!.Description
             })
             .ToListAsync();
@@ -4679,7 +4674,7 @@ public class ReportService : IReportService
                 : a.Evaluation.EvaluatedUnknownPersonnel ?? "-";
             var department = a.Evaluation.EvaluatedOrganization?.Name ?? a.Evaluation.Project?.Customer?.CompanyName ?? "-";
             var projectName = a.Evaluation.Project?.Name ?? "";
-            var evalDate = a.Evaluation.CallDate ?? a.Evaluation.CompletedAt ?? a.Evaluation.CreatedAt;
+            var evalDate = a.Evaluation.CallDate ?? a.Evaluation.CreatedAt;
 
             if (!string.IsNullOrWhiteSpace(a.RecommendationNotes))
                 suggestionList.Add((personnelName, department, projectName, evalDate, a.RecommendationNotes));
@@ -4765,7 +4760,7 @@ public class ReportService : IReportService
                         ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
                         : e.EvaluatedUnknownPersonnel ?? "-",
                     QuestionText = a.Question!.Text,
-                    EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                    EvalDate = e.CallDate ?? e.CreatedAt,
                     ScorePercentage = (a.GivenPoints ?? 0) / a.Question.MaxPoints * 100,
                     IsError = (a.GivenPoints ?? 0) < a.Question.MaxPoints
                 }))
@@ -4871,7 +4866,7 @@ public class ReportService : IReportService
                             : e.EvaluatedUnknownPersonnel ?? "-",
                         Department = e.EvaluatedOrganization?.Name ?? e.Project?.Customer?.CompanyName ?? "-",
                         CallId = e.CallId ?? "-",
-                        PeriodMonth = (e.CallDate ?? e.CompletedAt ?? e.CreatedAt).ToString("yyyyMM"),
+                        PeriodMonth = (e.CallDate ?? e.CreatedAt).ToString("yyyyMM"),
                         CriteriaScore = a.Question.MaxPoints > 0
                             ? Math.Round((a.GivenPoints ?? 0) / a.Question.MaxPoints * 100, 0)
                             : 0,
@@ -4942,13 +4937,13 @@ public class ReportService : IReportService
         if (startDate.HasValue)
         {
             var startDateUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc);
+            query = query.Where(e => e.CreatedAt >= startDateUtc);
         }
 
         if (endDate.HasValue)
         {
             var endDateUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc);
+            query = query.Where(e => e.CreatedAt <= endDateUtc);
         }
 
         var evaluations = await query.ToListAsync();
@@ -5278,7 +5273,7 @@ public class ReportService : IReportService
             // Son yanıt tarihi
             var lastResponse = await _context.Evaluations
                 .Where(e => e.ProjectId == project.Id && e.StatusId == EvaluationStatuses.Ids.Completed)
-                .OrderByDescending(e => e.CompletedAt)
+                .OrderByDescending(e => e.CreatedAt)
                 .Select(e => e.CompletedAt)
                 .FirstOrDefaultAsync();
 
@@ -5327,17 +5322,17 @@ public class ReportService : IReportService
         if (startDate.HasValue)
         {
             var startDateUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt >= startDateUtc);
+            query = query.Where(e => e.CreatedAt >= startDateUtc);
         }
 
         if (endDate.HasValue)
         {
             var endDateUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CompletedAt <= endDateUtc);
+            query = query.Where(e => e.CreatedAt <= endDateUtc);
         }
 
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Take(count)
             .ToListAsync();
 
@@ -5408,7 +5403,7 @@ public class ReportService : IReportService
         }
 
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Take(500)
             .ToListAsync();
 
@@ -5570,7 +5565,7 @@ public class ReportService : IReportService
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.CustomerOrganization)
             .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
 
         // Davetiye sayısı
@@ -5946,7 +5941,7 @@ public class ReportService : IReportService
                 .ThenInclude(a => a.SubCriteriaSelections)
                     .ThenInclude(s => s.SubCriteria)
             .Where(e => e.ProjectId == projectId && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .ToListAsync();
 
         // External invitation'ları al
@@ -6858,9 +6853,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= minStart);
+                query = query.Where(e => (e.CallDate ?? e.CreatedAt) >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= maxEnd);
+                query = query.Where(e => (e.CallDate ?? e.CreatedAt) <= maxEnd);
         }
 
         // Verileri çek
@@ -7029,9 +7024,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) >= minStart);
+                query = query.Where(e => (e.CallDate ?? e.CreatedAt) >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => (e.CallDate ?? e.CompletedAt ?? e.CreatedAt) <= maxEnd);
+                query = query.Where(e => (e.CallDate ?? e.CreatedAt) <= maxEnd);
         }
 
         // Verileri çek
@@ -7053,7 +7048,7 @@ public class ReportService : IReportService
                         : "",
                     Department = e.EvaluatedCustomerPersonnel?.Department,
                     GroupName = a.Question.GroupName ?? "",
-                    EvalDate = e.CallDate ?? e.CompletedAt ?? e.CreatedAt,
+                    EvalDate = e.CallDate ?? e.CreatedAt,
                     Score = a.AnswerNumeric,
                     MaxPoints = a.Question.MaxPoints,
                     IsError = a.AnswerNumeric.HasValue && a.Question.MaxPoints > 0 && a.AnswerNumeric.Value < a.Question.MaxPoints
@@ -7171,7 +7166,7 @@ public class ReportService : IReportService
             var lastResponse = await _context.Evaluations
                 .Where(e => e.ProjectId == project.Id &&
                            e.StatusId == EvaluationStatuses.Ids.Completed)
-                .OrderByDescending(e => e.CompletedAt)
+                .OrderByDescending(e => e.CreatedAt)
                 .Select(e => e.CompletedAt)
                 .FirstOrDefaultAsync();
 
@@ -7242,12 +7237,12 @@ public class ReportService : IReportService
             if (dateRange.StartDate.HasValue)
             {
                 var startUtc = DateTime.SpecifyKind(dateRange.StartDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => e.CompletedAt >= startUtc);
+                query = query.Where(e => e.CreatedAt >= startUtc);
             }
             if (dateRange.EndDate.HasValue)
             {
                 var endUtc = DateTime.SpecifyKind(dateRange.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => e.CompletedAt <= endUtc);
+                query = query.Where(e => e.CreatedAt <= endUtc);
             }
         }
 
@@ -7255,7 +7250,7 @@ public class ReportService : IReportService
 
         // Sayfalama için sonuçları al
         var evaluations = await query
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Skip((filter.Page - 1) * filter.PageSize)
             .Take(filter.PageSize)
             .ToListAsync();
@@ -7701,9 +7696,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart || e.CreatedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd || e.CreatedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         // Status filter (çoklu)
@@ -7765,7 +7760,7 @@ public class ReportService : IReportService
         }
 
         var evaluations = await query
-            .OrderByDescending(e => e.ControlDate ?? e.CompletedAt ?? e.CreatedAt)
+            .OrderByDescending(e => e.ControlDate ?? e.CreatedAt)
             .Take(10000)
             .ToListAsync();
 
@@ -7806,7 +7801,7 @@ public class ReportService : IReportService
             var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName ?? "";
 
             // Değerlendirilen: Period varsa period adı, yoksa AyYıl + Company
-            var evalDate = e.ControlDate ?? e.CompletedAt ?? e.CreatedAt;
+            var evalDate = e.ControlDate ?? e.CreatedAt;
             var degerlendirilenmStr = e.AssignmentPeriod != null
                 ? e.AssignmentPeriod.Name
                 : $"{FormatMonthYear(evalDate)} - {customerName}";
@@ -7855,7 +7850,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 4).Value = dealerName;
             worksheet.Cell(row, 5).Value = personnelName;
             worksheet.Cell(row, 6).Value = departmentName;
-            worksheet.Cell(row, 7).Value = (e.ControlDate ?? e.CompletedAt ?? e.CreatedAt).ToString("dd.MM.yyyy");
+            worksheet.Cell(row, 7).Value = (e.ControlDate ?? e.CreatedAt).ToString("dd.MM.yyyy");
             worksheet.Cell(row, 8).Value = e.ControlTime ?? "";
             // Açıklama: DescriptionsJson (+ ile eklenen açıklamalar) + EvaluationComment
             var allDescriptions = new List<string>();
@@ -8189,9 +8184,9 @@ public class ReportService : IReportService
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CompletedAt >= minStart);
+                query = query.Where(e => e.CreatedAt >= minStart);
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CompletedAt <= maxEnd);
+                query = query.Where(e => e.CreatedAt <= maxEnd);
         }
 
         var evaluations = await query.ToListAsync();
@@ -8239,8 +8234,7 @@ public class ReportService : IReportService
 
         // Aylık trend
         var monthlyTrend = evaluations
-            .Where(e => e.CompletedAt.HasValue)
-            .GroupBy(e => new { e.CompletedAt!.Value.Year, e.CompletedAt.Value.Month })
+            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
             .Select(g => new PersonnelMonthlyTrendDto
             {
                 Year = g.Key.Year,
@@ -8277,11 +8271,11 @@ public class ReportService : IReportService
 
         // Değerlendirmeler
         var recentEvaluations = evaluations
-            .OrderByDescending(e => e.CompletedAt)
+            .OrderByDescending(e => e.CreatedAt)
             .Select(e => new DealerEvaluationSummaryDto
             {
                 EvaluationId = e.Id,
-                EvaluationDate = e.CompletedAt,
+                EvaluationDate = e.CreatedAt,
                 ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
@@ -8367,15 +8361,14 @@ public class ReportService : IReportService
 
         // Süreç analizi
         var processAnalysis = evaluations
-            .Where(e => e.CompletedAt.HasValue)
             .SelectMany(e => e.Answers
                 .Where(a => a.Question != null && !string.IsNullOrEmpty(a.Question.Text))
                 .Select(a => new
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
-                    Year = e.CompletedAt!.Value.Year,
-                    Month = e.CompletedAt.Value.Month,
+                    Year = e.CreatedAt.Year,
+                    Month = e.CreatedAt.Month,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     WeightPoints = a.Question.WeightPoints,
                     IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
