@@ -1320,6 +1320,36 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// İç Dinleme Raporu - Excel export (CustomerPortal - Dinleyen kolonu dahil)
+    /// </summary>
+    [HttpPost("reports/export/internal-evaluation")]
+    public async Task<IActionResult> ExportInternalEvaluationReport([FromBody] ReportFilterDto filter)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi projesinin raporunu görebilir
+            filter.ProjectCustomerIds = new List<int> { customerId.Value };
+
+            // Supervisor filtrelemesi
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null)
+                filter.PersonnelIds = allowedPersonnelIds;
+
+            var result = await _reportService.ExportInternalEvaluationReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting internal evaluation report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// Cezalı KL Raporu (CustomerPortal) - EvaluatorName hariç
     /// </summary>
     [HttpGet("reports/penalties")]

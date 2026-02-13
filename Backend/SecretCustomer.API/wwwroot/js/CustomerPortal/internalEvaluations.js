@@ -689,8 +689,8 @@ function CustomerInternalEvaluationsViewModel() {
 
     self.exportCustomerEvaluationReport = function() {
         self.isExporting(true);
-        var filename = 'Musteri_Degerlendirme_Raporu_' + self.getTimestamp() + '.xlsx';
-        customerApiDownloadPost('/api/customer/portal/reports/export/customer-evaluation', self.buildExportFilter(), filename)
+        var filename = 'Ic_Dinleme_Raporu_' + self.getTimestamp() + '.xlsx';
+        customerApiDownloadPost('/api/customer/portal/reports/export/internal-evaluation', self.buildExportFilter(), filename)
             .then(function() { toastr.success('Rapor indirildi'); })
             .catch(function(error) { console.error('Error exporting report:', error); toastr.error('Rapor oluşturulurken hata oluştu'); })
             .finally(function() { self.isExporting(false); });

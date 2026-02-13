@@ -26,8 +26,9 @@ public class AuthService : IAuthService
     public async Task<LoginResponseDto> LoginAsync(LoginDto dto)
     {
         // Önce User tablosunu kontrol et (bizim personelimiz)
-        // UserRepository zaten case-insensitive arama yapıyor
-        var user = await _userRepository.GetByUsernameAsync(dto.Username);
+        // Username veya Email ile arama yap (case-insensitive)
+        var user = await _userRepository.GetByUsernameAsync(dto.Username)
+                   ?? await _userRepository.GetByEmailAsync(dto.Username);
         if (user != null)
         {
             if (!VerifyPassword(dto.Password, user.PasswordHash))
@@ -55,11 +56,11 @@ public class AuthService : IAuthService
         }
 
         // User bulunamadıysa CustomerPersonnel tablosunu kontrol et (müşteri personeli)
-        // Case-insensitive arama
+        // Username veya Email ile arama yap (case-insensitive)
         var lowerUsername = dto.Username.ToLower();
         var customerPersonnel = await _context.CustomerPersonnel
             .Include(cp => cp.Customer)
-            .FirstOrDefaultAsync(cp => cp.Username.ToLower() == lowerUsername && !cp.IsDeleted);
+            .FirstOrDefaultAsync(cp => (cp.Username.ToLower() == lowerUsername || cp.Email.ToLower() == lowerUsername) && !cp.IsDeleted);
 
         if (customerPersonnel != null)
         {

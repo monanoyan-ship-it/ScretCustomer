@@ -95,6 +95,9 @@ public interface IReportService
     // Müşteri Değerlendirme Raporu Excel export
     Task<ExcelExportDto> ExportCustomerEvaluationReportAsync(ReportFilterDto filter);
 
+    // İç Dinleme Raporu Excel export (Dinleyen kolonu dahil)
+    Task<ExcelExportDto> ExportInternalEvaluationReportAsync(ReportFilterDto filter);
+
     // ===== PROJE PERFORMANS RAPORU =====
 
     // Proje Performans Raporu Excel export
