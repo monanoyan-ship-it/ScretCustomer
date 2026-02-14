@@ -96,7 +96,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatorId == evaluatorId && !e.IsDeleted)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -154,7 +154,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatorCustomerPersonnelId == customerPersonnelId && !e.IsDeleted)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -213,7 +213,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => e.EvaluatedCustomerPersonnelId == customerPersonnelId && !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -268,7 +268,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => !e.IsDeleted)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(e => new EvaluationDto
@@ -325,7 +325,7 @@ public class EvaluationService : IEvaluationService
         // Projection kullanarak N+1 problemini çöz
         return await _context.Evaluations
             .Where(e => !e.IsDeleted && e.ProjectId == projectId)
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Select(e => new EvaluationDto
             {
                 Id = e.Id,
@@ -1743,7 +1743,7 @@ public class EvaluationService : IEvaluationService
         var recentDescriptions = await _context.Evaluations
             .AsNoTracking()
             .Where(e => !e.IsDeleted && e.DescriptionsJson != null && e.DescriptionsJson != "")
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.Id)
             .Take(500)
             .Select(e => e.DescriptionsJson!)
             .ToListAsync();

@@ -115,7 +115,7 @@ public class EvaluationsApiController : BaseApiController
 
             var totalCount = await query.CountAsync();
             var items = await query
-                .OrderByDescending(e => e.CreatedAt)
+                .OrderByDescending(e => e.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(e => new
@@ -367,7 +367,7 @@ public class EvaluationsApiController : BaseApiController
                 projectIds, statuses: statuses);
 
             var evaluations = await query
-                .OrderByDescending(e => e.CreatedAt)
+                .OrderByDescending(e => e.Id)
                 .Select(e => new EvaluationDto
                 {
                     Id = e.Id,
@@ -1062,7 +1062,7 @@ public class EvaluationsApiController : BaseApiController
                 .Include(e => e.Project).ThenInclude(p => p.Checklist)
                 .Include(e => e.EvaluatedPersonnel)
                 .Include(e => e.EvaluatedCustomerPersonnel)
-                .OrderByDescending(e => e.CreatedAt)
+                .OrderByDescending(e => e.Id)
                 .ToListAsync();
 
             // Excel oluştur

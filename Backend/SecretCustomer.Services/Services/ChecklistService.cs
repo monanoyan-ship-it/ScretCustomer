@@ -84,7 +84,7 @@ public class ChecklistService : IChecklistService
             query = query.Where(c => c.CustomerOrganizationId == customerOrganizationId.Value);
 
         return await query
-            .OrderByDescending(c => c.CreatedAt)
+            .OrderByDescending(c => c.Id)
             .Select(c => new ChecklistListDto
             {
                 Id = c.Id,
@@ -140,7 +140,7 @@ public class ChecklistService : IChecklistService
             query = query.Where(c => c.CustomerOrganizationId.HasValue && filter.CustomerOrganizationIds.Contains(c.CustomerOrganizationId.Value));
 
         return await query
-            .OrderByDescending(c => c.CreatedAt)
+            .OrderByDescending(c => c.Id)
             .Select(c => new ChecklistListDto
             {
                 Id = c.Id,

@@ -103,7 +103,7 @@ public class ProjectService : IProjectService
         if (!includeInactive)
             query = query.Where(p => p.IsActive);
 
-        var projects = await query.OrderByDescending(p => p.CreatedAt).ToListAsync();
+        var projects = await query.OrderByDescending(p => p.Id).ToListAsync();
         return projects.Select(MapToDto);
     }
 
@@ -114,7 +114,7 @@ public class ProjectService : IProjectService
             .Include(p => p.SurveyInvitations)
             .Include(p => p.SurveyExternalInvitations)
             .Where(p => !p.IsDeleted && p.IsActive)
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .ToListAsync();
 
         return projects.Select(p =>
@@ -209,7 +209,7 @@ public class ProjectService : IProjectService
         }
 
         return await query
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .Select(p => new ProjectListDto
             {
                 Id = p.Id,
@@ -380,7 +380,7 @@ public class ProjectService : IProjectService
         }
 
         return await query
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .Select(p => new ProjectListDto
             {
                 Id = p.Id,
@@ -811,7 +811,7 @@ public class ProjectService : IProjectService
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
             .Where(p => p.CustomerId == customerId && !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .ToListAsync();
 
         return projects.Select(MapToDto);
@@ -823,7 +823,7 @@ public class ProjectService : IProjectService
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
             .Where(p => p.ProjectManagerId == managerId && !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .ToListAsync();
 
         return projects.Select(MapToDto);
@@ -835,7 +835,7 @@ public class ProjectService : IProjectService
             .Include(p => p.Checklist)
             .Include(p => p.Assignments)
             .Where(p => p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
-            .OrderByDescending(p => p.CreatedAt)
+            .OrderByDescending(p => p.Id)
             .ToListAsync();
 
         return projects.Select(MapToDto);

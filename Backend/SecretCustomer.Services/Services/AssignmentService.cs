@@ -188,7 +188,7 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
             .Where(a => !a.IsDeleted)
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Id)
             .ToListAsync();
 
         return assignments.Select(MapToDto);
@@ -237,7 +237,7 @@ public class AssignmentService : IAssignmentService
 
         // Projection - Include kullanmadan
         return await query
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Id)
             .Select(a => new AssignmentListDto
             {
                 Id = a.Id,
@@ -423,7 +423,7 @@ public class AssignmentService : IAssignmentService
             .Include(a => a.AssignedUser)
             .Include(a => a.AssignedCustomerPersonnel)
             .Where(a => a.ProjectId == projectId && !a.IsDeleted)
-            .OrderByDescending(a => a.CreatedAt)
+            .OrderByDescending(a => a.Id)
             .ToListAsync();
 
         return assignments.Select(MapToDto);
@@ -623,7 +623,7 @@ public class AssignmentService : IAssignmentService
                     ? a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0)
                 : query.OrderByDescending(a => a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault() != null
                     ? a.Project.Evaluations.OrderByDescending(e => e.CreatedAt).FirstOrDefault()!.TotalScore : 0),
-            _ => query.OrderByDescending(a => a.CreatedAt) // Default
+            _ => query.OrderByDescending(a => a.Id) // Default
         };
 
         // Total count (paging için)
@@ -1283,7 +1283,7 @@ public class AssignmentService : IAssignmentService
             }
         }
 
-        var assignments = await query.OrderByDescending(a => a.CreatedAt).ToListAsync();
+        var assignments = await query.OrderByDescending(a => a.Id).ToListAsync();
         return assignments.Select(MapToDto);
     }
 
