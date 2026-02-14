@@ -450,17 +450,36 @@
                                         <tbody data-bind="foreach: answers || []">
                                             <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
                                                 <td data-bind="text: groupName || '-'"></td>
-                                                <td data-bind="text: questionText"></td>
+                                                <td>
+                                                    <span data-bind="text: questionText"></span>
+                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                    <!-- /ko -->
+                                                </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: givenPoints !== null && maxPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && maxPoints > 0 -->
                                                     <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: givenPoints !== null && maxPoints > 0 -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(givenPoints !== null && maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
-                                                <td class="text-center" data-bind="text: maxPoints > 0 ? maxPoints : '-'"></td>
-                                                <td class="text-center" data-bind="text: maxPoints > 0 ? (givenPoints || 0).toFixed(1) : '-'"></td>
+                                                <td class="text-center">
+                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
+                                                    <span data-bind="text: maxPoints"></span>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
+                                                    <span class="text-muted">-</span>
+                                                    <!-- /ko -->
+                                                </td>
+                                                <td class="text-center">
+                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
+                                                    <span class="text-success" data-bind="text: (givenPoints || 0).toFixed(1)"></span>
+                                                    <!-- /ko -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
+                                                    <span class="text-muted">-</span>
+                                                    <!-- /ko -->
+                                                </td>
                                                 <td data-bind="text: notes || '-'"></td>
                                             </tr>
                                         </tbody>

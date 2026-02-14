@@ -439,12 +439,17 @@
                                     <tbody data-bind="foreach: $data.answers || []">
                                         <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
                                             <td class="text-wrap" data-bind="text: groupName || '-'"></td>
-                                            <td class="text-wrap" data-bind="text: questionText"></td>
+                                            <td class="text-wrap">
+                                                <span data-bind="text: questionText"></span>
+                                                <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                <!-- /ko -->
+                                            </td>
                                             <td class="text-center">
-                                                <!-- ko if: givenPoints !== null && givenPoints !== undefined -->
+                                                <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && givenPoints !== undefined -->
                                                 <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
                                                 <!-- /ko -->
-                                                <!-- ko if: givenPoints === null || givenPoints === undefined -->
+                                                <!-- ko if: scoringType === 'Unscored' || givenPoints === null || givenPoints === undefined -->
                                                 <span class="text-muted">-</span>
                                                 <!-- /ko -->
                                             </td>

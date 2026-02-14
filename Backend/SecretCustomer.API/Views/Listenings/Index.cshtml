@@ -499,28 +499,31 @@
                                                 <td class="text-wrap" data-bind="text: groupName || '-'"></td>
                                                 <td class="text-wrap">
                                                     <span data-bind="text: questionText"></span>
+                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                    <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && givenPoints !== undefined && maxPoints > 0 -->
                                                     <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: maxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
+                                                    <!-- ko if: scoringType === 'Unscored' || maxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: maxPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
                                                     <span data-bind="text: maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: maxPoints > 0 -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: maxPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
                                                     <span class="text-success" data-bind="text: (givenPoints || 0).toFixed(1)"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: maxPoints > 0 -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>

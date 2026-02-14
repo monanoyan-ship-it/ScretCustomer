@@ -555,28 +555,31 @@
                                                 <td class="text-wrap" data-bind="text: groupName || '-'"></td>
                                                 <td class="text-wrap">
                                                     <span data-bind="text: questionText"></span>
+                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                    <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: givenPoints !== null && givenPoints !== undefined && questionMaxPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && givenPoints !== undefined && questionMaxPoints > 0 -->
                                                     <span class="badge bg-info" data-bind="text: givenPoints + '/' + questionMaxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: questionMaxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
+                                                    <!-- ko if: scoringType === 'Unscored' || questionMaxPoints <= 0 || (givenPoints === null && givenPoints === undefined) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: weightPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && weightPoints > 0 -->
                                                     <span data-bind="text: weightPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: weightPoints > 0 -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(weightPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: weightPoints > 0 -->
+                                                    <!-- ko if: scoringType !== 'Unscored' && weightPoints > 0 -->
                                                     <span class="text-success" data-bind="text: (earnedPoints || 0).toFixed(2)"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko ifnot: weightPoints > 0 -->
+                                                    <!-- ko if: scoringType === 'Unscored' || !(weightPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
