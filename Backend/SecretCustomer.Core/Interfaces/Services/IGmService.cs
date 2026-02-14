@@ -41,6 +41,12 @@ public interface IGmService
     // Dönem tamamla
     Task<bool> TamamlaAsync(int donemId);
 
+    // Dönem kopyala
+    Task<int> CopyDonemAsync(int sourceDonemId, string yeniAd, DateTime baslangic, DateTime bitis, int userId);
+
+    // Soru Excel import
+    Task<(int imported, int skipped, List<string> errors)> ImportSorularFromExcelAsync(int customerId, int hedefFirmaId, Stream excelStream);
+
     // Takip (atama listesi)
     Task<List<GmAtamaDto>> GetAtamalarAsync(int donemId, int? userId = null, int? durumId = null);
 

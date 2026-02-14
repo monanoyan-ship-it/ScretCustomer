@@ -54,6 +54,14 @@ function TakipViewModel() {
             .always(function () { self.isLoading(false); });
     };
 
+    // Detay modal
+    self.selectedAtama = ko.observable(null);
+
+    self.showAtamaDetail = function (atama) {
+        self.selectedAtama(atama);
+        $('#atamaDetailModal').modal('show');
+    };
+
     // Init
     self.loadDonemler();
     self.loadUsers();

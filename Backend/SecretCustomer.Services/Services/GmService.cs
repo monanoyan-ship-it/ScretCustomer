@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.GolgeMusteri;
 using SecretCustomer.Core.Entities;
@@ -387,6 +388,61 @@ public class GmService : IGmService
     }
 
     // =============================================
+    // DÖNEM KOPYALA
+    // =============================================
+
+    public async Task<int> CopyDonemAsync(int sourceDonemId, string yeniAd, DateTime baslangic, DateTime bitis, int userId)
+    {
+        var source = await _context.GmDonemler
+            .Include(d => d.Personeller.Where(p => !p.IsDeleted))
+            .Include(d => d.Sorular.Where(s => !s.IsDeleted))
+            .FirstOrDefaultAsync(d => d.Id == sourceDonemId && !d.IsDeleted);
+
+        if (source == null)
+            throw new InvalidOperationException("Kaynak dönem bulunamadı.");
+
+        var yeniDonem = new GmDonem
+        {
+            CustomerId = source.CustomerId,
+            Ad = yeniAd,
+            BaslangicTarihi = baslangic,
+            BitisTarihi = bitis,
+            DurumId = GmDonemDurumlari.Ids.Taslak,
+            OlusturanUserId = userId
+        };
+
+        _context.GmDonemler.Add(yeniDonem);
+        await _context.SaveChangesAsync();
+
+        // Personelleri kopyala
+        foreach (var p in source.Personeller)
+        {
+            _context.GmDonemPersoneller.Add(new GmDonemPersonel
+            {
+                GmDonemId = yeniDonem.Id,
+                UserId = p.UserId
+            });
+        }
+
+        // Soruları kopyala (aynı AranmaSayisi ile)
+        foreach (var s in source.Sorular)
+        {
+            _context.GmDonemSorular.Add(new GmDonemSoru
+            {
+                GmDonemId = yeniDonem.Id,
+                GmSoruId = s.GmSoruId,
+                AranmaSayisi = s.AranmaSayisi
+            });
+        }
+
+        await _context.SaveChangesAsync();
+
+        await _auditLog.LogInfoAsync($"GM Dönem kopyalandı: {source.Ad} → {yeniAd}", "GolgeMusteri");
+
+        return yeniDonem.Id;
+    }
+
+    // =============================================
     // DÖNEM ALT YÖNETİM
     // =============================================
 
@@ -515,6 +571,73 @@ public class GmService : IGmService
         entity.IsDeleted = true;
         await _context.SaveChangesAsync();
         return true;
+    }
+
+    // =============================================
+    // SORU EXCEL IMPORT
+    // =============================================
+
+    public async Task<(int imported, int skipped, List<string> errors)> ImportSorularFromExcelAsync(int customerId, int hedefFirmaId, Stream excelStream)
+    {
+        var errors = new List<string>();
+        int imported = 0, skipped = 0;
+
+        using var workbook = new XLWorkbook(excelStream);
+        var ws = workbook.Worksheets.First();
+
+        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+
+        for (int row = 2; row <= lastRow; row++)
+        {
+            var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
+            var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
+            var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(soruMetni))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (soruMetni.Length > 2000)
+            {
+                errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
+                skipped++;
+                continue;
+            }
+
+            int aranmaSayisi = 1;
+            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
+            {
+                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
+                {
+                    errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
+                    aranmaSayisi = 1;
+                }
+            }
+
+            var entity = new GmSoru
+            {
+                CustomerId = customerId,
+                GmHedefFirmaId = hedefFirmaId,
+                SoruMetni = soruMetni,
+                BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                AranmaSayisi = aranmaSayisi,
+                IsActive = true,
+                SiraNo = 0
+            };
+
+            _context.GmSorular.Add(entity);
+            imported++;
+        }
+
+        if (imported > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Soru Excel import: {imported} soru eklendi (HedefFirmaId: {hedefFirmaId})", "GolgeMusteri");
+        }
+
+        return (imported, skipped, errors);
     }
 
     // =============================================

@@ -194,6 +194,35 @@ public class GmApiController : BaseApiController
     }
 
     // =============================================
+    // SORU EXCEL IMPORT
+    // =============================================
+
+    [HttpPost("sorular/import")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> ImportSorular([FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Dosya seçilmedi." });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".xlsx" && ext != ".xls")
+                return BadRequest(new { message = "Sadece Excel dosyaları (.xlsx, .xls) kabul edilir." });
+
+            using var stream = file.OpenReadStream();
+            var (imported, skipped, errors) = await _gmService.ImportSorularFromExcelAsync(customerId, hedefFirmaId, stream);
+
+            return Ok(new { imported, skipped, errors, message = $"{imported} soru eklendi, {skipped} satır atlandı." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Soru Excel import hatası");
+            return StatusCode(500, CreateErrorResponse("Excel import sırasında hata oluştu", ex));
+        }
+    }
+
+    // =============================================
     // DÖNEM
     // =============================================
 
@@ -261,6 +290,26 @@ public class GmApiController : BaseApiController
         {
             _logger.LogError(ex, "Dönem güncellenirken hata");
             return StatusCode(500, CreateErrorResponse("Dönem güncellenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/kopyala")]
+    public async Task<IActionResult> CopyDonem(int donemId, [FromBody] CopyDonemRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var newId = await _gmService.CopyDonemAsync(donemId, request.Ad, request.BaslangicTarihi, request.BitisTarihi, userId);
+            return Ok(new { id = newId, message = "Dönem kopyalandı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dönem kopyalanırken hata");
+            return StatusCode(500, CreateErrorResponse("Dönem kopyalanırken hata oluştu", ex));
         }
     }
 
@@ -499,4 +548,11 @@ public class AddDonemKuponRequest
 public class AddDonemKuponlarRequest
 {
     public List<string> KuponKodlari { get; set; } = new();
+}
+
+public class CopyDonemRequest
+{
+    public string Ad { get; set; } = string.Empty;
+    public DateTime BaslangicTarihi { get; set; }
+    public DateTime BitisTarihi { get; set; }
 }

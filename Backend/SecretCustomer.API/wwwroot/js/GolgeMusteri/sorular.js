@@ -200,6 +200,66 @@ function SorularViewModel() {
         });
     };
 
+    // Import
+    self.importForm = {
+        customerId: ko.observable(null),
+        hedefFirmaId: ko.observable(null)
+    };
+    self.importHedefFirmalar = ko.observableArray([]);
+    self.isImporting = ko.observable(false);
+
+    self.importForm.customerId.subscribe(function (customerId) {
+        self.importForm.hedefFirmaId(null);
+        if (customerId) {
+            self.loadHedefFirmalar(customerId, self.importHedefFirmalar);
+        } else {
+            self.importHedefFirmalar([]);
+        }
+    });
+
+    self.showImportModal = function () {
+        self.importForm.customerId(self.selectedCustomerId());
+        self.importForm.hedefFirmaId(null);
+        $('#importFile').val('');
+        $('#importDonemModal').modal('show');
+    };
+
+    self.submitImport = function () {
+        if (!self.importForm.customerId() || !self.importForm.hedefFirmaId()) {
+            toastr.warning('Müşteri ve hedef firma seçimi zorunludur.');
+            return;
+        }
+        var fileInput = document.getElementById('importFile');
+        if (!fileInput.files.length) {
+            toastr.warning('Excel dosyası seçin.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('customerId', self.importForm.customerId());
+        formData.append('hedefFirmaId', self.importForm.hedefFirmaId());
+        formData.append('file', fileInput.files[0]);
+
+        self.isImporting(true);
+        $.ajax({
+            url: '/api/gm/sorular/import',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+        })
+        .done(function (data) {
+            toastr.success(data.message || 'Import tamamlandı.');
+            if (data.errors && data.errors.length > 0) {
+                data.errors.forEach(function (e) { toastr.warning(e); });
+            }
+            $('#importDonemModal').modal('hide');
+            self.loadSorular();
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Import başarısız.'); })
+        .always(function () { self.isImporting(false); });
+    };
+
     // Init
     self.loadCustomers();
     self.loadSorular();

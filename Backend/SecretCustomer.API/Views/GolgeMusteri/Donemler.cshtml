@@ -71,6 +71,9 @@
                             <button class="btn btn-outline-primary" data-bind="click: $parent.openDonem" title="Detay">
                                 <i class="bi bi-eye me-1"></i> Detay
                             </button>
+                            <button class="btn btn-outline-info" data-bind="click: $parent.showCopyDonem" title="Kopyala">
+                                <i class="bi bi-copy"></i>
+                            </button>
                             <!-- ko if: durumId === 1 -->
                             <button class="btn btn-outline-secondary" data-bind="click: $parent.showEditModal" title="Düzenle">
                                 <i class="bi bi-pencil"></i>
@@ -273,6 +276,44 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dönem Kopyala Modal -->
+    <div class="modal fade" id="copyDonemModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-copy me-2"></i>Dönem Kopyala</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Dönem Adı <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" data-bind="value: copyForm.ad" maxlength="200">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Başlangıç Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: copyForm.baslangicTarihi">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bitiş Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: copyForm.bitisTarihi">
+                        </div>
+                    </div>
+                    <div class="alert alert-info small mb-0">
+                        <i class="bi bi-info-circle me-1"></i> Personeller ve sorular kopyalanacak, kuponlar kopyalanmayacaktır.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-info" data-bind="click: saveCopyDonem, disable: isSaving">
+                        <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        <i class="bi bi-copy me-1"></i> Kopyala
+                    </button>
                 </div>
             </div>
         </div>

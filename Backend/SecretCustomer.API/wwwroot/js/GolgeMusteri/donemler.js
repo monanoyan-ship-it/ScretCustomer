@@ -17,6 +17,12 @@ function DonemlerViewModel() {
     self.newPersonelUserId = ko.observable(null);
     self.newSoruId = ko.observable(null);
     self.newSoruAranma = ko.observable(1);
+
+    self.newSoruId.subscribe(function (soruId) {
+        if (!soruId) { self.newSoruAranma(1); return; }
+        var soru = self.availableSorular().find(function (s) { return s.id === parseInt(soruId); });
+        if (soru) self.newSoruAranma(soru.aranmaSayisi || 1);
+    });
     self.newKuponText = ko.observable('');
 
     self.form = {
@@ -238,6 +244,48 @@ function DonemlerViewModel() {
         $.ajax({ url: '/api/gm/donem-kupon/' + kupon.id, type: 'DELETE' })
             .done(function () { toastr.success('Kupon çıkarıldı.'); self.loadDonemDetail(self.selectedDonem().id); })
             .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Çıkarma başarısız.'); });
+    };
+
+    // Kopyala
+    self.copySourceDonemId = ko.observable(null);
+    self.copyForm = {
+        ad: ko.observable(''),
+        baslangicTarihi: ko.observable(''),
+        bitisTarihi: ko.observable('')
+    };
+
+    self.showCopyDonem = function (donem) {
+        self.copySourceDonemId(donem.id);
+        self.copyForm.ad(donem.ad + ' (Kopya)');
+        self.copyForm.baslangicTarihi('');
+        self.copyForm.bitisTarihi('');
+        $('#copyDonemModal').modal('show');
+    };
+
+    self.saveCopyDonem = function () {
+        if (!self.copyForm.ad() || !self.copyForm.baslangicTarihi() || !self.copyForm.bitisTarihi()) {
+            toastr.warning('Tüm alanları doldurun.');
+            return;
+        }
+        self.isSaving(true);
+
+        $.ajax({
+            url: '/api/gm/donemler/' + self.copySourceDonemId() + '/kopyala',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                ad: self.copyForm.ad(),
+                baslangicTarihi: self.copyForm.baslangicTarihi(),
+                bitisTarihi: self.copyForm.bitisTarihi()
+            })
+        })
+        .done(function (data) {
+            toastr.success(data.message || 'Dönem kopyalandı.');
+            $('#copyDonemModal').modal('hide');
+            self.loadDonemler();
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Kopyalama başarısız.'); })
+        .always(function () { self.isSaving(false); });
     };
 
     // Aktif Et & Tamamla

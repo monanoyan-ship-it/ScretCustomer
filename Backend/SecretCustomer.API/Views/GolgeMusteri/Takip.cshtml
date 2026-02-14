@@ -95,7 +95,7 @@
                             <th>Gerçekleşme</th>
                             <th>Saat</th>
                             <th>Durum</th>
-                            <th>Not</th>
+                            <th style="width: 70px;"></th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: atamalar">
@@ -109,7 +109,11 @@
                             <td>
                                 <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
                             </td>
-                            <td><small class="text-muted" data-bind="text: not ? (not.length > 30 ? not.substring(0,30)+'...' : not) : '-'"></small></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showAtamaDetail" title="Detay">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -123,6 +127,40 @@
     <div data-bind="visible: !selectedDonemId()" class="text-center text-muted py-5">
         <i class="bi bi-arrow-up fs-1 d-block mb-2"></i>
         Takip için bir dönem seçin.
+    </div>
+
+    <!-- Atama Detay Modal -->
+    <div class="modal fade" id="atamaDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-eye me-2"></i>Atama Detay</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: selectedAtama">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                            <tr><th style="width:140px;">Personel</th><td data-bind="text: userName || '-'"></td></tr>
+                            <tr><th>Firma</th><td data-bind="text: hedefFirmaAdi || '-'"></td></tr>
+                            <tr><th>Soru</th><td data-bind="text: soruMetni || '-'"></td></tr>
+                            <tr><th>Beklenen Cevap</th><td data-bind="text: beklenenCevap || '-'"></td></tr>
+                            <tr><th>Telefon No</th><td data-bind="text: hedefFirmaTelefonNo || '-'"></td></tr>
+                            <tr><th>Plan Tarihi</th><td data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                            <tr><th>Gerçekleşme</th><td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td></tr>
+                            <tr><th>Saat</th><td data-bind="text: aramaSaati || '-'"></td></tr>
+                            <tr><th>Durum</th><td><span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span></td></tr>
+                            <!-- ko if: isKuponlu -->
+                            <tr><th>Kupon Kodu</th><td><code data-bind="text: kuponKodu || '-'"></code></td></tr>
+                            <!-- /ko -->
+                            <tr><th>Not</th><td><span data-bind="text: not || '-'" style="white-space: pre-wrap;"></span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
