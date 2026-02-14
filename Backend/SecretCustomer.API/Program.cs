@@ -227,6 +227,7 @@ builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 builder.Services.AddScoped<IApprovalService, ApprovalService>();
 builder.Services.AddScoped<IQuestionAttachmentService, QuestionAttachmentService>();
 builder.Services.AddScoped<IProjectFileService, ProjectFileService>();
+builder.Services.AddScoped<ISurveyService, SurveyService>();
 
 // SignalR
 builder.Services.AddSignalR();

@@ -2,12 +2,10 @@ using System.Text;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using SecretCustomer.Services.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -17,18 +15,18 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize(Roles = "Admin,QualitySpecialist")]
 public class SurveyApiController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ISurveyService _surveyService;
     private readonly IEmailService _emailService;
     private readonly IQRCodeService _qrCodeService;
     private readonly ILogger<SurveyApiController> _logger;
 
     public SurveyApiController(
-        ApplicationDbContext context,
+        ISurveyService surveyService,
         IEmailService emailService,
         IQRCodeService qrCodeService,
         ILogger<SurveyApiController> logger)
     {
-        _context = context;
+        _surveyService = surveyService;
         _emailService = emailService;
         _qrCodeService = qrCodeService;
         _logger = logger;
@@ -41,12 +39,7 @@ public class SurveyApiController : ControllerBase
     public async Task<IActionResult> SendInvitations(int projectId, [FromBody] SendSurveyInvitationsDto dto)
     {
         // Projeyi kontrol et
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -68,8 +61,7 @@ public class SurveyApiController : ControllerBase
 
         if (dto.EmailTemplateId.HasValue)
         {
-            emailTemplate = await _context.EmailTemplates
-                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+            emailTemplate = await _surveyService.GetEmailTemplateAsync(dto.EmailTemplateId.Value);
         }
 
         if (emailTemplate == null)
@@ -90,26 +82,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Müşteri Portal Personellerini getir (CustomerPersonnel)
-        var personnelQuery = _context.CustomerPersonnel
-            .Include(p => p.Customer)
-            .Include(p => p.OrganizationAssignments)
-                .ThenInclude(oa => oa.CustomerOrganization)
-            .Where(p => !p.IsDeleted && p.IsActive && !string.IsNullOrEmpty(p.Email));
-
-        // Müşteri filtresi (project'in müşterisine göre)
-        if (project.CustomerId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p => p.CustomerId == project.CustomerId.Value);
-        }
-
-        // Organizasyon filtresi (proje organizasyonuna göre)
-        if (project.OrganizationId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p =>
-                p.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == project.OrganizationId.Value && !oa.IsDeleted));
-        }
-
-        var personnelList = await personnelQuery.ToListAsync();
+        var personnelList = await _surveyService.GetProjectPersonnelWithEmailAsync(project.CustomerId, project.OrganizationId);
 
         if (!personnelList.Any())
         {
@@ -117,11 +90,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Zaten anketi tamamlamış kişileri bul (Evaluation var mı?)
-        var completedPersonnelIds = await _context.Assignments
-            .Where(a => a.ProjectId == projectId && !a.IsDeleted && a.IsCompleted)
-            .Where(a => a.AssignedCustomerPersonnelId.HasValue)
-            .Select(a => a.AssignedCustomerPersonnelId!.Value)
-            .ToListAsync();
+        var completedPersonnelIds = await _surveyService.GetCompletedPersonnelIdsAsync(projectId);
 
         // Email gönderim sonuçları
         var successCount = 0;
@@ -151,37 +120,24 @@ public class SurveyApiController : ControllerBase
                 var body = ReplacePlaceholders(emailTemplate.Body, project, person, surveyUrl);
 
                 // SurveyInvitation kaydı oluştur
-                var invitation = new SurveyInvitation
-                {
-                    ProjectId = projectId,
-                    CustomerPersonnelId = person.Id,
-                    Email = person.Email!,
-                    StatusId = SurveyInvitationStatuses.Ids.Pending,
-                    IsReminder = dto.SendReminders,
-                    CreatedAt = TurkeyTime.Now
-                };
-                _context.SurveyInvitations.Add(invitation);
-                await _context.SaveChangesAsync();
+                var invitation = await _surveyService.CreateSurveyInvitationAsync(projectId, person.Id, person.Email!, dto.SendReminders);
 
                 var result = await _emailService.SendEmailAsync(person.Email!, subject, body, true);
 
                 if (result.Success)
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = TurkeyTime.Now;
+                    await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
                     _logger.LogInformation("Survey invitation sent to {Email} for project {ProjectId}",
                         person.Email, projectId);
                 }
                 else
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Failed;
-                    invitation.ErrorMessage = result.ErrorMessage;
+                    await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{person.Email}: {result.ErrorMessage}");
                     _logger.LogWarning("Failed to send survey invitation to {Email}: {Error}", person.Email, result.ErrorMessage);
                 }
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -213,14 +169,7 @@ public class SurveyApiController : ControllerBase
     public async Task<IActionResult> ValidateToken(string token)
     {
         // Önce external invitation token mı kontrol et (GUID format)
-        var externalInvitation = await _context.SurveyExternalInvitations
-            .Include(i => i.Project)
-                .ThenInclude(p => p!.Checklist)
-            .Include(i => i.Project)
-                .ThenInclude(p => p!.Customer)
-            .Include(i => i.Project)
-                .ThenInclude(p => p!.Organization)
-            .FirstOrDefaultAsync(i => i.Token == token && !i.IsDeleted);
+        var externalInvitation = await _surveyService.GetExternalInvitationWithProjectAsync(token);
 
         if (externalInvitation != null)
         {
@@ -235,11 +184,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Projeyi getir
-        var project = await _context.Projects
-            .Include(p => p.Checklist)
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .FirstOrDefaultAsync(p => p.Id == tokenData.ProjectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithChecklistAsync(tokenData.ProjectId);
 
         if (project == null)
         {
@@ -253,8 +198,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Personeli getir
-        var personnel = await _context.CustomerPersonnel
-            .FirstOrDefaultAsync(p => p.Id == tokenData.PersonnelId && !p.IsDeleted);
+        var personnel = await _surveyService.GetPersonnelAsync(tokenData.PersonnelId);
 
         if (personnel == null)
         {
@@ -262,11 +206,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Bu personel için zaten değerlendirme var mı?
-        var existingEvaluation = await _context.Assignments
-            .Where(a => a.ProjectId == project.Id &&
-                        a.AssignedCustomerPersonnelId == personnel.Id &&
-                        !a.IsDeleted && a.IsCompleted)
-            .AnyAsync();
+        var existingEvaluation = await _surveyService.HasCompletedAssignmentAsync(project.Id, personnel.Id);
 
         if (existingEvaluation)
         {
@@ -276,20 +216,7 @@ public class SurveyApiController : ControllerBase
         // SurveyInvitation kaydını bul ve açıldı olarak işaretle (opsiyonel - hata verse de devam et)
         try
         {
-            var invitation = await _context.SurveyInvitations
-                .Where(si => si.ProjectId == tokenData.ProjectId &&
-                             si.CustomerPersonnelId == tokenData.PersonnelId &&
-                             si.StatusId == SurveyInvitationStatuses.Ids.Sent &&
-                             !si.IsOpened)
-                .OrderByDescending(si => si.CreatedAt)
-                .FirstOrDefaultAsync();
-
-            if (invitation != null)
-            {
-                invitation.IsOpened = true;
-                invitation.OpenedAt = TurkeyTime.Now;
-                await _context.SaveChangesAsync();
-            }
+            await _surveyService.MarkInvitationOpenedAsync(tokenData.ProjectId, tokenData.PersonnelId);
         }
         catch (Exception ex)
         {
@@ -301,7 +228,7 @@ public class SurveyApiController : ControllerBase
         var isAnonymous = project.SurveyIdentityTypeId == SurveyIdentityTypes.Ids.Anonymous;
 
         // Checklist sorularını getir (SubCriteria dahil)
-        var questions = await GetSurveyQuestions(project.ChecklistId);
+        var questions = await _surveyService.GetSurveyQuestionsAsync(project.ChecklistId);
 
         return Ok(new
         {
@@ -358,17 +285,12 @@ public class SurveyApiController : ControllerBase
         }
 
         // İlk kez açılıyorsa işaretle
-        if (!invitation.IsOpened)
-        {
-            invitation.IsOpened = true;
-            invitation.OpenedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
-        }
+        await _surveyService.MarkExternalInvitationOpenedAsync(invitation);
 
         var isAnonymous = project.SurveyIdentityTypeId == SurveyIdentityTypes.Ids.Anonymous;
 
         // Checklist sorularını getir
-        var questions = await GetSurveyQuestions(project.ChecklistId);
+        var questions = await _surveyService.GetSurveyQuestionsAsync(project.ChecklistId);
 
         return Ok(new
         {
@@ -402,46 +324,6 @@ public class SurveyApiController : ControllerBase
     }
 
     /// <summary>
-    /// Checklist sorularını getir (ortak method)
-    /// </summary>
-    private async Task<object> GetSurveyQuestions(int? checklistId)
-    {
-        if (!checklistId.HasValue) return new List<object>();
-
-        return await _context.Questions
-            .Include(q => q.SubCriteria)
-            .Where(q => q.ChecklistId == checklistId && !q.IsDeleted)
-            .OrderBy(q => q.GroupName)
-            .ThenBy(q => q.Order)
-            .Select(q => new
-            {
-                q.Id,
-                q.Text,
-                q.HelpText,
-                q.GroupName,
-                q.Order,
-                ScoringType = ScoringTypes.GetById(q.ScoringTypeId).SystemName,
-                q.MaxPoints,
-                q.WeightPoints,
-                q.IsRequired,
-                q.SelectionTypeId,
-                q.ShowScoreInput,
-                q.AllowComment,
-                SubCriteria = q.SubCriteria
-                    .Where(sc => sc.IsActive && !sc.IsDeleted)
-                    .OrderBy(sc => sc.Order)
-                    .Select(sc => new
-                    {
-                        sc.Id,
-                        sc.Description,
-                        sc.Order
-                    })
-                    .ToList()
-            })
-            .ToListAsync();
-    }
-
-    /// <summary>
     /// Anket cevaplarını gönder ve değerlendirme oluştur (PUBLIC)
     /// </summary>
     [HttpPost("submit/{token}")]
@@ -449,10 +331,7 @@ public class SurveyApiController : ControllerBase
     public async Task<IActionResult> SubmitSurvey(string token, [FromBody] SubmitSurveyDto dto)
     {
         // Önce external invitation token mı kontrol et
-        var externalInvitation = await _context.SurveyExternalInvitations
-            .Include(i => i.Project)
-                .ThenInclude(p => p!.Checklist)
-            .FirstOrDefaultAsync(i => i.Token == token && !i.IsDeleted);
+        var externalInvitation = await _surveyService.GetExternalInvitationWithChecklistAsync(token);
 
         if (externalInvitation != null)
         {
@@ -467,9 +346,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Projeyi getir
-        var project = await _context.Projects
-            .Include(p => p.Checklist)
-            .FirstOrDefaultAsync(p => p.Id == tokenData.ProjectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithChecklistAsync(tokenData.ProjectId);
 
         if (project == null)
         {
@@ -483,8 +360,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Personeli getir
-        var personnel = await _context.CustomerPersonnel
-            .FirstOrDefaultAsync(p => p.Id == tokenData.PersonnelId && !p.IsDeleted);
+        var personnel = await _surveyService.GetPersonnelAsync(tokenData.PersonnelId);
 
         if (personnel == null)
         {
@@ -492,11 +368,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Bu personel için zaten değerlendirme var mı?
-        var existingEvaluation = await _context.Evaluations
-            .FirstOrDefaultAsync(e => e.ProjectId == project.Id &&
-                        e.EvaluatedCustomerPersonnelId == personnel.Id &&
-                        e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        !e.IsDeleted);
+        var existingEvaluation = await _surveyService.GetCompletedEvaluationAsync(project.Id, personnel.Id);
 
         if (existingEvaluation != null)
         {
@@ -518,11 +390,10 @@ public class SurveyApiController : ControllerBase
                 CreatedAt = TurkeyTime.Now
             };
 
-            _context.Evaluations.Add(evaluation);
-            await _context.SaveChangesAsync();
+            evaluation = await _surveyService.CreateEvaluationAsync(evaluation);
 
             // Cevapları kaydet ve puanı hesapla
-            var scoreResult = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
+            var scoreResult = await _surveyService.SaveAnswersAndCalculateScoreAsync(evaluation.Id, project.ChecklistId, dto.Answers);
             evaluation.TotalScore = scoreResult.TotalScore;
             evaluation.MaxScore = scoreResult.MaxScore;
             evaluation.ScorePercentage = scoreResult.ScorePercentage;
@@ -530,19 +401,7 @@ public class SurveyApiController : ControllerBase
             // SurveyInvitation kaydını tamamlandı olarak işaretle (opsiyonel)
             try
             {
-                var surveyInvitation = await _context.SurveyInvitations
-                    .Where(si => si.ProjectId == project.Id &&
-                                 si.CustomerPersonnelId == personnel.Id &&
-                                 si.StatusId == SurveyInvitationStatuses.Ids.Sent &&
-                                 !si.IsCompleted)
-                    .OrderByDescending(si => si.CreatedAt)
-                    .FirstOrDefaultAsync();
-
-                if (surveyInvitation != null)
-                {
-                    surveyInvitation.IsCompleted = true;
-                    surveyInvitation.CompletedAt = TurkeyTime.Now;
-                }
+                await _surveyService.MarkSurveyInvitationCompletedAsync(project.Id, personnel.Id);
             }
             catch (Exception ex)
             {
@@ -550,7 +409,7 @@ public class SurveyApiController : ControllerBase
                     project.Id, personnel.Id);
             }
 
-            await _context.SaveChangesAsync();
+            await _surveyService.SaveChangesAsync();
 
             _logger.LogInformation("Survey submitted for project {ProjectId}, personnel {PersonnelId}, EvaluationId: {EvaluationId}, Score: {Score}",
                 project.Id, personnel.Id, evaluation.Id, evaluation.TotalScore);
@@ -609,21 +468,16 @@ public class SurveyApiController : ControllerBase
                 CreatedAt = TurkeyTime.Now
             };
 
-            _context.Evaluations.Add(evaluation);
-            await _context.SaveChangesAsync();
+            evaluation = await _surveyService.CreateEvaluationAsync(evaluation);
 
             // Cevapları kaydet ve puanı hesapla
-            var scoreResult = await SaveAnswersAndCalculateScore(evaluation.Id, project.ChecklistId, dto.Answers);
+            var scoreResult = await _surveyService.SaveAnswersAndCalculateScoreAsync(evaluation.Id, project.ChecklistId, dto.Answers);
             evaluation.TotalScore = scoreResult.TotalScore;
             evaluation.MaxScore = scoreResult.MaxScore;
             evaluation.ScorePercentage = scoreResult.ScorePercentage;
 
             // External invitation'ı tamamlandı olarak işaretle
-            invitation.IsCompleted = true;
-            invitation.CompletedAt = TurkeyTime.Now;
-            invitation.EvaluationId = evaluation.Id;
-
-            await _context.SaveChangesAsync();
+            await _surveyService.MarkExternalInvitationCompletedAsync(invitation, evaluation.Id);
 
             _logger.LogInformation("External survey submitted for project {ProjectId}, email {Email}, EvaluationId: {EvaluationId}, Score: {Score}",
                 project.Id, invitation.Email, evaluation.Id, evaluation.TotalScore);
@@ -645,195 +499,12 @@ public class SurveyApiController : ControllerBase
     }
 
     /// <summary>
-    /// Cevapları kaydet ve toplam puanı hesapla (ortak method)
-    /// Returns: (TotalScore, MaxScore, ScorePercentage)
-    ///
-    /// Puan hesaplama mantığı:
-    /// 1. ShowScoreInput = true: Manuel puan girişi ile hesaplama (Score / MaxPoints * WeightPoints)
-    /// 2. ShowScoreInput = false: SubCriteria seçimine göre hesaplama
-    ///    - Tekli seçim: Seçilen SubCriteria.WeightPoints (max: Question.WeightPoints)
-    ///    - Çoklu seçim: (Seçilen ağırlık toplamı / Tüm ağırlık toplamı) * Question.WeightPoints
-    /// 3. Zorunlu değilse ve cevaplanmamışsa: Max puana dahil edilmez
-    /// 4. Penalty sorular: Puan kesmek için kullanılır (kazanılan puandan düşer)
-    /// </summary>
-    private async Task<(decimal? TotalScore, decimal? MaxScore, decimal? ScorePercentage)> SaveAnswersAndCalculateScore(int evaluationId, int? checklistId, List<SurveyAnswerDto> answers)
-    {
-        if (!checklistId.HasValue) return (null, null, null);
-
-        decimal totalEarned = 0;
-        decimal totalMax = 0;
-        decimal penaltyDeduction = 0;
-        int yellowCardCount = 0;
-        int redCardCount = 0;
-
-        // Soruları SubCriteria ile birlikte yükle
-        var questions = await _context.Questions
-            .Include(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
-            .Where(q => q.ChecklistId == checklistId && !q.IsDeleted)
-            .ToListAsync();
-
-        // Cevaplanan soru ID'lerini takip et
-        var answeredQuestionIds = answers
-            .Where(a => a.Score.HasValue || (a.SelectedSubCriteriaIds != null && a.SelectedSubCriteriaIds.Any()))
-            .Select(a => a.QuestionId)
-            .ToHashSet();
-
-        foreach (var answerDto in answers)
-        {
-            var question = questions.FirstOrDefault(q => q.Id == answerDto.QuestionId);
-            if (question == null) continue;
-
-            var answer = new Answer
-            {
-                EvaluationId = evaluationId,
-                QuestionId = answerDto.QuestionId,
-                AnswerNumeric = answerDto.Score,
-                Notes = answerDto.Comment,
-                CreatedAt = TurkeyTime.Now
-            };
-
-            _context.Answers.Add(answer);
-            await _context.SaveChangesAsync();
-
-            // Seçilen SubCriteria'ları kaydet
-            if (answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any())
-            {
-                foreach (var subCriteriaId in answerDto.SelectedSubCriteriaIds)
-                {
-                    _context.AnswerSubCriteriaSelections.Add(new AnswerSubCriteriaSelection
-                    {
-                        AnswerId = answer.Id,
-                        SubCriteriaId = subCriteriaId,
-                        SelectedAt = TurkeyTime.Now,
-                        CreatedAt = TurkeyTime.Now
-                    });
-                }
-            }
-
-            // Unscored sorular puana dahil edilmez
-            if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
-            {
-                continue;
-            }
-
-            // Soru cevaplanmış mı kontrol et
-            bool isAnswered = answerDto.Score.HasValue ||
-                             (answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any());
-
-            // Zorunlu değilse ve cevaplanmamışsa, max puana dahil etme
-            if (!question.IsRequired && !isAnswered)
-            {
-                continue;
-            }
-
-            // Penalty sorular - puan kesmek için
-            if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
-            {
-                // Penalty sorusu seçildiyse (cevaplandıysa) cezayı uygula
-                if (isAnswered)
-                {
-                    if (question.PenaltyTypeId == PenaltyTypes.Ids.YellowCard)
-                    {
-                        yellowCardCount++;
-                        // Sarı kart: Sorunun ağırlık puanı kadar düş
-                        penaltyDeduction += question.WeightPoints;
-                    }
-                    else if (question.PenaltyTypeId == PenaltyTypes.Ids.RedCard)
-                    {
-                        redCardCount++;
-                        // Kırmızı kart: Sorunun ağırlık puanı kadar düş (veya daha fazla)
-                        penaltyDeduction += question.WeightPoints;
-                    }
-                }
-                continue; // Penalty sorular max puana dahil edilmez
-            }
-
-            // Scored sorular - puan hesaplama
-            if (question.ScoringTypeId == ScoringTypes.Ids.Scored)
-            {
-                // Max puana ekle (zorunlu veya cevaplanmış)
-                totalMax += question.WeightPoints;
-
-                decimal earnedPoints = 0;
-
-                // ShowScoreInput = true: Manuel puan girişi
-                if (question.ShowScoreInput && answerDto.Score.HasValue)
-                {
-                    earnedPoints = (answerDto.Score.Value / (decimal)question.MaxPoints) * question.WeightPoints;
-                }
-                // ShowScoreInput = false: SubCriteria bazlı hesaplama
-                else if (!question.ShowScoreInput && answerDto.SelectedSubCriteriaIds != null && answerDto.SelectedSubCriteriaIds.Any())
-                {
-                    var allSubCriteria = question.SubCriteria.ToList();
-
-                    if (allSubCriteria.Any())
-                    {
-                        // Seçilen SubCriteria'ların ağırlık toplamı
-                        var selectedWeight = allSubCriteria
-                            .Where(sc => answerDto.SelectedSubCriteriaIds.Contains(sc.Id))
-                            .Sum(sc => sc.WeightPoints);
-
-                        // Tekli seçim (SelectionTypeId = 1)
-                        if (question.SelectionTypeId == SelectionTypes.Ids.Single)
-                        {
-                            // Seçilen SubCriteria.WeightPoints (max: Question.WeightPoints)
-                            earnedPoints = Math.Min(selectedWeight, question.WeightPoints);
-                        }
-                        // Çoklu seçim (SelectionTypeId = 2)
-                        else
-                        {
-                            // Tüm SubCriteria'ların ağırlık toplamı
-                            var totalSubCriteriaWeight = allSubCriteria.Sum(sc => sc.WeightPoints);
-
-                            if (totalSubCriteriaWeight > 0)
-                            {
-                                // (Seçilen / Toplam) * Question.WeightPoints
-                                earnedPoints = (selectedWeight / totalSubCriteriaWeight) * question.WeightPoints;
-                                // Max: Question.WeightPoints
-                                earnedPoints = Math.Min(earnedPoints, question.WeightPoints);
-                            }
-                        }
-                    }
-                }
-
-                // EarnedPoints'i Answer'a kaydet (raporlama için)
-                answer.EarnedPoints = Math.Round(earnedPoints, 2);
-
-                totalEarned += earnedPoints;
-            }
-        }
-
-        await _context.SaveChangesAsync();
-
-        // Penalty kesintisini uygula
-        totalEarned = Math.Max(0, totalEarned - penaltyDeduction);
-
-        // Evaluation'a kart sayılarını kaydet
-        var evaluation = await _context.Evaluations.FindAsync(evaluationId);
-        if (evaluation != null)
-        {
-            evaluation.YellowCardCount = yellowCardCount;
-            evaluation.RedCardCount = redCardCount;
-        }
-
-        // Toplam puanı hesapla
-        if (totalMax > 0)
-        {
-            var percentage = Math.Round((totalEarned / totalMax) * 100, 2);
-            return (Math.Round(totalEarned, 2), Math.Round(totalMax, 2), percentage);
-        }
-
-        return (null, null, null);
-    }
-
-    /// <summary>
     /// Personel preview - kaç kişiye mail gidecek
     /// </summary>
     [HttpGet("{projectId}/personnel-preview")]
     public async Task<IActionResult> GetPersonnelPreview(int projectId)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
@@ -841,21 +512,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Proje kapsamındaki personelleri getir
-        var personnelQuery = _context.CustomerPersonnel
-            .Where(p => !p.IsDeleted && p.IsActive);
-
-        if (project.CustomerId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p => p.CustomerId == project.CustomerId.Value);
-        }
-
-        if (project.OrganizationId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p =>
-                p.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == project.OrganizationId.Value && !oa.IsDeleted));
-        }
-
-        var personnel = await personnelQuery.ToListAsync();
+        var personnel = await _surveyService.GetProjectPersonnelAsync(project.CustomerId, project.OrganizationId);
 
         var withEmail = personnel.Count(p => !string.IsNullOrEmpty(p.Email));
         var withoutEmail = personnel.Count - withEmail;
@@ -874,8 +531,7 @@ public class SurveyApiController : ControllerBase
     [HttpGet("{projectId}/status")]
     public async Task<IActionResult> GetSurveyStatus(int projectId)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
@@ -883,33 +539,10 @@ public class SurveyApiController : ControllerBase
         }
 
         // Proje kapsamındaki tüm personelleri getir
-        var personnelQuery = _context.CustomerPersonnel
-            .Include(p => p.Customer)
-            .Where(p => !p.IsDeleted && p.IsActive && !string.IsNullOrEmpty(p.Email));
-
-        if (project.CustomerId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p => p.CustomerId == project.CustomerId.Value);
-        }
-
-        if (project.OrganizationId.HasValue)
-        {
-            personnelQuery = personnelQuery.Where(p =>
-                p.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == project.OrganizationId.Value && !oa.IsDeleted));
-        }
-
-        var allPersonnel = await personnelQuery.ToListAsync();
+        var allPersonnel = await _surveyService.GetProjectPersonnelWithCustomerAsync(project.CustomerId, project.OrganizationId);
 
         // Tamamlayan personelleri bul
-        var completedAssignments = await _context.Assignments
-            .Include(a => a.Project)
-                .ThenInclude(p => p.Evaluations)
-            .Where(a => a.ProjectId == projectId && !a.IsDeleted && a.IsCompleted && a.AssignedCustomerPersonnelId.HasValue)
-            .ToDictionaryAsync(a => a.AssignedCustomerPersonnelId!.Value, a => new
-            {
-                CompletedAt = a.CompletedAt,
-                Score = a.Project.Evaluations.FirstOrDefault()?.ScorePercentage
-            });
+        var completedAssignments = await _surveyService.GetCompletedAssignmentsWithScoresAsync(projectId);
 
         var personnelStatus = allPersonnel.Select(p => new
         {
@@ -954,17 +587,14 @@ public class SurveyApiController : ControllerBase
     [HttpGet("{projectId}/invitation-stats")]
     public async Task<IActionResult> GetInvitationStats(int projectId)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
             return NotFound(new { message = "Proje bulunamadı." });
         }
 
-        var invitations = await _context.SurveyInvitations
-            .Where(si => si.ProjectId == projectId)
-            .ToListAsync();
+        var invitations = await _surveyService.GetInvitationsRawAsync(projectId);
 
         var stats = new
         {
@@ -992,44 +622,14 @@ public class SurveyApiController : ControllerBase
     [HttpGet("{projectId}/invitations")]
     public async Task<IActionResult> GetInvitations(int projectId, [FromQuery] int? statusId = null)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
             return NotFound(new { message = "Proje bulunamadı." });
         }
 
-        var query = _context.SurveyInvitations
-            .Include(si => si.CustomerPersonnel)
-            .Where(si => si.ProjectId == projectId);
-
-        if (statusId.HasValue)
-        {
-            query = query.Where(si => si.StatusId == statusId.Value);
-        }
-
-        var invitations = await query
-            .OrderByDescending(si => si.CreatedAt)
-            .Select(si => new
-            {
-                si.Id,
-                si.Email,
-                PersonnelName = si.CustomerPersonnel != null
-                    ? $"{si.CustomerPersonnel.FirstName} {si.CustomerPersonnel.LastName}".Trim()
-                    : null,
-                si.StatusId,
-                si.ErrorMessage,
-                si.SentAt,
-                si.IsOpened,
-                si.OpenedAt,
-                si.IsCompleted,
-                si.CompletedAt,
-                si.AttemptCount,
-                si.IsReminder,
-                si.CreatedAt
-            })
-            .ToListAsync();
+        var invitations = await _surveyService.GetInvitationsAsync(projectId, statusId);
 
         return Ok(invitations);
     }
@@ -1040,12 +640,7 @@ public class SurveyApiController : ControllerBase
     [HttpPost("{projectId}/retry-failed")]
     public async Task<IActionResult> RetryFailedInvitations(int projectId, [FromBody] SendSurveyInvitationsDto dto)
     {
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -1056,8 +651,7 @@ public class SurveyApiController : ControllerBase
         var emailTemplate = project.EmailTemplate;
         if (dto.EmailTemplateId.HasValue)
         {
-            emailTemplate = await _context.EmailTemplates
-                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+            emailTemplate = await _surveyService.GetEmailTemplateAsync(dto.EmailTemplateId.Value);
         }
 
         if (emailTemplate == null)
@@ -1072,10 +666,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Başarısız davetiyeleri getir
-        var failedInvitations = await _context.SurveyInvitations
-            .Include(si => si.CustomerPersonnel)
-            .Where(si => si.ProjectId == projectId && si.StatusId == SurveyInvitationStatuses.Ids.Failed)
-            .ToListAsync();
+        var failedInvitations = await _surveyService.GetFailedInvitationsAsync(projectId);
 
         if (!failedInvitations.Any())
         {
@@ -1105,26 +696,20 @@ public class SurveyApiController : ControllerBase
 
                 var result = await _emailService.SendEmailAsync(person.Email!, subject, body, true);
 
-                invitation.AttemptCount++;
-
                 if (result.Success)
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = TurkeyTime.Now;
-                    invitation.Email = person.Email!; // Güncel email'i kaydet
-                    invitation.ErrorMessage = null;
+                    await _surveyService.UpdateInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
                     _logger.LogInformation("Retry: Survey invitation sent to {Email} for project {ProjectId}",
                         person.Email, projectId);
                 }
                 else
                 {
-                    invitation.ErrorMessage = result.ErrorMessage;
+                    await _surveyService.UpdateInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{person.Email}: {result.ErrorMessage}");
                     _logger.LogWarning("Retry failed for {Email}: {Error}", person.Email, result.ErrorMessage);
                 }
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -1222,12 +807,7 @@ public class SurveyApiController : ControllerBase
     public async Task<IActionResult> SendExternalInvitations(int projectId, [FromBody] SendExternalInvitationsDto dto)
     {
         // Projeyi kontrol et
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -1244,8 +824,7 @@ public class SurveyApiController : ControllerBase
         var emailTemplate = project.EmailTemplate;
         if (dto.EmailTemplateId.HasValue)
         {
-            emailTemplate = await _context.EmailTemplates
-                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+            emailTemplate = await _surveyService.GetEmailTemplateAsync(dto.EmailTemplateId.Value);
         }
 
         if (emailTemplate == null)
@@ -1283,12 +862,9 @@ public class SurveyApiController : ControllerBase
             try
             {
                 // Aynı projeye daha önce davetiye gönderilmiş mi?
-                var existingInvitation = await _context.SurveyExternalInvitations
-                    .FirstOrDefaultAsync(i => i.ProjectId == projectId &&
-                                              i.Email == recipient.Email &&
-                                              !i.IsDeleted);
+                var exists = await _surveyService.ExternalInvitationExistsAsync(projectId, recipient.Email);
 
-                if (existingInvitation != null)
+                if (exists)
                 {
                     duplicateCount++;
                     continue;
@@ -1298,18 +874,7 @@ public class SurveyApiController : ControllerBase
                 var token = Guid.NewGuid().ToString("N");
 
                 // SurveyExternalInvitation kaydı oluştur
-                var invitation = new SurveyExternalInvitation
-                {
-                    ProjectId = projectId,
-                    Email = recipient.Email,
-                    FirstName = recipient.FirstName,
-                    LastName = recipient.LastName,
-                    Token = token,
-                    StatusId = SurveyInvitationStatuses.Ids.Pending,
-                    CreatedAt = TurkeyTime.Now
-                };
-                _context.SurveyExternalInvitations.Add(invitation);
-                await _context.SaveChangesAsync();
+                var invitation = await _surveyService.CreateExternalInvitationAsync(projectId, recipient.Email, recipient.FirstName, recipient.LastName, token);
 
                 // Kişiye özel anket URL'i oluştur
                 var surveyUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={token}";
@@ -1322,22 +887,19 @@ public class SurveyApiController : ControllerBase
 
                 if (result.Success)
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = TurkeyTime.Now;
+                    await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
                     _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId}",
                         recipient.Email, projectId);
                 }
                 else
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Failed;
-                    invitation.ErrorMessage = result.ErrorMessage;
+                    await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{recipient.Email}: {result.ErrorMessage}");
                     _logger.LogWarning("Failed to send external survey invitation to {Email}: {Error}",
                         recipient.Email, result.ErrorMessage);
                 }
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -1367,44 +929,14 @@ public class SurveyApiController : ControllerBase
     [HttpGet("{projectId}/external-invitations")]
     public async Task<IActionResult> GetExternalInvitations(int projectId, [FromQuery] int? statusId = null)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
             return NotFound(new { message = "Proje bulunamadı." });
         }
 
-        var query = _context.SurveyExternalInvitations
-            .Where(si => si.ProjectId == projectId && !si.IsDeleted);
-
-        if (statusId.HasValue)
-        {
-            query = query.Where(si => si.StatusId == statusId.Value);
-        }
-
-        var invitations = await query
-            .OrderByDescending(si => si.CreatedAt)
-            .Select(si => new
-            {
-                si.Id,
-                si.Email,
-                si.FirstName,
-                si.LastName,
-                FullName = si.FirstName != null || si.LastName != null
-                    ? $"{si.FirstName} {si.LastName}".Trim()
-                    : null,
-                si.StatusId,
-                si.ErrorMessage,
-                si.SentAt,
-                si.IsOpened,
-                si.OpenedAt,
-                si.IsCompleted,
-                si.CompletedAt,
-                si.AttemptCount,
-                si.CreatedAt
-            })
-            .ToListAsync();
+        var invitations = await _surveyService.GetExternalInvitationsAsync(projectId, statusId);
 
         return Ok(invitations);
     }
@@ -1415,17 +947,14 @@ public class SurveyApiController : ControllerBase
     [HttpGet("{projectId}/external-invitation-stats")]
     public async Task<IActionResult> GetExternalInvitationStats(int projectId)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectAsync(projectId);
 
         if (project == null)
         {
             return NotFound(new { message = "Proje bulunamadı." });
         }
 
-        var invitations = await _context.SurveyExternalInvitations
-            .Where(si => si.ProjectId == projectId && !si.IsDeleted)
-            .ToListAsync();
+        var invitations = await _surveyService.GetExternalInvitationsRawAsync(projectId);
 
         var stats = new
         {
@@ -1449,12 +978,7 @@ public class SurveyApiController : ControllerBase
     [HttpPost("{projectId}/retry-external-failed")]
     public async Task<IActionResult> RetryExternalFailedInvitations(int projectId, [FromBody] SendExternalInvitationsDto dto)
     {
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -1465,8 +989,7 @@ public class SurveyApiController : ControllerBase
         var emailTemplate = project.EmailTemplate;
         if (dto.EmailTemplateId.HasValue)
         {
-            emailTemplate = await _context.EmailTemplates
-                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+            emailTemplate = await _surveyService.GetEmailTemplateAsync(dto.EmailTemplateId.Value);
         }
 
         if (emailTemplate == null)
@@ -1481,11 +1004,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Başarısız davetiyeleri getir
-        var failedInvitations = await _context.SurveyExternalInvitations
-            .Where(si => si.ProjectId == projectId &&
-                         si.StatusId == SurveyInvitationStatuses.Ids.Failed &&
-                         !si.IsDeleted)
-            .ToListAsync();
+        var failedInvitations = await _surveyService.GetFailedExternalInvitationsAsync(projectId);
 
         if (!failedInvitations.Any())
         {
@@ -1516,26 +1035,21 @@ public class SurveyApiController : ControllerBase
 
                 var result = await _emailService.SendEmailAsync(invitation.Email, subject, body, true);
 
-                invitation.AttemptCount++;
-
                 if (result.Success)
                 {
-                    invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                    invitation.SentAt = TurkeyTime.Now;
-                    invitation.ErrorMessage = null;
+                    await _surveyService.UpdateExternalInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
                     _logger.LogInformation("Retry: External survey invitation sent to {Email} for project {ProjectId}",
                         invitation.Email, projectId);
                 }
                 else
                 {
-                    invitation.ErrorMessage = result.ErrorMessage;
+                    await _surveyService.UpdateExternalInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{invitation.Email}: {result.ErrorMessage}");
                     _logger.LogWarning("Retry failed for external {Email}: {Error}",
                         invitation.Email, result.ErrorMessage);
                 }
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -1564,12 +1078,7 @@ public class SurveyApiController : ControllerBase
     [HttpPost("{projectId}/send-external-reminders")]
     public async Task<IActionResult> SendExternalReminders(int projectId, [FromBody] SendExternalRemindersDto dto)
     {
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -1580,8 +1089,7 @@ public class SurveyApiController : ControllerBase
         var emailTemplate = project.EmailTemplate;
         if (dto.EmailTemplateId.HasValue)
         {
-            emailTemplate = await _context.EmailTemplates
-                .FirstOrDefaultAsync(e => e.Id == dto.EmailTemplateId.Value && !e.IsDeleted);
+            emailTemplate = await _surveyService.GetEmailTemplateAsync(dto.EmailTemplateId.Value);
         }
 
         if (emailTemplate == null)
@@ -1602,27 +1110,7 @@ public class SurveyApiController : ControllerBase
         }
 
         // Davetiyeleri filtrele
-        var query = _context.SurveyExternalInvitations
-            .Where(si => si.ProjectId == projectId &&
-                         si.StatusId == SurveyInvitationStatuses.Ids.Sent &&
-                         !si.IsDeleted);
-
-        // Filtre uygula
-        switch (dto.Filter?.ToLower())
-        {
-            case "completed":
-                query = query.Where(si => si.IsCompleted);
-                break;
-            case "notcompleted":
-                query = query.Where(si => !si.IsCompleted);
-                break;
-            case "all":
-            default:
-                // Tümü - filtre yok
-                break;
-        }
-
-        var invitations = await query.ToListAsync();
+        var invitations = await _surveyService.GetExternalInvitationsForReminderAsync(projectId, dto.Filter);
 
         if (!invitations.Any())
         {
@@ -1655,20 +1143,19 @@ public class SurveyApiController : ControllerBase
 
                 if (result.Success)
                 {
-                    invitation.AttemptCount++;
-                    invitation.SentAt = TurkeyTime.Now;
+                    await _surveyService.UpdateExternalInvitationReminderAsync(invitation, true);
                     successCount++;
                     _logger.LogInformation("Reminder sent to external {Email} for project {ProjectId}",
                         invitation.Email, projectId);
                 }
                 else
                 {
+                    await _surveyService.UpdateExternalInvitationReminderAsync(invitation, false);
                     failCount++;
                     errors.Add($"{invitation.Email}: {result.ErrorMessage}");
                     _logger.LogWarning("Reminder failed for external {Email}: {Error}",
                         invitation.Email, result.ErrorMessage);
                 }
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -1697,12 +1184,7 @@ public class SurveyApiController : ControllerBase
     public async Task<IActionResult> UploadExternalEmails(int projectId, IFormFile file, [FromForm] int? emailTemplateId = null, [FromForm] bool sendImmediately = true)
     {
         // Projeyi kontrol et
-        var project = await _context.Projects
-            .Include(p => p.Customer)
-            .Include(p => p.Organization)
-            .Include(p => p.Checklist)
-            .Include(p => p.EmailTemplate)
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var project = await _surveyService.GetProjectWithDetailsAsync(projectId);
 
         if (project == null)
         {
@@ -1735,8 +1217,7 @@ public class SurveyApiController : ControllerBase
             emailTemplate = project.EmailTemplate;
             if (emailTemplateId.HasValue)
             {
-                emailTemplate = await _context.EmailTemplates
-                    .FirstOrDefaultAsync(e => e.Id == emailTemplateId.Value && !e.IsDeleted);
+                emailTemplate = await _surveyService.GetEmailTemplateAsync(emailTemplateId.Value);
             }
 
             if (emailTemplate == null)
@@ -1788,12 +1269,9 @@ public class SurveyApiController : ControllerBase
             try
             {
                 // Aynı projeye daha önce davetiye gönderilmiş mi?
-                var existingInvitation = await _context.SurveyExternalInvitations
-                    .FirstOrDefaultAsync(i => i.ProjectId == projectId &&
-                                              i.Email == recipient.Email &&
-                                              !i.IsDeleted);
+                var exists = await _surveyService.ExternalInvitationExistsAsync(projectId, recipient.Email);
 
-                if (existingInvitation != null)
+                if (exists)
                 {
                     duplicateCount++;
                     continue;
@@ -1803,18 +1281,7 @@ public class SurveyApiController : ControllerBase
                 var token = Guid.NewGuid().ToString("N");
 
                 // SurveyExternalInvitation kaydı oluştur
-                var invitation = new SurveyExternalInvitation
-                {
-                    ProjectId = projectId,
-                    Email = recipient.Email,
-                    FirstName = recipient.FirstName,
-                    LastName = recipient.LastName,
-                    Token = token,
-                    StatusId = SurveyInvitationStatuses.Ids.Pending,
-                    CreatedAt = TurkeyTime.Now
-                };
-                _context.SurveyExternalInvitations.Add(invitation);
-                await _context.SaveChangesAsync();
+                var invitation = await _surveyService.CreateExternalInvitationAsync(projectId, recipient.Email, recipient.FirstName, recipient.LastName, token);
                 addedCount++;
 
                 // Hemen gönder
@@ -1829,22 +1296,19 @@ public class SurveyApiController : ControllerBase
 
                     if (result.Success)
                     {
-                        invitation.StatusId = SurveyInvitationStatuses.Ids.Sent;
-                        invitation.SentAt = TurkeyTime.Now;
+                        await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                         successCount++;
                         _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId} (file upload)",
                             recipient.Email, projectId);
                     }
                     else
                     {
-                        invitation.StatusId = SurveyInvitationStatuses.Ids.Failed;
-                        invitation.ErrorMessage = result.ErrorMessage;
+                        await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                         failCount++;
                         errors.Add($"{recipient.Email}: {result.ErrorMessage}");
                         _logger.LogWarning("Failed to send external survey invitation to {Email}: {Error}",
                             recipient.Email, result.ErrorMessage);
                     }
-                    await _context.SaveChangesAsync();
                 }
             }
             catch (Exception ex)
@@ -2208,10 +1672,10 @@ public class SurveyApiController : ControllerBase
             var tokensBeforeEmail = new List<string>();
             var tokensAfterEmail = new List<string>();
 
-            foreach (var token in tokens)
+            foreach (var tokenItem in tokens)
             {
                 // <> işaretlerini temizle
-                var cleanToken = token.Trim('<', '>');
+                var cleanToken = tokenItem.Trim('<', '>');
 
                 if (email == null && IsValidEmail(cleanToken))
                 {
@@ -2230,12 +1694,12 @@ public class SurveyApiController : ControllerBase
                 else if (email == null)
                 {
                     // Email öncesi isim token'ı
-                    tokensBeforeEmail.Add(token);
+                    tokensBeforeEmail.Add(tokenItem);
                 }
                 else
                 {
                     // Email sonrası isim token'ı
-                    tokensAfterEmail.Add(token);
+                    tokensAfterEmail.Add(tokenItem);
                 }
             }
 
@@ -2363,32 +1827,6 @@ public class SubmitSurveyDto
     /// Soru cevapları listesi
     /// </summary>
     public List<SurveyAnswerDto> Answers { get; set; } = new();
-}
-
-/// <summary>
-/// Anket soru cevabı DTO
-/// </summary>
-public class SurveyAnswerDto
-{
-    /// <summary>
-    /// Soru ID
-    /// </summary>
-    public int QuestionId { get; set; }
-
-    /// <summary>
-    /// Verilen puan
-    /// </summary>
-    public int? Score { get; set; }
-
-    /// <summary>
-    /// Yorum (opsiyonel)
-    /// </summary>
-    public string? Comment { get; set; }
-
-    /// <summary>
-    /// Seçilen alt kriter ID'leri (Online anket için)
-    /// </summary>
-    public List<int>? SelectedSubCriteriaIds { get; set; }
 }
 
 /// <summary>

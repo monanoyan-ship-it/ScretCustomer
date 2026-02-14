@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Data;
+using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers;
 
 [Authorize]
 public class DashboardController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ISystemSettingService _systemSettingService;
 
-    public DashboardController(ApplicationDbContext context)
+    public DashboardController(ISystemSettingService systemSettingService)
     {
-        _context = context;
+        _systemSettingService = systemSettingService;
     }
 
     public async Task<IActionResult> Index()
@@ -32,7 +31,8 @@ public class DashboardController : Controller
         }
 
         // AppUrl'i kaydet
-        await SaveAppUrlAsync();
+        var appUrl = $"{Request.Scheme}://{Request.Host}";
+        await _systemSettingService.SetValueAsync(SystemSettingKeys.AppUrl, appUrl);
 
         return View();
     }
@@ -44,30 +44,5 @@ public class DashboardController : Controller
     public IActionResult MyDashboard()
     {
         return View();
-    }
-
-    private async Task SaveAppUrlAsync()
-    {
-        var appUrl = $"{Request.Scheme}://{Request.Host}";
-        var setting = await _context.SystemSettings
-            .FirstOrDefaultAsync(s => s.Key == SystemSettingKeys.AppUrl);
-
-        if (setting == null)
-        {
-            _context.SystemSettings.Add(new SystemSetting
-            {
-                Key = SystemSettingKeys.AppUrl,
-                Value = appUrl,
-                Description = "Uygulamanın çalıştığı URL (otomatik set edilir)",
-                ValueType = "string",
-                Category = "System"
-            });
-        }
-        else if (setting.Value != appUrl)
-        {
-            setting.Value = appUrl;
-        }
-
-        await _context.SaveChangesAsync();
     }
 }

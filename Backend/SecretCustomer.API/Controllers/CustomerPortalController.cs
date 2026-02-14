@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Data;
+using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers;
 
@@ -13,11 +12,11 @@ namespace SecretCustomer.API.Controllers;
 [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
 public class CustomerPortalController : Controller
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ISystemSettingService _systemSettingService;
 
-    public CustomerPortalController(ApplicationDbContext context)
+    public CustomerPortalController(ISystemSettingService systemSettingService)
     {
-        _context = context;
+        _systemSettingService = systemSettingService;
     }
 
     /// <summary>
@@ -27,26 +26,7 @@ public class CustomerPortalController : Controller
     {
         // AppUrl'i kaydet
         var appUrl = $"{Request.Scheme}://{Request.Host}";
-        var setting = await _context.SystemSettings
-            .FirstOrDefaultAsync(s => s.Key == SystemSettingKeys.AppUrl);
-
-        if (setting == null)
-        {
-            _context.SystemSettings.Add(new SystemSetting
-            {
-                Key = SystemSettingKeys.AppUrl,
-                Value = appUrl,
-                Description = "Uygulamanın çalıştığı URL (otomatik set edilir)",
-                ValueType = "string",
-                Category = "System"
-            });
-            await _context.SaveChangesAsync();
-        }
-        else if (setting.Value != appUrl)
-        {
-            setting.Value = appUrl;
-            await _context.SaveChangesAsync();
-        }
+        await _systemSettingService.SetValueAsync(SystemSettingKeys.AppUrl, appUrl);
 
         return View();
     }
