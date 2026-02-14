@@ -141,18 +141,18 @@ function HedefFirmalarViewModel() {
     };
 
     self.deleteFirma = function (firma) {
-        if (!confirm('Bu firmayı silmek istediğinize emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/gm/hedef-firmalar/' + firma.id,
-            type: 'DELETE'
-        })
-        .done(function () {
-            toastr.success('Firma silindi.');
-            self.loadFirmalar();
-        })
-        .fail(function (xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Silme başarısız.');
+        showDeleteConfirm(firma.firmaAdi, function () {
+            $.ajax({
+                url: '/api/gm/hedef-firmalar/' + firma.id,
+                type: 'DELETE'
+            })
+            .done(function () {
+                toastr.success('Firma silindi.');
+                self.loadFirmalar();
+            })
+            .fail(function (xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Silme başarısız.');
+            });
         });
     };
 

@@ -185,18 +185,18 @@ function SorularViewModel() {
     };
 
     self.deleteSoru = function (soru) {
-        if (!confirm('Bu soruyu silmek istediğinize emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/gm/sorular/' + soru.id,
-            type: 'DELETE'
-        })
-        .done(function () {
-            toastr.success('Soru silindi.');
-            self.loadSorular();
-        })
-        .fail(function (xhr) {
-            toastr.error(xhr.responseJSON?.message || 'Silme başarısız.');
+        showDeleteConfirm(soru.soruMetni, function () {
+            $.ajax({
+                url: '/api/gm/sorular/' + soru.id,
+                type: 'DELETE'
+            })
+            .done(function () {
+                toastr.success('Soru silindi.');
+                self.loadSorular();
+            })
+            .fail(function (xhr) {
+                toastr.error(xhr.responseJSON?.message || 'Silme başarısız.');
+            });
         });
     };
 

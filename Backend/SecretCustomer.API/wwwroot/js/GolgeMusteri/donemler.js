@@ -160,10 +160,11 @@ function DonemlerViewModel() {
     };
 
     self.deleteDonem = function (donem) {
-        if (!confirm('Bu dönemi silmek istediğinize emin misiniz?')) return;
-        $.ajax({ url: '/api/gm/donemler/' + donem.id, type: 'DELETE' })
-            .done(function () { toastr.success('Dönem silindi.'); self.loadDonemler(); })
-            .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Silme başarısız.'); });
+        showDeleteConfirm(donem.donemAdi, function () {
+            $.ajax({ url: '/api/gm/donemler/' + donem.id, type: 'DELETE' })
+                .done(function () { toastr.success('Dönem silindi.'); self.loadDonemler(); })
+                .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Silme başarısız.'); });
+        });
     };
 
     // Personel
@@ -242,32 +243,46 @@ function DonemlerViewModel() {
     // Aktif Et & Tamamla
     self.aktifEt = function () {
         if (!self.selectedDonem()) return;
-        if (!confirm('Dönemi aktif etmek istediğinize emin misiniz? Bu işlem atamaları oluşturacaktır.')) return;
-
-        $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/aktif-et',
-            type: 'POST'
-        })
-        .done(function (data) {
-            toastr.success(data.message || 'Dönem aktif edildi.');
-            self.closeDonem();
-        })
-        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Aktif etme başarısız.'); });
+        showConfirmModal({
+            title: 'Dönem Aktifleştirme',
+            message: 'Dönemi aktif etmek istediğinize emin misiniz? Bu işlem atamaları oluşturacaktır.',
+            type: 'warning',
+            confirmText: 'Evet, Aktif Et',
+            confirmIcon: 'bi-play-circle',
+            onConfirm: function () {
+                $.ajax({
+                    url: '/api/gm/donemler/' + self.selectedDonem().id + '/aktif-et',
+                    type: 'POST'
+                })
+                .done(function (data) {
+                    toastr.success(data.message || 'Dönem aktif edildi.');
+                    self.closeDonem();
+                })
+                .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Aktif etme başarısız.'); });
+            }
+        });
     };
 
     self.tamamla = function () {
         if (!self.selectedDonem()) return;
-        if (!confirm('Dönemi tamamlamak istediğinize emin misiniz?')) return;
-
-        $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/tamamla',
-            type: 'POST'
-        })
-        .done(function () {
-            toastr.success('Dönem tamamlandı.');
-            self.closeDonem();
-        })
-        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Tamamlama başarısız.'); });
+        showConfirmModal({
+            title: 'Dönem Tamamlama',
+            message: 'Dönemi tamamlamak istediğinize emin misiniz?',
+            type: 'success',
+            confirmText: 'Evet, Tamamla',
+            confirmIcon: 'bi-check-circle',
+            onConfirm: function () {
+                $.ajax({
+                    url: '/api/gm/donemler/' + self.selectedDonem().id + '/tamamla',
+                    type: 'POST'
+                })
+                .done(function () {
+                    toastr.success('Dönem tamamlandı.');
+                    self.closeDonem();
+                })
+                .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Tamamlama başarısız.'); });
+            }
+        });
     };
 
     // Init
