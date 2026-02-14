@@ -17,7 +17,7 @@
         </div>
         <div>
             <a href="/Notifications" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>@Html.T("Common.Back", "Geri")
+                <i class="bi bi-arrow-left me-2"></i>@Html.T("Common.Back", "Geri")
             </a>
         </div>
     </div>
@@ -25,7 +25,7 @@
     <!-- Settings Card -->
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-cog me-2"></i>@Html.T("Notification.Settings.Preferences", "Bildirim Tercihleri")</h5>
+            <h5 class="mb-0"><i class="bi bi-gear me-2"></i>@Html.T("Notification.Settings.Preferences", "Bildirim Tercihleri")</h5>
         </div>
         <div class="card-body">
             <p class="text-muted mb-4">@Html.T("Notification.Settings.Description", "Her bildirim türü için hangi kanallardan bildirim almak istediğinizi seçin.")</p>
@@ -75,7 +75,7 @@
             <div class="text-center py-4" data-bind="visible: settings().length === 0 && !loading()">
                 <p class="text-muted">@Html.T("Notification.Settings.NoRecords", "Henüz bildirim ayarı bulunmamaktadır.")</p>
                 <button class="btn btn-primary" data-bind="click: initializeSettings">
-                    <i class="fas fa-plus me-2"></i>@Html.T("Notification.Settings.CreateDefaults", "Varsayılan Ayarları Oluştur")
+                    <i class="bi bi-plus-lg me-2"></i>@Html.T("Notification.Settings.CreateDefaults", "Varsayılan Ayarları Oluştur")
                 </button>
             </div>
 
@@ -91,25 +91,25 @@
     <!-- Info Card -->
     <div class="card mt-4">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>@Html.T("Common.Info", "Bilgi")</h5>
+            <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>@Html.T("Common.Info", "Bilgi")</h5>
         </div>
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
                     <h6>@Html.T("Notification.Settings.Channels", "Bildirim Kanalları")</h6>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-desktop text-primary me-2"></i><strong>@Html.T("Notification.Settings.InApp", "Uygulama İçi"):</strong> @Html.T("Notification.Settings.InApp.Desc", "Sistemde oturum açtığınızda gösterilir")</li>
-                        <li><i class="fas fa-envelope text-info me-2"></i><strong>@Html.T("Common.Email", "E-posta"):</strong> @Html.T("Notification.Settings.Email.Desc", "Kayıtlı e-posta adresinize gönderilir")</li>
-                        <li><i class="fas fa-sms text-success me-2"></i><strong>@Html.T("Notification.Settings.SMS", "SMS"):</strong> @Html.T("Notification.Settings.SMS.Desc", "Kayıtlı telefon numaranıza gönderilir")</li>
-                        <li><i class="fas fa-mobile-alt text-warning me-2"></i><strong>@Html.T("Notification.Settings.Push", "Push"):</strong> @Html.T("Notification.Settings.Push.Desc", "Mobil cihazınıza anlık bildirim gönderilir")</li>
+                        <li><i class="bi bi-display text-primary me-2"></i><strong>@Html.T("Notification.Settings.InApp", "Uygulama İçi"):</strong> @Html.T("Notification.Settings.InApp.Desc", "Sistemde oturum açtığınızda gösterilir")</li>
+                        <li><i class="bi bi-envelope text-info me-2"></i><strong>@Html.T("Common.Email", "E-posta"):</strong> @Html.T("Notification.Settings.Email.Desc", "Kayıtlı e-posta adresinize gönderilir")</li>
+                        <li><i class="bi bi-chat-dots text-success me-2"></i><strong>@Html.T("Notification.Settings.SMS", "SMS"):</strong> @Html.T("Notification.Settings.SMS.Desc", "Kayıtlı telefon numaranıza gönderilir")</li>
+                        <li><i class="bi bi-phone text-warning me-2"></i><strong>@Html.T("Notification.Settings.Push", "Push"):</strong> @Html.T("Notification.Settings.Push.Desc", "Mobil cihazınıza anlık bildirim gönderilir")</li>
                     </ul>
                 </div>
                 <div class="col-md-6">
                     <h6>@Html.T("Notification.Settings.ImportantNotes", "Önemli Notlar")</h6>
                     <ul class="list-unstyled">
-                        <li><i class="fas fa-check text-success me-2"></i>@Html.T("Notification.Settings.Note.AutoSave", "Değişiklikler otomatik olarak kaydedilir")</li>
-                        <li><i class="fas fa-exclamation-triangle text-warning me-2"></i>@Html.T("Notification.Settings.Note.Urgent", "Acil öncelikli bildirimler her durumda gönderilir")</li>
-                        <li><i class="fas fa-shield-alt text-secondary me-2"></i>@Html.T("Notification.Settings.Note.System", "Sistem bildirimleri devre dışı bırakılamaz")</li>
+                        <li><i class="bi bi-check-lg text-success me-2"></i>@Html.T("Notification.Settings.Note.AutoSave", "Değişiklikler otomatik olarak kaydedilir")</li>
+                        <li><i class="bi bi-exclamation-triangle text-warning me-2"></i>@Html.T("Notification.Settings.Note.Urgent", "Acil öncelikli bildirimler her durumda gönderilir")</li>
+                        <li><i class="bi bi-shield-check text-secondary me-2"></i>@Html.T("Notification.Settings.Note.System", "Sistem bildirimleri devre dışı bırakılamaz")</li>
                     </ul>
                 </div>
             </div>

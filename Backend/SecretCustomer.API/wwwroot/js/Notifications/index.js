@@ -164,18 +164,18 @@ function NotificationsIndexViewModel() {
     // Helper functions
     self.getNotificationTypeIcon = function(type) {
         var icons = {
-            'Info': 'fas fa-info',
-            'Success': 'fas fa-check',
-            'Warning': 'fas fa-exclamation',
-            'Error': 'fas fa-times',
-            'ApprovalRequest': 'fas fa-clipboard-check',
-            'Assignment': 'fas fa-tasks',
-            'MeetingInvite': 'fas fa-calendar',
-            'TrainingInvite': 'fas fa-graduation-cap',
-            'Reminder': 'fas fa-bell',
-            'System': 'fas fa-cog'
+            'Info': 'bi bi-info-circle',
+            'Success': 'bi bi-check-circle',
+            'Warning': 'bi bi-exclamation-triangle',
+            'Error': 'bi bi-x-circle',
+            'ApprovalRequest': 'bi bi-clipboard-check',
+            'Assignment': 'bi bi-list-task',
+            'MeetingInvite': 'bi bi-calendar-event',
+            'TrainingInvite': 'bi bi-mortarboard',
+            'Reminder': 'bi bi-bell',
+            'System': 'bi bi-gear'
         };
-        return icons[type] || 'fas fa-bell';
+        return icons[type] || 'bi bi-bell';
     };
 
     self.getNotificationTypeIconClass = function(type) {

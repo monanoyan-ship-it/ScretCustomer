@@ -126,7 +126,7 @@
                             <span class="badge" data-bind="text: statusName, css: statusCssClass"></span>
                         </td>
                         <td>
-                            <small data-bind="text: formatDate(createdAt)"></small>
+                            <small data-bind="text: $parent.formatDate(createdAt)"></small>
                         </td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-primary" data-bind="click: function() { $parent.viewRequest($data); }">

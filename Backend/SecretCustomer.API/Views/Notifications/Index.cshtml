@@ -16,10 +16,10 @@
         </div>
         <div>
             <button class="btn btn-outline-primary me-2" data-bind="click: markAllAsRead, visible: summary().unreadCount > 0">
-                <i class="fas fa-check-double me-2"></i>@Html.T("Notification.MarkAllAsRead", "Tümünü Okundu İşaretle")
+                <i class="bi bi-check-all me-2"></i>@Html.T("Notification.MarkAllAsRead", "Tümünü Okundu İşaretle")
             </button>
             <a href="/Notifications/Settings" class="btn btn-outline-secondary">
-                <i class="fas fa-cog me-2"></i>@Html.T("Common.Settings", "Ayarlar")
+                <i class="bi bi-gear me-2"></i>@Html.T("Common.Settings", "Ayarlar")
             </a>
         </div>
     </div>
@@ -63,7 +63,7 @@
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
+            <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>@Html.T("Common.Filters", "Filtreler")</h5>
         </div>
         <div class="card-body">
             <div class="row g-3">
@@ -107,7 +107,7 @@
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-secondary w-100" data-bind="click: clearFilters">
-                        <i class="fas fa-times me-2"></i>@Html.T("Common.Clear", "Temizle")
+                        <i class="bi bi-x-lg me-2"></i>@Html.T("Common.Clear", "Temizle")
                     </button>
                 </div>
             </div>
@@ -117,7 +117,7 @@
     <!-- Notifications List -->
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-bell me-2"></i>@Html.T("Menu.Notifications", "Bildirimler")</h5>
+            <h5 class="mb-0"><i class="bi bi-bell me-2"></i>@Html.T("Menu.Notifications", "Bildirimler")</h5>
             <span class="badge bg-primary" data-bind="text: '@Html.T("Common.Total", "Toplam"): ' + totalCount()"></span>
         </div>
         <div class="card-body p-0">
@@ -134,7 +134,7 @@
                                 <h6 class="mb-1" data-bind="text: title, css: { 'fw-bold': !isRead }"></h6>
                                 <p class="mb-1 text-muted" data-bind="text: message"></p>
                                 <small class="text-muted">
-                                    <i class="fas fa-clock me-1"></i>
+                                    <i class="bi bi-clock me-1"></i>
                                     <span data-bind="text: $parent.formatDate(createdAt)"></span>
                                     <span class="badge ms-2" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span>
                                 </small>
@@ -143,16 +143,16 @@
                         <div class="btn-group btn-group-sm">
                             <!-- ko if: !isRead -->
                             <button class="btn btn-outline-success" data-bind="click: $parent.markAsRead" title="@Html.T("Notification.MarkAsRead", "Okundu İşaretle")">
-                                <i class="fas fa-check"></i>
+                                <i class="bi bi-check-lg"></i>
                             </button>
                             <!-- /ko -->
                             <!-- ko if: actionUrl -->
                             <a class="btn btn-outline-primary" data-bind="attr: { href: actionUrl }" title="@Html.T("Common.View", "Görüntüle")">
-                                <i class="fas fa-external-link-alt"></i>
+                                <i class="bi bi-box-arrow-up-right"></i>
                             </a>
                             <!-- /ko -->
                             <button class="btn btn-outline-danger" data-bind="click: $parent.deleteNotification" title="@Html.T("Common.Delete", "Sil")">
-                                <i class="fas fa-trash"></i>
+                                <i class="bi bi-trash"></i>
                             </button>
                         </div>
                     </div>
@@ -161,7 +161,7 @@
 
             <!-- Empty State -->
             <div class="text-center py-5" data-bind="visible: notifications().length === 0">
-                <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                <i class="bi bi-bell-slash fs-1 text-muted mb-3 d-block"></i>
                 <p class="text-muted">@Html.T("Notification.NoRecords", "Henüz bildirim bulunmamaktadır.")</p>
             </div>
         </div>
