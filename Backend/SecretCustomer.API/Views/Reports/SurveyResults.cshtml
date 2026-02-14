@@ -533,29 +533,29 @@
                                 <div class="list-group-item">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div class="flex-grow-1">
-                                            <div class="fw-bold" data-bind="text: questionText"></div>
-                                            <!-- ko if: groupName -->
-                                            <small class="text-muted" data-bind="text: '(' + groupName + ')'"></small>
+                                            <div class="fw-bold" data-bind="text: $data.questionText"></div>
+                                            <!-- ko if: $data.groupName -->
+                                            <small class="text-muted" data-bind="text: '(' + $data.groupName + ')'"></small>
                                             <!-- /ko -->
                                         </div>
-                                        <!-- ko if: score !== null -->
-                                        <span class="badge bg-primary ms-2" data-bind="text: score + ' / ' + maxPoints"></span>
+                                        <!-- ko if: $data.score !== null -->
+                                        <span class="badge bg-primary ms-2" data-bind="text: $data.score + ' / ' + $data.maxPoints"></span>
                                         <!-- /ko -->
                                     </div>
                                     <!-- SubCriteria -->
-                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
+                                    <!-- ko if: $data.selectedSubCriteria && $data.selectedSubCriteria.length > 0 -->
                                     <div class="mt-2">
                                         <small class="text-muted">@Html.T("Report.SelectedCriteria", "Seçilen Kriterler"):</small>
-                                        <div data-bind="foreach: selectedSubCriteria">
+                                        <div data-bind="foreach: $data.selectedSubCriteria">
                                             <span class="badge bg-info me-1" data-bind="text: $data"></span>
                                         </div>
                                     </div>
                                     <!-- /ko -->
                                     <!-- Comment -->
-                                    <!-- ko if: comment -->
+                                    <!-- ko if: $data.comment -->
                                     <div class="mt-2">
                                         <small class="text-muted">@Html.T("Report.Comment", "Yorum"):</small>
-                                        <div class="fst-italic" data-bind="text: comment"></div>
+                                        <div class="fst-italic" data-bind="text: $data.comment"></div>
                                     </div>
                                     <!-- /ko -->
                                 </div>

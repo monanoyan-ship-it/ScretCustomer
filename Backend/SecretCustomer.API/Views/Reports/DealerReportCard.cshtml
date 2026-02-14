@@ -437,26 +437,26 @@
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: $data.answers || []">
-                                        <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
-                                            <td class="text-wrap" data-bind="text: groupName || '-'"></td>
+                                        <tr data-bind="css: { 'table-warning': $data.appliedPenaltyType === 'YellowCard', 'table-danger': $data.appliedPenaltyType === 'RedCard' }">
+                                            <td class="text-wrap" data-bind="text: $data.groupName || '-'"></td>
                                             <td class="text-wrap">
-                                                <span data-bind="text: questionText"></span>
-                                                <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
-                                                <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                <span data-bind="text: $data.questionText"></span>
+                                                <!-- ko if: $data.selectedSubCriteria && $data.selectedSubCriteria.length > 0 -->
+                                                <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: $data.selectedSubCriteria.join(', ')"></span></small>
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-center">
-                                                <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && givenPoints !== undefined -->
-                                                <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
+                                                <!-- ko if: $data.scoringType !== 'Unscored' && $data.givenPoints !== null && $data.givenPoints !== undefined -->
+                                                <span class="badge bg-primary" data-bind="text: $data.givenPoints + '/' + $data.maxPoints"></span>
                                                 <!-- /ko -->
-                                                <!-- ko if: scoringType === 'Unscored' || givenPoints === null || givenPoints === undefined -->
+                                                <!-- ko if: $data.scoringType === 'Unscored' || $data.givenPoints === null || $data.givenPoints === undefined -->
                                                 <span class="text-muted">-</span>
                                                 <!-- /ko -->
                                             </td>
                                             <td>
-                                                <span data-bind="visible: appliedPenaltyType === 'YellowCard'" class="badge bg-warning text-dark me-1">@Html.T("Report.YellowCard", "Sarı Kart")</span>
-                                                <span data-bind="visible: appliedPenaltyType === 'RedCard'" class="badge bg-danger me-1">@Html.T("Report.RedCard", "Kırmızı Kart")</span>
-                                                <small data-bind="text: notes" class="text-muted"></small>
+                                                <span data-bind="visible: $data.appliedPenaltyType === 'YellowCard'" class="badge bg-warning text-dark me-1">@Html.T("Report.YellowCard", "Sarı Kart")</span>
+                                                <span data-bind="visible: $data.appliedPenaltyType === 'RedCard'" class="badge bg-danger me-1">@Html.T("Report.RedCard", "Kırmızı Kart")</span>
+                                                <small data-bind="text: $data.notes" class="text-muted"></small>
                                             </td>
                                         </tr>
                                     </tbody>

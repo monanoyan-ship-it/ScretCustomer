@@ -179,6 +179,8 @@ public class EvaluationAnswerDto
     public decimal? QuestionMaxPoints { get; set; }
     public decimal WeightPoints { get; set; }
     public string? PenaltyType { get; set; }
+    public string? ScoringType { get; set; }
+    public List<string>? SelectedSubCriteria { get; set; }
 }
 
 /// <summary>

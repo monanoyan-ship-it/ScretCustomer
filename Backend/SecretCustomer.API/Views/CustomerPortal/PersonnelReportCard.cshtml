@@ -474,39 +474,39 @@
                                             </tr>
                                         </thead>
                                         <tbody data-bind="foreach: answers || []">
-                                            <tr data-bind="css: { 'table-warning': appliedPenaltyType === 'YellowCard', 'table-danger': appliedPenaltyType === 'RedCard' }">
-                                                <td data-bind="text: groupName || '-'"></td>
+                                            <tr data-bind="css: { 'table-warning': $data.appliedPenaltyType === 'YellowCard', 'table-danger': $data.appliedPenaltyType === 'RedCard' }">
+                                                <td data-bind="text: $data.groupName || '-'"></td>
                                                 <td>
-                                                    <span data-bind="text: questionText"></span>
-                                                    <!-- ko if: selectedSubCriteria && selectedSubCriteria.length > 0 -->
-                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: selectedSubCriteria.join(', ')"></span></small>
+                                                    <span data-bind="text: $data.questionText"></span>
+                                                    <!-- ko if: $data.selectedSubCriteria && $data.selectedSubCriteria.length > 0 -->
+                                                    <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: $data.selectedSubCriteria.join(', ')"></span></small>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: scoringType !== 'Unscored' && givenPoints !== null && maxPoints > 0 -->
-                                                    <span class="badge bg-primary" data-bind="text: givenPoints + '/' + maxPoints"></span>
+                                                    <!-- ko if: $data.scoringType !== 'Unscored' && $data.givenPoints !== null && $data.maxPoints > 0 -->
+                                                    <span class="badge bg-primary" data-bind="text: $data.givenPoints + '/' + $data.maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: scoringType === 'Unscored' || !(givenPoints !== null && maxPoints > 0) -->
+                                                    <!-- ko if: $data.scoringType === 'Unscored' || !($data.givenPoints !== null && $data.maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
-                                                    <span data-bind="text: maxPoints"></span>
+                                                    <!-- ko if: $data.scoringType !== 'Unscored' && $data.maxPoints > 0 -->
+                                                    <span data-bind="text: $data.maxPoints"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
+                                                    <!-- ko if: $data.scoringType === 'Unscored' || !($data.maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <!-- ko if: scoringType !== 'Unscored' && maxPoints > 0 -->
-                                                    <span class="text-success" data-bind="text: (givenPoints || 0).toFixed(1)"></span>
+                                                    <!-- ko if: $data.scoringType !== 'Unscored' && $data.maxPoints > 0 -->
+                                                    <span class="text-success" data-bind="text: ($data.givenPoints || 0).toFixed(1)"></span>
                                                     <!-- /ko -->
-                                                    <!-- ko if: scoringType === 'Unscored' || !(maxPoints > 0) -->
+                                                    <!-- ko if: $data.scoringType === 'Unscored' || !($data.maxPoints > 0) -->
                                                     <span class="text-muted">-</span>
                                                     <!-- /ko -->
                                                 </td>
-                                                <td data-bind="text: notes || '-'"></td>
+                                                <td data-bind="text: $data.notes || '-'"></td>
                                             </tr>
                                         </tbody>
                                     </table>

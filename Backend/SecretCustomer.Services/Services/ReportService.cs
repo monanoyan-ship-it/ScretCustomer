@@ -542,7 +542,11 @@ public class ReportService : IReportService
                     EarnedPoints = a.EarnedPoints,
                     QuestionMaxPoints = a.Question.WeightPoints,
                     WeightPoints = a.Question.WeightPoints,
-                    PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName
+                    PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName,
+                    ScoringType = ScoringTypes.GetById(a.Question.ScoringTypeId)?.SystemName,
+                    SelectedSubCriteria = a.SubCriteriaSelections
+                        .Select(s => s.SubCriteria.Description)
+                        .ToList()
                 }).ToList(),
 
             // Değerlendirme yorumu

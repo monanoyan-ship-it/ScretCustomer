@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Import;
@@ -96,18 +97,42 @@ public class ImportApiController : BaseApiController
     }
 
     /// <summary>
-    /// Örnek CSV şablonu indirir
+    /// Örnek Excel şablonu indirir
     /// </summary>
     [HttpGet("personnel/template")]
     [AllowAnonymous]
     public IActionResult GetTemplate()
     {
-        var template = @"FullName,Username,Email,Password,Role,RoleId,Company
-Ahmet Yılmaz,ahmet.yilmaz,a@b.com,user@123,CustomerOperator,3,Boyner
-Mehmet Kaya,mehmet.kaya,mehmet.kaya@firma.com,user@123,CustomerManager,1,Boyner";
+        using var workbook = new XLWorkbook();
+        var ws = workbook.Worksheets.Add("Personnel");
 
-        var bytes = System.Text.Encoding.UTF8.GetBytes(template);
-        return File(bytes, "text/csv", "personnel_import_template.csv");
+        // Header
+        var headers = new[] { "FullName", "Username", "Email", "Password", "Role", "RoleId", "Company" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            ws.Cell(1, i + 1).Value = headers[i];
+        }
+
+        // Header style
+        var headerRange = ws.Range(1, 1, 1, headers.Length);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        // Sample data
+        var row2 = new[] { "Ahmet Yılmaz", "ahmet.yilmaz", "a@b.com", "user@123", "CustomerOperator", "3", "Boyner" };
+        var row3 = new[] { "Mehmet Kaya", "mehmet.kaya", "mehmet.kaya@firma.com", "user@123", "CustomerManager", "1", "Boyner" };
+        for (int i = 0; i < row2.Length; i++)
+        {
+            ws.Cell(2, i + 1).Value = row2[i];
+            ws.Cell(3, i + 1).Value = row3[i];
+        }
+
+        ws.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "personnel_import_template.xlsx");
     }
 
     #region Checklist Import
@@ -165,19 +190,69 @@ Mehmet Kaya,mehmet.kaya,mehmet.kaya@firma.com,user@123,CustomerManager,1,Boyner"
     }
 
     /// <summary>
-    /// Checklist import örnek CSV şablonu indirir
+    /// Checklist import örnek Excel şablonu indirir
     /// </summary>
     [HttpGet("checklist/template")]
     [AllowAnonymous]
     public IActionResult GetChecklistTemplate()
     {
-        var template = @"GroupName,QuestionText,WeightPoints,MaxPoints,ScoringType,PenaltyType,SubCriteria,Order,IsRequired,HelpText
-İletişim,Müşterinin sözü kesildi / aynı anda konuşuldu,3,3,Scored,None,""Aynı anda konuşuldu.|Müşterinin sözü kesildi."",1,false,
-Prosedür,Doğru prosedür uygulanmadı,15,1,Scored,None,""Adres teyidi eksik.|Teknik adımlar uygulanmadı."",2,false,
-Kritik Hata,Kabul Edilemez Eylemler,100,1,Penalty,RedCard,""KVKK ihlali.|Müşteri ile polemiğe girme.|Sebepsiz görüşme sonlandırma."",3,true,Kırmızı kart gerektiren durumlar";
+        using var workbook = new XLWorkbook();
+        var ws = workbook.Worksheets.Add("Checklist");
 
-        var bytes = System.Text.Encoding.UTF8.GetBytes(template);
-        return File(bytes, "text/csv", "checklist_import_template.csv");
+        // Header
+        var headers = new[] { "GroupName", "QuestionText", "WeightPoints", "MaxPoints", "ScoringType", "PenaltyType", "SubCriteria", "Order", "IsRequired", "HelpText" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            ws.Cell(1, i + 1).Value = headers[i];
+        }
+
+        // Header style
+        var headerRange = ws.Range(1, 1, 1, headers.Length);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        // Sample data row 1
+        ws.Cell(2, 1).Value = "İletişim";
+        ws.Cell(2, 2).Value = "Müşterinin sözü kesildi / aynı anda konuşuldu";
+        ws.Cell(2, 3).Value = 3;
+        ws.Cell(2, 4).Value = 3;
+        ws.Cell(2, 5).Value = "Scored";
+        ws.Cell(2, 6).Value = "None";
+        ws.Cell(2, 7).Value = "Aynı anda konuşuldu.|Müşterinin sözü kesildi.";
+        ws.Cell(2, 8).Value = 1;
+        ws.Cell(2, 9).Value = "false";
+        ws.Cell(2, 10).Value = "";
+
+        // Sample data row 2
+        ws.Cell(3, 1).Value = "Prosedür";
+        ws.Cell(3, 2).Value = "Doğru prosedür uygulanmadı";
+        ws.Cell(3, 3).Value = 15;
+        ws.Cell(3, 4).Value = 1;
+        ws.Cell(3, 5).Value = "Scored";
+        ws.Cell(3, 6).Value = "None";
+        ws.Cell(3, 7).Value = "Adres teyidi eksik.|Teknik adımlar uygulanmadı.";
+        ws.Cell(3, 8).Value = 2;
+        ws.Cell(3, 9).Value = "false";
+        ws.Cell(3, 10).Value = "";
+
+        // Sample data row 3
+        ws.Cell(4, 1).Value = "Kritik Hata";
+        ws.Cell(4, 2).Value = "Kabul Edilemez Eylemler";
+        ws.Cell(4, 3).Value = 100;
+        ws.Cell(4, 4).Value = 1;
+        ws.Cell(4, 5).Value = "Penalty";
+        ws.Cell(4, 6).Value = "RedCard";
+        ws.Cell(4, 7).Value = "KVKK ihlali.|Müşteri ile polemiğe girme.|Sebepsiz görüşme sonlandırma.";
+        ws.Cell(4, 8).Value = 3;
+        ws.Cell(4, 9).Value = "true";
+        ws.Cell(4, 10).Value = "Kırmızı kart gerektiren durumlar";
+
+        ws.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "checklist_import_template.xlsx");
     }
 
     #endregion
