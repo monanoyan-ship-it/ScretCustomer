@@ -87,6 +87,146 @@ public interface IEvaluationService
     /// Geçmiş değerlendirmelerden benzersiz açıklamaları getirir (autocomplete için)
     /// </summary>
     Task<List<string>> GetPastDescriptionsAsync();
+
+    /// <summary>
+    /// Tüm değerlendirmeleri filtreli getirir (yönetici) - Çoklu filtre desteği
+    /// </summary>
+    Task<EvaluationListResultDto> GetAllFilteredAsync(
+        List<int>? projectIds, List<int>? customerIds, List<int>? organizationIds,
+        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses,
+        DateTime? startDate, DateTime? endDate, int page, int pageSize);
+
+    /// <summary>
+    /// Değerlendirmenin ekli dosyalarını listeler
+    /// </summary>
+    Task<List<EvaluationAttachmentDto>> GetAttachmentsAsync(int evaluationId);
+
+    /// <summary>
+    /// Çağrı ID'nin müşteri için mevcut olup olmadığını kontrol eder
+    /// </summary>
+    Task<bool> CheckCallIdExistsAsync(string callId, int projectId, int? evaluationId);
+
+    /// <summary>
+    /// Aktif proje kontrolü (assignment üzerinden)
+    /// </summary>
+    Task<(bool Found, bool IsActive)> CheckProjectActiveForAssignmentAsync(int projectId);
+
+    /// <summary>
+    /// Answer ID'leri frontend'e dön (dosya yükleme için gerekli)
+    /// </summary>
+    Task<List<AnswerIdDto>> GetAnswerIdsAsync(int evaluationId);
+
+    /// <summary>
+    /// Taslağa alma talebi oluşturur (kullanıcı tarafından)
+    /// </summary>
+    Task<RevertRequestResultDto> CreateRevertRequestAsync(int evaluationId, int userId, string? userType, string? reason);
+
+    /// <summary>
+    /// Tamamlanmış değerlendirmelerin puanlarını toplu yeniden hesaplar (Admin only)
+    /// </summary>
+    Task<RecalculateScoresResultDto> RecalculateAllScoresAsync(int? projectId);
+
+    /// <summary>
+    /// Taslak değerlendirmeyi siler
+    /// </summary>
+    Task<DeleteDraftResultDto> DeleteDraftAsync(int evaluationId, int userId, string? userType, bool isAdmin);
+
+    /// <summary>
+    /// Evaluator bazlı filtreli değerlendirmeleri getirir
+    /// </summary>
+    Task<List<EvaluationDto>> GetByEvaluatorFilteredAsync(int userId, string? userType,
+        string? status, string? search, string? personnel,
+        DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
+        List<int>? projectIds, List<string>? statuses);
+
+    /// <summary>
+    /// Excel export için değerlendirmeleri getirir (entity olarak, Excel oluşturma controller'da kalır)
+    /// </summary>
+    Task<List<EvaluationExportDto>> GetEvaluationsForExportAsync(int userId, string? userType,
+        string? status, string? search, string? personnel,
+        DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
+        List<int>? projectIds, List<int>? customerIds, List<int>? organizationIds,
+        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses);
+}
+
+// ===== Result DTOs =====
+
+public class EvaluationListResultDto
+{
+    public List<EvaluationListItemDto> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
+public class EvaluationListItemDto
+{
+    public int Id { get; set; }
+    public int StatusId { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? ProjectName { get; set; }
+    public string? ChecklistName { get; set; }
+    public string? EvaluatorName { get; set; }
+    public string? PersonnelName { get; set; }
+    public decimal? TotalScore { get; set; }
+    public decimal? MaxScore { get; set; }
+    public decimal? ScorePercentage { get; set; }
+    public DateTime? CompletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class EvaluationAttachmentDto
+{
+    public int Id { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public long FileSize { get; set; }
+    public string ContentType { get; set; } = string.Empty;
+    public DateTime UploadedAt { get; set; }
+}
+
+public class AnswerIdDto
+{
+    public int Id { get; set; }
+    public int QuestionId { get; set; }
+}
+
+public class RevertRequestResultDto
+{
+    public bool Success { get; set; }
+    public int? ApprovalId { get; set; }
+    public string? ReferenceNumber { get; set; }
+    public string? ErrorMessage { get; set; }
+    public int? StatusCode { get; set; }
+}
+
+public class RecalculateScoresResultDto
+{
+    public int UpdatedCount { get; set; }
+    public int ErrorCount { get; set; }
+    public int TotalProcessed { get; set; }
+}
+
+public class DeleteDraftResultDto
+{
+    public bool Success { get; set; }
+    public string? ErrorMessage { get; set; }
+    public int? StatusCode { get; set; }
+}
+
+public class EvaluationExportDto
+{
+    public string? CallId { get; set; }
+    public DateTime? CallDate { get; set; }
+    public string? CallTime { get; set; }
+    public string? Duration { get; set; }
+    public string? PersonnelName { get; set; }
+    public string? ProjectName { get; set; }
+    public string? ChecklistName { get; set; }
+    public decimal? ScorePercentage { get; set; }
+    public int YellowCardCount { get; set; }
+    public int RedCardCount { get; set; }
+    public int StatusId { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
 
 /// <summary>

@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -17,18 +15,15 @@ public class PublicReportApiController : ControllerBase
 {
     private readonly INotificationTokenService _tokenService;
     private readonly IReportService _reportService;
-    private readonly ApplicationDbContext _context;
     private readonly ILogger<PublicReportApiController> _logger;
 
     public PublicReportApiController(
         INotificationTokenService tokenService,
         IReportService reportService,
-        ApplicationDbContext context,
         ILogger<PublicReportApiController> logger)
     {
         _tokenService = tokenService;
         _reportService = reportService;
-        _context = context;
         _logger = logger;
     }
 
@@ -83,29 +78,25 @@ public class PublicReportApiController : ControllerBase
         try
         {
             // Token sahibinin bu değerlendirmeyi görme yetkisi var mı kontrol et
-            var evaluation = await _context.Evaluations
-                .Include(e => e.Project)
-                .Include(e => e.EvaluatedCustomerPersonnel)
-                .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
-
-            if (evaluation == null)
+            var authInfo = await _reportService.GetEvaluationAuthInfoAsync(evaluationId);
+            if (authInfo == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
 
             // Yetki kontrolü
             switch (payload.Type)
             {
                 case "single":
-                    if (evaluation.Id != payload.EvaluationId)
+                    if (authInfo.Value.EvaluationId != payload.EvaluationId)
                         return Forbid();
                     break;
 
                 case "bulk":
-                    if (evaluation.Project?.CustomerId != payload.CustomerId)
+                    if (authInfo.Value.ProjectCustomerId != payload.CustomerId)
                         return Forbid();
                     break;
 
                 case "personnel":
-                    if (evaluation.EvaluatedCustomerPersonnelId != payload.CustomerPersonnelId)
+                    if (authInfo.Value.EvaluatedCustomerPersonnelId != payload.CustomerPersonnelId)
                         return Forbid();
                     break;
             }
@@ -138,84 +129,17 @@ public class PublicReportApiController : ControllerBase
 
     private async Task<IActionResult> GetBulkReport(int customerId, DateTime startDate, DateTime endDate)
     {
-        var customer = await _context.Customers
-            .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
-
-        if (customer == null)
+        var result = await _reportService.GetBulkPublicReportAsync(customerId, startDate, endDate);
+        if (result == null)
             return NotFound(new { message = "Müşteri bulunamadı." });
-
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Project)
-            .Include(e => e.EvaluatedCustomerPersonnel)
-            .Include(e => e.CustomerDealer)
-            .Where(e => !e.IsDeleted
-                && e.Project != null
-                && e.Project.CustomerId == customerId
-                && e.CreatedAt >= startDate
-                && e.CreatedAt < endDate)
-            .OrderByDescending(e => e.CreatedAt)
-            .Select(e => new
-            {
-                e.Id,
-                e.CompletedAt,
-                e.TotalScore,
-                e.MaxScore,
-                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
-                PersonnelName = e.EvaluatedCustomerPersonnel != null
-                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
-                    : e.EvaluatedUnknownPersonnel ?? "-",
-                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
-                ProjectName = e.Project!.Name,
-                e.EvaluationComment
-            })
-            .ToListAsync();
-
-        return Ok(new
-        {
-            type = "bulk",
-            customerName = customer.CompanyName,
-            startDate,
-            endDate,
-            evaluations
-        });
+        return Ok(result);
     }
 
     private async Task<IActionResult> GetPersonnelReport(int customerPersonnelId, DateTime startDate, DateTime endDate)
     {
-        var personnel = await _context.CustomerPersonnel
-            .FirstOrDefaultAsync(p => p.Id == customerPersonnelId && !p.IsDeleted);
-
-        if (personnel == null)
+        var result = await _reportService.GetPersonnelPublicReportAsync(customerPersonnelId, startDate, endDate);
+        if (result == null)
             return NotFound(new { message = "Personel bulunamadı." });
-
-        var evaluations = await _context.Evaluations
-            .Include(e => e.Project)
-            .Include(e => e.CustomerDealer)
-            .Where(e => !e.IsDeleted
-                && e.EvaluatedCustomerPersonnelId == customerPersonnelId
-                && e.CreatedAt >= startDate
-                && e.CreatedAt < endDate)
-            .OrderByDescending(e => e.CreatedAt)
-            .Select(e => new
-            {
-                e.Id,
-                e.CompletedAt,
-                e.TotalScore,
-                e.MaxScore,
-                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
-                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
-                ProjectName = e.Project!.Name,
-                e.EvaluationComment
-            })
-            .ToListAsync();
-
-        return Ok(new
-        {
-            type = "personnel",
-            personnelName = personnel.FirstName + " " + personnel.LastName,
-            startDate,
-            endDate,
-            evaluations
-        });
+        return Ok(result);
     }
 }

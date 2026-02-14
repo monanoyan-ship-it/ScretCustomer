@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using SecretCustomer.Services.Helpers;
 using SecretCustomer.Core.Helpers;
 
@@ -15,13 +13,13 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize(Roles = "Admin")]
 public class EmailTemplatesApiController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly IEmailService _emailService;
     private readonly IQRCodeService _qrCodeService;
 
-    public EmailTemplatesApiController(ApplicationDbContext context, IEmailService emailService, IQRCodeService qrCodeService)
+    public EmailTemplatesApiController(IEmailTemplateService emailTemplateService, IEmailService emailService, IQRCodeService qrCodeService)
     {
-        _context = context;
+        _emailTemplateService = emailTemplateService;
         _emailService = emailService;
         _qrCodeService = qrCodeService;
     }
@@ -32,42 +30,7 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? templateTypeId = null, [FromQuery] int? customerId = null)
     {
-        var query = _context.EmailTemplates
-            .Include(e => e.Customer)
-            .Where(e => !e.IsDeleted)
-            .AsQueryable();
-
-        if (templateTypeId.HasValue)
-        {
-            query = query.Where(e => e.TemplateTypeId == templateTypeId.Value);
-        }
-
-        if (customerId.HasValue)
-        {
-            query = query.Where(e => e.CustomerId == customerId.Value || e.CustomerId == null);
-        }
-
-        var templates = await query
-            .OrderByDescending(e => e.IsDefault)
-            .ThenBy(e => e.Name)
-            .Select(e => new EmailTemplateDto
-            {
-                Id = e.Id,
-                Name = e.Name,
-                Description = e.Description,
-                Subject = e.Subject,
-                Body = e.Body,
-                TemplateTypeId = e.TemplateTypeId,
-                TemplateTypeName = EmailTemplateTypes.GetById(e.TemplateTypeId)!.Description,
-                IsActive = e.IsActive,
-                IsDefault = e.IsDefault,
-                CustomerId = e.CustomerId,
-                CustomerName = e.Customer != null ? e.Customer.CompanyName : null,
-                CreatedAt = e.CreatedAt,
-                UpdatedAt = e.UpdatedAt
-            })
-            .ToListAsync();
-
+        var templates = await _emailTemplateService.GetAllAsync(templateTypeId, customerId);
         return Ok(templates);
     }
 
@@ -77,31 +40,14 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var template = await _context.EmailTemplates
-            .Include(e => e.Customer)
-            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+        var template = await _emailTemplateService.GetByIdAsync(id);
 
         if (template == null)
         {
             return NotFound(new { message = "Şablon bulunamadı." });
         }
 
-        return Ok(new EmailTemplateDto
-        {
-            Id = template.Id,
-            Name = template.Name,
-            Description = template.Description,
-            Subject = template.Subject,
-            Body = template.Body,
-            TemplateTypeId = template.TemplateTypeId,
-            TemplateTypeName = EmailTemplateTypes.GetById(template.TemplateTypeId)!.Description,
-            IsActive = template.IsActive,
-            IsDefault = template.IsDefault,
-            CustomerId = template.CustomerId,
-            CustomerName = template.Customer?.CompanyName,
-            CreatedAt = template.CreatedAt,
-            UpdatedAt = template.UpdatedAt
-        });
+        return Ok(template);
     }
 
     /// <summary>
@@ -110,45 +56,14 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateEmailTemplateDto dto)
     {
-        // Aynı isimde şablon var mı?
-        var exists = await _context.EmailTemplates
-            .AnyAsync(e => e.Name == dto.Name && !e.IsDeleted);
+        var result = await _emailTemplateService.CreateAsync(dto.Name, dto.Description, dto.Subject, dto.Body, dto.TemplateTypeId, dto.IsActive, dto.IsDefault, dto.CustomerId);
 
-        if (exists)
+        if (!result.Success)
         {
-            return BadRequest(new { message = "Bu isimde bir şablon zaten var." });
+            return BadRequest(new { message = result.Message });
         }
 
-        var template = new EmailTemplate
-        {
-            Name = dto.Name,
-            Description = dto.Description,
-            Subject = dto.Subject,
-            Body = dto.Body,
-            TemplateTypeId = dto.TemplateTypeId,
-            IsActive = dto.IsActive,
-            IsDefault = dto.IsDefault,
-            CustomerId = dto.CustomerId,
-            CreatedAt = TurkeyTime.Now
-        };
-
-        // Eğer varsayılan yapılıyorsa, diğer varsayılanları kaldır
-        if (dto.IsDefault)
-        {
-            var othersDefault = await _context.EmailTemplates
-                .Where(e => e.TemplateTypeId == dto.TemplateTypeId && e.IsDefault && !e.IsDeleted)
-                .ToListAsync();
-
-            foreach (var other in othersDefault)
-            {
-                other.IsDefault = false;
-            }
-        }
-
-        _context.EmailTemplates.Add(template);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, id = template.Id, message = "Şablon oluşturuldu." });
+        return Ok(new { success = true, id = result.Id, message = result.Message });
     }
 
     /// <summary>
@@ -157,48 +72,18 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateEmailTemplateDto dto)
     {
-        var template = await _context.EmailTemplates.FindAsync(id);
+        var result = await _emailTemplateService.UpdateAsync(id, dto.Name, dto.Description, dto.Subject, dto.Body, dto.TemplateTypeId, dto.IsActive, dto.IsDefault, dto.CustomerId);
 
-        if (template == null || template.IsDeleted)
+        if (!result.Success)
         {
-            return NotFound(new { message = "Şablon bulunamadı." });
+            // "bulunamadı" ise NotFound, değilse BadRequest
+            if (result.Message.Contains("bulunamadı"))
+                return NotFound(new { message = result.Message });
+
+            return BadRequest(new { message = result.Message });
         }
 
-        // Aynı isimde başka şablon var mı?
-        var exists = await _context.EmailTemplates
-            .AnyAsync(e => e.Id != id && e.Name == dto.Name && !e.IsDeleted);
-
-        if (exists)
-        {
-            return BadRequest(new { message = "Bu isimde bir şablon zaten var." });
-        }
-
-        template.Name = dto.Name;
-        template.Description = dto.Description;
-        template.Subject = dto.Subject;
-        template.Body = dto.Body;
-        template.TemplateTypeId = dto.TemplateTypeId;
-        template.IsActive = dto.IsActive;
-        template.CustomerId = dto.CustomerId;
-        template.UpdatedAt = TurkeyTime.Now;
-
-        // Varsayılan değişikliği
-        if (dto.IsDefault && !template.IsDefault)
-        {
-            var othersDefault = await _context.EmailTemplates
-                .Where(e => e.Id != id && e.TemplateTypeId == dto.TemplateTypeId && e.IsDefault && !e.IsDeleted)
-                .ToListAsync();
-
-            foreach (var other in othersDefault)
-            {
-                other.IsDefault = false;
-            }
-        }
-        template.IsDefault = dto.IsDefault;
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Şablon güncellendi." });
+        return Ok(new { success = true, message = result.Message });
     }
 
     /// <summary>
@@ -207,18 +92,14 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var template = await _context.EmailTemplates.FindAsync(id);
+        var result = await _emailTemplateService.DeleteAsync(id);
 
-        if (template == null || template.IsDeleted)
+        if (!result.Success)
         {
-            return NotFound(new { message = "Şablon bulunamadı." });
+            return NotFound(new { message = result.Message });
         }
 
-        template.IsDeleted = true;
-        template.UpdatedAt = TurkeyTime.Now;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Şablon silindi." });
+        return Ok(new { success = true, message = result.Message });
     }
 
     /// <summary>
@@ -227,30 +108,14 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpPost("{id}/duplicate")]
     public async Task<IActionResult> Duplicate(int id)
     {
-        var template = await _context.EmailTemplates.FindAsync(id);
+        var result = await _emailTemplateService.DuplicateAsync(id);
 
-        if (template == null || template.IsDeleted)
+        if (!result.Success)
         {
-            return NotFound(new { message = "Şablon bulunamadı." });
+            return NotFound(new { message = result.Message });
         }
 
-        var newTemplate = new EmailTemplate
-        {
-            Name = template.Name + " (Kopya)",
-            Description = template.Description,
-            Subject = template.Subject,
-            Body = template.Body,
-            TemplateTypeId = template.TemplateTypeId,
-            IsActive = false,
-            IsDefault = false,
-            CustomerId = template.CustomerId,
-            CreatedAt = TurkeyTime.Now
-        };
-
-        _context.EmailTemplates.Add(newTemplate);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, id = newTemplate.Id, message = "Şablon kopyalandı." });
+        return Ok(new { success = true, id = result.Id, message = result.Message });
     }
 
     /// <summary>
@@ -331,8 +196,8 @@ public class EmailTemplatesApiController : ControllerBase
             return BadRequest(new { success = false, message = "Email adresi gerekli." });
         }
 
-        var template = await _context.EmailTemplates.FindAsync(id);
-        if (template == null || template.IsDeleted)
+        var template = await _emailTemplateService.FindByIdAsync(id);
+        if (template == null)
         {
             return NotFound(new { success = false, message = "Şablon bulunamadı." });
         }
@@ -343,21 +208,14 @@ public class EmailTemplatesApiController : ControllerBase
         // Gerçek proje ve personel seçilmişse gerçek verilerle doldur
         if (dto.ProjectId.HasValue && dto.PersonnelId.HasValue)
         {
-            var project = await _context.Projects
-                .Include(p => p.Customer)
-                .Include(p => p.Organization)
-                .Include(p => p.Checklist)
-                .FirstOrDefaultAsync(p => p.Id == dto.ProjectId.Value && !p.IsDeleted);
+            var project = await _emailTemplateService.GetTestProjectWithDetailsAsync(dto.ProjectId.Value);
 
             if (project == null)
             {
                 return BadRequest(new { success = false, message = "Proje bulunamadı." });
             }
 
-            var personnel = await _context.CustomerPersonnel
-                .Include(cp => cp.OrganizationAssignments)
-                    .ThenInclude(oa => oa.CustomerOrganization)
-                .FirstOrDefaultAsync(cp => cp.Id == dto.PersonnelId.Value && !cp.IsDeleted);
+            var personnel = await _emailTemplateService.GetTestPersonnelWithDetailsAsync(dto.PersonnelId.Value);
 
             if (personnel == null)
             {
@@ -446,19 +304,7 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpGet("test-projects")]
     public async Task<IActionResult> GetTestProjects()
     {
-        var projects = await _context.Projects
-            .Include(p => p.Customer)
-            .Where(p => !p.IsDeleted && p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey)
-            .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new
-            {
-                p.Id,
-                p.Name,
-                CustomerName = p.Customer != null ? p.Customer.CompanyName : null
-            })
-            .Take(50)
-            .ToListAsync();
-
+        var projects = await _emailTemplateService.GetTestProjectsAsync();
         return Ok(projects);
     }
 
@@ -468,45 +314,14 @@ public class EmailTemplatesApiController : ControllerBase
     [HttpGet("test-personnel/{projectId}")]
     public async Task<IActionResult> GetTestPersonnel(int projectId)
     {
-        var project = await _context.Projects
-            .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        var result = await _emailTemplateService.GetTestPersonnelAsync(projectId);
 
-        if (project == null)
+        if (!result.Found)
         {
             return NotFound(new { message = "Proje bulunamadı." });
         }
 
-        // Projenin müşterisine ait personelleri getir
-        var query = _context.CustomerPersonnel
-            .Include(cp => cp.OrganizationAssignments)
-                .ThenInclude(oa => oa.CustomerOrganization)
-            .Where(cp => !cp.IsDeleted && cp.Email != null && cp.Email != "");
-
-        if (project.CustomerId.HasValue)
-        {
-            query = query.Where(cp => cp.CustomerId == project.CustomerId.Value);
-        }
-
-        if (project.OrganizationId.HasValue)
-        {
-            query = query.Where(cp => cp.OrganizationAssignments.Any(oa => oa.CustomerOrganizationId == project.OrganizationId.Value));
-        }
-
-        var personnelList = await query
-            .OrderBy(cp => cp.FirstName)
-            .ThenBy(cp => cp.LastName)
-            .Take(100)
-            .ToListAsync();
-
-        var personnel = personnelList.Select(cp => new
-        {
-            cp.Id,
-            FullName = $"{cp.FirstName} {cp.LastName}".Trim(),
-            cp.Email,
-            OrganizationName = cp.OrganizationAssignments?.FirstOrDefault()?.CustomerOrganization?.Name
-        }).ToList();
-
-        return Ok(personnel);
+        return Ok(result.Personnel);
     }
 }
 

@@ -73,4 +73,16 @@ public interface ICustomerPortalDataService
 
     // ===== ENNEAGRAM EXPORT =====
     Task<List<int>?> GetEnneagramProjectIdsForCustomerAsync(int customerId, int? projectId);
+
+    // ===== ADMIN CUSTOMER SELECTION =====
+    Task<object> GetCustomersForAdminAsync(string? search, bool includeInactive);
+    Task<(int Id, string CompanyName, string? Code)?> GetCustomerByIdAsync(int customerId);
+
+    // ===== ROLE-BASED ACCESS HELPERS =====
+    Task<List<int>?> GetAllowedPersonnelIdsAsync(string? role, int? personnelId);
+    Task<List<int>?> GetAllowedOrganizationIdsAsync(string? role, int? personnelId);
+
+    // ===== GÖLGE MÜŞTERİ =====
+    Task<object> GetGmAramalarAsync(int customerId, int? donemId);
+    Task<object> GetGmDonemlerAsync(int customerId);
 }

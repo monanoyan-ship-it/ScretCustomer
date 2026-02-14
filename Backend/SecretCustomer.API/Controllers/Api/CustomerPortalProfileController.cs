@@ -1,11 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Auth;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using System.Security.Claims;
-using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -17,17 +14,17 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize]
 public class CustomerPortalProfileController : BaseApiController
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ICustomerPortalProfileService _profileService;
     private readonly ILogger<CustomerPortalProfileController> _logger;
     private readonly ILocalizationService _localizationService;
 
     public CustomerPortalProfileController(
-        ApplicationDbContext context,
+        ICustomerPortalProfileService profileService,
         ILogger<CustomerPortalProfileController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
-        _context = context;
+        _profileService = profileService;
         _logger = logger;
         _localizationService = localizationService;
     }
@@ -58,32 +55,17 @@ public class CustomerPortalProfileController : BaseApiController
             }
 
             var userId = GetCurrentUserId();
-            var personnel = await _context.CustomerPersonnel
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
+            var role = User.FindFirst(ClaimTypes.Role)?.Value;
+            var canManageCompanySettings = role == "CustomerManager" || role == "CustomerAdmin";
 
-            if (personnel == null)
+            var result = await _profileService.GetProfileAsync(userId, role, canManageCompanySettings);
+
+            if (result == null)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
             }
 
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var canManageCompanySettings = role == "CustomerManager" || role == "CustomerAdmin";
-
-            return Ok(new
-            {
-                id = personnel.Id,
-                username = personnel.Username,
-                email = personnel.Email,
-                firstName = personnel.FirstName,
-                lastName = personnel.LastName,
-                fullName = $"{personnel.FirstName} {personnel.LastName}",
-                phoneNumber = personnel.PhoneNumber,
-                department = personnel.Department,
-                title = personnel.Title,
-                role = role,
-                canManageCompanySettings = canManageCompanySettings
-            });
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -106,58 +88,19 @@ public class CustomerPortalProfileController : BaseApiController
             }
 
             var userId = GetCurrentUserId();
-            var personnel = await _context.CustomerPersonnel
-                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
+            var (success, result, errorMessage) = await _profileService.UpdateProfileAsync(userId, dto.FirstName, dto.LastName, dto.Email, dto.PhoneNumber);
 
-            if (personnel == null)
+            if (!success && result == null)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
+                if (errorMessage == await _localizationService.GetResourceAsync("Api.Profile.EmailExists", defaultValue: "Bu e-posta adresi zaten kullanılıyor."))
+                    return BadRequest(CreateErrorResponse(errorMessage!));
+
+                return NotFound(CreateErrorResponse(errorMessage!));
             }
-
-            // Ad Soyad güncelle
-            if (!string.IsNullOrWhiteSpace(dto.FirstName))
-                personnel.FirstName = dto.FirstName.Trim();
-
-            if (!string.IsNullOrWhiteSpace(dto.LastName))
-                personnel.LastName = dto.LastName.Trim();
-
-            // Email güncelle (tekillik kontrolü ile)
-            if (!string.IsNullOrEmpty(dto.Email) && dto.Email != personnel.Email)
-            {
-                var emailExists = await _context.CustomerPersonnel
-                    .AnyAsync(p => p.CustomerId == personnel.CustomerId &&
-                                   p.Email == dto.Email &&
-                                   p.Id != userId &&
-                                   !p.IsDeleted);
-
-                if (emailExists)
-                {
-                    return BadRequest(CreateErrorResponse(
-                        await _localizationService.GetResourceAsync("Api.Profile.EmailExists", defaultValue: "Bu e-posta adresi zaten kullanılıyor.")));
-                }
-
-                personnel.Email = dto.Email.Trim();
-            }
-
-            // Telefon güncelle
-            if (dto.PhoneNumber != null)
-                personnel.PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? null : dto.PhoneNumber.Trim();
-
-            personnel.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("CustomerPersonnel {Id} updated their profile", userId);
 
-            return Ok(new
-            {
-                id = personnel.Id,
-                username = personnel.Username,
-                email = personnel.Email,
-                firstName = personnel.FirstName,
-                lastName = personnel.LastName,
-                fullName = $"{personnel.FirstName} {personnel.LastName}",
-                phoneNumber = personnel.PhoneNumber
-            });
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -180,42 +123,16 @@ public class CustomerPortalProfileController : BaseApiController
             }
 
             var userId = GetCurrentUserId();
-            var personnel = await _context.CustomerPersonnel
-                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
+            var (success, message) = await _profileService.ChangePasswordAsync(userId, dto.CurrentPassword, dto.NewPassword, dto.ConfirmPassword);
 
-            if (personnel == null)
+            if (!success)
             {
-                return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.NotFound")));
+                return BadRequest(CreateErrorResponse(message));
             }
-
-            // Mevcut şifre kontrolü
-            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, personnel.PasswordHash))
-            {
-                return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.WrongPassword", defaultValue: "Mevcut şifre yanlış.")));
-            }
-
-            // Yeni şifre validasyonu
-            if (string.IsNullOrEmpty(dto.NewPassword) || dto.NewPassword.Length < 6)
-            {
-                return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Api.Profile.PasswordTooShort", defaultValue: "Şifre en az 6 karakter olmalıdır.")));
-            }
-
-            if (dto.NewPassword != dto.ConfirmPassword)
-            {
-                return BadRequest(CreateErrorResponse(
-                    await _localizationService.GetResourceAsync("Profile.PasswordMismatch", defaultValue: "Şifreler eşleşmiyor.")));
-            }
-
-            // Şifreyi güncelle
-            personnel.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            personnel.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("CustomerPersonnel {Id} changed their password", userId);
 
-            return Ok(new { message = await _localizationService.GetResourceAsync("Api.Profile.PasswordChanged", defaultValue: "Şifreniz başarıyla değiştirildi.") });
+            return Ok(new { message });
         }
         catch (Exception ex)
         {
@@ -236,34 +153,16 @@ public class CustomerPortalProfileController : BaseApiController
             var adminCustomerId = HttpContext.Session.GetInt32("AdminViewAsCustomerId");
             if (adminCustomerId.HasValue && User.IsInRole("Admin"))
             {
-                var adminCustomer = await _context.Customers
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(c => c.Id == adminCustomerId.Value && !c.IsDeleted);
-
-                if (adminCustomer == null)
+                var result = await _profileService.GetCompanySettingsAsync(adminCustomerId, null);
+                if (result == null)
                     return NotFound(CreateErrorResponse("Firma bulunamadı"));
 
-                return Ok(new
-                {
-                    customerId = adminCustomer.Id,
-                    companyName = adminCustomer.CompanyName,
-                    callSystemUrl = adminCustomer.CallSystemUrl
-                });
+                return Ok(result);
             }
 
             if (GetUserType() != "CustomerPersonnel")
             {
                 return Forbid();
-            }
-
-            var userId = GetCurrentUserId();
-            var personnel = await _context.CustomerPersonnel
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
-
-            if (personnel == null)
-            {
-                return NotFound(CreateErrorResponse("Kullanıcı bulunamadı"));
             }
 
             // Sadece Manager ve Admin erişebilir
@@ -273,21 +172,15 @@ public class CustomerPortalProfileController : BaseApiController
                 return Forbid();
             }
 
-            var customer = await _context.Customers
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == personnel.CustomerId && !c.IsDeleted);
+            var userId = GetCurrentUserId();
+            var settings = await _profileService.GetCompanySettingsAsync(null, userId);
 
-            if (customer == null)
+            if (settings == null)
             {
                 return NotFound(CreateErrorResponse("Firma bulunamadı"));
             }
 
-            return Ok(new
-            {
-                customerId = customer.Id,
-                companyName = customer.CompanyName,
-                callSystemUrl = customer.CallSystemUrl
-            });
+            return Ok(settings);
         }
         catch (Exception ex)
         {
@@ -309,16 +202,6 @@ public class CustomerPortalProfileController : BaseApiController
                 return Forbid();
             }
 
-            var userId = GetCurrentUserId();
-            var personnel = await _context.CustomerPersonnel
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == userId && !p.IsDeleted);
-
-            if (personnel == null)
-            {
-                return NotFound(CreateErrorResponse("Kullanıcı bulunamadı"));
-            }
-
             // Sadece Manager ve Admin erişebilir
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
             if (role != "CustomerManager" && role != "CustomerAdmin")
@@ -326,29 +209,17 @@ public class CustomerPortalProfileController : BaseApiController
                 return Forbid();
             }
 
-            var customer = await _context.Customers
-                .FirstOrDefaultAsync(c => c.Id == personnel.CustomerId && !c.IsDeleted);
+            var userId = GetCurrentUserId();
+            var (success, result, errorMessage) = await _profileService.UpdateCompanySettingsAsync(userId, dto.CallSystemUrl);
 
-            if (customer == null)
+            if (!success)
             {
-                return NotFound(CreateErrorResponse("Firma bulunamadı"));
+                return NotFound(CreateErrorResponse(errorMessage!));
             }
 
-            // CallSystemUrl güncelle
-            customer.CallSystemUrl = string.IsNullOrWhiteSpace(dto.CallSystemUrl) ? null : dto.CallSystemUrl.Trim();
-            customer.UpdatedAt = TurkeyTime.Now;
+            _logger.LogInformation("Company settings updated by PersonnelId {PersonnelId}", userId);
 
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Company settings updated for CustomerId {CustomerId} by PersonnelId {PersonnelId}", customer.Id, userId);
-
-            return Ok(new
-            {
-                customerId = customer.Id,
-                companyName = customer.CompanyName,
-                callSystemUrl = customer.CallSystemUrl,
-                message = "Firma ayarları başarıyla güncellendi"
-            });
+            return Ok(result);
         }
         catch (Exception ex)
         {

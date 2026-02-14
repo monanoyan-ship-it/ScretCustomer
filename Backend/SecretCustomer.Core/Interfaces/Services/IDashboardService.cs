@@ -22,6 +22,9 @@ public interface IDashboardService
 
     // Firma bazlı aylık trend
     Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync();
+
+    // Müşteri personeli değerlendirmeleri
+    Task<object> GetMyEvaluationsAsync(int personnelId, string role, int? year, int? month);
 }
 
 public class RepresentativeEvaluationDto

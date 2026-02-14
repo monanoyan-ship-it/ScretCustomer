@@ -186,6 +186,17 @@ public interface IReportService
     // Enneagram proje bazlı kişilik tipi dağılımı
     Task<EnneagramDistributionResultDto?> GetEnneagramDistributionAsync(int projectId);
 
+    // ===== PUBLIC REPORT (Token ile erişim) =====
+
+    // Değerlendirme yetki bilgisi (PublicReportApi authorization check)
+    Task<(int? ProjectCustomerId, int? EvaluatedCustomerPersonnelId, int EvaluationId)?> GetEvaluationAuthInfoAsync(int evaluationId);
+
+    // Müşterinin tarih aralığındaki değerlendirme listesi (bulk report)
+    Task<object?> GetBulkPublicReportAsync(int customerId, DateTime startDate, DateTime endDate);
+
+    // Personelin tarih aralığındaki değerlendirme listesi (personnel report)
+    Task<object?> GetPersonnelPublicReportAsync(int customerPersonnelId, DateTime startDate, DateTime endDate);
+
     // ===== ŞUBE KARNESİ =====
 
     Task<IEnumerable<CustomerListItemDto>> GetCustomersWithDealersAsync();

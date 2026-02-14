@@ -1,5 +1,6 @@
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.DTOs.Permission;
 
 
 namespace SecretCustomer.Core.Interfaces.Services;
@@ -55,4 +56,49 @@ public interface IPermissionService
     /// Kategoriye göre permission'ları getirir
     /// </summary>
     Task<IEnumerable<Permission>> GetPermissionsByCategoryAsync(int categoryId);
+
+    /// <summary>
+    /// Tüm yetkileri DTO olarak getirir (localized category names)
+    /// </summary>
+    Task<List<PermissionDto>> GetAllPermissionDtosAsync();
+
+    /// <summary>
+    /// Kategoriye göre yetkileri DTO olarak getirir
+    /// </summary>
+    Task<List<PermissionDto>> GetPermissionDtosByCategoryAsync(int categoryId);
+
+    /// <summary>
+    /// Tüm rollerin yetki özetini getirir
+    /// </summary>
+    Task<List<RolePermissionsSummaryDto>> GetAllRolePermissionSummariesAsync();
+
+    /// <summary>
+    /// Belirli bir rolün yetkilerini DTO olarak getirir
+    /// </summary>
+    Task<List<RolePermissionDto>> GetRolePermissionDetailsAsync(int roleId);
+
+    /// <summary>
+    /// Role yetki ekler/günceller (controller DTO'dan)
+    /// </summary>
+    Task GrantOrUpdateRolePermissionAsync(int roleId, int permissionId, bool isGranted, int scopeId, string? notes);
+
+    /// <summary>
+    /// Toplu rol yetkisi ekler (mevcut yetkileri kaldırıp yenilerini ekler)
+    /// </summary>
+    Task BulkSetRolePermissionsAsync(int roleId, List<int> permissionIds, int scopeId);
+
+    /// <summary>
+    /// Kullanıcının yetki özetini getirir (rol + özel + efektif)
+    /// </summary>
+    Task<UserPermissionsSummaryDto> GetUserPermissionsSummaryAsync(int userId);
+
+    /// <summary>
+    /// Kullanıcıya özel yetki ekler/günceller (controller DTO'dan)
+    /// </summary>
+    Task GrantOrUpdateUserPermissionAsync(int userId, int permissionId, bool isGranted, int scopeId, DateTime? validFrom, DateTime? validUntil, string? notes);
+
+    /// <summary>
+    /// Eksik permission'ları database'e ekler
+    /// </summary>
+    Task<int> SyncPermissionsAsync();
 }

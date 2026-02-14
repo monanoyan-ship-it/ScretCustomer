@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Question;
-using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using System.Security.Claims;
-using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -15,7 +11,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize]
 public class QuestionAttachmentsApiController : BaseApiController
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IQuestionAttachmentService _questionAttachmentService;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<QuestionAttachmentsApiController> _logger;
     private readonly ILocalizationService _localizationService;
@@ -24,13 +20,13 @@ public class QuestionAttachmentsApiController : BaseApiController
     private const long MaxFileSize = 10 * 1024 * 1024; // 10MB
 
     public QuestionAttachmentsApiController(
-        ApplicationDbContext context,
+        IQuestionAttachmentService questionAttachmentService,
         IWebHostEnvironment environment,
         ILogger<QuestionAttachmentsApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
-        _context = context;
+        _questionAttachmentService = questionAttachmentService;
         _environment = environment;
         _logger = logger;
         _localizationService = localizationService;
@@ -44,26 +40,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     {
         try
         {
-            var attachments = await _context.QuestionAttachments
-                .Where(a => a.QuestionId == questionId)
-                .OrderBy(a => a.Order)
-                .Select(a => new QuestionAttachmentDto
-                {
-                    Id = a.Id,
-                    QuestionId = a.QuestionId,
-                    FileName = a.FileName,
-                    FilePath = a.FilePath,
-                    FileSize = a.FileSize,
-                    ContentType = a.ContentType,
-                    Description = a.Description,
-                    Order = a.Order,
-                    CreatedAt = a.CreatedAt,
-                    UploadedByUserName = a.UploadedByUser != null
-                        ? a.UploadedByUser.FirstName + " " + a.UploadedByUser.LastName
-                        : null
-                })
-                .ToListAsync();
-
+            var attachments = await _questionAttachmentService.GetByQuestionAsync(questionId);
             return Ok(attachments);
         }
         catch (Exception ex)
@@ -83,8 +60,8 @@ public class QuestionAttachmentsApiController : BaseApiController
         try
         {
             // Soru kontrolü
-            var question = await _context.Questions.FindAsync(questionId);
-            if (question == null)
+            var questionExists = await _questionAttachmentService.QuestionExistsAsync(questionId);
+            if (!questionExists)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Question.NotFound")));
             }
@@ -117,10 +94,10 @@ public class QuestionAttachmentsApiController : BaseApiController
 
             // Unique dosya adı
             var storedFileName = $"{Guid.NewGuid()}{extension}";
-            var filePath = Path.Combine(uploadsFolder, storedFileName);
+            var physicalFilePath = Path.Combine(uploadsFolder, storedFileName);
 
             // Dosyayı kaydet
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var stream = new FileStream(physicalFilePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
@@ -133,27 +110,10 @@ public class QuestionAttachmentsApiController : BaseApiController
                 userId = parsedUserId;
             }
 
-            // Sıra numarası
-            var maxOrder = await _context.QuestionAttachments
-                .Where(a => a.QuestionId == questionId)
-                .MaxAsync(a => (int?)a.Order) ?? 0;
-
-            // Veritabanına kaydet
-            var attachment = new QuestionAttachment
-            {
-                QuestionId = questionId,
-                FileName = file.FileName,
-                StoredFileName = storedFileName,
-                FilePath = $"/uploads/questions/{questionId}/{storedFileName}",
-                FileSize = file.Length,
-                ContentType = file.ContentType,
-                Description = description,
-                Order = maxOrder + 1,
-                UploadedByUserId = userId
-            };
-
-            _context.QuestionAttachments.Add(attachment);
-            await _context.SaveChangesAsync();
+            // DB'ye kaydet (service üzerinden)
+            var dbFilePath = $"/uploads/questions/{questionId}/{storedFileName}";
+            var attachmentDto = await _questionAttachmentService.UploadAsync(
+                questionId, file.FileName, storedFileName, dbFilePath, file.Length, file.ContentType, description, userId);
 
             _logger.LogInformation("File {FileName} uploaded for question {QuestionId}", file.FileName, questionId);
 
@@ -161,18 +121,7 @@ public class QuestionAttachmentsApiController : BaseApiController
             {
                 Success = true,
                 Message = await _localizationService.GetResourceAsync("Api.Common.FileUploadSuccess"),
-                Attachment = new QuestionAttachmentDto
-                {
-                    Id = attachment.Id,
-                    QuestionId = attachment.QuestionId,
-                    FileName = attachment.FileName,
-                    FilePath = attachment.FilePath,
-                    FileSize = attachment.FileSize,
-                    ContentType = attachment.ContentType,
-                    Description = attachment.Description,
-                    Order = attachment.Order,
-                    CreatedAt = attachment.CreatedAt
-                }
+                Attachment = attachmentDto
             });
         }
         catch (Exception ex)
@@ -190,20 +139,22 @@ public class QuestionAttachmentsApiController : BaseApiController
     {
         try
         {
-            var attachment = await _context.QuestionAttachments.FindAsync(id);
-            if (attachment == null)
+            var downloadInfo = await _questionAttachmentService.GetDownloadInfoAsync(id);
+            if (downloadInfo == null)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
 
-            var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-            if (!System.IO.File.Exists(filePath))
+            var (dbFilePath, contentType, fileName) = downloadInfo.Value;
+
+            var physicalFilePath = Path.Combine(_environment.WebRootPath, dbFilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (!System.IO.File.Exists(physicalFilePath))
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer")));
             }
 
-            var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, attachment.ContentType, attachment.FileName);
+            var fileBytes = await System.IO.File.ReadAllBytesAsync(physicalFilePath);
+            return File(fileBytes, contentType, fileName);
         }
         catch (Exception ex)
         {
@@ -221,23 +172,21 @@ public class QuestionAttachmentsApiController : BaseApiController
     {
         try
         {
-            var attachment = await _context.QuestionAttachments.FindAsync(id);
-            if (attachment == null)
+            var (success, dbFilePath) = await _questionAttachmentService.DeleteAsync(id);
+            if (!success)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
 
             // Fiziksel dosyayı sil
-            var filePath = Path.Combine(_environment.WebRootPath, attachment.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-            if (System.IO.File.Exists(filePath))
+            if (dbFilePath != null)
             {
-                System.IO.File.Delete(filePath);
+                var physicalFilePath = Path.Combine(_environment.WebRootPath, dbFilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(physicalFilePath))
+                {
+                    System.IO.File.Delete(physicalFilePath);
+                }
             }
-
-            // Veritabanından sil (soft delete)
-            attachment.IsDeleted = true;
-            attachment.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Attachment {AttachmentId} deleted", id);
 
@@ -259,15 +208,11 @@ public class QuestionAttachmentsApiController : BaseApiController
     {
         try
         {
-            var attachment = await _context.QuestionAttachments.FindAsync(id);
-            if (attachment == null)
+            var success = await _questionAttachmentService.UpdateOrderAsync(id, newOrder);
+            if (!success)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
-
-            attachment.Order = newOrder;
-            attachment.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.QuestionAttachment.OrderUpdateSuccess") });
         }

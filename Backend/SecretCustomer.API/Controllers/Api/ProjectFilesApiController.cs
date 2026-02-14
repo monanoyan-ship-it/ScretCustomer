@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Project;
-using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using System.Security.Claims;
-using SecretCustomer.Core.Helpers;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -15,7 +11,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize]
 public class ProjectFilesApiController : BaseApiController
 {
-    private readonly ApplicationDbContext _context;
+    private readonly IProjectFileService _projectFileService;
     private readonly IWebHostEnvironment _environment;
     private readonly ILogger<ProjectFilesApiController> _logger;
     private readonly ILocalizationService _localizationService;
@@ -24,13 +20,13 @@ public class ProjectFilesApiController : BaseApiController
     private const long MaxFileSize = 50 * 1024 * 1024; // 50MB
 
     public ProjectFilesApiController(
-        ApplicationDbContext context,
+        IProjectFileService projectFileService,
         IWebHostEnvironment environment,
         ILogger<ProjectFilesApiController> logger,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
-        _context = context;
+        _projectFileService = projectFileService;
         _environment = environment;
         _logger = logger;
         _localizationService = localizationService;
@@ -44,26 +40,7 @@ public class ProjectFilesApiController : BaseApiController
     {
         try
         {
-            var files = await _context.ProjectFiles
-                .Where(f => f.ProjectId == projectId)
-                .OrderByDescending(f => f.UploadedAt)
-                .Select(f => new ProjectFileDto
-                {
-                    Id = f.Id,
-                    ProjectId = f.ProjectId,
-                    FileName = f.FileName,
-                    OriginalFileName = f.OriginalFileName,
-                    ContentType = f.ContentType,
-                    FileSize = f.FileSize,
-                    UploadedAt = f.UploadedAt,
-                    UploadedById = f.UploadedById,
-                    UploadedByName = f.UploadedBy != null
-                        ? f.UploadedBy.FirstName + " " + f.UploadedBy.LastName
-                        : null,
-                    Description = f.Description
-                })
-                .ToListAsync();
-
+            var files = await _projectFileService.GetByProjectAsync(projectId);
             return Ok(files);
         }
         catch (Exception ex)
@@ -83,8 +60,8 @@ public class ProjectFilesApiController : BaseApiController
         try
         {
             // Proje kontrolu
-            var project = await _context.Projects.FindAsync(projectId);
-            if (project == null)
+            var projectExists = await _projectFileService.ProjectExistsAsync(projectId);
+            if (!projectExists)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
             }
@@ -134,48 +111,12 @@ public class ProjectFilesApiController : BaseApiController
             }
 
             // Veritabanina kaydet
-            var projectFile = new ProjectFile
-            {
-                ProjectId = projectId,
-                FileName = storedFileName,
-                OriginalFileName = file.FileName,
-                FilePath = $"/uploads/projects/{projectId}/{storedFileName}",
-                FileSize = file.Length,
-                ContentType = file.ContentType,
-                Description = description,
-                UploadedAt = TurkeyTime.Now,
-                UploadedById = userId
-            };
-
-            _context.ProjectFiles.Add(projectFile);
-            await _context.SaveChangesAsync();
+            var dbFilePath = $"/uploads/projects/{projectId}/{storedFileName}";
+            var result = await _projectFileService.SaveFileRecordAsync(projectId, storedFileName, file.FileName, dbFilePath, file.Length, file.ContentType, description, userId);
 
             _logger.LogInformation("File {FileName} uploaded for project {ProjectId}", file.FileName, projectId);
 
-            // Kullanici adini al
-            string? uploadedByName = null;
-            if (userId.HasValue)
-            {
-                var user = await _context.Users.FindAsync(userId.Value);
-                if (user != null)
-                {
-                    uploadedByName = $"{user.FirstName} {user.LastName}";
-                }
-            }
-
-            return Ok(new ProjectFileDto
-            {
-                Id = projectFile.Id,
-                ProjectId = projectFile.ProjectId,
-                FileName = projectFile.FileName,
-                OriginalFileName = projectFile.OriginalFileName,
-                ContentType = projectFile.ContentType,
-                FileSize = projectFile.FileSize,
-                UploadedAt = projectFile.UploadedAt,
-                UploadedById = projectFile.UploadedById,
-                UploadedByName = uploadedByName,
-                Description = projectFile.Description
-            });
+            return Ok(result);
         }
         catch (Exception ex)
         {
@@ -192,14 +133,13 @@ public class ProjectFilesApiController : BaseApiController
     {
         try
         {
-            var projectFile = await _context.ProjectFiles
-                .Include(f => f.Project)
-                .FirstOrDefaultAsync(f => f.Id == id);
-
-            if (projectFile == null)
+            var downloadInfo = await _projectFileService.GetDownloadInfoAsync(id);
+            if (downloadInfo == null)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
+
+            var (dbFilePath, contentType, originalFileName, projectId) = downloadInfo.Value;
 
             // Yetki kontrolu - Admin her zaman indirebilir, diger roller atama kontrolu yapilir
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -210,9 +150,7 @@ public class ProjectFilesApiController : BaseApiController
                 // QualitySpecialist/FieldWorker - projeye atanmis mi kontrol et
                 if (int.TryParse(userIdClaim, out var userId))
                 {
-                    var isAssigned = await _context.Set<Assignment>()
-                        .AnyAsync(a => a.ProjectId == projectFile.ProjectId &&
-                                      (a.AssignedUserId == userId || a.AssignedCustomerPersonnelId == userId));
+                    var isAssigned = await _projectFileService.IsUserAssignedToProjectAsync(userId, projectId);
 
                     if (!isAssigned)
                     {
@@ -225,14 +163,14 @@ public class ProjectFilesApiController : BaseApiController
                 }
             }
 
-            var filePath = Path.Combine(_environment.WebRootPath, projectFile.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            var filePath = Path.Combine(_environment.WebRootPath, dbFilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
             if (!System.IO.File.Exists(filePath))
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFoundOnServer")));
             }
 
             var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
-            return File(fileBytes, projectFile.ContentType, projectFile.OriginalFileName);
+            return File(fileBytes, contentType, originalFileName);
         }
         catch (Exception ex)
         {
@@ -250,23 +188,21 @@ public class ProjectFilesApiController : BaseApiController
     {
         try
         {
-            var projectFile = await _context.ProjectFiles.FindAsync(id);
-            if (projectFile == null)
+            var (success, dbFilePath) = await _projectFileService.DeleteAsync(id);
+            if (!success)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
 
             // Fiziksel dosyayi sil
-            var filePath = Path.Combine(_environment.WebRootPath, projectFile.FilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-            if (System.IO.File.Exists(filePath))
+            if (dbFilePath != null)
             {
-                System.IO.File.Delete(filePath);
+                var filePath = Path.Combine(_environment.WebRootPath, dbFilePath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
             }
-
-            // Veritabanindan sil (soft delete)
-            projectFile.IsDeleted = true;
-            projectFile.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             _logger.LogInformation("Project file {FileId} deleted", id);
 
@@ -288,15 +224,11 @@ public class ProjectFilesApiController : BaseApiController
     {
         try
         {
-            var projectFile = await _context.ProjectFiles.FindAsync(id);
-            if (projectFile == null)
+            var success = await _projectFileService.UpdateDescriptionAsync(id, dto.Description);
+            if (!success)
             {
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FileNotFound")));
             }
-
-            projectFile.Description = dto.Description;
-            projectFile.UpdatedAt = TurkeyTime.Now;
-            await _context.SaveChangesAsync();
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.ProjectFile.DescriptionUpdateSuccess") });
         }

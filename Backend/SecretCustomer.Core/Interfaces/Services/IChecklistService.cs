@@ -21,4 +21,5 @@ public interface IChecklistService
     Task<bool> DeleteAsync(int id);
     Task<ChecklistDto> CloneChecklistAsync(int id, string newName);
     Task<ExcelExportDto?> ExportChecklistToExcelAsync(int id);
+    Task<List<string>> GetQuestionGroupsAsync(int checklistId);
 }

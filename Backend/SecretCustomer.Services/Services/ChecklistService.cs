@@ -695,4 +695,14 @@ public class ChecklistService : IChecklistService
             ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         };
     }
+
+    public async Task<List<string>> GetQuestionGroupsAsync(int checklistId)
+    {
+        return await _context.Questions
+            .Where(q => q.ChecklistId == checklistId && !q.IsDeleted && !string.IsNullOrEmpty(q.GroupName))
+            .Select(q => q.GroupName)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToListAsync();
+    }
 }

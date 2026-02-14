@@ -8076,6 +8076,103 @@ public class ReportService : IReportService
         };
     }
 
+    // ===== PUBLIC REPORT (Token ile erişim) =====
+
+    public async Task<(int? ProjectCustomerId, int? EvaluatedCustomerPersonnelId, int EvaluationId)?> GetEvaluationAuthInfoAsync(int evaluationId)
+    {
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
+
+        if (evaluation == null) return null;
+
+        return (evaluation.Project?.CustomerId, evaluation.EvaluatedCustomerPersonnelId, evaluation.Id);
+    }
+
+    public async Task<object?> GetBulkPublicReportAsync(int customerId, DateTime startDate, DateTime endDate)
+    {
+        var customer = await _context.Customers
+            .FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
+
+        if (customer == null)
+            return null;
+
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.CustomerDealer)
+            .Where(e => !e.IsDeleted
+                && e.Project != null
+                && e.Project.CustomerId == customerId
+                && e.CreatedAt >= startDate
+                && e.CreatedAt < endDate)
+            .OrderByDescending(e => e.CreatedAt)
+            .Select(e => new
+            {
+                e.Id,
+                e.CompletedAt,
+                e.TotalScore,
+                e.MaxScore,
+                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
+                PersonnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel ?? "-",
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                ProjectName = e.Project!.Name,
+                e.EvaluationComment
+            })
+            .ToListAsync();
+
+        return new
+        {
+            type = "bulk",
+            customerName = customer.CompanyName,
+            startDate,
+            endDate,
+            evaluations
+        };
+    }
+
+    public async Task<object?> GetPersonnelPublicReportAsync(int customerPersonnelId, DateTime startDate, DateTime endDate)
+    {
+        var personnel = await _context.CustomerPersonnel
+            .FirstOrDefaultAsync(p => p.Id == customerPersonnelId && !p.IsDeleted);
+
+        if (personnel == null)
+            return null;
+
+        var evaluations = await _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.CustomerDealer)
+            .Where(e => !e.IsDeleted
+                && e.EvaluatedCustomerPersonnelId == customerPersonnelId
+                && e.CreatedAt >= startDate
+                && e.CreatedAt < endDate)
+            .OrderByDescending(e => e.CreatedAt)
+            .Select(e => new
+            {
+                e.Id,
+                e.CompletedAt,
+                e.TotalScore,
+                e.MaxScore,
+                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
+                DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
+                ProjectName = e.Project!.Name,
+                e.EvaluationComment
+            })
+            .ToListAsync();
+
+        return new
+        {
+            type = "personnel",
+            personnelName = personnel.FirstName + " " + personnel.LastName,
+            startDate,
+            endDate,
+            evaluations
+        };
+    }
+
     // ===== ŞUBE KARNESİ =====
 
     public async Task<IEnumerable<CustomerListItemDto>> GetCustomersWithDealersAsync()

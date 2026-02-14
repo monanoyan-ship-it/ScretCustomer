@@ -3518,4 +3518,208 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         return (stream.ToArray(), $"SurecAnalizi_{TurkeyTime.Now:dd.MM.yyyyHHmmss}.xlsx");
     }
+
+    // ===== ADMIN CUSTOMER SELECTION =====
+
+    public async Task<object> GetCustomersForAdminAsync(string? search, bool includeInactive)
+    {
+        var query = _context.Customers.Where(c => !c.IsDeleted);
+
+        if (!includeInactive)
+            query = query.Where(c => c.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(c =>
+                c.CompanyName.ToLower().Contains(searchLower) ||
+                (c.Code != null && c.Code.ToLower().Contains(searchLower)));
+        }
+
+        var customers = await query
+            .OrderBy(c => c.CompanyName)
+            .Select(c => new
+            {
+                c.Id,
+                c.CompanyName,
+                c.Code,
+                c.IsActive
+            })
+            .ToListAsync();
+
+        return customers;
+    }
+
+    public async Task<(int Id, string CompanyName, string? Code)?> GetCustomerByIdAsync(int customerId)
+    {
+        var customer = await _context.Customers
+            .Where(c => c.Id == customerId && !c.IsDeleted)
+            .Select(c => new { c.Id, c.CompanyName, c.Code })
+            .FirstOrDefaultAsync();
+
+        if (customer == null)
+            return null;
+
+        return (customer.Id, customer.CompanyName, customer.Code);
+    }
+
+    // ===== ROLE-BASED ACCESS HELPERS =====
+
+    public async Task<List<int>?> GetAllowedPersonnelIdsAsync(string? role, int? personnelId)
+    {
+        // CustomerManager tüm personeli görebilir
+        if (role == "Admin" || role == "CustomerManager")
+            return null;
+
+        // CustomerSupervisor - Organizasyon bazında hibrit kontrol
+        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            // 1. Süpervizörün atandığı organizasyonları bul
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .ToListAsync();
+
+            // Hiçbir organizasyona atanmamış → TÜM veriyi görebilir (null = filtre yok)
+            if (!myOrgIds.Any())
+                return null;
+
+            // 2. Bu organizasyonlarda süpervizör olduğu personeller
+            var supervisedPersonnel = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => myOrgIds.Contains(cpo.CustomerOrganizationId) &&
+                             cpo.SupervisorId == personnelId.Value &&
+                             !cpo.IsDeleted)
+                .Select(cpo => new { cpo.CustomerOrganizationId, cpo.CustomerPersonnelId })
+                .ToListAsync();
+
+            // 3. Hangi organizasyonlarda altında personel var?
+            var orgsWithTeam = supervisedPersonnel
+                .Select(x => x.CustomerOrganizationId)
+                .Distinct()
+                .ToHashSet();
+
+            // 4. Altında personel olmayan organizasyonlar
+            var orgsWithoutTeam = myOrgIds.Except(orgsWithTeam).ToList();
+
+            var result = new HashSet<int>();
+
+            // Altında personel olan org'lardan sadece o personeller
+            foreach (var p in supervisedPersonnel)
+                result.Add(p.CustomerPersonnelId);
+
+            // Altında personel olmayan org'lardan TÜM personeller
+            if (orgsWithoutTeam.Any())
+            {
+                var allPersonnelInEmptyOrgs = await _context.CustomerPersonnelOrganizations
+                    .Where(cpo => orgsWithoutTeam.Contains(cpo.CustomerOrganizationId) && !cpo.IsDeleted)
+                    .Select(cpo => cpo.CustomerPersonnelId)
+                    .Distinct()
+                    .ToListAsync();
+
+                foreach (var id in allPersonnelInEmptyOrgs)
+                    result.Add(id);
+            }
+
+            // Kendisini de ekle
+            result.Add(personnelId.Value);
+
+            return result.ToList();
+        }
+
+        // CustomerOperator sadece kendini görebilir
+        if (personnelId.HasValue)
+            return new List<int> { personnelId.Value };
+
+        return new List<int>(); // Hiçbir şey göremez
+    }
+
+    public async Task<List<int>?> GetAllowedOrganizationIdsAsync(string? role, int? personnelId)
+    {
+        // Admin ve CustomerManager tüm organizasyonları görebilir
+        if (role == "Admin" || role == "CustomerManager")
+            return null;
+
+        // CustomerSupervisor - Organizasyon bazında kontrol
+        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        {
+            // Süpervizörün atandığı organizasyonları bul
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .ToListAsync();
+
+            // Hiçbir organizasyona atanmamış → TÜM organizasyonları görebilir
+            if (!myOrgIds.Any())
+                return null;
+
+            // Atandığı organizasyonları döndür
+            return myOrgIds;
+        }
+
+        // CustomerOperator - Kendi organizasyonlarını görebilir
+        if (role == "CustomerOperator" && personnelId.HasValue)
+        {
+            var myOrgIds = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .Distinct()
+                .ToListAsync();
+
+            return myOrgIds.Any() ? myOrgIds : new List<int>();
+        }
+
+        return new List<int>(); // Hiçbir şey göremez
+    }
+
+    // ===== GÖLGE MÜŞTERİ =====
+
+    public async Task<object> GetGmAramalarAsync(int customerId, int? donemId)
+    {
+        var query = _context.GmAtamalar
+            .Include(a => a.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(a => a.GmDonem)
+            .Where(a => !a.IsDeleted
+                && a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi
+                && a.GmDonemSoru != null
+                && a.GmDonemSoru.CustomerId == customerId)
+            .AsQueryable();
+
+        if (donemId.HasValue)
+            query = query.Where(a => a.GmDonemId == donemId.Value);
+
+        var result = await query
+            .OrderByDescending(a => a.GerceklesmeTarihi)
+            .Select(a => new
+            {
+                a.Id,
+                a.GerceklesmeTarihi,
+                a.AramaSaati,
+                SoruMetni = a.GmDonemSoru!.SoruMetni,
+                BeklenenCevap = a.GmDonemSoru.BeklenenCevap,
+                HedefFirmaAdi = a.GmDonemSoru.GmHedefFirma != null ? a.GmDonemSoru.GmHedefFirma.FirmaAdi : null,
+                Not = a.Not,
+                DonemAdi = a.GmDonem != null ? a.GmDonem.Ad : null,
+                KuponKodu = a.KuponKodu,
+                IsKuponlu = a.GmDonemSoru.IsKuponlu
+            })
+            .ToListAsync();
+
+        return result;
+    }
+
+    public async Task<object> GetGmDonemlerAsync(int customerId)
+    {
+        // Müşterinin sorularının olduğu dönemler
+        var donemler = await _context.GmDonemler
+            .Where(d => !d.IsDeleted
+                && d.Sorular.Any(ds => ds.CustomerId == customerId && !ds.IsDeleted))
+            .OrderByDescending(d => d.BaslangicTarihi)
+            .Select(d => new { d.Id, d.Ad })
+            .ToListAsync();
+
+        return donemler;
+    }
 }

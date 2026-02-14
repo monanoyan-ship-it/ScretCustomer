@@ -597,6 +597,208 @@ public class DashboardService : IDashboardService
     }
 
     /// <summary>
+    /// Müşteri personeli için değerlendirmeleri getirir (yıl ve ay filtreli)
+    /// </summary>
+    public async Task<object> GetMyEvaluationsAsync(int personnelId, string role, int? year, int? month)
+    {
+        // Varsayılan: mevcut yıl ve ay
+        var targetYear = year ?? TurkeyTime.Now.Year;
+        var targetMonth = month ?? TurkeyTime.Now.Month;
+
+        // Hedef kullanıcı ID'lerini belirle (role göre)
+        var targetUserIds = new List<int>();
+        var showPersonnelName = false;
+
+        if (role == "CustomerManager")
+        {
+            // Manager: Tüm müşteri personelinin değerlendirmeleri
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel != null)
+            {
+                targetUserIds = await _context.CustomerPersonnel
+                    .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+            }
+            showPersonnelName = true;
+        }
+        else if (role == "CustomerSupervisor")
+        {
+            // Junction table'dan bu personelin supervisor olduğu kişileri say
+            var teamMemberCount = await _context.CustomerPersonnelOrganizations
+                .CountAsync(cpo => cpo.SupervisorId == personnelId && !cpo.IsDeleted);
+
+            if (teamMemberCount == 0)
+            {
+                // Organizasyon yöneticisi - tüm organizasyon personelini görsün (sadece junction table)
+                var orgIds = await _context.CustomerPersonnelOrganizations
+                    .Where(cpo => cpo.CustomerPersonnelId == personnelId && !cpo.IsDeleted)
+                    .Select(cpo => cpo.CustomerOrganizationId)
+                    .ToListAsync();
+
+                if (orgIds.Any())
+                {
+                    targetUserIds = await _context.CustomerPersonnelOrganizations
+                        .Where(cpo => orgIds.Contains(cpo.CustomerOrganizationId) && !cpo.IsDeleted)
+                        .Select(cpo => cpo.CustomerPersonnelId)
+                        .Distinct()
+                        .ToListAsync();
+                }
+            }
+            else
+            {
+                // Normal supervisor - junction table'dan takım üyeleri
+                targetUserIds = await _context.CustomerPersonnelOrganizations
+                    .Where(cpo => cpo.SupervisorId == personnelId && !cpo.IsDeleted)
+                    .Select(cpo => cpo.CustomerPersonnelId)
+                    .Distinct()
+                    .ToListAsync();
+            }
+            showPersonnelName = true;
+        }
+        else
+        {
+            // Operator: Sadece kendi değerlendirmeleri
+            targetUserIds.Add(personnelId);
+        }
+
+        if (!targetUserIds.Any())
+        {
+            return new
+            {
+                Year = targetYear,
+                Month = targetMonth,
+                MonthName = new DateTime(targetYear, targetMonth, 1).ToString("MMMM", new System.Globalization.CultureInfo("tr-TR")),
+                TotalCount = 0,
+                AverageScore = 0.0,
+                Evaluations = new List<object>(),
+                ShowPersonnelName = showPersonnelName
+            };
+        }
+
+        // Değerlendirmeleri getir (junction table ile)
+        var evaluations = await _context.Evaluations
+            .Include(e => e.EvaluatorCustomerPersonnel)
+                .ThenInclude(cp => cp!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(e => e.EvaluatorCustomerPersonnel)
+                .ThenInclude(cp => cp!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.Supervisor)
+            .Where(e => e.EvaluatorCustomerPersonnelId != null
+                && targetUserIds.Contains(e.EvaluatorCustomerPersonnelId.Value)
+                && e.CreatedAt.Year == targetYear
+                && e.CreatedAt.Month == targetMonth
+                && e.StatusId == EvaluationStatuses.Ids.Completed)
+            .OrderByDescending(e => e.CallDate ?? e.CreatedAt)
+            .Select(e => new
+            {
+                e.Id,
+                CallDate = e.CallDate ?? e.CreatedAt,
+                Score = e.ScorePercentage ?? 0,
+                PersonnelName = e.EvaluatorCustomerPersonnel != null
+                    ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
+                    : "",
+                // Junction table'dan ilk atamadaki supervisor
+                SupervisorName = e.EvaluatorCustomerPersonnel != null
+                    && e.EvaluatorCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.Supervisor != null)
+                    ? e.EvaluatorCustomerPersonnel.OrganizationAssignments
+                        .Where(oa => !oa.IsDeleted && oa.Supervisor != null)
+                        .Select(oa => oa.Supervisor!.FirstName + " " + oa.Supervisor.LastName)
+                        .FirstOrDefault() ?? ""
+                    : "",
+                // Junction table'dan ilk atamadaki organizasyon
+                OrganizationName = e.EvaluatorCustomerPersonnel != null
+                    && e.EvaluatorCustomerPersonnel.OrganizationAssignments.Any(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
+                    ? e.EvaluatorCustomerPersonnel.OrganizationAssignments
+                        .Where(oa => !oa.IsDeleted && oa.CustomerOrganization != null)
+                        .Select(oa => oa.CustomerOrganization!.Name)
+                        .FirstOrDefault() ?? ""
+                    : "",
+                e.Notes
+            })
+            .ToListAsync();
+
+        var isManager = role == "CustomerManager";
+
+        // Manager için filtre listeleri
+        List<object>? organizationList = null;
+        List<object>? supervisorList = null;
+        if (isManager)
+        {
+            var personnel = await _context.CustomerPersonnel.FindAsync(personnelId);
+            if (personnel != null)
+            {
+                // Organizasyon listesi
+                organizationList = await _context.CustomerOrganizations
+                    .Where(o => o.CustomerId == personnel.CustomerId && !o.IsDeleted)
+                    .OrderBy(o => o.Name)
+                    .Select(o => new { o.Id, o.Name })
+                    .ToListAsync<object>();
+
+                // Supervisor listesi
+                supervisorList = await _context.CustomerPersonnel
+                    .Where(p => p.CustomerId == personnel.CustomerId && !p.IsDeleted && p.RoleId == CustomerPersonnelRoles.Ids.Supervisor)
+                    .OrderBy(p => p.FirstName).ThenBy(p => p.LastName)
+                    .Select(p => new { p.Id, Name = p.FirstName + " " + p.LastName })
+                    .ToListAsync<object>();
+            }
+        }
+
+        // Personel bazlı özet (Manager/Supervisor için)
+        var personnelSummary = showPersonnelName
+            ? evaluations
+                .GroupBy(e => new { e.PersonnelName, e.SupervisorName, e.OrganizationName })
+                .Select(g => new
+                {
+                    PersonnelName = g.Key.PersonnelName,
+                    SupervisorName = g.Key.SupervisorName,
+                    OrganizationName = g.Key.OrganizationName,
+                    EvaluationCount = g.Count(),
+                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 1),
+                    MinScore = g.Min(e => e.Score),
+                    MaxScore = g.Max(e => e.Score)
+                })
+                .OrderByDescending(p => p.EvaluationCount)
+                .ToList()
+            : null;
+
+        // Supervisor bazlı özet (sadece Manager için)
+        var supervisorSummary = isManager && evaluations.Any()
+            ? evaluations
+                .Where(e => !string.IsNullOrEmpty(e.SupervisorName))
+                .GroupBy(e => e.SupervisorName)
+                .Select(g => new
+                {
+                    SupervisorName = g.Key,
+                    PersonnelCount = g.Select(e => e.PersonnelName).Distinct().Count(),
+                    EvaluationCount = g.Count(),
+                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 1)
+                })
+                .OrderByDescending(s => s.EvaluationCount)
+                .ToList()
+            : null;
+
+        // Özet hesapla
+        var summary = new
+        {
+            Year = targetYear,
+            Month = targetMonth,
+            MonthName = new DateTime(targetYear, targetMonth, 1).ToString("MMMM", new System.Globalization.CultureInfo("tr-TR")),
+            TotalCount = evaluations.Count,
+            AverageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)e.Score), 1) : 0,
+            Evaluations = evaluations,
+            ShowPersonnelName = showPersonnelName,
+            IsManager = isManager,
+            PersonnelSummary = personnelSummary,
+            SupervisorSummary = supervisorSummary,
+            Organizations = organizationList,
+            Supervisors = supervisorList
+        };
+
+        return summary;
+    }
+
+    /// <summary>
     /// Firma bazlı aylık trend verilerini getirir
     /// </summary>
     public async Task<List<CustomerMonthlyTrendDto>> GetCustomerMonthlyTrendAsync()

@@ -2,14 +2,12 @@ using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Dashboard;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
@@ -21,7 +19,6 @@ namespace SecretCustomer.API.Controllers.Api;
 [AllowAnonymous] // JWT middleware sorunlu, token'ı kendimiz parse ediyoruz
 public class CustomerPortalApiController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
     private readonly ILogger<CustomerPortalApiController> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly IReportService _reportService;
@@ -32,7 +29,6 @@ public class CustomerPortalApiController : ControllerBase
     private readonly ICustomerPortalDataService _cpDataService;
 
     public CustomerPortalApiController(
-        ApplicationDbContext context,
         ILogger<CustomerPortalApiController> logger,
         ILocalizationService localizationService,
         IReportService reportService,
@@ -42,7 +38,6 @@ public class CustomerPortalApiController : ControllerBase
         ICustomerPortalReportService cpReportService,
         ICustomerPortalDataService cpDataService)
     {
-        _context = context;
         _logger = logger;
         _localizationService = localizationService;
         _reportService = reportService;
@@ -138,30 +133,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!IsAdmin())
             return Forbid();
 
-        var query = _context.Customers.Where(c => !c.IsDeleted);
-
-        if (!includeInactive)
-            query = query.Where(c => c.IsActive);
-
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            var searchLower = search.ToLower();
-            query = query.Where(c =>
-                c.CompanyName.ToLower().Contains(searchLower) ||
-                (c.Code != null && c.Code.ToLower().Contains(searchLower)));
-        }
-
-        var customers = await query
-            .OrderBy(c => c.CompanyName)
-            .Select(c => new
-            {
-                c.Id,
-                c.CompanyName,
-                c.Code,
-                c.IsActive
-            })
-            .ToListAsync();
-
+        var customers = await _cpDataService.GetCustomersForAdminAsync(search, includeInactive);
         return Ok(customers);
     }
 
@@ -174,21 +146,18 @@ public class CustomerPortalApiController : ControllerBase
         if (!IsAdmin())
             return Forbid();
 
-        var customer = await _context.Customers
-            .Where(c => c.Id == customerId && !c.IsDeleted)
-            .Select(c => new { c.Id, c.CompanyName, c.Code })
-            .FirstOrDefaultAsync();
+        var customer = await _cpDataService.GetCustomerByIdAsync(customerId);
 
         if (customer == null)
             return NotFound(new { message = "Müşteri bulunamadı." });
 
         HttpContext.Session.SetInt32("AdminViewAsCustomerId", customerId);
-        HttpContext.Session.SetString("AdminViewAsCustomerName", customer.CompanyName);
+        HttpContext.Session.SetString("AdminViewAsCustomerName", customer.Value.CompanyName);
 
         return Ok(new {
             success = true,
-            customerId = customer.Id,
-            customerName = customer.CompanyName
+            customerId = customer.Value.Id,
+            customerName = customer.Value.CompanyName
         });
     }
 
@@ -334,71 +303,7 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        // CustomerManager tüm personeli görebilir
-        if (role == "Admin" || role == "CustomerManager")
-            return null;
-
-        // CustomerSupervisor - Organizasyon bazında hibrit kontrol
-        if (role == "CustomerSupervisor" && personnelId.HasValue)
-        {
-            // 1. Süpervizörün atandığı organizasyonları bul
-            var myOrgIds = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
-                .Select(cpo => cpo.CustomerOrganizationId)
-                .Distinct()
-                .ToListAsync();
-
-            // Hiçbir organizasyona atanmamış → TÜM veriyi görebilir (null = filtre yok)
-            if (!myOrgIds.Any())
-                return null;
-
-            // 2. Bu organizasyonlarda süpervizör olduğu personeller
-            var supervisedPersonnel = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => myOrgIds.Contains(cpo.CustomerOrganizationId) &&
-                             cpo.SupervisorId == personnelId.Value &&
-                             !cpo.IsDeleted)
-                .Select(cpo => new { cpo.CustomerOrganizationId, cpo.CustomerPersonnelId })
-                .ToListAsync();
-
-            // 3. Hangi organizasyonlarda altında personel var?
-            var orgsWithTeam = supervisedPersonnel
-                .Select(x => x.CustomerOrganizationId)
-                .Distinct()
-                .ToHashSet();
-
-            // 4. Altında personel olmayan organizasyonlar
-            var orgsWithoutTeam = myOrgIds.Except(orgsWithTeam).ToList();
-
-            var result = new HashSet<int>();
-
-            // Altında personel olan org'lardan sadece o personeller
-            foreach (var p in supervisedPersonnel)
-                result.Add(p.CustomerPersonnelId);
-
-            // Altında personel olmayan org'lardan TÜM personeller
-            if (orgsWithoutTeam.Any())
-            {
-                var allPersonnelInEmptyOrgs = await _context.CustomerPersonnelOrganizations
-                    .Where(cpo => orgsWithoutTeam.Contains(cpo.CustomerOrganizationId) && !cpo.IsDeleted)
-                    .Select(cpo => cpo.CustomerPersonnelId)
-                    .Distinct()
-                    .ToListAsync();
-
-                foreach (var id in allPersonnelInEmptyOrgs)
-                    result.Add(id);
-            }
-
-            // Kendisini de ekle
-            result.Add(personnelId.Value);
-
-            return result.ToList();
-        }
-
-        // CustomerOperator sadece kendini görebilir
-        if (personnelId.HasValue)
-            return new List<int> { personnelId.Value };
-
-        return new List<int>(); // Hiçbir şey göremez
+        return await _cpDataService.GetAllowedPersonnelIdsAsync(role, personnelId);
     }
 
     /// <summary>
@@ -413,41 +318,7 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        // Admin ve CustomerManager tüm organizasyonları görebilir
-        if (role == "Admin" || role == "CustomerManager")
-            return null;
-
-        // CustomerSupervisor - Organizasyon bazında kontrol
-        if (role == "CustomerSupervisor" && personnelId.HasValue)
-        {
-            // Süpervizörün atandığı organizasyonları bul
-            var myOrgIds = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
-                .Select(cpo => cpo.CustomerOrganizationId)
-                .Distinct()
-                .ToListAsync();
-
-            // Hiçbir organizasyona atanmamış → TÜM organizasyonları görebilir
-            if (!myOrgIds.Any())
-                return null;
-
-            // Atandığı organizasyonları döndür
-            return myOrgIds;
-        }
-
-        // CustomerOperator - Kendi organizasyonlarını görebilir
-        if (role == "CustomerOperator" && personnelId.HasValue)
-        {
-            var myOrgIds = await _context.CustomerPersonnelOrganizations
-                .Where(cpo => cpo.CustomerPersonnelId == personnelId.Value && !cpo.IsDeleted)
-                .Select(cpo => cpo.CustomerOrganizationId)
-                .Distinct()
-                .ToListAsync();
-
-            return myOrgIds.Any() ? myOrgIds : new List<int>();
-        }
-
-        return new List<int>(); // Hiçbir şey göremez
+        return await _cpDataService.GetAllowedOrganizationIdsAsync(role, personnelId);
     }
 
     /// <summary>
@@ -3292,36 +3163,7 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        var query = _context.GmAtamalar
-            .Include(a => a.GmDonemSoru)
-                .ThenInclude(ds => ds!.GmHedefFirma)
-            .Include(a => a.GmDonem)
-            .Where(a => !a.IsDeleted
-                && a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi
-                && a.GmDonemSoru != null
-                && a.GmDonemSoru.CustomerId == customerId.Value)
-            .AsQueryable();
-
-        if (donemId.HasValue)
-            query = query.Where(a => a.GmDonemId == donemId.Value);
-
-        var result = await query
-            .OrderByDescending(a => a.GerceklesmeTarihi)
-            .Select(a => new
-            {
-                a.Id,
-                a.GerceklesmeTarihi,
-                a.AramaSaati,
-                SoruMetni = a.GmDonemSoru!.SoruMetni,
-                BeklenenCevap = a.GmDonemSoru.BeklenenCevap,
-                HedefFirmaAdi = a.GmDonemSoru.GmHedefFirma != null ? a.GmDonemSoru.GmHedefFirma.FirmaAdi : null,
-                Not = a.Not,
-                DonemAdi = a.GmDonem != null ? a.GmDonem.Ad : null,
-                KuponKodu = a.KuponKodu,
-                IsKuponlu = a.GmDonemSoru.IsKuponlu
-            })
-            .ToListAsync();
-
+        var result = await _cpDataService.GetGmAramalarAsync(customerId.Value, donemId);
         return Ok(result);
     }
 
@@ -3332,14 +3174,7 @@ public class CustomerPortalApiController : ControllerBase
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
-        // Müşterinin sorularının olduğu dönemler
-        var donemler = await _context.GmDonemler
-            .Where(d => !d.IsDeleted
-                && d.Sorular.Any(ds => ds.CustomerId == customerId.Value && !ds.IsDeleted))
-            .OrderByDescending(d => d.BaslangicTarihi)
-            .Select(d => new { d.Id, d.Ad })
-            .ToListAsync();
-
+        var donemler = await _cpDataService.GetGmDonemlerAsync(customerId.Value);
         return Ok(donemler);
     }
 

@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.DTOs.Checklist;
 using SecretCustomer.Core.Interfaces.Services;
-using SecretCustomer.Data;
 
 namespace SecretCustomer.API.Controllers.Api;
 
@@ -15,19 +13,16 @@ public class ChecklistsApiController : BaseApiController
     private readonly IChecklistService _checklistService;
     private readonly ILogger<ChecklistsApiController> _logger;
     private readonly ILocalizationService _localizationService;
-    private readonly ApplicationDbContext _context;
 
     public ChecklistsApiController(
         IChecklistService checklistService,
         ILogger<ChecklistsApiController> logger,
         ILocalizationService localizationService,
-        ApplicationDbContext context,
         IConfiguration configuration) : base(configuration)
     {
         _checklistService = checklistService;
         _logger = logger;
         _localizationService = localizationService;
-        _context = context;
     }
 
     /// <summary>
@@ -207,13 +202,7 @@ public class ChecklistsApiController : BaseApiController
     {
         try
         {
-            var groups = await _context.Questions
-                .Where(q => q.ChecklistId == id && !q.IsDeleted && !string.IsNullOrEmpty(q.GroupName))
-                .Select(q => q.GroupName)
-                .Distinct()
-                .OrderBy(g => g)
-                .ToListAsync();
-
+            var groups = await _checklistService.GetQuestionGroupsAsync(id);
             return Ok(groups);
         }
         catch (Exception ex)

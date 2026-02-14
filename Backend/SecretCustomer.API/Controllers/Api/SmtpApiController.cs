@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
-using SecretCustomer.Data;
+using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Services.Services;
 using SecretCustomer.Core.Helpers;
 
@@ -13,12 +12,12 @@ namespace SecretCustomer.API.Controllers.Api;
 [Authorize(Roles = "Admin")]
 public class SmtpApiController : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
+    private readonly ISmtpProfileService _smtpProfileService;
     private readonly SmtpEmailService _emailService;
 
-    public SmtpApiController(ApplicationDbContext context, SmtpEmailService emailService)
+    public SmtpApiController(ISmtpProfileService smtpProfileService, SmtpEmailService emailService)
     {
-        _context = context;
+        _smtpProfileService = smtpProfileService;
         _emailService = emailService;
     }
 
@@ -28,31 +27,7 @@ public class SmtpApiController : ControllerBase
     [HttpGet("profiles")]
     public async Task<IActionResult> GetAll()
     {
-        var profiles = await _context.SmtpProfiles
-            .OrderByDescending(p => p.IsDefault)
-            .ThenBy(p => p.Name)
-            .Select(p => new SmtpProfileDto
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Host = p.Host,
-                Port = p.Port,
-                Username = p.Username,
-                Password = p.Password,
-                UseSsl = p.UseSsl,
-                FromEmail = p.FromEmail,
-                FromName = p.FromName,
-                Enabled = p.Enabled,
-                IsDefault = p.IsDefault,
-                UseOAuth = p.UseOAuth,
-                TenantId = p.TenantId,
-                ClientId = p.ClientId,
-                ClientSecret = p.ClientSecret,
-                UseGraphApi = p.UseGraphApi,
-                CreatedAt = p.CreatedAt
-            })
-            .ToListAsync();
-
+        var profiles = await _smtpProfileService.GetAllAsync();
         return Ok(profiles);
     }
 
@@ -62,30 +37,11 @@ public class SmtpApiController : ControllerBase
     [HttpGet("profiles/{id:int}")]
     public async Task<IActionResult> GetById(int id)
     {
-        var profile = await _context.SmtpProfiles.FindAsync(id);
+        var profile = await _smtpProfileService.GetByIdAsync(id);
         if (profile == null)
             return NotFound(new { success = false, message = "Profil bulunamadı." });
 
-        return Ok(new SmtpProfileDto
-        {
-            Id = profile.Id,
-            Name = profile.Name,
-            Host = profile.Host,
-            Port = profile.Port,
-            Username = profile.Username,
-            Password = profile.Password,
-            UseSsl = profile.UseSsl,
-            FromEmail = profile.FromEmail,
-            FromName = profile.FromName,
-            Enabled = profile.Enabled,
-            IsDefault = profile.IsDefault,
-            UseOAuth = profile.UseOAuth,
-            TenantId = profile.TenantId,
-            ClientId = profile.ClientId,
-            ClientSecret = profile.ClientSecret,
-            UseGraphApi = profile.UseGraphApi,
-            CreatedAt = profile.CreatedAt
-        });
+        return Ok(profile);
     }
 
     /// <summary>
@@ -94,15 +50,6 @@ public class SmtpApiController : ControllerBase
     [HttpPost("profiles")]
     public async Task<IActionResult> Create([FromBody] SmtpProfileDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Name))
-            return BadRequest(new { success = false, message = "Profil adı gerekli." });
-
-        if (string.IsNullOrWhiteSpace(dto.Host))
-            return BadRequest(new { success = false, message = "SMTP sunucu adresi gerekli." });
-
-        if (string.IsNullOrWhiteSpace(dto.FromEmail))
-            return BadRequest(new { success = false, message = "Gönderen email adresi gerekli." });
-
         var profile = new SmtpProfile
         {
             Name = dto.Name.Trim(),
@@ -122,23 +69,12 @@ public class SmtpApiController : ControllerBase
             UseGraphApi = dto.UseGraphApi
         };
 
-        // Eğer bu profil default yapılıyorsa, diğerlerini false yap
-        if (profile.IsDefault)
-        {
-            await ClearDefaultFlagAsync();
-        }
+        var result = await _smtpProfileService.CreateAsync(profile, dto.IsDefault);
 
-        // Eğer hiç profil yoksa, ilk profili otomatik default yap
-        var hasAnyProfile = await _context.SmtpProfiles.AnyAsync();
-        if (!hasAnyProfile)
-        {
-            profile.IsDefault = true;
-        }
+        if (!result.Success)
+            return BadRequest(new { success = false, message = result.Message });
 
-        _context.SmtpProfiles.Add(profile);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Profil oluşturuldu.", id = profile.Id });
+        return Ok(new { success = true, message = result.Message, id = result.Id });
     }
 
     /// <summary>
@@ -147,44 +83,34 @@ public class SmtpApiController : ControllerBase
     [HttpPut("profiles/{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] SmtpProfileDto dto)
     {
-        var profile = await _context.SmtpProfiles.FindAsync(id);
-        if (profile == null)
-            return NotFound(new { success = false, message = "Profil bulunamadı." });
-
-        if (string.IsNullOrWhiteSpace(dto.Name))
-            return BadRequest(new { success = false, message = "Profil adı gerekli." });
-
-        if (string.IsNullOrWhiteSpace(dto.Host))
-            return BadRequest(new { success = false, message = "SMTP sunucu adresi gerekli." });
-
-        if (string.IsNullOrWhiteSpace(dto.FromEmail))
-            return BadRequest(new { success = false, message = "Gönderen email adresi gerekli." });
-
-        profile.Name = dto.Name.Trim();
-        profile.Host = dto.Host.Trim();
-        profile.Port = dto.Port;
-        profile.Username = dto.Username?.Trim();
-        profile.Password = dto.Password;
-        profile.UseSsl = dto.UseSsl;
-        profile.FromEmail = dto.FromEmail.Trim();
-        profile.FromName = dto.FromName?.Trim();
-        profile.Enabled = dto.Enabled;
-        profile.UseOAuth = dto.UseOAuth;
-        profile.TenantId = dto.TenantId?.Trim();
-        profile.ClientId = dto.ClientId?.Trim();
-        profile.ClientSecret = dto.ClientSecret;
-        profile.UseGraphApi = dto.UseGraphApi;
-
-        // IsDefault güncelleme
-        if (dto.IsDefault && !profile.IsDefault)
+        var updatedData = new SmtpProfile
         {
-            await ClearDefaultFlagAsync();
-            profile.IsDefault = true;
+            Name = dto.Name,
+            Host = dto.Host,
+            Port = dto.Port,
+            Username = dto.Username,
+            Password = dto.Password,
+            UseSsl = dto.UseSsl,
+            FromEmail = dto.FromEmail,
+            FromName = dto.FromName,
+            Enabled = dto.Enabled,
+            UseOAuth = dto.UseOAuth,
+            TenantId = dto.TenantId,
+            ClientId = dto.ClientId,
+            ClientSecret = dto.ClientSecret,
+            UseGraphApi = dto.UseGraphApi
+        };
+
+        var result = await _smtpProfileService.UpdateAsync(id, updatedData, dto.IsDefault);
+
+        if (!result.Success)
+        {
+            if (result.Message == "Profil bulunamadı.")
+                return NotFound(new { success = false, message = result.Message });
+            return BadRequest(new { success = false, message = result.Message });
         }
 
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Profil güncellendi." });
+        return Ok(new { success = true, message = result.Message });
     }
 
     /// <summary>
@@ -193,17 +119,16 @@ public class SmtpApiController : ControllerBase
     [HttpDelete("profiles/{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var profile = await _context.SmtpProfiles.FindAsync(id);
-        if (profile == null)
-            return NotFound(new { success = false, message = "Profil bulunamadı." });
+        var result = await _smtpProfileService.DeleteAsync(id);
 
-        if (profile.IsDefault)
-            return BadRequest(new { success = false, message = "Varsayılan profil silinemez. Önce başka bir profili varsayılan yapın." });
+        if (!result.Success)
+        {
+            if (result.Message == "Profil bulunamadı.")
+                return NotFound(new { success = false, message = result.Message });
+            return BadRequest(new { success = false, message = result.Message });
+        }
 
-        profile.IsDeleted = true;
-        await _context.SaveChangesAsync();
-
-        return Ok(new { success = true, message = "Profil silindi." });
+        return Ok(new { success = true, message = result.Message });
     }
 
     /// <summary>
@@ -212,15 +137,12 @@ public class SmtpApiController : ControllerBase
     [HttpPost("profiles/{id:int}/set-default")]
     public async Task<IActionResult> SetDefault(int id)
     {
-        var profile = await _context.SmtpProfiles.FindAsync(id);
-        if (profile == null)
-            return NotFound(new { success = false, message = "Profil bulunamadı." });
+        var result = await _smtpProfileService.SetDefaultAsync(id);
 
-        await ClearDefaultFlagAsync();
-        profile.IsDefault = true;
-        await _context.SaveChangesAsync();
+        if (!result.Success)
+            return NotFound(new { success = false, message = result.Message });
 
-        return Ok(new { success = true, message = $"'{profile.Name}' varsayılan profil yapıldı." });
+        return Ok(new { success = true, message = result.Message });
     }
 
     /// <summary>
@@ -229,7 +151,7 @@ public class SmtpApiController : ControllerBase
     [HttpPost("profiles/{id:int}/test-connection")]
     public async Task<IActionResult> TestConnection(int id)
     {
-        var profile = await _context.SmtpProfiles.FindAsync(id);
+        var profile = await _smtpProfileService.FindByIdAsync(id);
         if (profile == null)
             return NotFound(new { success = false, message = "Profil bulunamadı." });
 
@@ -250,7 +172,7 @@ public class SmtpApiController : ControllerBase
         if (string.IsNullOrEmpty(dto.ToEmail))
             return BadRequest(new { success = false, message = "Email adresi gerekli." });
 
-        var profile = await _context.SmtpProfiles.FindAsync(id);
+        var profile = await _smtpProfileService.FindByIdAsync(id);
         if (profile == null)
             return NotFound(new { success = false, message = "Profil bulunamadı." });
 
@@ -268,21 +190,6 @@ public class SmtpApiController : ControllerBase
             return Ok(new { success = true, message = $"Test maili {dto.ToEmail} adresine gönderildi." });
 
         return BadRequest(new { success = false, message = result.ErrorMessage });
-    }
-
-    /// <summary>
-    /// Tüm profillerin IsDefault'ını false yapar
-    /// </summary>
-    private async Task ClearDefaultFlagAsync()
-    {
-        var defaultProfiles = await _context.SmtpProfiles
-            .Where(p => p.IsDefault)
-            .ToListAsync();
-
-        foreach (var p in defaultProfiles)
-        {
-            p.IsDefault = false;
-        }
     }
 
     private static string GetTestEmailBody()

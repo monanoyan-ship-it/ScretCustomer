@@ -194,6 +194,7 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ICustomerPortalReportService, CustomerPortalReportService>();
 builder.Services.AddScoped<ICustomerPortalDataService, CustomerPortalDataService>();
+builder.Services.AddScoped<ICustomerPortalProfileService, CustomerPortalProfileService>();
 builder.Services.AddHttpClient<IPdfService, PdfService>();
 builder.Services.AddScoped<IAIReportService, AIReportService>();
 builder.Services.AddScoped<IExcelTemplateService, ExcelTemplateService>();
@@ -217,17 +218,24 @@ builder.Services.AddScoped<IFieldWorkerService, FieldWorkerService>();
 builder.Services.AddScoped<SmtpEmailService>();
 builder.Services.AddScoped<IEmailService>(sp => sp.GetRequiredService<SmtpEmailService>());
 builder.Services.AddScoped<IEvaluationNotificationService, EvaluationNotificationService>();
+builder.Services.AddScoped<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddSingleton<INotificationTokenService, NotificationTokenService>();
 builder.Services.AddScoped<ITrainingVideoService, TrainingVideoService>();
 builder.Services.AddScoped<ITrainingQuizService, TrainingQuizService>();
 builder.Services.AddScoped<IGmService, GmService>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
+builder.Services.AddScoped<IApprovalService, ApprovalService>();
+builder.Services.AddScoped<IQuestionAttachmentService, QuestionAttachmentService>();
+builder.Services.AddScoped<IProjectFileService, ProjectFileService>();
 
 // SignalR
 builder.Services.AddSignalR();
 
 // Notification Services
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<INotificationPushService, SecretCustomer.API.Services.NotificationPushService>();
 builder.Services.AddScoped<INotificationCreatorService, NotificationCreatorService>();
+builder.Services.AddScoped<ISmtpProfileService, SmtpProfileService>();
 
 // Background Services
 builder.Services.AddHostedService<SecretCustomer.API.BackgroundServices.EvaluationNotificationJob>();
