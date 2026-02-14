@@ -112,94 +112,82 @@ public class GmApiController : BaseApiController
     }
 
     // =============================================
-    // SORU
+    // DÖNEM SORU
     // =============================================
 
-    [HttpGet("sorular")]
-    public async Task<IActionResult> GetSorular([FromQuery] int? customerId, [FromQuery] int? hedefFirmaId)
+    [HttpGet("donem-sorular")]
+    public async Task<IActionResult> GetDonemSorular([FromQuery] int? customerId, [FromQuery] int? hedefFirmaId, [FromQuery] int? donemId)
     {
         try
         {
-            var result = await _gmService.GetSorularAsync(customerId, hedefFirmaId);
+            var result = await _gmService.GetDonemSorularAsync(customerId, hedefFirmaId, donemId);
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Sorular yüklenirken hata");
-            return StatusCode(500, CreateErrorResponse("Sorular yüklenirken hata oluştu", ex));
+            _logger.LogError(ex, "Dönem soruları yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dönem soruları yüklenirken hata oluştu", ex));
         }
     }
 
-    [HttpGet("sorular/{id}")]
-    public async Task<IActionResult> GetSoru(int id)
+    [HttpPost("donemler/{donemId}/soru")]
+    public async Task<IActionResult> CreateDonemSoru(int donemId, [FromBody] CreateDonemSoruRequest request)
     {
         try
         {
-            var result = await _gmService.GetSoruByIdAsync(id);
+            var result = await _gmService.CreateDonemSoruAsync(donemId, request);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dönem soru eklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Soru eklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpPut("donem-soru/{id}")]
+    public async Task<IActionResult> UpdateDonemSoru(int id, [FromBody] UpdateDonemSoruRequest request)
+    {
+        try
+        {
+            var result = await _gmService.UpdateDonemSoruAsync(id, request);
             if (result == null) return NotFound();
             return Ok(result);
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
-            _logger.LogError(ex, "Soru detayı yüklenirken hata");
-            return StatusCode(500, CreateErrorResponse("Soru detayı yüklenirken hata oluştu", ex));
-        }
-    }
-
-    [HttpPost("sorular")]
-    public async Task<IActionResult> CreateSoru([FromBody] CreateGmSoruDto dto)
-    {
-        try
-        {
-            var result = await _gmService.CreateSoruAsync(dto);
-            return Ok(result);
+            return BadRequest(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Soru oluşturulurken hata");
-            return StatusCode(500, CreateErrorResponse("Soru oluşturulurken hata oluştu", ex));
-        }
-    }
-
-    [HttpPut("sorular/{id}")]
-    public async Task<IActionResult> UpdateSoru(int id, [FromBody] UpdateGmSoruDto dto)
-    {
-        try
-        {
-            var result = await _gmService.UpdateSoruAsync(id, dto);
-            if (result == null) return NotFound();
-            return Ok(result);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Soru güncellenirken hata");
+            _logger.LogError(ex, "Dönem soru güncellenirken hata");
             return StatusCode(500, CreateErrorResponse("Soru güncellenirken hata oluştu", ex));
         }
     }
 
-    [HttpDelete("sorular/{id}")]
-    public async Task<IActionResult> DeleteSoru(int id)
+    [HttpDelete("donem-soru/{donemSoruId}")]
+    public async Task<IActionResult> RemoveDonemSoru(int donemSoruId)
     {
         try
         {
-            var result = await _gmService.DeleteSoruAsync(id);
-            if (!result) return NotFound();
+            var result = await _gmService.RemoveDonemSoruAsync(donemSoruId);
+            if (!result) return BadRequest(new { message = "Soru çıkarılamadı." });
             return Ok(new { success = true });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Soru silinirken hata");
-            return StatusCode(500, CreateErrorResponse("Soru silinirken hata oluştu", ex));
+            _logger.LogError(ex, "Dönem soru çıkarılırken hata");
+            return StatusCode(500, CreateErrorResponse("Soru çıkarılırken hata oluştu", ex));
         }
     }
 
-    // =============================================
-    // SORU EXCEL IMPORT
-    // =============================================
-
-    [HttpPost("sorular/import")]
+    [HttpPost("donemler/{donemId}/sorular/import")]
     [RequestSizeLimit(10 * 1024 * 1024)]
-    public async Task<IActionResult> ImportSorular([FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
+    public async Task<IActionResult> ImportDonemSorular(int donemId, [FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
     {
         try
         {
@@ -211,14 +199,66 @@ public class GmApiController : BaseApiController
                 return BadRequest(new { message = "Sadece Excel dosyaları (.xlsx, .xls) kabul edilir." });
 
             using var stream = file.OpenReadStream();
-            var (imported, skipped, errors) = await _gmService.ImportSorularFromExcelAsync(customerId, hedefFirmaId, stream);
+            var (imported, skipped, errors) = await _gmService.ImportDonemSorularFromExcelAsync(donemId, customerId, hedefFirmaId, stream);
 
             return Ok(new { imported, skipped, errors, message = $"{imported} soru eklendi, {skipped} satır atlandı." });
         }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Soru Excel import hatası");
+            _logger.LogError(ex, "Dönem soru Excel import hatası");
             return StatusCode(500, CreateErrorResponse("Excel import sırasında hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/sorular/import-with-matching")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> ImportDonemSorularWithMatching(int donemId, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Dosya seçilmedi." });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".xlsx" && ext != ".xls")
+                return BadRequest(new { message = "Sadece Excel dosyaları (.xlsx, .xls) kabul edilir." });
+
+            using var stream = file.OpenReadStream();
+            var result = await _gmService.ImportDonemSorularWithMatchingAsync(donemId, stream);
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dönem soru Excel import (eşleştirmeli) hatası");
+            return StatusCode(500, CreateErrorResponse("Excel import sırasında hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/sorular/save-unmatched")]
+    public async Task<IActionResult> SaveUnmatchedSorular(int donemId, [FromBody] List<SaveUnmatchedSoruItem> items)
+    {
+        try
+        {
+            var saved = await _gmService.SaveUnmatchedSorularAsync(donemId, items);
+            return Ok(new { saved, message = $"{saved} soru kaydedildi." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Eşleşmeyen sorular kaydedilirken hata");
+            return StatusCode(500, CreateErrorResponse("Kaydetme sırasında hata oluştu", ex));
         }
     }
 
@@ -227,11 +267,11 @@ public class GmApiController : BaseApiController
     // =============================================
 
     [HttpGet("donemler")]
-    public async Task<IActionResult> GetDonemler([FromQuery] int? customerId)
+    public async Task<IActionResult> GetDonemler()
     {
         try
         {
-            var result = await _gmService.GetDonemlerAsync(customerId);
+            var result = await _gmService.GetDonemlerAsync();
             return Ok(result);
         }
         catch (Exception ex)
@@ -369,101 +409,6 @@ public class GmApiController : BaseApiController
         }
     }
 
-    [HttpPost("donemler/{donemId}/soru")]
-    public async Task<IActionResult> AddDonemSoru(int donemId, [FromBody] AddDonemSoruRequest request)
-    {
-        try
-        {
-            var result = await _gmService.AddDonemSoruAsync(donemId, request.SoruId, request.AranmaSayisi);
-            if (!result) return BadRequest(new { message = "Soru eklenemedi. Dönem taslak olmayabilir veya soru zaten ekli." });
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem soru eklenirken hata");
-            return StatusCode(500, CreateErrorResponse("Soru eklenirken hata oluştu", ex));
-        }
-    }
-
-    [HttpDelete("donem-soru/{donemSoruId}")]
-    public async Task<IActionResult> RemoveDonemSoru(int donemSoruId)
-    {
-        try
-        {
-            var result = await _gmService.RemoveDonemSoruAsync(donemSoruId);
-            if (!result) return BadRequest(new { message = "Soru çıkarılamadı." });
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem soru çıkarılırken hata");
-            return StatusCode(500, CreateErrorResponse("Soru çıkarılırken hata oluştu", ex));
-        }
-    }
-
-    [HttpPut("donem-soru/{donemSoruId}")]
-    public async Task<IActionResult> UpdateDonemSoru(int donemSoruId, [FromBody] UpdateDonemSoruRequest request)
-    {
-        try
-        {
-            var result = await _gmService.UpdateDonemSoruAsync(donemSoruId, request.AranmaSayisi);
-            if (!result) return BadRequest(new { message = "Soru güncellenemedi." });
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem soru güncellenirken hata");
-            return StatusCode(500, CreateErrorResponse("Soru güncellenirken hata oluştu", ex));
-        }
-    }
-
-    [HttpPost("donemler/{donemId}/kupon")]
-    public async Task<IActionResult> AddDonemKupon(int donemId, [FromBody] AddDonemKuponRequest request)
-    {
-        try
-        {
-            var result = await _gmService.AddDonemKuponAsync(donemId, request.KuponKodu);
-            if (!result) return BadRequest(new { message = "Kupon eklenemedi." });
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem kupon eklenirken hata");
-            return StatusCode(500, CreateErrorResponse("Kupon eklenirken hata oluştu", ex));
-        }
-    }
-
-    [HttpPost("donemler/{donemId}/kuponlar")]
-    public async Task<IActionResult> AddDonemKuponlar(int donemId, [FromBody] AddDonemKuponlarRequest request)
-    {
-        try
-        {
-            var results = await _gmService.AddDonemKuponlarAsync(donemId, request.KuponKodlari);
-            return Ok(new { success = true, results });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem kuponlar eklenirken hata");
-            return StatusCode(500, CreateErrorResponse("Kuponlar eklenirken hata oluştu", ex));
-        }
-    }
-
-    [HttpDelete("donem-kupon/{donemKuponId}")]
-    public async Task<IActionResult> RemoveDonemKupon(int donemKuponId)
-    {
-        try
-        {
-            var result = await _gmService.RemoveDonemKuponAsync(donemKuponId);
-            if (!result) return BadRequest(new { message = "Kupon çıkarılamadı." });
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Dönem kupon çıkarılırken hata");
-            return StatusCode(500, CreateErrorResponse("Kupon çıkarılırken hata oluştu", ex));
-        }
-    }
-
     // =============================================
     // AKTİF ET & TAMAMLA
     // =============================================
@@ -527,27 +472,6 @@ public class GmApiController : BaseApiController
 public class AddDonemPersonelRequest
 {
     public int UserId { get; set; }
-}
-
-public class AddDonemSoruRequest
-{
-    public int SoruId { get; set; }
-    public int AranmaSayisi { get; set; } = 1;
-}
-
-public class UpdateDonemSoruRequest
-{
-    public int AranmaSayisi { get; set; }
-}
-
-public class AddDonemKuponRequest
-{
-    public string KuponKodu { get; set; } = string.Empty;
-}
-
-public class AddDonemKuponlarRequest
-{
-    public List<string> KuponKodlari { get; set; } = new();
 }
 
 public class CopyDonemRequest

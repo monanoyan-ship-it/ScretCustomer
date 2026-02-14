@@ -4,6 +4,7 @@ function SorularViewModel() {
     self.sorular = ko.observableArray([]);
     self.customers = ko.observableArray([]);
     self.hedefFirmalar = ko.observableArray([]);
+    self.donemler = ko.observableArray([]);
     self.modalHedefFirmalar = ko.observableArray([]);
     self.isLoading = ko.observable(true);
     self.isSaving = ko.observable(false);
@@ -11,16 +12,18 @@ function SorularViewModel() {
     self.editingId = ko.observable(null);
     self.selectedCustomerId = ko.observable(null);
     self.selectedHedefFirmaId = ko.observable(null);
+    self.selectedDonemId = ko.observable(null);
 
     self.form = {
+        donemId: ko.observable(null),
         customerId: ko.observable(null),
         gmHedefFirmaId: ko.observable(null),
         soruMetni: ko.observable(''),
         beklenenCevap: ko.observable(''),
         aranmaSayisi: ko.observable(1),
         isKuponlu: ko.observable(false),
-        siraNo: ko.observable(0),
-        isActive: ko.observable(true)
+        kuponKodu: ko.observable(''),
+        siraNo: ko.observable(0)
     };
 
     // Cascading: müşteri değişince firmalar yükle
@@ -48,11 +51,22 @@ function SorularViewModel() {
         self.loadSorular();
     });
 
+    self.selectedDonemId.subscribe(function () {
+        self.loadSorular();
+    });
+
     self.loadCustomers = function () {
         $.get('/api/customers')
             .done(function (data) {
                 var list = Array.isArray(data) ? data : (data.items || []);
                 self.customers(list);
+            });
+    };
+
+    self.loadDonemler = function () {
+        $.get('/api/gm/donemler')
+            .done(function (data) {
+                self.donemler(data);
             });
     };
 
@@ -68,7 +82,8 @@ function SorularViewModel() {
         var params = [];
         if (self.selectedCustomerId()) params.push('customerId=' + self.selectedCustomerId());
         if (self.selectedHedefFirmaId()) params.push('hedefFirmaId=' + self.selectedHedefFirmaId());
-        var url = '/api/gm/sorular' + (params.length ? '?' + params.join('&') : '');
+        if (self.selectedDonemId()) params.push('donemId=' + self.selectedDonemId());
+        var url = '/api/gm/donem-sorular' + (params.length ? '?' + params.join('&') : '');
 
         $.get(url)
             .done(function (data) {
@@ -89,32 +104,37 @@ function SorularViewModel() {
         if (self.selectedCustomerId()) {
             self.form.customerId(self.selectedCustomerId());
         }
+        if (self.selectedDonemId()) {
+            self.form.donemId(self.selectedDonemId());
+        }
         $('#soruModal').modal('show');
     };
 
     self.showEditModal = function (soru) {
         self.isEditing(true);
         self.editingId(soru.id);
+        self.form.donemId(soru.gmDonemId);
         self.form.customerId(soru.customerId);
         self.form.gmHedefFirmaId(soru.gmHedefFirmaId);
         self.form.soruMetni(soru.soruMetni);
         self.form.beklenenCevap(soru.beklenenCevap || '');
         self.form.aranmaSayisi(soru.aranmaSayisi);
         self.form.isKuponlu(soru.isKuponlu);
+        self.form.kuponKodu(soru.kuponKodu || '');
         self.form.siraNo(soru.siraNo);
-        self.form.isActive(soru.isActive);
         $('#soruModal').modal('show');
     };
 
     self.resetForm = function () {
+        self.form.donemId(null);
         self.form.customerId(null);
         self.form.gmHedefFirmaId(null);
         self.form.soruMetni('');
         self.form.beklenenCevap('');
         self.form.aranmaSayisi(1);
         self.form.isKuponlu(false);
+        self.form.kuponKodu('');
         self.form.siraNo(0);
-        self.form.isActive(true);
     };
 
     self.saveSoru = function () {
@@ -126,7 +146,7 @@ function SorularViewModel() {
 
         if (self.isEditing()) {
             $.ajax({
-                url: '/api/gm/sorular/' + self.editingId(),
+                url: '/api/gm/donem-soru/' + self.editingId(),
                 type: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -134,8 +154,8 @@ function SorularViewModel() {
                     beklenenCevap: self.form.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.form.aranmaSayisi()) || 1,
                     isKuponlu: self.form.isKuponlu(),
-                    siraNo: parseInt(self.form.siraNo()) || 0,
-                    isActive: self.form.isActive()
+                    kuponKodu: self.form.kuponKodu() || null,
+                    siraNo: parseInt(self.form.siraNo()) || 0
                 })
             })
             .done(function () {
@@ -150,13 +170,13 @@ function SorularViewModel() {
                 self.isSaving(false);
             });
         } else {
-            if (!self.form.customerId() || !self.form.gmHedefFirmaId()) {
-                toastr.warning('Müşteri ve hedef firma seçimi zorunludur.');
+            if (!self.form.donemId() || !self.form.customerId() || !self.form.gmHedefFirmaId()) {
+                toastr.warning('Dönem, müşteri ve hedef firma seçimi zorunludur.');
                 self.isSaving(false);
                 return;
             }
             $.ajax({
-                url: '/api/gm/sorular',
+                url: '/api/gm/donemler/' + self.form.donemId() + '/soru',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -166,8 +186,8 @@ function SorularViewModel() {
                     beklenenCevap: self.form.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.form.aranmaSayisi()) || 1,
                     isKuponlu: self.form.isKuponlu(),
-                    siraNo: parseInt(self.form.siraNo()) || 0,
-                    isActive: self.form.isActive()
+                    kuponKodu: self.form.kuponKodu() || null,
+                    siraNo: parseInt(self.form.siraNo()) || 0
                 })
             })
             .done(function () {
@@ -187,7 +207,7 @@ function SorularViewModel() {
     self.deleteSoru = function (soru) {
         showDeleteConfirm(soru.soruMetni, function () {
             $.ajax({
-                url: '/api/gm/sorular/' + soru.id,
+                url: '/api/gm/donem-soru/' + soru.id,
                 type: 'DELETE'
             })
             .done(function () {
@@ -202,6 +222,7 @@ function SorularViewModel() {
 
     // Import
     self.importForm = {
+        donemId: ko.observable(null),
         customerId: ko.observable(null),
         hedefFirmaId: ko.observable(null)
     };
@@ -218,6 +239,7 @@ function SorularViewModel() {
     });
 
     self.showImportModal = function () {
+        self.importForm.donemId(self.selectedDonemId());
         self.importForm.customerId(self.selectedCustomerId());
         self.importForm.hedefFirmaId(null);
         $('#importFile').val('');
@@ -225,8 +247,8 @@ function SorularViewModel() {
     };
 
     self.submitImport = function () {
-        if (!self.importForm.customerId() || !self.importForm.hedefFirmaId()) {
-            toastr.warning('Müşteri ve hedef firma seçimi zorunludur.');
+        if (!self.importForm.donemId() || !self.importForm.customerId() || !self.importForm.hedefFirmaId()) {
+            toastr.warning('Dönem, müşteri ve hedef firma seçimi zorunludur.');
             return;
         }
         var fileInput = document.getElementById('importFile');
@@ -242,7 +264,7 @@ function SorularViewModel() {
 
         self.isImporting(true);
         $.ajax({
-            url: '/api/gm/sorular/import',
+            url: '/api/gm/donemler/' + self.importForm.donemId() + '/sorular/import',
             type: 'POST',
             data: formData,
             processData: false,
@@ -262,6 +284,7 @@ function SorularViewModel() {
 
     // Init
     self.loadCustomers();
+    self.loadDonemler();
     self.loadSorular();
 }
 

@@ -2,54 +2,357 @@ function DonemlerViewModel() {
     var self = this;
 
     self.donemler = ko.observableArray([]);
-    self.customers = ko.observableArray([]);
     self.availableUsers = ko.observableArray([]);
-    self.availableSorular = ko.observableArray([]);
+    self.customers = ko.observableArray([]);
+    self.hedefFirmalar = ko.observableArray([]);
     self.isLoading = ko.observable(true);
     self.isSaving = ko.observable(false);
     self.isEditing = ko.observable(false);
     self.editingId = ko.observable(null);
-    self.selectedCustomerId = ko.observable(null);
     self.selectedDonem = ko.observable(null);
     self.donemDetail = ko.observable(null);
 
     // Dönem alt yönetim
     self.newPersonelUserId = ko.observable(null);
-    self.newSoruId = ko.observable(null);
-    self.newSoruAranma = ko.observable(1);
-
-    self.newSoruId.subscribe(function (soruId) {
-        if (!soruId) { self.newSoruAranma(1); return; }
-        var soru = self.availableSorular().find(function (s) { return s.id === parseInt(soruId); });
-        if (soru) self.newSoruAranma(soru.aranmaSayisi || 1);
-    });
-    self.newKuponText = ko.observable('');
 
     self.form = {
-        customerId: ko.observable(null),
         ad: ko.observable(''),
         baslangicTarihi: ko.observable(''),
         bitisTarihi: ko.observable('')
     };
 
-    self.selectedCustomerId.subscribe(function () {
-        self.loadDonemler();
+    // =============================================
+    // SORU EKLEME/DÜZENLEME
+    // =============================================
+    self.soruIsEditing = ko.observable(false);
+    self.soruEditingId = ko.observable(null);
+    self.soruForm = {
+        customerId: ko.observable(null),
+        gmHedefFirmaId: ko.observable(null),
+        soruMetni: ko.observable(''),
+        beklenenCevap: ko.observable(''),
+        aranmaSayisi: ko.observable(1),
+        isKuponlu: ko.observable(false),
+        kuponKodu: ko.observable(''),
+        siraNo: ko.observable(0)
+    };
+
+    // Müşteri değişince hedef firmaları yükle
+    self.soruForm.customerId.subscribe(function (customerId) {
+        self.soruForm.gmHedefFirmaId(null);
+        if (customerId) {
+            $.get('/api/gm/hedef-firmalar?customerId=' + customerId)
+                .done(function (data) { self.hedefFirmalar(data); });
+        } else {
+            self.hedefFirmalar([]);
+        }
     });
 
-    self.loadCustomers = function () {
-        $.get('/api/customers')
-            .done(function (data) {
-                var list = Array.isArray(data) ? data : (data.items || []);
-                self.customers(list);
-            });
+    self.showAddSoruModal = function () {
+        self.soruIsEditing(false);
+        self.soruEditingId(null);
+        self.soruForm.customerId(null);
+        self.soruForm.gmHedefFirmaId(null);
+        self.soruForm.soruMetni('');
+        self.soruForm.beklenenCevap('');
+        self.soruForm.aranmaSayisi(1);
+        self.soruForm.isKuponlu(false);
+        self.soruForm.kuponKodu('');
+        self.soruForm.siraNo(0);
+        self.hedefFirmalar([]);
+
+        if (!self.customers().length) {
+            $.get('/api/customers')
+                .done(function (data) {
+                    var list = Array.isArray(data) ? data : (data.items || []);
+                    self.customers(list);
+                });
+        }
+
+        $('#soruEkleModal').modal('show');
     };
+
+    self.showEditSoruModal = function (soru) {
+        self.soruIsEditing(true);
+        self.soruEditingId(soru.id);
+        self.soruForm.customerId(soru.customerId);
+        self.soruForm.gmHedefFirmaId(soru.gmHedefFirmaId);
+        self.soruForm.soruMetni(soru.soruMetni || '');
+        self.soruForm.beklenenCevap(soru.beklenenCevap || '');
+        self.soruForm.aranmaSayisi(soru.aranmaSayisi);
+        self.soruForm.isKuponlu(soru.isKuponlu);
+        self.soruForm.kuponKodu(soru.kuponKodu || '');
+        self.soruForm.siraNo(soru.siraNo);
+
+        if (!self.customers().length) {
+            $.get('/api/customers')
+                .done(function (data) {
+                    var list = Array.isArray(data) ? data : (data.items || []);
+                    self.customers(list);
+                });
+        }
+
+        $('#soruEkleModal').modal('show');
+    };
+
+    self.saveSoruForm = function () {
+        if (!self.soruForm.soruMetni()) {
+            toastr.warning('Soru metni zorunludur.');
+            return;
+        }
+        self.isSaving(true);
+
+        if (self.soruIsEditing()) {
+            // Güncelleme
+            $.ajax({
+                url: '/api/gm/donem-soru/' + self.soruEditingId(),
+                type: 'PUT',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    soruMetni: self.soruForm.soruMetni(),
+                    beklenenCevap: self.soruForm.beklenenCevap() || null,
+                    aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
+                    isKuponlu: self.soruForm.isKuponlu(),
+                    kuponKodu: self.soruForm.kuponKodu() || null,
+                    siraNo: parseInt(self.soruForm.siraNo()) || 0
+                })
+            })
+            .done(function () {
+                toastr.success('Soru güncellendi.');
+                $('#soruEkleModal').modal('hide');
+                self.loadDonemDetail(self.selectedDonem().id);
+            })
+            .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Güncelleme başarısız.'); })
+            .always(function () { self.isSaving(false); });
+        } else {
+            // Yeni ekleme
+            if (!self.soruForm.customerId() || !self.soruForm.gmHedefFirmaId()) {
+                toastr.warning('Müşteri ve hedef firma seçimi zorunludur.');
+                self.isSaving(false);
+                return;
+            }
+            $.ajax({
+                url: '/api/gm/donemler/' + self.selectedDonem().id + '/soru',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    customerId: self.soruForm.customerId(),
+                    gmHedefFirmaId: self.soruForm.gmHedefFirmaId(),
+                    soruMetni: self.soruForm.soruMetni(),
+                    beklenenCevap: self.soruForm.beklenenCevap() || null,
+                    aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
+                    isKuponlu: self.soruForm.isKuponlu(),
+                    kuponKodu: self.soruForm.kuponKodu() || null,
+                    siraNo: parseInt(self.soruForm.siraNo()) || 0
+                })
+            })
+            .done(function () {
+                toastr.success('Soru eklendi.');
+                $('#soruEkleModal').modal('hide');
+                self.loadDonemDetail(self.selectedDonem().id);
+            })
+            .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Ekleme başarısız.'); })
+            .always(function () { self.isSaving(false); });
+        }
+    };
+
+    // =============================================
+    // EXCEL IMPORT (DÖNEM BAZLI)
+    // =============================================
+    self.importCustomers = ko.observableArray([]);
+    self.importHedefFirmalar = ko.observableArray([]);
+    self.importForm = {
+        customerId: ko.observable(null),
+        hedefFirmaId: ko.observable(null)
+    };
+    self.isImporting = ko.observable(false);
+
+    self.importForm.customerId.subscribe(function (customerId) {
+        self.importForm.hedefFirmaId(null);
+        if (customerId) {
+            $.get('/api/gm/hedef-firmalar?customerId=' + customerId)
+                .done(function (data) { self.importHedefFirmalar(data); });
+        } else {
+            self.importHedefFirmalar([]);
+        }
+    });
+
+    self.showImportModal = function () {
+        self.importForm.customerId(null);
+        self.importForm.hedefFirmaId(null);
+        self.importHedefFirmalar([]);
+        $('#importFile').val('');
+
+        if (!self.importCustomers().length) {
+            $.get('/api/customers')
+                .done(function (data) {
+                    var list = Array.isArray(data) ? data : (data.items || []);
+                    self.importCustomers(list);
+                });
+        }
+
+        $('#importSoruModal').modal('show');
+    };
+
+    self.submitImport = function () {
+        if (!self.importForm.customerId() || !self.importForm.hedefFirmaId()) {
+            toastr.warning('Müşteri ve hedef firma seçimi zorunludur.');
+            return;
+        }
+        var fileInput = document.getElementById('importFile');
+        if (!fileInput.files.length) {
+            toastr.warning('Excel dosyası seçin.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('customerId', self.importForm.customerId());
+        formData.append('hedefFirmaId', self.importForm.hedefFirmaId());
+        formData.append('file', fileInput.files[0]);
+
+        self.isImporting(true);
+        $.ajax({
+            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+        })
+        .done(function (data) {
+            toastr.success(data.message || 'Import tamamlandı.');
+            if (data.errors && data.errors.length > 0) {
+                data.errors.forEach(function (e) { toastr.warning(e); });
+            }
+            $('#importSoruModal').modal('hide');
+            self.loadDonemDetail(self.selectedDonem().id);
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Import başarısız.'); })
+        .always(function () { self.isImporting(false); });
+    };
+
+    // =============================================
+    // EXCEL IMPORT WITH MATCHING (HEDEF FİRMA EŞLEŞTİRMELİ)
+    // =============================================
+    self.isImportingMatch = ko.observable(false);
+
+    // Sonuç modal
+    self.importResultUnmatched = ko.observableArray([]);
+    self.importResultMatched = ko.observableArray([]);
+    self.importResultHedefFirmalar = ko.observableArray([]);
+    self.isSavingUnmatched = ko.observable(false);
+
+    self.showImportMatchModal = function () {
+        $('#importMatchFile').val('');
+        $('#importMatchModal').modal('show');
+    };
+
+    self.submitImportMatch = function () {
+        var fileInput = document.getElementById('importMatchFile');
+        if (!fileInput.files.length) {
+            toastr.warning('Excel dosyası seçin.');
+            return;
+        }
+
+        var formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        self.isImportingMatch(true);
+        $.ajax({
+            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import-with-matching',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false
+        })
+        .done(function (data) {
+            if (data.errors && data.errors.length > 0) {
+                data.errors.forEach(function (e) { toastr.warning(e); });
+            }
+
+            $('#importMatchModal').modal('hide');
+
+            // Tüm hedef firmaları yükle (eşleşmeyenler için dropdown)
+            $.get('/api/gm/hedef-firmalar')
+                .done(function (firmalar) {
+                    firmalar.forEach(function (f) {
+                        f.displayName = f.firmaAdi + (f.customerName ? ' (' + f.customerName + ')' : '');
+                    });
+                    self.importResultHedefFirmalar(firmalar);
+                });
+
+            // Unmatched: her satıra selectedHedefFirmaId observable ekle
+            var unmatchedItems = (data.unmatched || []).map(function (item) {
+                return {
+                    rowIndex: item.rowIndex,
+                    excelHedefFirmaAdi: item.excelHedefFirmaAdi,
+                    soruMetni: item.soruMetni,
+                    beklenenCevap: item.beklenenCevap,
+                    aranmaSayisi: item.aranmaSayisi,
+                    selectedHedefFirmaId: ko.observable(null)
+                };
+            });
+
+            self.importResultUnmatched(unmatchedItems);
+            self.importResultMatched(data.matched || []);
+
+            var msg = data.imported + ' soru eklendi.';
+            if (unmatchedItems.length > 0) {
+                msg += ' ' + unmatchedItems.length + ' soru için hedef firma eşleşmedi.';
+            }
+            toastr.info(msg);
+
+            self.loadDonemDetail(self.selectedDonem().id);
+            $('#importResultModal').modal('show');
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Import başarısız.'); })
+        .always(function () { self.isImportingMatch(false); });
+    };
+
+    self.saveUnmatchedSorular = function () {
+        var items = [];
+        var firmalar = self.importResultHedefFirmalar();
+        self.importResultUnmatched().forEach(function (item) {
+            if (item.selectedHedefFirmaId()) {
+                // Seçilen firmadan customerId'yi bul
+                var firma = firmalar.find(function (f) { return f.id === item.selectedHedefFirmaId(); });
+                items.push({
+                    gmHedefFirmaId: item.selectedHedefFirmaId(),
+                    soruMetni: item.soruMetni,
+                    beklenenCevap: item.beklenenCevap,
+                    aranmaSayisi: item.aranmaSayisi,
+                    customerId: firma ? firma.customerId : 0
+                });
+            }
+        });
+
+        if (items.length === 0) {
+            toastr.warning('En az bir satır için hedef firma seçin.');
+            return;
+        }
+
+        self.isSavingUnmatched(true);
+        $.ajax({
+            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/save-unmatched',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(items)
+        })
+        .done(function (data) {
+            toastr.success(data.message || 'Sorular kaydedildi.');
+            $('#importResultModal').modal('hide');
+            self.loadDonemDetail(self.selectedDonem().id);
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Kaydetme başarısız.'); })
+        .always(function () { self.isSavingUnmatched(false); });
+    };
+
+    // =============================================
+    // DÖNEM LİSTESİ
+    // =============================================
 
     self.loadDonemler = function () {
         self.isLoading(true);
-        var url = '/api/gm/donemler';
-        if (self.selectedCustomerId()) url += '?customerId=' + self.selectedCustomerId();
-
-        $.get(url)
+        $.get('/api/gm/donemler')
             .done(function (data) { self.donemler(data); })
             .fail(function () { toastr.error('Dönemler yüklenirken hata oluştu.'); })
             .always(function () { self.isLoading(false); });
@@ -70,11 +373,7 @@ function DonemlerViewModel() {
         $.get('/api/gm/donemler/' + donemId)
             .done(function (data) {
                 self.donemDetail(data);
-                // Kullanıcılar ve soruları da yükle
-                if (data.customerId) {
-                    self.loadAvailableUsers();
-                    self.loadAvailableSorular(data.customerId);
-                }
+                self.loadAvailableUsers();
             })
             .fail(function () { toastr.error('Dönem detayı yüklenirken hata.'); });
     };
@@ -87,18 +386,10 @@ function DonemlerViewModel() {
             });
     };
 
-    self.loadAvailableSorular = function (customerId) {
-        $.get('/api/gm/sorular?customerId=' + customerId)
-            .done(function (data) {
-                self.availableSorular(data.filter(function (s) { return s.isActive; }));
-            });
-    };
-
     // CRUD
     self.showCreateModal = function () {
         self.isEditing(false);
         self.editingId(null);
-        self.form.customerId(self.selectedCustomerId());
         self.form.ad('');
         self.form.baslangicTarihi('');
         self.form.bitisTarihi('');
@@ -108,7 +399,6 @@ function DonemlerViewModel() {
     self.showEditModal = function (donem) {
         self.isEditing(true);
         self.editingId(donem.id);
-        self.form.customerId(donem.customerId);
         self.form.ad(donem.ad);
         self.form.baslangicTarihi(donem.baslangicTarihi ? donem.baslangicTarihi.substring(0, 10) : '');
         self.form.bitisTarihi(donem.bitisTarihi ? donem.bitisTarihi.substring(0, 10) : '');
@@ -143,12 +433,6 @@ function DonemlerViewModel() {
             .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Güncelleme başarısız.'); })
             .always(function () { self.isSaving(false); });
         } else {
-            data.customerId = self.form.customerId();
-            if (!data.customerId) {
-                toastr.warning('Müşteri seçimi zorunludur.');
-                self.isSaving(false);
-                return;
-            }
             $.ajax({
                 url: '/api/gm/donemler',
                 type: 'POST',
@@ -166,7 +450,7 @@ function DonemlerViewModel() {
     };
 
     self.deleteDonem = function (donem) {
-        showDeleteConfirm(donem.donemAdi, function () {
+        showDeleteConfirm(donem.ad, function () {
             $.ajax({ url: '/api/gm/donemler/' + donem.id, type: 'DELETE' })
                 .done(function () { toastr.success('Dönem silindi.'); self.loadDonemler(); })
                 .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Silme başarısız.'); });
@@ -196,53 +480,10 @@ function DonemlerViewModel() {
             .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Çıkarma başarısız.'); });
     };
 
-    // Soru
-    self.addSoru = function () {
-        if (!self.newSoruId() || !self.selectedDonem()) return;
-        $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/soru',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ soruId: self.newSoruId(), aranmaSayisi: parseInt(self.newSoruAranma()) || 1 })
-        })
-        .done(function () {
-            toastr.success('Soru eklendi.');
-            self.newSoruId(null);
-            self.newSoruAranma(1);
-            self.loadDonemDetail(self.selectedDonem().id);
-        })
-        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Ekleme başarısız.'); });
-    };
-
+    // Soru çıkar
     self.removeSoru = function (soru) {
         $.ajax({ url: '/api/gm/donem-soru/' + soru.id, type: 'DELETE' })
             .done(function () { toastr.success('Soru çıkarıldı.'); self.loadDonemDetail(self.selectedDonem().id); })
-            .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Çıkarma başarısız.'); });
-    };
-
-    // Kupon
-    self.addKuponlar = function () {
-        if (!self.newKuponText() || !self.selectedDonem()) return;
-        var kodlar = self.newKuponText().split('\n').map(function (s) { return s.trim(); }).filter(function (s) { return s; });
-        if (!kodlar.length) return;
-
-        $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlar',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ kuponKodlari: kodlar })
-        })
-        .done(function () {
-            toastr.success(kodlar.length + ' kupon eklendi.');
-            self.newKuponText('');
-            self.loadDonemDetail(self.selectedDonem().id);
-        })
-        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Ekleme başarısız.'); });
-    };
-
-    self.removeKupon = function (kupon) {
-        $.ajax({ url: '/api/gm/donem-kupon/' + kupon.id, type: 'DELETE' })
-            .done(function () { toastr.success('Kupon çıkarıldı.'); self.loadDonemDetail(self.selectedDonem().id); })
             .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Çıkarma başarısız.'); });
     };
 
@@ -334,7 +575,6 @@ function DonemlerViewModel() {
     };
 
     // Init
-    self.loadCustomers();
     self.loadDonemler();
 }
 

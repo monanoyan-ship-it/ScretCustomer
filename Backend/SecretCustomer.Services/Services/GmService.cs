@@ -43,7 +43,7 @@ public class GmService : IGmService
                 TelefonNo = x.TelefonNo,
                 Aciklama = x.Aciklama,
                 IsActive = x.IsActive,
-                SoruSayisi = x.Sorular.Count(s => !s.IsDeleted),
+                SoruSayisi = x.DonemSorular.Count(s => !s.IsDeleted),
                 CreatedAt = x.CreatedAt
             })
             .ToListAsync();
@@ -63,7 +63,7 @@ public class GmService : IGmService
                 TelefonNo = x.TelefonNo,
                 Aciklama = x.Aciklama,
                 IsActive = x.IsActive,
-                SoruSayisi = x.Sorular.Count(s => !s.IsDeleted),
+                SoruSayisi = x.DonemSorular.Count(s => !s.IsDeleted),
                 CreatedAt = x.CreatedAt
             })
             .FirstOrDefaultAsync();
@@ -117,14 +117,15 @@ public class GmService : IGmService
     }
 
     // =============================================
-    // SORU
+    // DÖNEM SORU (birleşik soru yönetimi)
     // =============================================
 
-    public async Task<List<GmSoruDto>> GetSorularAsync(int? customerId = null, int? hedefFirmaId = null)
+    public async Task<List<GmDonemSoruDto>> GetDonemSorularAsync(int? customerId = null, int? hedefFirmaId = null, int? donemId = null)
     {
-        var query = _context.GmSorular
+        var query = _context.GmDonemSorular
             .Include(x => x.Customer)
             .Include(x => x.GmHedefFirma)
+            .Include(x => x.GmDonem)
             .AsQueryable();
 
         if (customerId.HasValue)
@@ -133,124 +134,374 @@ public class GmService : IGmService
         if (hedefFirmaId.HasValue)
             query = query.Where(x => x.GmHedefFirmaId == hedefFirmaId.Value);
 
+        if (donemId.HasValue)
+            query = query.Where(x => x.GmDonemId == donemId.Value);
+
         return await query
             .OrderBy(x => x.SiraNo)
             .ThenBy(x => x.Id)
-            .Select(x => new GmSoruDto
+            .Select(x => new GmDonemSoruDto
             {
                 Id = x.Id,
                 CustomerId = x.CustomerId,
-                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
                 GmHedefFirmaId = x.GmHedefFirmaId,
-                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
                 SoruMetni = x.SoruMetni,
+                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
+                MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
                 BeklenenCevap = x.BeklenenCevap,
-                AranmaSayisi = x.AranmaSayisi,
                 IsKuponlu = x.IsKuponlu,
+                AranmaSayisi = x.AranmaSayisi,
                 SiraNo = x.SiraNo,
-                IsActive = x.IsActive,
-                CreatedAt = x.CreatedAt
+                KuponKodu = x.KuponKodu,
+                GmDonemId = x.GmDonemId,
+                DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
             })
             .ToListAsync();
     }
 
-    public async Task<GmSoruDto?> GetSoruByIdAsync(int id)
+    public async Task<GmDonemSoruDto> CreateDonemSoruAsync(int donemId, CreateDonemSoruRequest dto)
     {
-        return await _context.GmSorular
-            .Include(x => x.Customer)
-            .Include(x => x.GmHedefFirma)
-            .Where(x => x.Id == id)
-            .Select(x => new GmSoruDto
-            {
-                Id = x.Id,
-                CustomerId = x.CustomerId,
-                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
-                GmHedefFirmaId = x.GmHedefFirmaId,
-                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
-                SoruMetni = x.SoruMetni,
-                BeklenenCevap = x.BeklenenCevap,
-                AranmaSayisi = x.AranmaSayisi,
-                IsKuponlu = x.IsKuponlu,
-                SiraNo = x.SiraNo,
-                IsActive = x.IsActive,
-                CreatedAt = x.CreatedAt
-            })
-            .FirstOrDefaultAsync();
-    }
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Taslak)
+            throw new InvalidOperationException("Sadece taslak dönemlere soru eklenebilir.");
 
-    public async Task<GmSoruDto> CreateSoruAsync(CreateGmSoruDto dto)
-    {
-        var entity = new GmSoru
+        var entity = new GmDonemSoru
         {
+            GmDonemId = donemId,
             CustomerId = dto.CustomerId,
             GmHedefFirmaId = dto.GmHedefFirmaId,
             SoruMetni = dto.SoruMetni,
             BeklenenCevap = dto.BeklenenCevap,
             AranmaSayisi = dto.AranmaSayisi,
             IsKuponlu = dto.IsKuponlu,
-            SiraNo = dto.SiraNo,
-            IsActive = dto.IsActive
+            KuponKodu = dto.KuponKodu,
+            SiraNo = dto.SiraNo
         };
 
-        _context.GmSorular.Add(entity);
+        _context.GmDonemSorular.Add(entity);
         await _context.SaveChangesAsync();
 
-        await _auditLog.LogInfoAsync($"GM Soru oluşturuldu: {entity.SoruMetni.Substring(0, Math.Min(50, entity.SoruMetni.Length))}", "GolgeMusteri");
+        await _auditLog.LogInfoAsync($"GM Dönem soru oluşturuldu: {entity.SoruMetni.Substring(0, Math.Min(50, entity.SoruMetni.Length))}", "GolgeMusteri");
 
-        return (await GetSoruByIdAsync(entity.Id))!;
+        // Reload with includes
+        var result = await _context.GmDonemSorular
+            .Include(x => x.Customer)
+            .Include(x => x.GmHedefFirma)
+            .Include(x => x.GmDonem)
+            .Where(x => x.Id == entity.Id)
+            .Select(x => new GmDonemSoruDto
+            {
+                Id = x.Id,
+                CustomerId = x.CustomerId,
+                GmHedefFirmaId = x.GmHedefFirmaId,
+                SoruMetni = x.SoruMetni,
+                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
+                MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
+                BeklenenCevap = x.BeklenenCevap,
+                IsKuponlu = x.IsKuponlu,
+                AranmaSayisi = x.AranmaSayisi,
+                SiraNo = x.SiraNo,
+                KuponKodu = x.KuponKodu,
+                GmDonemId = x.GmDonemId,
+                DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
+            })
+            .FirstAsync();
+
+        return result;
     }
 
-    public async Task<GmSoruDto?> UpdateSoruAsync(int id, UpdateGmSoruDto dto)
+    public async Task<GmDonemSoruDto?> UpdateDonemSoruAsync(int donemSoruId, UpdateDonemSoruRequest dto)
     {
-        var entity = await _context.GmSorular.FindAsync(id);
+        var entity = await _context.GmDonemSorular
+            .Include(x => x.GmDonem)
+            .FirstOrDefaultAsync(x => x.Id == donemSoruId);
         if (entity == null) return null;
+
+        if (entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak)
+            throw new InvalidOperationException("Sadece taslak dönemlerdeki sorular güncellenebilir.");
 
         entity.SoruMetni = dto.SoruMetni;
         entity.BeklenenCevap = dto.BeklenenCevap;
         entity.AranmaSayisi = dto.AranmaSayisi;
         entity.IsKuponlu = dto.IsKuponlu;
+        entity.KuponKodu = dto.KuponKodu;
         entity.SiraNo = dto.SiraNo;
-        entity.IsActive = dto.IsActive;
 
         await _context.SaveChangesAsync();
-        await _auditLog.LogInfoAsync($"GM Soru güncellendi: {entity.SoruMetni.Substring(0, Math.Min(50, entity.SoruMetni.Length))}", "GolgeMusteri");
+        await _auditLog.LogInfoAsync($"GM Dönem soru güncellendi: {entity.SoruMetni.Substring(0, Math.Min(50, entity.SoruMetni.Length))}", "GolgeMusteri");
 
-        return await GetSoruByIdAsync(id);
+        // Reload
+        return await _context.GmDonemSorular
+            .Include(x => x.Customer)
+            .Include(x => x.GmHedefFirma)
+            .Include(x => x.GmDonem)
+            .Where(x => x.Id == entity.Id)
+            .Select(x => new GmDonemSoruDto
+            {
+                Id = x.Id,
+                CustomerId = x.CustomerId,
+                GmHedefFirmaId = x.GmHedefFirmaId,
+                SoruMetni = x.SoruMetni,
+                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
+                MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
+                BeklenenCevap = x.BeklenenCevap,
+                IsKuponlu = x.IsKuponlu,
+                AranmaSayisi = x.AranmaSayisi,
+                SiraNo = x.SiraNo,
+                KuponKodu = x.KuponKodu,
+                GmDonemId = x.GmDonemId,
+                DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
+            })
+            .FirstOrDefaultAsync();
     }
 
-    public async Task<bool> DeleteSoruAsync(int id)
+    public async Task<bool> RemoveDonemSoruAsync(int donemSoruId)
     {
-        var entity = await _context.GmSorular.FindAsync(id);
-        if (entity == null) return false;
+        var entity = await _context.GmDonemSorular
+            .Include(x => x.GmDonem)
+            .FirstOrDefaultAsync(x => x.Id == donemSoruId);
+        if (entity == null || entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
 
         entity.IsDeleted = true;
         await _context.SaveChangesAsync();
-        await _auditLog.LogInfoAsync("GM Soru silindi", "GolgeMusteri");
-
         return true;
+    }
+
+    // =============================================
+    // DÖNEM SORU EXCEL IMPORT
+    // =============================================
+
+    public async Task<(int imported, int skipped, List<string> errors)> ImportDonemSorularFromExcelAsync(int donemId, int customerId, int hedefFirmaId, Stream excelStream)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Taslak)
+            throw new InvalidOperationException("Sadece taslak dönemlere soru import edilebilir.");
+
+        var errors = new List<string>();
+        int imported = 0, skipped = 0;
+
+        using var workbook = new XLWorkbook(excelStream);
+        var ws = workbook.Worksheets.First();
+
+        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+
+        for (int row = 2; row <= lastRow; row++)
+        {
+            var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
+            var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
+            var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(soruMetni))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (soruMetni.Length > 2000)
+            {
+                errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
+                skipped++;
+                continue;
+            }
+
+            int aranmaSayisi = 1;
+            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
+            {
+                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
+                {
+                    errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
+                    aranmaSayisi = 1;
+                }
+            }
+
+            var entity = new GmDonemSoru
+            {
+                GmDonemId = donemId,
+                CustomerId = customerId,
+                GmHedefFirmaId = hedefFirmaId,
+                SoruMetni = soruMetni,
+                BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                AranmaSayisi = aranmaSayisi,
+                SiraNo = 0
+            };
+
+            _context.GmDonemSorular.Add(entity);
+            imported++;
+        }
+
+        if (imported > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Dönem soru Excel import: {imported} soru eklendi (DonemId: {donemId}, HedefFirmaId: {hedefFirmaId})", "GolgeMusteri");
+        }
+
+        return (imported, skipped, errors);
+    }
+
+    public async Task<ImportDonemSorularResult> ImportDonemSorularWithMatchingAsync(int donemId, Stream excelStream)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Taslak)
+            throw new InvalidOperationException("Sadece taslak dönemlere soru import edilebilir.");
+
+        // Tüm aktif hedef firmaları yükle (case-insensitive eşleştirme için)
+        var hedefFirmalar = await _context.GmHedefFirmalar
+            .Where(x => !x.IsDeleted)
+            .ToListAsync();
+
+        // Aynı isimde birden fazla firma olabilir (farklı müşterilerde) - ilk eşleşeni al
+        var firmaLookup = new Dictionary<string, GmHedefFirma>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in hedefFirmalar)
+        {
+            var key = f.FirmaAdi.Trim();
+            if (!firmaLookup.ContainsKey(key))
+                firmaLookup[key] = f;
+        }
+
+        var result = new ImportDonemSorularResult();
+
+        using var workbook = new XLWorkbook(excelStream);
+        var ws = workbook.Worksheets.First();
+        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+
+        for (int row = 2; row <= lastRow; row++)
+        {
+            var hedefFirmaAdi = ws.Cell(row, 1).GetString()?.Trim();
+            var soruMetni = ws.Cell(row, 2).GetString()?.Trim();
+            var beklenenCevap = ws.Cell(row, 3).GetString()?.Trim();
+            var aranmaSayisiStr = ws.Cell(row, 4).GetString()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(soruMetni))
+            {
+                result.Skipped++;
+                continue;
+            }
+
+            if (soruMetni.Length > 2000)
+            {
+                result.Errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
+                result.Skipped++;
+                continue;
+            }
+
+            int aranmaSayisi = 1;
+            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
+            {
+                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
+                {
+                    result.Errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
+                    aranmaSayisi = 1;
+                }
+            }
+
+            // Hedef firma eşleştir
+            var firmaKey = (hedefFirmaAdi ?? "").Trim();
+            if (firmaKey.Length > 0 && firmaLookup.TryGetValue(firmaKey, out var firma))
+            {
+                // Eşleşti → kaydet
+                var entity = new GmDonemSoru
+                {
+                    GmDonemId = donemId,
+                    CustomerId = firma.CustomerId,
+                    GmHedefFirmaId = firma.Id,
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi,
+                    SiraNo = 0
+                };
+                _context.GmDonemSorular.Add(entity);
+                result.Imported++;
+
+                result.Matched.Add(new ImportMatchedItem
+                {
+                    HedefFirmaAdi = firma.FirmaAdi,
+                    HedefFirmaId = firma.Id,
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi
+                });
+            }
+            else
+            {
+                // Eşleşmedi → listeye ekle
+                result.Unmatched.Add(new ImportUnmatchedItem
+                {
+                    RowIndex = row,
+                    ExcelHedefFirmaAdi = hedefFirmaAdi ?? "",
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi
+                });
+            }
+        }
+
+        if (result.Imported > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Dönem soru Excel import (eşleştirmeli): {result.Imported} soru eklendi, {result.Unmatched.Count} eşleşmedi (DonemId: {donemId})", "GolgeMusteri");
+        }
+
+        return result;
+    }
+
+    public async Task<int> SaveUnmatchedSorularAsync(int donemId, List<SaveUnmatchedSoruItem> items)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Taslak)
+            throw new InvalidOperationException("Sadece taslak dönemlere soru eklenebilir.");
+
+        int saved = 0;
+        foreach (var item in items)
+        {
+            if (item.GmHedefFirmaId <= 0 || string.IsNullOrWhiteSpace(item.SoruMetni))
+                continue;
+
+            var entity = new GmDonemSoru
+            {
+                GmDonemId = donemId,
+                CustomerId = item.CustomerId,
+                GmHedefFirmaId = item.GmHedefFirmaId,
+                SoruMetni = item.SoruMetni,
+                BeklenenCevap = string.IsNullOrWhiteSpace(item.BeklenenCevap) ? null : item.BeklenenCevap,
+                AranmaSayisi = item.AranmaSayisi < 1 ? 1 : item.AranmaSayisi,
+                SiraNo = 0
+            };
+            _context.GmDonemSorular.Add(entity);
+            saved++;
+        }
+
+        if (saved > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Dönem eşleşmeyen sorular kaydedildi: {saved} soru (DonemId: {donemId})", "GolgeMusteri");
+        }
+
+        return saved;
     }
 
     // =============================================
     // DÖNEM
     // =============================================
 
-    public async Task<List<GmDonemDto>> GetDonemlerAsync(int? customerId = null)
+    public async Task<List<GmDonemDto>> GetDonemlerAsync()
     {
         var query = _context.GmDonemler
-            .Include(x => x.Customer)
             .Include(x => x.OlusturanUser)
             .AsQueryable();
-
-        if (customerId.HasValue)
-            query = query.Where(x => x.CustomerId == customerId.Value);
 
         return await query
             .OrderByDescending(x => x.BaslangicTarihi)
             .Select(x => new GmDonemDto
             {
                 Id = x.Id,
-                CustomerId = x.CustomerId,
-                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
                 Ad = x.Ad,
                 BaslangicTarihi = x.BaslangicTarihi,
                 BitisTarihi = x.BitisTarihi,
@@ -272,7 +523,6 @@ public class GmService : IGmService
     public async Task<GmDonemDetailDto?> GetDonemDetailAsync(int id)
     {
         var donem = await _context.GmDonemler
-            .Include(x => x.Customer)
             .Include(x => x.OlusturanUser)
             .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -290,36 +540,28 @@ public class GmService : IGmService
             .ToListAsync();
 
         var sorular = await _context.GmDonemSorular
-            .Include(x => x.GmSoru)
-                .ThenInclude(s => s!.GmHedefFirma)
+            .Include(x => x.GmHedefFirma)
+            .Include(x => x.Customer)
             .Where(x => x.GmDonemId == id)
             .Select(x => new GmDonemSoruDto
             {
                 Id = x.Id,
-                GmSoruId = x.GmSoruId,
-                SoruMetni = x.GmSoru != null ? x.GmSoru.SoruMetni : null,
-                HedefFirmaAdi = x.GmSoru != null && x.GmSoru.GmHedefFirma != null ? x.GmSoru.GmHedefFirma.FirmaAdi : null,
-                BeklenenCevap = x.GmSoru != null ? x.GmSoru.BeklenenCevap : null,
-                IsKuponlu = x.GmSoru != null && x.GmSoru.IsKuponlu,
-                AranmaSayisi = x.AranmaSayisi
-            })
-            .ToListAsync();
-
-        var kuponlar = await _context.GmDonemKuponlar
-            .Where(x => x.GmDonemId == id)
-            .Select(x => new GmDonemKuponDto
-            {
-                Id = x.Id,
-                KuponKodu = x.KuponKodu,
-                IsUsed = x.IsUsed
+                CustomerId = x.CustomerId,
+                GmHedefFirmaId = x.GmHedefFirmaId,
+                SoruMetni = x.SoruMetni,
+                HedefFirmaAdi = x.GmHedefFirma != null ? x.GmHedefFirma.FirmaAdi : null,
+                MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
+                BeklenenCevap = x.BeklenenCevap,
+                IsKuponlu = x.IsKuponlu,
+                AranmaSayisi = x.AranmaSayisi,
+                SiraNo = x.SiraNo,
+                KuponKodu = x.KuponKodu
             })
             .ToListAsync();
 
         return new GmDonemDetailDto
         {
             Id = donem.Id,
-            CustomerId = donem.CustomerId,
-            CustomerName = donem.Customer?.CompanyName,
             Ad = donem.Ad,
             BaslangicTarihi = donem.BaslangicTarihi,
             BitisTarihi = donem.BitisTarihi,
@@ -329,8 +571,7 @@ public class GmService : IGmService
             OlusturanUserId = donem.OlusturanUserId,
             OlusturanUserName = donem.OlusturanUser != null ? donem.OlusturanUser.FirstName + " " + donem.OlusturanUser.LastName : null,
             Personeller = personeller,
-            Sorular = sorular,
-            Kuponlar = kuponlar
+            Sorular = sorular
         };
     }
 
@@ -338,7 +579,6 @@ public class GmService : IGmService
     {
         var entity = new GmDonem
         {
-            CustomerId = dto.CustomerId,
             Ad = dto.Ad,
             BaslangicTarihi = dto.BaslangicTarihi,
             BitisTarihi = dto.BitisTarihi,
@@ -403,7 +643,6 @@ public class GmService : IGmService
 
         var yeniDonem = new GmDonem
         {
-            CustomerId = source.CustomerId,
             Ad = yeniAd,
             BaslangicTarihi = baslangic,
             BitisTarihi = bitis,
@@ -424,14 +663,20 @@ public class GmService : IGmService
             });
         }
 
-        // Soruları kopyala (aynı AranmaSayisi ile)
+        // Soruları kopyala (tüm alanlarıyla)
         foreach (var s in source.Sorular)
         {
             _context.GmDonemSorular.Add(new GmDonemSoru
             {
                 GmDonemId = yeniDonem.Id,
-                GmSoruId = s.GmSoruId,
-                AranmaSayisi = s.AranmaSayisi
+                CustomerId = s.CustomerId,
+                GmHedefFirmaId = s.GmHedefFirmaId,
+                SoruMetni = s.SoruMetni,
+                BeklenenCevap = s.BeklenenCevap,
+                AranmaSayisi = s.AranmaSayisi,
+                IsKuponlu = s.IsKuponlu,
+                SiraNo = s.SiraNo
+                // KuponKodu kopyalanmıyor
             });
         }
 
@@ -477,169 +722,6 @@ public class GmService : IGmService
         return true;
     }
 
-    public async Task<bool> AddDonemSoruAsync(int donemId, int soruId, int aranmaSayisi)
-    {
-        var donem = await _context.GmDonemler.FindAsync(donemId);
-        if (donem == null || donem.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
-
-        var exists = await _context.GmDonemSorular
-            .AnyAsync(x => x.GmDonemId == donemId && x.GmSoruId == soruId);
-        if (exists) return false;
-
-        _context.GmDonemSorular.Add(new GmDonemSoru
-        {
-            GmDonemId = donemId,
-            GmSoruId = soruId,
-            AranmaSayisi = aranmaSayisi
-        });
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> RemoveDonemSoruAsync(int donemSoruId)
-    {
-        var entity = await _context.GmDonemSorular
-            .Include(x => x.GmDonem)
-            .FirstOrDefaultAsync(x => x.Id == donemSoruId);
-        if (entity == null || entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
-
-        entity.IsDeleted = true;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> UpdateDonemSoruAsync(int donemSoruId, int aranmaSayisi)
-    {
-        var entity = await _context.GmDonemSorular
-            .Include(x => x.GmDonem)
-            .FirstOrDefaultAsync(x => x.Id == donemSoruId);
-        if (entity == null || entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
-
-        entity.AranmaSayisi = aranmaSayisi;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<bool> AddDonemKuponAsync(int donemId, string kuponKodu)
-    {
-        var donem = await _context.GmDonemler.FindAsync(donemId);
-        if (donem == null || donem.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
-
-        _context.GmDonemKuponlar.Add(new GmDonemKupon
-        {
-            GmDonemId = donemId,
-            KuponKodu = kuponKodu
-        });
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    public async Task<List<bool>> AddDonemKuponlarAsync(int donemId, List<string> kuponKodlari)
-    {
-        var donem = await _context.GmDonemler.FindAsync(donemId);
-        if (donem == null || donem.DurumId != GmDonemDurumlari.Ids.Taslak)
-            return kuponKodlari.Select(_ => false).ToList();
-
-        var results = new List<bool>();
-        foreach (var kupon in kuponKodlari)
-        {
-            if (string.IsNullOrWhiteSpace(kupon))
-            {
-                results.Add(false);
-                continue;
-            }
-
-            _context.GmDonemKuponlar.Add(new GmDonemKupon
-            {
-                GmDonemId = donemId,
-                KuponKodu = kupon.Trim()
-            });
-            results.Add(true);
-        }
-
-        await _context.SaveChangesAsync();
-        return results;
-    }
-
-    public async Task<bool> RemoveDonemKuponAsync(int donemKuponId)
-    {
-        var entity = await _context.GmDonemKuponlar
-            .Include(x => x.GmDonem)
-            .FirstOrDefaultAsync(x => x.Id == donemKuponId);
-        if (entity == null || entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
-
-        entity.IsDeleted = true;
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    // =============================================
-    // SORU EXCEL IMPORT
-    // =============================================
-
-    public async Task<(int imported, int skipped, List<string> errors)> ImportSorularFromExcelAsync(int customerId, int hedefFirmaId, Stream excelStream)
-    {
-        var errors = new List<string>();
-        int imported = 0, skipped = 0;
-
-        using var workbook = new XLWorkbook(excelStream);
-        var ws = workbook.Worksheets.First();
-
-        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
-
-        for (int row = 2; row <= lastRow; row++)
-        {
-            var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
-            var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
-            var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
-
-            if (string.IsNullOrWhiteSpace(soruMetni))
-            {
-                skipped++;
-                continue;
-            }
-
-            if (soruMetni.Length > 2000)
-            {
-                errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
-                skipped++;
-                continue;
-            }
-
-            int aranmaSayisi = 1;
-            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
-            {
-                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
-                {
-                    errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
-                    aranmaSayisi = 1;
-                }
-            }
-
-            var entity = new GmSoru
-            {
-                CustomerId = customerId,
-                GmHedefFirmaId = hedefFirmaId,
-                SoruMetni = soruMetni,
-                BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
-                AranmaSayisi = aranmaSayisi,
-                IsActive = true,
-                SiraNo = 0
-            };
-
-            _context.GmSorular.Add(entity);
-            imported++;
-        }
-
-        if (imported > 0)
-        {
-            await _context.SaveChangesAsync();
-            await _auditLog.LogInfoAsync($"GM Soru Excel import: {imported} soru eklendi (HedefFirmaId: {hedefFirmaId})", "GolgeMusteri");
-        }
-
-        return (imported, skipped, errors);
-    }
-
     // =============================================
     // AKTİF ET (DAĞITIM ALGORİTMASI)
     // =============================================
@@ -678,7 +760,8 @@ public class GmService : IGmService
 
         foreach (var donemSoru in sorular)
         {
-            for (int i = 0; i < donemSoru.AranmaSayisi; i++)
+            var aranma = donemSoru.AranmaSayisi;
+            for (int i = 0; i < aranma; i++)
             {
                 var personel = personeller[personelIndex % personeller.Count];
                 var planTarihi = isGunleri[gunIndex % isGunleri.Count];
@@ -730,8 +813,7 @@ public class GmService : IGmService
         var query = _context.GmAtamalar
             .Include(x => x.GmDonem)
             .Include(x => x.GmDonemSoru)
-                .ThenInclude(ds => ds!.GmSoru)
-                    .ThenInclude(s => s!.GmHedefFirma)
+                .ThenInclude(ds => ds!.GmHedefFirma)
             .Include(x => x.User)
             .Where(x => x.GmDonemId == donemId);
 
@@ -757,8 +839,7 @@ public class GmService : IGmService
         var query = _context.GmAtamalar
             .Include(x => x.GmDonem)
             .Include(x => x.GmDonemSoru)
-                .ThenInclude(ds => ds!.GmSoru)
-                    .ThenInclude(s => s!.GmHedefFirma)
+                .ThenInclude(ds => ds!.GmHedefFirma)
             .Include(x => x.User)
             .Where(x => x.UserId == userId)
             .Where(x => x.GmDonem!.DurumId == GmDonemDurumlari.Ids.Aktif);
@@ -816,8 +897,8 @@ public class GmService : IGmService
 
     private static GmAtamaDto MapToAtamaDto(GmAtama x)
     {
-        var soru = x.GmDonemSoru?.GmSoru;
-        var firma = soru?.GmHedefFirma;
+        var donemSoru = x.GmDonemSoru;
+        var firma = donemSoru?.GmHedefFirma;
 
         return new GmAtamaDto
         {
@@ -825,11 +906,11 @@ public class GmService : IGmService
             GmDonemId = x.GmDonemId,
             DonemAdi = x.GmDonem?.Ad,
             GmDonemSoruId = x.GmDonemSoruId,
-            SoruMetni = soru?.SoruMetni,
-            BeklenenCevap = soru?.BeklenenCevap,
+            SoruMetni = donemSoru?.SoruMetni,
+            BeklenenCevap = donemSoru?.BeklenenCevap,
             HedefFirmaAdi = firma?.FirmaAdi,
             HedefFirmaTelefonNo = firma?.TelefonNo,
-            IsKuponlu = soru?.IsKuponlu ?? false,
+            IsKuponlu = donemSoru?.IsKuponlu ?? false,
             UserId = x.UserId,
             UserName = x.User != null ? x.User.FirstName + " " + x.User.LastName : null,
             PlanTarihi = x.PlanTarihi,

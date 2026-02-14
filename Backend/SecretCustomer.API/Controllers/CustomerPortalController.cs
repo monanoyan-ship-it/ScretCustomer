@@ -252,4 +252,14 @@ public class CustomerPortalController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Gölge Müşteri Aramaları
+    /// </summary>
+    [Route("CustomerPortal/GolgeMusteriAramalar")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,Admin")]
+    public IActionResult GolgeMusteriAramalar()
+    {
+        return View();
+    }
 }

@@ -1,0 +1,117 @@
+@{
+    ViewData["Title"] = Html.T("CustomerPortal.Menu.GolgeMusteriAramalar", "Gölge Müşteri Aramaları");
+    Layout = "~/Views/Shared/_CustomerLayout.cshtml";
+}
+
+<div id="gm-aramalar-app">
+    <!-- Filtre -->
+    <div class="card mb-3">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-3">
+                    <select class="form-select form-select-sm" data-bind="options: donemler, optionsText: 'ad', optionsValue: 'id', value: selectedDonemId, optionsCaption: '-- Dönem --'"></select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <!-- Tablo -->
+    <div class="card" data-bind="visible: !isLoading()">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tarih</th>
+                            <th>Saat</th>
+                            <th>Hedef Firma</th>
+                            <th>Soru</th>
+                            <th style="width: 80px;">Detay</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: aramalar">
+                        <tr>
+                            <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
+                            <td data-bind="text: aramaSaati || '-'"></td>
+                            <td data-bind="text: hedefFirmaAdi || '-'"></td>
+                            <td>
+                                <span data-bind="text: soruMetni.length > 80 ? soruMetni.substring(0, 80) + '...' : soruMetni"></span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showDetail" title="Detay">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div data-bind="visible: !isLoading() && aramalar().length === 0" class="text-center text-muted py-4">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                Henüz tamamlanmış arama bulunmuyor.
+            </div>
+        </div>
+    </div>
+
+    <!-- Detay Modal -->
+    <div class="modal fade" id="aramaDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-telephone me-2"></i>Arama Detayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <!-- ko if: selectedArama() -->
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Tarih</label>
+                            <div class="fw-bold" data-bind="text: selectedArama().gerceklesmeTarihi ? new Date(selectedArama().gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Saat</label>
+                            <div class="fw-bold" data-bind="text: selectedArama().aramaSaati || '-'"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Hedef Firma</label>
+                            <div class="fw-bold" data-bind="text: selectedArama().hedefFirmaAdi || '-'"></div>
+                        </div>
+                    </div>
+                    <!-- ko if: selectedArama().isKuponlu -->
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label text-muted small">Kupon Kodu</label>
+                            <div class="fw-bold" data-bind="text: selectedArama().kuponKodu || '-'"></div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Soru</label>
+                        <div class="border rounded p-2 bg-light" data-bind="text: selectedArama().soruMetni"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small">Beklenen Cevap</label>
+                        <div class="border rounded p-2 bg-light" data-bind="text: selectedArama().beklenenCevap || '-'"></div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label text-muted small">Not</label>
+                        <div class="border rounded p-2 bg-light" style="white-space: pre-wrap;" data-bind="text: selectedArama().not || '-'"></div>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/CustomerPortal/golgeMusteriAramalar.js" asp-append-version="true"></script>
+}

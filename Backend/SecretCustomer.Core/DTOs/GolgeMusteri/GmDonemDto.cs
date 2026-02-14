@@ -5,8 +5,6 @@ namespace SecretCustomer.Core.DTOs.GolgeMusteri;
 public class GmDonemDto
 {
     public int Id { get; set; }
-    public int CustomerId { get; set; }
-    public string? CustomerName { get; set; }
     public string Ad { get; set; } = string.Empty;
     public DateTime BaslangicTarihi { get; set; }
     public DateTime BitisTarihi { get; set; }
@@ -26,8 +24,6 @@ public class GmDonemDto
 public class GmDonemDetailDto
 {
     public int Id { get; set; }
-    public int CustomerId { get; set; }
-    public string? CustomerName { get; set; }
     public string Ad { get; set; } = string.Empty;
     public DateTime BaslangicTarihi { get; set; }
     public DateTime BitisTarihi { get; set; }
@@ -39,14 +35,10 @@ public class GmDonemDetailDto
 
     public List<GmDonemPersonelDto> Personeller { get; set; } = new();
     public List<GmDonemSoruDto> Sorular { get; set; } = new();
-    public List<GmDonemKuponDto> Kuponlar { get; set; } = new();
 }
 
 public class CreateGmDonemDto
 {
-    [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
-    public int CustomerId { get; set; }
-
     [Required(ErrorMessage = "Dönem adı zorunludur")]
     [StringLength(200, ErrorMessage = "Dönem adı en fazla 200 karakter olabilir")]
     public string Ad { get; set; } = string.Empty;
@@ -81,12 +73,18 @@ public class GmDonemPersonelDto
 public class GmDonemSoruDto
 {
     public int Id { get; set; }
-    public int GmSoruId { get; set; }
+    public int CustomerId { get; set; }
+    public int GmHedefFirmaId { get; set; }
     public string? SoruMetni { get; set; }
     public string? HedefFirmaAdi { get; set; }
+    public string? MusteriAdi { get; set; }
     public string? BeklenenCevap { get; set; }
     public bool IsKuponlu { get; set; }
     public int AranmaSayisi { get; set; }
+    public int SiraNo { get; set; }
+    public string? KuponKodu { get; set; }
+    public int? GmDonemId { get; set; }
+    public string? DonemAdi { get; set; }
 }
 
 public class GmDonemKuponDto

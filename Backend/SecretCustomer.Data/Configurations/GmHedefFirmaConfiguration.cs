@@ -26,11 +26,6 @@ public class GmHedefFirmaConfiguration : IEntityTypeConfiguration<GmHedefFirma>
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(x => x.Sorular)
-            .WithOne(s => s.GmHedefFirma)
-            .HasForeignKey(s => s.GmHedefFirmaId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasIndex(x => x.CustomerId);
     }
 }

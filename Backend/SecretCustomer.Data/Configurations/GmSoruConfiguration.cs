@@ -23,6 +23,11 @@ public class GmSoruConfiguration : IEntityTypeConfiguration<GmSoru>
             .HasForeignKey(x => x.CustomerId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.HasOne(x => x.GmHedefFirma)
+            .WithMany()
+            .HasForeignKey(x => x.GmHedefFirmaId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasIndex(x => x.CustomerId);
         builder.HasIndex(x => x.GmHedefFirmaId);
     }

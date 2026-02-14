@@ -8,12 +8,6 @@ namespace SecretCustomer.Core.Entities;
 public class GmDonem : BaseEntity
 {
     /// <summary>
-    /// Hangi müşteriye ait
-    /// </summary>
-    public int CustomerId { get; set; }
-    public Customer? Customer { get; set; }
-
-    /// <summary>
     /// Dönem adı (örn: "Mart 2026")
     /// </summary>
     public string Ad { get; set; } = string.Empty;

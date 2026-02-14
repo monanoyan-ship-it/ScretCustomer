@@ -11,15 +11,17 @@ public interface IGmService
     Task<GmHedefFirmaDto?> UpdateHedefFirmaAsync(int id, UpdateGmHedefFirmaDto dto);
     Task<bool> DeleteHedefFirmaAsync(int id);
 
-    // Soru
-    Task<List<GmSoruDto>> GetSorularAsync(int? customerId = null, int? hedefFirmaId = null);
-    Task<GmSoruDto?> GetSoruByIdAsync(int id);
-    Task<GmSoruDto> CreateSoruAsync(CreateGmSoruDto dto);
-    Task<GmSoruDto?> UpdateSoruAsync(int id, UpdateGmSoruDto dto);
-    Task<bool> DeleteSoruAsync(int id);
+    // DonemSoru (soru yönetimi artık dönem bazlı)
+    Task<List<GmDonemSoruDto>> GetDonemSorularAsync(int? customerId = null, int? hedefFirmaId = null, int? donemId = null);
+    Task<GmDonemSoruDto> CreateDonemSoruAsync(int donemId, CreateDonemSoruRequest dto);
+    Task<GmDonemSoruDto?> UpdateDonemSoruAsync(int donemSoruId, UpdateDonemSoruRequest dto);
+    Task<bool> RemoveDonemSoruAsync(int donemSoruId);
+    Task<(int imported, int skipped, List<string> errors)> ImportDonemSorularFromExcelAsync(int donemId, int customerId, int hedefFirmaId, Stream excelStream);
+    Task<ImportDonemSorularResult> ImportDonemSorularWithMatchingAsync(int donemId, Stream excelStream);
+    Task<int> SaveUnmatchedSorularAsync(int donemId, List<SaveUnmatchedSoruItem> items);
 
     // Donem
-    Task<List<GmDonemDto>> GetDonemlerAsync(int? customerId = null);
+    Task<List<GmDonemDto>> GetDonemlerAsync();
     Task<GmDonemDetailDto?> GetDonemDetailAsync(int id);
     Task<GmDonemDto> CreateDonemAsync(CreateGmDonemDto dto, int userId);
     Task<GmDonemDto?> UpdateDonemAsync(int id, UpdateGmDonemDto dto);
@@ -28,12 +30,6 @@ public interface IGmService
     // Donem alt yönetim
     Task<bool> AddDonemPersonelAsync(int donemId, int userId);
     Task<bool> RemoveDonemPersonelAsync(int donemPersonelId);
-    Task<bool> AddDonemSoruAsync(int donemId, int soruId, int aranmaSayisi);
-    Task<bool> RemoveDonemSoruAsync(int donemSoruId);
-    Task<bool> UpdateDonemSoruAsync(int donemSoruId, int aranmaSayisi);
-    Task<bool> AddDonemKuponAsync(int donemId, string kuponKodu);
-    Task<List<bool>> AddDonemKuponlarAsync(int donemId, List<string> kuponKodlari);
-    Task<bool> RemoveDonemKuponAsync(int donemKuponId);
 
     // Aktif Et (dağıtım algoritması)
     Task<int> AktifEtAsync(int donemId);
@@ -44,13 +40,69 @@ public interface IGmService
     // Dönem kopyala
     Task<int> CopyDonemAsync(int sourceDonemId, string yeniAd, DateTime baslangic, DateTime bitis, int userId);
 
-    // Soru Excel import
-    Task<(int imported, int skipped, List<string> errors)> ImportSorularFromExcelAsync(int customerId, int hedefFirmaId, Stream excelStream);
-
     // Takip (atama listesi)
     Task<List<GmAtamaDto>> GetAtamalarAsync(int donemId, int? userId = null, int? durumId = null);
 
     // Aramalarım (kullanıcı)
     Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, int? donemId = null);
     Task<bool> CompleteAtamaAsync(int atamaId, int userId, CompleteGmAtamaDto dto);
+}
+
+// Request DTOs (interface ile birlikte tanımlanıyor)
+public class CreateDonemSoruRequest
+{
+    public int CustomerId { get; set; }
+    public int GmHedefFirmaId { get; set; }
+    public string SoruMetni { get; set; } = string.Empty;
+    public string? BeklenenCevap { get; set; }
+    public int AranmaSayisi { get; set; } = 1;
+    public bool IsKuponlu { get; set; } = false;
+    public string? KuponKodu { get; set; }
+    public int SiraNo { get; set; } = 0;
+}
+
+public class UpdateDonemSoruRequest
+{
+    public string SoruMetni { get; set; } = string.Empty;
+    public string? BeklenenCevap { get; set; }
+    public int AranmaSayisi { get; set; } = 1;
+    public bool IsKuponlu { get; set; } = false;
+    public string? KuponKodu { get; set; }
+    public int SiraNo { get; set; } = 0;
+}
+
+public class ImportDonemSorularResult
+{
+    public int Imported { get; set; }
+    public int Skipped { get; set; }
+    public List<string> Errors { get; set; } = new();
+    public List<ImportMatchedItem> Matched { get; set; } = new();
+    public List<ImportUnmatchedItem> Unmatched { get; set; } = new();
+}
+
+public class ImportMatchedItem
+{
+    public string HedefFirmaAdi { get; set; } = string.Empty;
+    public int HedefFirmaId { get; set; }
+    public string SoruMetni { get; set; } = string.Empty;
+    public string? BeklenenCevap { get; set; }
+    public int AranmaSayisi { get; set; }
+}
+
+public class ImportUnmatchedItem
+{
+    public int RowIndex { get; set; }
+    public string ExcelHedefFirmaAdi { get; set; } = string.Empty;
+    public string SoruMetni { get; set; } = string.Empty;
+    public string? BeklenenCevap { get; set; }
+    public int AranmaSayisi { get; set; }
+}
+
+public class SaveUnmatchedSoruItem
+{
+    public int GmHedefFirmaId { get; set; }
+    public string SoruMetni { get; set; } = string.Empty;
+    public string? BeklenenCevap { get; set; }
+    public int AranmaSayisi { get; set; } = 1;
+    public int CustomerId { get; set; }
 }

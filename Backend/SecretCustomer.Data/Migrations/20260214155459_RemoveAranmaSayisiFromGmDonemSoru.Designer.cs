@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260214155459_RemoveAranmaSayisiFromGmDonemSoru")]
+    partial class RemoveAranmaSayisiFromGmDonemSoru
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -2043,47 +2046,20 @@ namespace SecretCustomer.Data.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AranmaSayisi")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("BeklenenCevap")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("text");
 
-                    b.Property<int>("CustomerId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("GmDonemId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("GmHedefFirmaId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("GmSoruId")
+                    b.Property<int>("GmSoruId")
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<bool>("IsKuponlu")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("KuponKodu")
-                        .HasColumnType("text");
-
-                    b.Property<int>("SiraNo")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SoruMetni")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp without time zone");
@@ -2093,11 +2069,7 @@ namespace SecretCustomer.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
-
                     b.HasIndex("GmDonemId");
-
-                    b.HasIndex("GmHedefFirmaId");
 
                     b.HasIndex("GmSoruId");
 
@@ -4990,34 +4962,19 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.GmDonemSoru", b =>
                 {
-                    b.HasOne("SecretCustomer.Core.Entities.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("SecretCustomer.Core.Entities.GmDonem", "GmDonem")
                         .WithMany("Sorular")
                         .HasForeignKey("GmDonemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SecretCustomer.Core.Entities.GmHedefFirma", "GmHedefFirma")
-                        .WithMany("DonemSorular")
-                        .HasForeignKey("GmHedefFirmaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SecretCustomer.Core.Entities.GmSoru", "GmSoru")
                         .WithMany()
                         .HasForeignKey("GmSoruId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Customer");
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("GmDonem");
-
-                    b.Navigation("GmHedefFirma");
 
                     b.Navigation("GmSoru");
                 });
@@ -5042,7 +4999,7 @@ namespace SecretCustomer.Data.Migrations
                         .IsRequired();
 
                     b.HasOne("SecretCustomer.Core.Entities.GmHedefFirma", "GmHedefFirma")
-                        .WithMany()
+                        .WithMany("Sorular")
                         .HasForeignKey("GmHedefFirmaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -5692,7 +5649,7 @@ namespace SecretCustomer.Data.Migrations
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.GmHedefFirma", b =>
                 {
-                    b.Navigation("DonemSorular");
+                    b.Navigation("Sorular");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.Language", b =>

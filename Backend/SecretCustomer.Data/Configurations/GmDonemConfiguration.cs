@@ -15,11 +15,6 @@ public class GmDonemConfiguration : IEntityTypeConfiguration<GmDonem>
             .IsRequired()
             .HasMaxLength(200);
 
-        builder.HasOne(x => x.Customer)
-            .WithMany()
-            .HasForeignKey(x => x.CustomerId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.HasOne(x => x.OlusturanUser)
             .WithMany()
             .HasForeignKey(x => x.OlusturanUserId)
@@ -45,7 +40,6 @@ public class GmDonemConfiguration : IEntityTypeConfiguration<GmDonem>
             .HasForeignKey(a => a.GmDonemId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(x => x.CustomerId);
         builder.HasIndex(x => x.DurumId);
     }
 }

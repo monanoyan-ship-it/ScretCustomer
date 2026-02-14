@@ -32,5 +32,5 @@ public class GmHedefFirma : BaseEntity
     public bool IsActive { get; set; } = true;
 
     // Navigation
-    public ICollection<GmSoru> Sorular { get; set; } = new List<GmSoru>();
+    public ICollection<GmDonemSoru> DonemSorular { get; set; } = new List<GmDonemSoru>();
 }

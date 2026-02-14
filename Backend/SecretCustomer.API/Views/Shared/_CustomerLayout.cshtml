@@ -41,7 +41,7 @@
             @{
                 var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
                 var managementPages = new[] { "Projects", "Organizations", "Supervisors", "InternalEvaluations", "ExternalEvaluations", "StaffTrainings", "ScoreThresholds" };
-                var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "DealerReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults" };
+                var reportPages = new[] { "Reports", "InternalReports", "ExternalReports", "Penalties", "Suggestions", "PersonnelReportCard", "DealerReportCard", "PerformanceByPeriod", "SurveyResults", "EnneagramResults", "GolgeMusteriAramalar" };
                 var isManagementActive = managementPages.Contains(currentAction);
                 var isReportActive = reportPages.Contains(currentAction);
             }
@@ -220,6 +220,12 @@
                                 <a class="nav-link @(currentAction == "EnneagramResults" ? "active" : "")" href="/CustomerPortal/EnneagramResults">
                                     <i class="bi bi-people text-purple"></i>
                                     @Html.T("Menu.EnneagramResults", "Enneagram Sonuclari")
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentAction == "GolgeMusteriAramalar" ? "active" : "")" href="/CustomerPortal/GolgeMusteriAramalar">
+                                    <i class="bi bi-telephone-outbound text-warning"></i>
+                                    @Html.T("CustomerPortal.Menu.GolgeMusteriAramalar", "Gölge Müşteri Aramaları")
                                 </a>
                             </li>
                         </ul>

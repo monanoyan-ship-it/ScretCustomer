@@ -3281,4 +3281,66 @@ public class CustomerPortalApiController : ControllerBase
         return sb.ToString();
     }
 
+    // =============================================
+    // GÖLGE MÜŞTERİ ARAMALARI
+    // =============================================
+
+    [HttpGet("gm-aramalar")]
+    public async Task<IActionResult> GetGmAramalar([FromQuery] int? donemId)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        var query = _context.GmAtamalar
+            .Include(a => a.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(a => a.GmDonem)
+            .Where(a => !a.IsDeleted
+                && a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi
+                && a.GmDonemSoru != null
+                && a.GmDonemSoru.CustomerId == customerId.Value)
+            .AsQueryable();
+
+        if (donemId.HasValue)
+            query = query.Where(a => a.GmDonemId == donemId.Value);
+
+        var result = await query
+            .OrderByDescending(a => a.GerceklesmeTarihi)
+            .Select(a => new
+            {
+                a.Id,
+                a.GerceklesmeTarihi,
+                a.AramaSaati,
+                SoruMetni = a.GmDonemSoru!.SoruMetni,
+                BeklenenCevap = a.GmDonemSoru.BeklenenCevap,
+                HedefFirmaAdi = a.GmDonemSoru.GmHedefFirma != null ? a.GmDonemSoru.GmHedefFirma.FirmaAdi : null,
+                Not = a.Not,
+                DonemAdi = a.GmDonem != null ? a.GmDonem.Ad : null,
+                KuponKodu = a.KuponKodu,
+                IsKuponlu = a.GmDonemSoru.IsKuponlu
+            })
+            .ToListAsync();
+
+        return Ok(result);
+    }
+
+    [HttpGet("gm-donemler")]
+    public async Task<IActionResult> GetGmDonemler()
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
+
+        // Müşterinin sorularının olduğu dönemler
+        var donemler = await _context.GmDonemler
+            .Where(d => !d.IsDeleted
+                && d.Sorular.Any(ds => ds.CustomerId == customerId.Value && !ds.IsDeleted))
+            .OrderByDescending(d => d.BaslangicTarihi)
+            .Select(d => new { d.Id, d.Ad })
+            .ToListAsync();
+
+        return Ok(donemler);
+    }
+
 }
