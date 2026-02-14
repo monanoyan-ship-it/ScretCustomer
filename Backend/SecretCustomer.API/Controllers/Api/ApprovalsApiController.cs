@@ -305,7 +305,7 @@ public class ApprovalsApiController : BaseApiController
                 NotificationTypes.Ids.ApprovalRequest,
                 "Yeni Onay Talebi",
                 $"{approval.Title} için onay talebiniz var.",
-                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                actionUrl: "/Evaluations",
                 relatedEntityId: approval.Id,
                 relatedEntityType: "Approval",
                 priorityId: approval.PriorityId,
@@ -377,7 +377,7 @@ public class ApprovalsApiController : BaseApiController
                 dto.Approved ? NotificationTypes.Ids.Success : NotificationTypes.Ids.Warning,
                 dto.Approved ? "Onay Kabul Edildi" : "Onay Reddedildi",
                 $"{approval.Title} için onay talebiniz {(dto.Approved ? "kabul edildi" : "reddedildi")}.",
-                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                actionUrl: "/Evaluations",
                 relatedEntityId: approval.Id,
                 relatedEntityType: "Approval",
                 senderUserId: userId);
@@ -424,7 +424,7 @@ public class ApprovalsApiController : BaseApiController
                 NotificationTypes.Ids.Warning,
                 "Onay Talebi İptal Edildi",
                 $"{approval.Title} onay talebi iptal edildi.",
-                actionUrl: $"/Approvals/Detail/{approval.Id}",
+                actionUrl: "/Evaluations",
                 relatedEntityId: approval.Id,
                 relatedEntityType: "Approval",
                 senderUserId: cancelUserType == "CustomerPersonnel" ? null : cancelUserId);
