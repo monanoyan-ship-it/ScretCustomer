@@ -20,7 +20,9 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
 
         if (includeColumns)
         {
-            query = query.Include(t => t.Columns.OrderBy(c => c.Order));
+            query = query
+                .Include(t => t.Columns.OrderBy(c => c.Order))
+                .Include(t => t.Filters.OrderBy(f => f.Order));
         }
 
         return await query.FirstOrDefaultAsync(t => t.Id == id);
@@ -30,6 +32,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
     {
         var query = _context.ExcelTemplates
             .Include(t => t.Columns.OrderBy(c => c.Order))
+            .Include(t => t.Filters.OrderBy(f => f.Order))
             .AsQueryable();
 
         if (!includeInactive)
@@ -46,6 +49,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
     {
         return await _context.ExcelTemplates
             .Include(t => t.Columns.OrderBy(c => c.Order))
+            .Include(t => t.Filters.OrderBy(f => f.Order))
             .Where(t => t.EntityType == entityType && t.IsActive)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -90,6 +94,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
         existingTemplate.IsActive = template.IsActive;
         existingTemplate.SheetName = template.SheetName;
         existingTemplate.HasHeader = template.HasHeader;
+        existingTemplate.GroupByPropertyName = template.GroupByPropertyName;
         existingTemplate.UpdatedAt = template.UpdatedAt;
 
         // Remove columns that are no longer present
@@ -113,6 +118,7 @@ public class ExcelTemplateRepository : IExcelTemplateRepository
                 existingColumn.ColumnName = column.ColumnName;
                 existingColumn.PropertyName = column.PropertyName;
                 existingColumn.ColumnTypeId = column.ColumnTypeId;
+                existingColumn.AggregateTypeId = column.AggregateTypeId;
                 existingColumn.Order = column.Order;
                 existingColumn.IsRequired = column.IsRequired;
                 existingColumn.ValidationRules = column.ValidationRules;

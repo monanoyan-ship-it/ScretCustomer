@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Answer> Answers { get; set; }
     public DbSet<ExcelTemplate> ExcelTemplates { get; set; }
     public DbSet<ExcelColumn> ExcelColumns { get; set; }
+    public DbSet<ExcelTemplateFilter> ExcelTemplateFilters { get; set; }
     
     // Customer Management DbSets
     public DbSet<Customer> Customers { get; set; }

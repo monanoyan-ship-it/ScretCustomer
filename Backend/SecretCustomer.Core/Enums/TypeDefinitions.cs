@@ -844,6 +844,66 @@ public static class CustomerTaskTypes
 }
 
 // ============================================================
+// FILTER OPERATOR TYPES (Filtre Operatör Tipleri)
+// ============================================================
+public static class FilterOperatorTypes
+{
+    public static readonly TypeItem Equals = new(1, "Equals", "FilterOperator.Equals", "Eşittir", "bi-dash-lg", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem NotEquals = new(2, "NotEquals", "FilterOperator.NotEquals", "Eşit Değil", "bi-x-lg", "bg-danger", 2);
+    public static readonly TypeItem Contains = new(3, "Contains", "FilterOperator.Contains", "İçerir", "bi-search", "bg-info", 3);
+    public static readonly TypeItem GreaterThan = new(4, "GreaterThan", "FilterOperator.GreaterThan", "Büyüktür", "bi-chevron-right", "bg-success", 4);
+    public static readonly TypeItem LessThan = new(5, "LessThan", "FilterOperator.LessThan", "Küçüktür", "bi-chevron-left", "bg-warning text-dark", 5);
+    public static readonly TypeItem GreaterOrEqual = new(6, "GreaterOrEqual", "FilterOperator.GreaterOrEqual", "Büyük Eşit", "bi-chevron-bar-right", "bg-success", 6);
+    public static readonly TypeItem LessOrEqual = new(7, "LessOrEqual", "FilterOperator.LessOrEqual", "Küçük Eşit", "bi-chevron-bar-left", "bg-warning text-dark", 7);
+
+    public static IEnumerable<TypeItem> All => new[] { Equals, NotEquals, Contains, GreaterThan, LessThan, GreaterOrEqual, LessOrEqual };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Equals = 1;
+        public const int NotEquals = 2;
+        public const int Contains = 3;
+        public const int GreaterThan = 4;
+        public const int LessThan = 5;
+        public const int GreaterOrEqual = 6;
+        public const int LessOrEqual = 7;
+    }
+}
+
+// ============================================================
+// AGGREGATE TYPES (Toplama Tipleri)
+// ============================================================
+public static class AggregateTypes
+{
+    public static readonly TypeItem None = new(0, "None", "AggregateType.None", "Yok", "bi-dash", "bg-secondary", 0, isDefault: true);
+    public static readonly TypeItem Sum = new(1, "Sum", "AggregateType.Sum", "Toplam", "bi-plus-circle", "bg-primary", 1);
+    public static readonly TypeItem Avg = new(2, "Avg", "AggregateType.Avg", "Ortalama", "bi-calculator", "bg-info", 2);
+    public static readonly TypeItem Count = new(3, "Count", "AggregateType.Count", "Sayi", "bi-hash", "bg-success", 3);
+    public static readonly TypeItem Concat = new(4, "Concat", "AggregateType.Concat", "Birlestir", "bi-link-45deg", "bg-warning text-dark", 4);
+    public static readonly TypeItem Min = new(5, "Min", "AggregateType.Min", "Minimum", "bi-arrow-down", "bg-danger", 5);
+    public static readonly TypeItem Max = new(6, "Max", "AggregateType.Max", "Maksimum", "bi-arrow-up", "bg-dark", 6);
+
+    public static IEnumerable<TypeItem> All => new[] { None, Sum, Avg, Count, Concat, Min, Max };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int None = 0;
+        public const int Sum = 1;
+        public const int Avg = 2;
+        public const int Count = 3;
+        public const int Concat = 4;
+        public const int Min = 5;
+        public const int Max = 6;
+    }
+}
+
+// ============================================================
 // EXCEL COLUMN TYPES (Excel Sutun Tipleri)
 // ============================================================
 public static class ExcelColumnTypes

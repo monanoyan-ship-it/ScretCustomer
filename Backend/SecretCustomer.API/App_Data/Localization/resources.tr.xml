@@ -3322,6 +3322,102 @@
   <LocaleResource Name="ExcelTemplate.HasHeader">
     <Value>Başlık satırı var</Value>
   </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupBy">
+    <Value>Gruplama Alanı</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupByPlaceholder">
+    <Value>ör: Organization.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupByHint">
+    <Value>Boş bırakılırsa gruplama yapılmaz</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.AggregateType">
+    <Value>Toplama Tipi</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ExportData">
+    <Value>Veri İndir</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.None">
+    <Value>Yok</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Sum">
+    <Value>Toplam</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Avg">
+    <Value>Ortalama</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Count">
+    <Value>Sayı</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Concat">
+    <Value>Birleştir</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Min">
+    <Value>Minimum</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Max">
+    <Value>Maksimum</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Filters">
+    <Value>Filtreler</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterDefinitions">
+    <Value>Filtre Tanımları</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterDefinitionsHint">
+    <Value>Veri indirirken kullanıcının dolduracağı filtre alanlarını tanımlayın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.AddFilter">
+    <Value>Filtre Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterLabel">
+    <Value>Etiket</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterLabelPlaceholder">
+    <Value>ör: Proje Adı</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterProperty">
+    <Value>Alan</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterPropertyPlaceholder">
+    <Value>ör: Project.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterOperator">
+    <Value>Operatör</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoFiltersYet">
+    <Value>Henüz filtre tanımlanmadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FillFiltersHint">
+    <Value>Filtreleri doldurun ve indirin. Boş bırakılan filtreler uygulanmaz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoFiltersExport">
+    <Value>Bu şablon için filtre tanımlanmamış. Tüm veriler indirilecek.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DownloadData">
+    <Value>Veriyi İndir</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.Equals">
+    <Value>Eşittir</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.NotEquals">
+    <Value>Eşit Değil</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.Contains">
+    <Value>İçerir</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.GreaterThan">
+    <Value>Büyüktür</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.LessThan">
+    <Value>Küçüktür</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.GreaterOrEqual">
+    <Value>Büyük Eşit</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.LessOrEqual">
+    <Value>Küçük Eşit</Value>
+  </LocaleResource>
   <LocaleResource Name="ExcelTemplate.Columns">
     <Value>Kolonlar</Value>
   </LocaleResource>
@@ -3390,6 +3486,18 @@
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.UploadAndProcess">
     <Value>Dosyayı Yükle ve İşle</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Preview">
+    <Value>Önizle</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DataPreview">
+    <Value>Veri Önizleme</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.PreviewTruncated">
+    <Value>İlk 20 satır gösteriliyor. Tüm veriyi indirmek için "Veriyi İndir" butonunu kullanın.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.RowsShown">
+    <Value>satır gösteriliyor</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Department">
     <Value>Departman</Value>
@@ -4203,6 +4311,12 @@
   </LocaleResource>
   <LocaleResource Name="Api.ExcelTemplate.NoAttributesFound">
     <Value>{0} üzerinde ExcelColumn attribute'u bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.ExportFailed">
+    <Value>Veri dışa aktarma hatası: {0}</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.PreviewFailed">
+    <Value>Önizleme hatası: {0}</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Answer.UploadError">
     <Value>Dosya yüklenirken bir hata oluştu.</Value>

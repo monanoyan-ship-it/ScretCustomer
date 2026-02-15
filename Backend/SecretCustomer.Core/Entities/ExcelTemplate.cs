@@ -13,6 +13,10 @@ public class ExcelTemplate : BaseEntity
     // Başlık satırı var mı?
     public bool HasHeader { get; set; } = true;
 
+    // Gruplama alanı (ör: "Organization.Name")
+    public string? GroupByPropertyName { get; set; }
+
     // Navigation properties
     public ICollection<ExcelColumn> Columns { get; set; } = new List<ExcelColumn>();
+    public ICollection<ExcelTemplateFilter> Filters { get; set; } = new List<ExcelTemplateFilter>();
 }

@@ -3132,6 +3132,102 @@
   <LocaleResource Name="ExcelTemplate.HasHeader">
     <Value>Tiene fila de encabezado</Value>
   </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupBy">
+    <Value>Campo de agrupación</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupByPlaceholder">
+    <Value>ej: Organization.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.GroupByHint">
+    <Value>Dejar vacío para no agrupar</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.AggregateType">
+    <Value>Tipo de agregación</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.ExportData">
+    <Value>Exportar datos</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.None">
+    <Value>Ninguno</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Sum">
+    <Value>Suma</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Avg">
+    <Value>Promedio</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Count">
+    <Value>Cantidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Concat">
+    <Value>Concatenar</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Min">
+    <Value>Mínimo</Value>
+  </LocaleResource>
+  <LocaleResource Name="AggregateType.Max">
+    <Value>Máximo</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Filters">
+    <Value>Filtros</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterDefinitions">
+    <Value>Definiciones de filtro</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterDefinitionsHint">
+    <Value>Defina los campos de filtro que los usuarios completarán al descargar datos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.AddFilter">
+    <Value>Agregar filtro</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterLabel">
+    <Value>Etiqueta</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterLabelPlaceholder">
+    <Value>ej: Nombre del proyecto</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterProperty">
+    <Value>Campo</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterPropertyPlaceholder">
+    <Value>ej: Project.Name</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FilterOperator">
+    <Value>Operador</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoFiltersYet">
+    <Value>Aún no se han definido filtros.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.FillFiltersHint">
+    <Value>Complete los filtros y descargue. Los filtros vacíos no se aplicarán.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.NoFiltersExport">
+    <Value>No se han definido filtros para esta plantilla. Se descargarán todos los datos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DownloadData">
+    <Value>Descargar datos</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.Equals">
+    <Value>Igual</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.NotEquals">
+    <Value>No igual</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.Contains">
+    <Value>Contiene</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.GreaterThan">
+    <Value>Mayor que</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.LessThan">
+    <Value>Menor que</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.GreaterOrEqual">
+    <Value>Mayor o igual</Value>
+  </LocaleResource>
+  <LocaleResource Name="FilterOperator.LessOrEqual">
+    <Value>Menor o igual</Value>
+  </LocaleResource>
   <LocaleResource Name="ExcelTemplate.Columns">
     <Value>Columnas</Value>
   </LocaleResource>
@@ -3200,6 +3296,18 @@
   </LocaleResource>
   <LocaleResource Name="ExcelTemplate.UploadAndProcess">
     <Value>Subir y Procesar Archivo</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.Preview">
+    <Value>Vista previa</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.DataPreview">
+    <Value>Vista previa de datos</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.PreviewTruncated">
+    <Value>Se muestran las primeras 20 filas. Use el botón "Descargar datos" para obtener todos los datos.</Value>
+  </LocaleResource>
+  <LocaleResource Name="ExcelTemplate.RowsShown">
+    <Value>filas mostradas</Value>
   </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.Department">
     <Value>Departamento</Value>
@@ -3953,6 +4061,12 @@
   </LocaleResource>
   <LocaleResource Name="Api.ExcelTemplate.NoAttributesFound">
     <Value>No se encontraron atributos ExcelColumn en {0}.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.ExportFailed">
+    <Value>Error al exportar datos: {0}</Value>
+  </LocaleResource>
+  <LocaleResource Name="Api.ExcelTemplate.PreviewFailed">
+    <Value>Error de vista previa: {0}</Value>
   </LocaleResource>
   <LocaleResource Name="Api.Answer.UploadError">
     <Value>Ocurrió un error al subir el archivo.</Value>

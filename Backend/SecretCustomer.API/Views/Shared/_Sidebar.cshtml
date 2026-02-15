@@ -47,6 +47,14 @@
                 </a>
             </li>
 
+            <!-- Aramalarım - QualitySpecialist & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
+                <a href="/GolgeMusteri/Aramalarim" class="nav-link text-white" data-bind="click: closeSidebar">
+                    <i class="bi bi-telephone me-2"></i>
+                    @Html.T("GolgeMusteri.Aramalarim", "Aramalarım")
+                </a>
+            </li>
+
             <!-- ==================== PROJELER (Admin Only) ==================== -->
             <li class="nav-item" data-bind="visible: isAdmin">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
@@ -341,14 +349,6 @@
                         </li>
                     </ul>
                 </div>
-            </li>
-
-            <!-- Aramalarım - QualitySpecialist & Admin -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
-                <a href="/GolgeMusteri/Aramalarim" class="nav-link text-white" data-bind="click: closeSidebar">
-                    <i class="bi bi-telephone me-2"></i>
-                    @Html.T("GolgeMusteri.Aramalarim", "Aramalarım")
-                </a>
             </li>
 
             <!-- Notifications - Non-Admin users -->

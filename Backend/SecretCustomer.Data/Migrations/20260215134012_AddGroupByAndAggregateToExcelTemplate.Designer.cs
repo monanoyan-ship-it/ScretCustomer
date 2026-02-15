@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SecretCustomer.Data;
@@ -11,9 +12,11 @@ using SecretCustomer.Data;
 namespace SecretCustomer.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260215134012_AddGroupByAndAggregateToExcelTemplate")]
+    partial class AddGroupByAndAggregateToExcelTemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1845,53 +1848,6 @@ namespace SecretCustomer.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ExcelTemplates");
-                });
-
-            modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelTemplateFilter", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ExcelTemplateId")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("OperatorTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PropertyName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ExcelTemplateId");
-
-                    b.ToTable("ExcelTemplateFilters");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.GmAtama", b =>
@@ -4974,17 +4930,6 @@ namespace SecretCustomer.Data.Migrations
                     b.Navigation("ExcelTemplate");
                 });
 
-            modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelTemplateFilter", b =>
-                {
-                    b.HasOne("SecretCustomer.Core.Entities.ExcelTemplate", "ExcelTemplate")
-                        .WithMany("Filters")
-                        .HasForeignKey("ExcelTemplateId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ExcelTemplate");
-                });
-
             modelBuilder.Entity("SecretCustomer.Core.Entities.GmAtama", b =>
                 {
                     b.HasOne("SecretCustomer.Core.Entities.GmDonem", "GmDonem")
@@ -5741,8 +5686,6 @@ namespace SecretCustomer.Data.Migrations
             modelBuilder.Entity("SecretCustomer.Core.Entities.ExcelTemplate", b =>
                 {
                     b.Navigation("Columns");
-
-                    b.Navigation("Filters");
                 });
 
             modelBuilder.Entity("SecretCustomer.Core.Entities.GmDonem", b =>

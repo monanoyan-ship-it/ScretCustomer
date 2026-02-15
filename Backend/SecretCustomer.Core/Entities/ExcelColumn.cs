@@ -8,6 +8,7 @@ public class ExcelColumn : BaseEntity
     public string ColumnName { get; set; } = string.Empty;  // Excel'de görünecek başlık
     public string PropertyName { get; set; } = string.Empty;  // Database field adı (örn: "FirstName")
     public int ColumnTypeId { get; set; } = Enums.ExcelColumnTypes.Ids.Text;
+    public int AggregateTypeId { get; set; } = Enums.AggregateTypes.Ids.None;
     public int Order { get; set; }  // Kolon sırası
     public bool IsRequired { get; set; } = false;
 

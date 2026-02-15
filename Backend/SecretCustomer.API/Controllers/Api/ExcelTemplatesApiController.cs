@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.API.DTOs;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
+using SecretCustomer.Data;
+using SecretCustomer.Services.Helpers;
 using System.Reflection;
 using System.Text.Json;
 
@@ -15,14 +17,17 @@ public class ExcelTemplatesApiController : BaseApiController
 {
     private readonly IExcelTemplateService _excelTemplateService;
     private readonly ILocalizationService _localizationService;
+    private readonly ApplicationDbContext _context;
 
     public ExcelTemplatesApiController(
         IExcelTemplateService excelTemplateService,
         ILocalizationService localizationService,
+        ApplicationDbContext context,
         IConfiguration configuration) : base(configuration)
     {
         _excelTemplateService = excelTemplateService;
         _localizationService = localizationService;
+        _context = context;
     }
 
     /// <summary>
@@ -42,6 +47,7 @@ public class ExcelTemplatesApiController : BaseApiController
             EntityType = t.EntityType,
             IsActive = t.IsActive,
             ColumnCount = t.Columns?.Count ?? 0,
+            FilterCount = t.Filters?.Count ?? 0,
             CreatedAt = t.CreatedAt,
             UpdatedAt = t.UpdatedAt ?? t.CreatedAt
         });
@@ -96,12 +102,14 @@ public class ExcelTemplatesApiController : BaseApiController
                 EntityType = createDto.EntityType,
                 SheetName = createDto.SheetName,
                 HasHeader = createDto.HasHeader,
+                GroupByPropertyName = createDto.GroupByPropertyName,
                 IsActive = true,
                 Columns = createDto.Columns.Select(c => new ExcelColumn
                 {
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
                     ColumnTypeId = c.ColumnTypeId,
+                    AggregateTypeId = c.AggregateTypeId,
                     Order = c.Order,
                     IsRequired = c.IsRequired,
                     ValidationRules = c.ValidationRules != null
@@ -146,12 +154,14 @@ public class ExcelTemplatesApiController : BaseApiController
                 IsActive = updateDto.IsActive,
                 SheetName = updateDto.SheetName,
                 HasHeader = updateDto.HasHeader,
+                GroupByPropertyName = updateDto.GroupByPropertyName,
                 Columns = updateDto.Columns.Select(c => new ExcelColumn
                 {
                     Id = c.Id ?? 0,
                     ColumnName = c.ColumnName,
                     PropertyName = c.PropertyName,
                     ColumnTypeId = c.ColumnTypeId,
+                    AggregateTypeId = c.AggregateTypeId,
                     Order = c.Order,
                     IsRequired = c.IsRequired,
                     ValidationRules = c.ValidationRules != null
@@ -226,6 +236,110 @@ public class ExcelTemplatesApiController : BaseApiController
     }
 
     /// <summary>
+    /// Export data from database to Excel based on template with optional filters
+    /// </summary>
+    [HttpPost("{id}/export-data")]
+    public async Task<IActionResult> ExportData(int id, [FromBody] ExportDataRequestDto? request)
+    {
+        try
+        {
+            List<Core.Interfaces.Services.ExportFilterValue>? filterValues = null;
+            if (request?.Filters != null && request.Filters.Any())
+            {
+                filterValues = request.Filters.Select(f => new Core.Interfaces.Services.ExportFilterValue
+                {
+                    PropertyName = f.PropertyName,
+                    OperatorTypeId = f.OperatorTypeId,
+                    Value = f.Value
+                }).ToList();
+            }
+
+            var result = await _excelTemplateService.ExportDataToExcelAsync(id, filterValues);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CreateErrorResponse(
+                string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.ExportFailed"), ex.Message), ex));
+        }
+    }
+
+    /// <summary>
+    /// Preview data from database based on template with optional filters (returns JSON)
+    /// </summary>
+    [HttpPost("{id}/preview")]
+    public async Task<IActionResult> PreviewData(int id, [FromBody] ExportDataRequestDto? request)
+    {
+        try
+        {
+            List<Core.Interfaces.Services.ExportFilterValue>? filterValues = null;
+            if (request?.Filters != null && request.Filters.Any())
+            {
+                filterValues = request.Filters.Select(f => new Core.Interfaces.Services.ExportFilterValue
+                {
+                    PropertyName = f.PropertyName,
+                    OperatorTypeId = f.OperatorTypeId,
+                    Value = f.Value
+                }).ToList();
+            }
+
+            var result = await _excelTemplateService.PreviewDataAsync(id, filterValues);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CreateErrorResponse(
+                string.Format(await _localizationService.GetResourceAsync("Api.ExcelTemplate.PreviewFailed"), ex.Message), ex));
+        }
+    }
+
+    /// <summary>
+    /// Save filter definitions for a template
+    /// </summary>
+    [HttpPut("{id}/filters")]
+    public async Task<ActionResult<List<ExcelTemplateFilterDto>>> SaveFilters(
+        int id,
+        [FromBody] SaveExcelTemplateFiltersDto dto)
+    {
+        try
+        {
+            var filters = dto.Filters.Select(f => new Core.Entities.ExcelTemplateFilter
+            {
+                Id = f.Id ?? 0,
+                Label = f.Label,
+                PropertyName = f.PropertyName,
+                OperatorTypeId = f.OperatorTypeId,
+                Order = f.Order
+            }).ToList();
+
+            var saved = await _excelTemplateService.SaveFiltersAsync(id, filters);
+
+            var result = saved.Select(f => new ExcelTemplateFilterDto
+            {
+                Id = f.Id,
+                Label = f.Label,
+                PropertyName = f.PropertyName,
+                OperatorTypeId = f.OperatorTypeId,
+                Order = f.Order
+            }).ToList();
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+    }
+
+    /// <summary>
     /// Upload and parse Excel file based on template
     /// </summary>
     [HttpPost("{id}/import")]
@@ -245,15 +359,12 @@ public class ExcelTemplatesApiController : BaseApiController
 
         try
         {
-            // Read file content
             using var memoryStream = new MemoryStream();
             await file.CopyToAsync(memoryStream);
             var fileContent = memoryStream.ToArray();
 
-            // Parse Excel
             var result = await _excelTemplateService.ParseExcelAsync(id, fileContent);
 
-            // Map to DTO
             var resultDto = new ExcelParseResultDto
             {
                 TotalRows = result.TotalRows,
@@ -382,6 +493,7 @@ public class ExcelTemplatesApiController : BaseApiController
                 ColumnName = c.ColumnName,
                 PropertyName = c.PropertyName,
                 ColumnTypeId = c.ColumnTypeId,
+                AggregateTypeId = c.AggregateTypeId,
                 Order = c.Order,
                 IsRequired = c.IsRequired,
                 ValidationRules = string.IsNullOrWhiteSpace(c.ValidationRules)
@@ -404,7 +516,7 @@ public class ExcelTemplatesApiController : BaseApiController
 
     /// <summary>
     /// Get available entities and their properties for template creation
-    /// Automatically discovers entities marked with ExcelTemplateAttribute
+    /// Includes navigation properties (2 levels deep) for dot-notation column paths
     /// </summary>
     [HttpGet("schema")]
     public IActionResult GetEntitySchema()
@@ -422,20 +534,23 @@ public class ExcelTemplatesApiController : BaseApiController
             .OrderBy(x => x.Attribute!.DisplayName)
             .ToList();
 
+        var sqlBuilder = new ExcelSqlQueryBuilder(_context.Model);
+
         var schema = entityTypes.Select(item => new
         {
             entityName = item.Type.Name,
             displayName = item.Attribute!.DisplayName,
             description = item.Attribute.Description,
             properties = item.Type.GetProperties()
-                .Where(p => p.GetCustomAttribute<Core.Attributes.ExcelColumnAttribute>() != null) // Only properties with ExcelColumn attribute
+                .Where(p => p.GetCustomAttribute<Core.Attributes.ExcelColumnAttribute>() != null)
                 .Select(p => new
                 {
                     propertyName = p.Name,
                     propertyType = GetSimpleTypeName(p.PropertyType)
                 })
                 .OrderBy(p => p.propertyName)
-                .ToList()
+                .ToList(),
+            navigations = sqlBuilder.BuildNavigationSchema(item.Type.Name)
         }).ToList();
 
         return Ok(schema);
@@ -466,6 +581,7 @@ public class ExcelTemplatesApiController : BaseApiController
             IsActive = template.IsActive,
             SheetName = template.SheetName,
             HasHeader = template.HasHeader,
+            GroupByPropertyName = template.GroupByPropertyName,
             CreatedAt = template.CreatedAt,
             UpdatedAt = template.UpdatedAt ?? template.CreatedAt,
             Columns = template.Columns?.OrderBy(c => c.Order).Select(c => new ExcelColumnDto
@@ -474,6 +590,7 @@ public class ExcelTemplatesApiController : BaseApiController
                 ColumnName = c.ColumnName,
                 PropertyName = c.PropertyName,
                 ColumnTypeId = c.ColumnTypeId,
+                AggregateTypeId = c.AggregateTypeId,
                 Order = c.Order,
                 IsRequired = c.IsRequired,
                 ValidationRules = string.IsNullOrWhiteSpace(c.ValidationRules)
@@ -484,7 +601,15 @@ public class ExcelTemplatesApiController : BaseApiController
                     : JsonSerializer.Deserialize<List<string>>(c.DropdownOptions),
                 SampleValue = c.SampleValue,
                 Description = c.Description
-            }).ToList() ?? new List<ExcelColumnDto>()
+            }).ToList() ?? new List<ExcelColumnDto>(),
+            Filters = template.Filters?.OrderBy(f => f.Order).Select(f => new ExcelTemplateFilterDto
+            {
+                Id = f.Id,
+                Label = f.Label,
+                PropertyName = f.PropertyName,
+                OperatorTypeId = f.OperatorTypeId,
+                Order = f.Order
+            }).ToList() ?? new List<ExcelTemplateFilterDto>()
         };
     }
 }

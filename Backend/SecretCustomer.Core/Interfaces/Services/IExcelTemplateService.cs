@@ -1,3 +1,4 @@
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 
 namespace SecretCustomer.Core.Interfaces.Services;
@@ -15,6 +16,24 @@ public interface IExcelTemplateService
     Task<ExcelParseResult> ParseExcelAsync(int templateId, byte[] fileContent);
     Task<ExcelTemplate> CreateFromAttributesAsync<T>(string templateName, string? description = null) where T : class;
     List<ExcelColumn> GetColumnsFromAttributes<T>() where T : class;
+    Task<ExcelExportDto> ExportDataToExcelAsync(int templateId, List<ExportFilterValue>? filterValues = null);
+    Task<ExcelPreviewResult> PreviewDataAsync(int templateId, List<ExportFilterValue>? filterValues = null, int maxRows = 20);
+    Task<List<ExcelTemplateFilter>> SaveFiltersAsync(int templateId, List<ExcelTemplateFilter> filters);
+}
+
+public class ExportFilterValue
+{
+    public string PropertyName { get; set; } = string.Empty;
+    public int OperatorTypeId { get; set; }
+    public string Value { get; set; } = string.Empty;
+}
+
+public class ExcelPreviewResult
+{
+    public List<string> ColumnHeaders { get; set; } = new();
+    public List<Dictionary<string, object?>> Rows { get; set; } = new();
+    public int TotalRowCount { get; set; }
+    public bool IsTruncated { get; set; }
 }
 
 public class ExcelParseResult

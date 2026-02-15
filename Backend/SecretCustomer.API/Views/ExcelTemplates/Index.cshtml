@@ -46,7 +46,7 @@
                                     <br><small class="text-muted" data-bind="text: description"></small>
                                 </td>
                                 <td><span class="badge bg-secondary" data-bind="text: entityType"></span></td>
-                                <td><span class="badge bg-info" data-bind="text: (columns && columns.length) || 0"></span> kolon</td>
+                                <td><span class="badge bg-info" data-bind="text: columnCount || 0"></span> kolon</td>
                                 <td>
                                     <span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Passive", "Pasif")'"></span>
                                 </td>
@@ -56,8 +56,17 @@
                                         <button class="btn btn-sm btn-success" data-bind="click: $parent.exportTemplate" title="@Html.T("ExcelTemplate.DownloadSample", "Örnek Excel İndir")">
                                             <i class="bi bi-download"></i>
                                         </button>
+                                        <button class="btn btn-sm btn-primary" data-bind="click: $parent.exportData" title="@Html.T("ExcelTemplate.ExportData", "Veri İndir")">
+                                            <i class="bi bi-database-down"></i>
+                                        </button>
                                         <button class="btn btn-sm btn-info" data-bind="click: $parent.showImportModal" title="@Html.T("ExcelTemplate.UploadExcel", "Excel Yükle")">
                                             <i class="bi bi-upload"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-warning" data-bind="click: $parent.showFilterModal" title="@Html.T("ExcelTemplate.Filters", "Filtreler")">
+                                            <i class="bi bi-funnel"></i>
+                                            <!-- ko if: filterCount > 0 -->
+                                            <span class="badge bg-dark ms-1" data-bind="text: filterCount"></span>
+                                            <!-- /ko -->
                                         </button>
                                         <button class="btn btn-sm btn-primary" data-bind="click: $parent.editTemplate" title="@Html.T("Common.Edit", "Düzenle")">
                                             <i class="bi bi-pencil"></i>
@@ -113,17 +122,22 @@
                     </div>
 
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label">@Html.T("ExcelTemplate.SheetName", "Sheet Adı")</label>
                             <input type="text" class="form-control" data-bind="value: sheetName" />
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">@Html.T("ExcelTemplate.GroupBy", "Gruplama Alanı")</label>
+                            <input type="text" class="form-control" data-bind="value: groupByPropertyName" placeholder="@Html.T("ExcelTemplate.GroupByPlaceholder", "ör: Organization.Name")" autocomplete="off" />
+                            <small class="text-muted">@Html.T("ExcelTemplate.GroupByHint", "Boş bırakılırsa gruplama yapılmaz")</small>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" data-bind="checked: hasHeader" id="hasHeader" />
                                 <label class="form-check-label" for="hasHeader">@Html.T("ExcelTemplate.HasHeader", "Başlık satırı var")</label>
                             </div>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end" data-bind="visible: id()">
+                        <div class="col-md-3 d-flex align-items-end" data-bind="visible: id()">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" data-bind="checked: isActive" id="isActive" />
                                 <label class="form-check-label" for="isActive">@Html.T("Common.Active", "Aktif")</label>
@@ -159,7 +173,7 @@
                                     </div>
                                     <div class="col-md-4 mb-2">
                                         <label class="form-label">@Html.T("ExcelTemplate.DatabaseField", "Veritabanı Alanı") *</label>
-                                        <select class="form-control" data-bind="value: propertyName, options: $parents[1].getPropertiesForEntity($parent.entityType()), optionsText: function(item) { return item.propertyName + ' (' + item.propertyType + ')'; }, optionsValue: 'propertyName', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                                        <select class="form-control" data-bind="value: propertyName, options: $parents[1].getPropertiesForEntity($parent.entityType()), optionsText: 'label', optionsValue: 'value', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
                                         <small class="text-muted">@Html.T("ExcelTemplate.DatabaseFieldHint", "Hangi alana kaydedilecek?")</small>
                                     </div>
                                     <div class="col-md-4 mb-2">
@@ -177,15 +191,27 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-4 mb-2">
+                                    <div class="col-md-3 mb-2">
                                         <label class="form-label">@Html.T("Language.Order", "Sıra") *</label>
                                         <input type="number" class="form-control" data-bind="value: order" min="1" />
                                     </div>
-                                    <div class="col-md-4 mb-2">
+                                    <div class="col-md-3 mb-2">
+                                        <label class="form-label">@Html.T("ExcelTemplate.AggregateType", "Toplama Tipi")</label>
+                                        <select class="form-select" data-bind="value: aggregateType">
+                                            <option value="0">@Html.T("AggregateType.None", "Yok")</option>
+                                            <option value="1">@Html.T("AggregateType.Sum", "Toplam")</option>
+                                            <option value="2">@Html.T("AggregateType.Avg", "Ortalama")</option>
+                                            <option value="3">@Html.T("AggregateType.Count", "Sayı")</option>
+                                            <option value="4">@Html.T("AggregateType.Concat", "Birleştir")</option>
+                                            <option value="5">@Html.T("AggregateType.Min", "Minimum")</option>
+                                            <option value="6">@Html.T("AggregateType.Max", "Maksimum")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
                                         <label class="form-label">@Html.T("ExcelTemplate.SampleValue", "Örnek Değer")</label>
                                         <input type="text" class="form-control" data-bind="value: sampleValue" />
                                     </div>
-                                    <div class="col-md-4 mb-2 d-flex align-items-end">
+                                    <div class="col-md-3 mb-2 d-flex align-items-end">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" data-bind="checked: isRequired" />
                                             <label class="form-check-label">@Html.T("Common.Required", "Zorunlu")</label>
@@ -271,6 +297,169 @@
 
     <!-- Import Modal Backdrop -->
     <div class="modal-backdrop fade" data-bind="visible: isImportModalOpen, css: { show: isImportModalOpen }"></div>
+
+    <!-- Filter Definition Modal -->
+    <div class="modal fade" data-bind="css: { show: isFilterModalOpen }, style: { display: isFilterModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" data-bind="with: filteringTemplate">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-funnel me-2"></i>@Html.T("ExcelTemplate.FilterDefinitions", "Filtre Tanımları"): <span data-bind="text: name"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeFilterModal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <small class="text-muted">@Html.T("ExcelTemplate.FilterDefinitionsHint", "Veri indirirken kullanıcının dolduracağı filtre alanlarını tanımlayın.")</small>
+                        <button type="button" class="btn btn-sm btn-primary" data-bind="click: addFilter">
+                            <i class="bi bi-plus-circle"></i> @Html.T("ExcelTemplate.AddFilter", "Filtre Ekle")
+                        </button>
+                    </div>
+
+                    <!-- Filter List -->
+                    <div data-bind="foreach: filters">
+                        <div class="card mb-2">
+                            <div class="card-body py-2">
+                                <div class="row align-items-center">
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-0 small">@Html.T("ExcelTemplate.FilterLabel", "Etiket")</label>
+                                        <input type="text" class="form-control form-control-sm" data-bind="value: label" placeholder="@Html.T("ExcelTemplate.FilterLabelPlaceholder", "ör: Proje Adı")" autocomplete="off" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-0 small">@Html.T("ExcelTemplate.FilterProperty", "Alan")</label>
+                                        <input type="text" class="form-control form-control-sm" data-bind="value: propertyName" placeholder="@Html.T("ExcelTemplate.FilterPropertyPlaceholder", "ör: Project.Name")" autocomplete="off" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label mb-0 small">@Html.T("ExcelTemplate.FilterOperator", "Operatör")</label>
+                                        <select class="form-select form-select-sm" data-bind="value: operatorTypeId">
+                                            <option value="1">@Html.T("FilterOperator.Equals", "Eşittir")</option>
+                                            <option value="2">@Html.T("FilterOperator.NotEquals", "Eşit Değil")</option>
+                                            <option value="3">@Html.T("FilterOperator.Contains", "İçerir")</option>
+                                            <option value="4">@Html.T("FilterOperator.GreaterThan", "Büyüktür")</option>
+                                            <option value="5">@Html.T("FilterOperator.LessThan", "Küçüktür")</option>
+                                            <option value="6">@Html.T("FilterOperator.GreaterOrEqual", "Büyük Eşit")</option>
+                                            <option value="7">@Html.T("FilterOperator.LessOrEqual", "Küçük Eşit")</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label mb-0 small">@Html.T("Language.Order", "Sıra")</label>
+                                        <input type="number" class="form-control form-control-sm" data-bind="value: order" min="1" />
+                                    </div>
+                                    <div class="col-md-1 text-end">
+                                        <label class="form-label mb-0 small">&nbsp;</label>
+                                        <button type="button" class="btn btn-sm btn-outline-danger d-block" data-bind="click: $parent.removeFilter">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div data-bind="visible: filters().length === 0" class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> @Html.T("ExcelTemplate.NoFiltersYet", "Henüz filtre tanımlanmadı.")
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeFilterModal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: $parent.saveFilters">
+                        <i class="bi bi-save"></i> @Html.T("Common.Save", "Kaydet")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isFilterModalOpen, css: { show: isFilterModalOpen }"></div>
+
+    <!-- Export Data Modal (with filter values) -->
+    <div class="modal fade" data-bind="css: { show: isExportModalOpen }, style: { display: isExportModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" data-bind="with: exportingTemplate">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-database-down me-2"></i>@Html.T("ExcelTemplate.ExportData", "Veri İndir"): <span data-bind="text: name"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: $parent.closeExportModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- ko if: exportFilters().length > 0 -->
+                    <p class="text-muted mb-3">@Html.T("ExcelTemplate.FillFiltersHint", "Filtreleri doldurun ve indirin. Boş bırakılan filtreler uygulanmaz.")</p>
+                    <div data-bind="foreach: exportFilters">
+                        <div class="mb-3">
+                            <label class="form-label" data-bind="text: label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text small" data-bind="text: operatorLabel"></span>
+                                <input type="text" class="form-control" data-bind="value: value" autocomplete="off" />
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: exportFilters().length === 0 -->
+                    <p class="text-muted">@Html.T("ExcelTemplate.NoFiltersExport", "Bu şablon için filtre tanımlanmamış. Tüm veriler indirilecek.")</p>
+                    <!-- /ko -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeExportModal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-info" data-bind="click: $parent.doPreviewData, disable: $parent.previewLoading">
+                        <!-- ko if: $parent.previewLoading() -->
+                        <span class="spinner-border spinner-border-sm"></span>
+                        <!-- /ko -->
+                        <!-- ko ifnot: $parent.previewLoading() -->
+                        <i class="bi bi-eye"></i>
+                        <!-- /ko -->
+                        @Html.T("ExcelTemplate.Preview", "Önizle")
+                    </button>
+                    <button type="button" class="btn btn-success" data-bind="click: $parent.doExportData">
+                        <i class="bi bi-download"></i> @Html.T("ExcelTemplate.DownloadData", "Veriyi İndir")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isExportModalOpen, css: { show: isExportModalOpen }"></div>
+
+    <!-- Preview Data Modal -->
+    <div class="modal fade" data-bind="css: { show: isPreviewModalOpen }, style: { display: isPreviewModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-eye me-2"></i>@Html.T("ExcelTemplate.DataPreview", "Veri Önizleme")
+                    </h5>
+                    <button type="button" class="btn-close" data-bind="click: closePreviewModal"></button>
+                </div>
+                <div class="modal-body" data-bind="with: previewData">
+                    <!-- ko if: isTruncated -->
+                    <div class="alert alert-warning py-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        @Html.T("ExcelTemplate.PreviewTruncated", "İlk 20 satır gösteriliyor. Tüm veriyi indirmek için \"Veriyi İndir\" butonunu kullanın.")
+                    </div>
+                    <!-- /ko -->
+                    <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-sm table-bordered table-striped">
+                            <thead class="table-dark" style="position: sticky; top: 0;">
+                                <tr data-bind="foreach: columnHeaders">
+                                    <th data-bind="text: $data"></th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: rows">
+                                <tr data-bind="foreach: $parent.columnHeaders">
+                                    <td data-bind="text: $parent[$data] != null ? $parent[$data] : '-'"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-muted small mt-2">
+                        <span data-bind="text: rows.length"></span> @Html.T("ExcelTemplate.RowsShown", "satır gösteriliyor")
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closePreviewModal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade" data-bind="visible: isPreviewModalOpen, css: { show: isPreviewModalOpen }"></div>
 
     <partial name="_DeleteConfirmationModal" />
 </div>
