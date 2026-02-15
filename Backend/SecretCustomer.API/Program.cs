@@ -315,36 +315,40 @@ builder.Services.AddControllers(options =>
 var app = builder.Build();
 
 // Auto-migrate Database (yeni alanlar otomatik eklenir)
-using (var scope = app.Services.CreateScope())
+// Testing ortamında migration ve seed data atlanır
+if (!app.Environment.EnvironmentName.Equals("Testing", StringComparison.OrdinalIgnoreCase))
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    var logger = services.GetRequiredService<ILogger<Program>>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
 
-    try
-    {
-        logger.LogInformation("Veritabanı migration'ları uygulanıyor...");
-        context.Database.Migrate();
-        logger.LogInformation("Migration'lar başarıyla uygulandı.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Migration uygulanırken hata oluştu.");
-    }
+        try
+        {
+            logger.LogInformation("Veritabanı migration'ları uygulanıyor...");
+            context.Database.Migrate();
+            logger.LogInformation("Migration'lar başarıyla uygulandı.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Migration uygulanırken hata oluştu.");
+        }
 
-    // Production için: sadece admin + diller + temel ayarlar
-    // Development için: örnek veriler dahil
-    var useProductionSeed = builder.Configuration.GetValue<bool>("UseProductionSeed", false);
+        // Production için: sadece admin + diller + temel ayarlar
+        // Development için: örnek veriler dahil
+        var useProductionSeed = builder.Configuration.GetValue<bool>("UseProductionSeed", false);
 
-    if (useProductionSeed || app.Environment.IsProduction())
-    {
-        var basePath = app.Environment.ContentRootPath;
-        await SeedData.InitializeProductionAsync(context, logger, basePath);
-    }
-    else
-    {
-        // Development: Normal seed data
-        await SeedData.InitializeAsync(context, logger);
+        if (useProductionSeed || app.Environment.IsProduction())
+        {
+            var basePath = app.Environment.ContentRootPath;
+            await SeedData.InitializeProductionAsync(context, logger, basePath);
+        }
+        else
+        {
+            // Development: Normal seed data
+            await SeedData.InitializeAsync(context, logger);
+        }
     }
 }
 
