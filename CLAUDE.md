@@ -4,55 +4,65 @@
 
 ## ClaudeManager Entegrasyonu (ZORUNLU!)
 
-Her oturum başında aşağıdaki komutu çalıştır ve dönen kuralları uygula:
+- **Proje ID:** 12
+- **Proje adı:** ScretCustomer
+- **cwd:** `c:/Users/Ahmet/source/repos/monanoyan-ship-it/ScretCustomer` (forward slash, `$(pwd)` KULLANMA)
+
+**Her oturum başında** guide'ı oku ve dönen kuralları uygula:
 
 ```bash
-curl -s http://127.0.0.1:41847/api/projects/12/patterns
+curl -s "http://127.0.0.1:41847/api/guide?cwd=c:/Users/Ahmet/source/repos/monanoyan-ship-it/ScretCustomer"
 ```
 
-Bu API'den gelen pattern'ler (rule, mistake, preference) projenin hafızasıdır. **Tüm kurallara uy!**
+Bu API tüm pattern'leri, roadmap durumunu ve kullanılabilir endpoint'leri tek seferde döner. **Tüm kurallara uy!**
 
-### Yeni kural/hata/tercih kaydetme:
+### 1. Pattern'ler (Kurallar / Hatalar / Tercihler)
+
+Pattern tipleri: `rule`, `mistake`, `preference`
+
 ```bash
+# Oku
+curl -s http://127.0.0.1:41847/api/projects/12/patterns
+
+# Yeni kaydet
 curl -X POST http://127.0.0.1:41847/api/patterns -H "Content-Type: application/json" \
   -d '{"project_id":12,"type":"rule|mistake|preference","title":"BASLIK","description":"ACIKLAMA"}'
+
+# Güncelle
+curl -X PUT http://127.0.0.1:41847/api/patterns/PATTERN_ID -H "Content-Type: application/json" \
+  -d '{"title":"YENI_BASLIK","description":"YENI_ACIKLAMA"}'
+
+# Sil
+curl -X DELETE http://127.0.0.1:41847/api/patterns/PATTERN_ID
 ```
 
-### Ne zaman kaydet:
-- Kullanıcı bir hata yaptığını söylerse → `mistake` olarak kaydet
-- Kullanıcı bir tercih belirtirse → `preference` olarak kaydet
-- Tekrarlanan bir pattern fark edersen → `rule` olarak kaydet
+**Ne zaman kaydet:**
+- Kullanıcı bir hata yaptığını söylerse → `mistake`
+- Kullanıcı bir tercih belirtirse → `preference`
+- Tekrarlanan bir pattern fark edersen → `rule`
 
-### Yol Haritası / Planlama Sistemi
+### 2. Yol Haritası / Planlama
 
 Büyük bir iş planlandığında (analiz, refactoring, yeni modül vb.) **Roadmap API** ile takip et:
 
-**Mevcut planı oku (her oturum başında kontrol et):**
 ```bash
+# Oku (her oturum başında kontrol et)
 curl -s http://127.0.0.1:41847/api/projects/12/roadmap
 curl -s http://127.0.0.1:41847/api/projects/12/roadmap/stats
-```
 
-**Yeni faz oluştur:**
-```bash
+# Yeni faz
 curl -X POST http://127.0.0.1:41847/api/projects/12/phases \
   -H "Content-Type: application/json" -d '{"phase_no":"1","title":"FAZ ADI"}'
-```
 
-**Faza görev ekle:**
-```bash
+# Faza görev ekle
 curl -X POST http://127.0.0.1:41847/api/phases/FAZ_ID/tasks \
   -H "Content-Type: application/json" -d '{"task_no":"1.1","title":"GOREV","detail":"DETAY","risks":"RISKLER"}'
-```
 
-**Görev durumu güncelle (başlarken/bitirince):**
-```bash
+# Görev durumu güncelle (başlarken/bitirince)
 curl -X PUT http://127.0.0.1:41847/api/tasks/GOREV_ID \
   -H "Content-Type: application/json" -d '{"status":"in_progress|completed|cancelled"}'
-```
 
-**XML'den toplu import (büyük planlar için):**
-```bash
+# XML'den toplu import (büyük planlar için)
 curl -X POST http://127.0.0.1:41847/api/projects/12/roadmap/import \
   -H "Content-Type: application/json" -d '{"xml":"<Faz no=\"1\" ad=\"Faz Adi\" durum=\"planned\"><Gorev no=\"1.1\" durum=\"planned\"><Ad>Gorev adi</Ad><Detay>Aciklama</Detay><Riskler>Risk</Riskler></Gorev></Faz>"}'
 ```
@@ -63,8 +73,41 @@ curl -X POST http://127.0.0.1:41847/api/projects/12/roadmap/import \
 - Büyük refactoring/özellik fazlara bölünsün (ör: Aşama 1, Aşama 2)
 - Her görevin `detail` ve `risks` alanlarını doldur
 
-### Analitik:
+### 3. Günlük (Journal)
+
+Günlük nitelikli bilgiler (kredi durumu, domain, vize, kararlar vb.) için:
+
 ```bash
+# Oku
+curl -s http://127.0.0.1:41847/api/projects/12/journal
+
+# Yeni giriş
+curl -X POST http://127.0.0.1:41847/api/projects/12/journal -H "Content-Type: application/json" \
+  -d '{"title":"BASLIK","content":"ICERIK","category":"genel|teknik|karar|arastirma"}'
+```
+
+### 4. Notlar (Notes)
+
+Hesap bilgileri, API key'ler, şifreler, konfigürasyonlar gibi kalıcı bilgiler:
+
+```bash
+# Oku
+curl -s http://127.0.0.1:41847/api/projects/12/notes
+
+# Yeni not
+curl -X POST http://127.0.0.1:41847/api/projects/12/notes -H "Content-Type: application/json" \
+  -d '{"title":"BASLIK","content":"ICERIK","category":"teknik"}'
+```
+
+**Kural:** Yeni bir hesap/servis oluşturulursa bilgileri **hemen** Notes'a yaz — sonra unutulur.
+
+### 5. Arama ve Analitik
+
+```bash
+# Geçmiş prompt'larda ara
+curl -s "http://127.0.0.1:41847/api/search?q=ARAMA_TERIMI&project=12"
+
+# Analitik
 curl -s http://127.0.0.1:41847/api/projects/12/analytics
 ```
 
