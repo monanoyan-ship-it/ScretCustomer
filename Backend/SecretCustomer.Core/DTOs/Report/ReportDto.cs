@@ -107,8 +107,14 @@ public class EvaluationReportDto
     public DateTime? ControlDate { get; set; }
     public string? ControlTime { get; set; }
 
-    // Comment
+    // Comment (Soru notları birleştirilmiş)
     public string? Comment { get; set; }
+
+    // Açıklamalar (DescriptionsJson'dan)
+    public string? Descriptions { get; set; }
+
+    // Denetim Yorumu (EvaluationComment)
+    public string? EvaluationComment { get; set; }
 }
 
 /// <summary>
@@ -497,6 +503,7 @@ public class PersonnelGroupPerformanceDto
     public decimal AverageScore { get; set; }
     public decimal MaxPossibleScore { get; set; }
     public decimal PercentageScore { get; set; }
+    public int ErrorCount { get; set; }
 }
 
 /// <summary>
@@ -789,6 +796,11 @@ public class QuestionGroupAverageReportDto
     /// Değerlendirme sayısı
     /// </summary>
     public int EvaluationCount { get; set; }
+
+    /// <summary>
+    /// Hata sayısı (tam puan alamamış veya ceza uygulanmış cevap sayısı)
+    /// </summary>
+    public int ErrorCount { get; set; }
 }
 
 // ===== ANKET SONUÇLARI RAPORU DTO'LARI =====

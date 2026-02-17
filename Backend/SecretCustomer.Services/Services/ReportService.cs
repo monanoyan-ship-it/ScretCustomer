@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using ClosedXML.Excel;
 using Microsoft.EntityFrameworkCore;
 using NPOI.XWPF.UserModel;
@@ -29,7 +30,6 @@ public class ReportService : IReportService
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
     {
 
-        // Liste görünümü için Answers dahil EDİLMEZ - sadece detay sayfasında lazım
         // AsNoTracking: Read-only sorgu, performans için change tracking kapalı
         // AsSplitQuery: Çok fazla Include olduğunda tek büyük sorgu yerine ayrı sorgular
         var query = _context.Evaluations
@@ -46,6 +46,12 @@ public class ReportService : IReportService
                     .ThenInclude(oa => oa.Supervisor)
             .Include(e => e.AssignmentPeriod)
             .AsQueryable();
+
+        // Export için Answers dahil et (Yorum kolonu Answer.Notes'lardan oluşuyor)
+        if (filter.ForExport)
+        {
+            query = query.Include(e => e.Answers);
+        }
 
         // ===== ÇOKLU DEĞER DESTEKLİ FİLTRELER (OR mantığı) =====
 
@@ -1087,34 +1093,25 @@ public class ReportService : IReportService
 
     private EvaluationReportDto MapToReportDto(Core.Entities.Evaluation evaluation)
     {
-        // Tüm yorumları topla: açıklamalar + soru notları + genel değerlendirme yorumu
-        var allComments = new List<string>();
+        // Soru notları (Answer.Notes)
+        var answerNotes = new List<string>();
+        if (evaluation.Answers != null)
+        {
+            answerNotes = evaluation.Answers
+                .Where(a => !string.IsNullOrWhiteSpace(a.Notes))
+                .Select(a => a.Notes!)
+                .ToList();
+        }
+        var comment = answerNotes.Count > 0 ? string.Join(", ", answerNotes) : "-";
 
-        // Açıklamaları ekle (DescriptionsJson)
+        // Açıklamalar (DescriptionsJson)
+        string? descriptionsText = null;
         if (!string.IsNullOrWhiteSpace(evaluation.DescriptionsJson))
         {
             var descriptions = DeserializeDescriptions(evaluation.DescriptionsJson);
             if (descriptions?.Any() == true)
-                allComments.AddRange(descriptions);
+                descriptionsText = string.Join(", ", descriptions);
         }
-
-        // Soru notlarını ekle (Notes alanı dolu olanlar)
-        if (evaluation.Answers != null)
-        {
-            var answerNotes = evaluation.Answers
-                .Where(a => !string.IsNullOrWhiteSpace(a.Notes))
-                .Select(a => a.Notes!)
-                .ToList();
-            allComments.AddRange(answerNotes);
-        }
-
-        // Genel değerlendirme yorumunu ekle
-        if (!string.IsNullOrWhiteSpace(evaluation.EvaluationComment))
-        {
-            allComments.Add(evaluation.EvaluationComment);
-        }
-
-        var combinedComment = allComments.Count > 0 ? string.Join(", ", allComments) : "-";
 
         return new EvaluationReportDto
         {
@@ -1156,7 +1153,9 @@ public class ReportService : IReportService
             CallDate = evaluation.CallDate,
             CallTime = evaluation.CallTime,
             Duration = evaluation.Duration,
-            Comment = combinedComment
+            Comment = comment,
+            Descriptions = descriptionsText,
+            EvaluationComment = evaluation.EvaluationComment
         };
     }
 
@@ -1960,27 +1959,48 @@ public class ReportService : IReportService
             query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
         }
 
-        // DateRanges pattern (UTC dönüşümü Service'de)
+        // DateRanges pattern - CallDate ?? ControlDate, çoklu aralık OR ile birleştirilir
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
+            var validRanges = filter.DateRanges.Where(dr => dr.StartDate.HasValue || dr.EndDate.HasValue).ToList();
+            if (validRanges.Any())
             {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
+                var rangePairs = validRanges.Select(dr => new
+                {
+                    Start = dr.StartDate.HasValue ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc) : (DateTime?)null,
+                    End = dr.EndDate.HasValue ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1), DateTimeKind.Utc) : (DateTime?)null
+                }).ToList();
 
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var callDate = Expression.Property(param, nameof(Evaluation.CallDate));
+                var controlDate = Expression.Property(param, nameof(Evaluation.ControlDate));
+                var dateExpr = Expression.Coalesce(callDate, controlDate);
 
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+                Expression? orBody = null;
+                foreach (var rp in rangePairs)
+                {
+                    Expression? rangeExpr = null;
+                    if (rp.Start.HasValue)
+                    {
+                        var startConst = Expression.Constant((DateTime?)rp.Start.Value, typeof(DateTime?));
+                        rangeExpr = Expression.GreaterThanOrEqual(dateExpr, startConst);
+                    }
+                    if (rp.End.HasValue)
+                    {
+                        var endConst = Expression.Constant((DateTime?)rp.End.Value, typeof(DateTime?));
+                        var ltExpr = Expression.LessThan(dateExpr, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, ltExpr) : ltExpr;
+                    }
+                    if (rangeExpr != null)
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+                }
+
+                if (orBody != null)
+                {
+                    var lambda = Expression.Lambda<Func<Evaluation, bool>>(orBody, param);
+                    query = query.Where(lambda);
+                }
+            }
         }
 
         var evaluations = await query.ToListAsync();
@@ -2030,7 +2050,7 @@ public class ReportService : IReportService
 
         // Aylık trend (son 12 ay)
         var monthlyTrend = evaluations
-            .GroupBy(e => new { e.CreatedAt.Year, e.CreatedAt.Month })
+            .GroupBy(e => new { Year = (e.CallDate ?? e.ControlDate ?? e.CreatedAt).Year, Month = (e.CallDate ?? e.ControlDate ?? e.CreatedAt).Month })
             .Select(g => new PersonnelMonthlyTrendDto
             {
                 Year = g.Key.Year,
@@ -2060,18 +2080,21 @@ public class ReportService : IReportService
                 MaxPossibleScore = g.Sum(a => a.Question!.WeightPoints),
                 PercentageScore = g.Sum(a => a.Question!.WeightPoints) > 0
                     ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.WeightPoints) * 100, 2)
-                    : 0
+                    : 0,
+                ErrorCount = g.Count(a => a.Question!.ScoringTypeId == ScoringTypes.Ids.Scored
+                    ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
+                    : a.IsPenaltyApplied)
             })
             .OrderByDescending(s => s.PercentageScore)
             .ToList();
 
         // Değerlendirmeler (filtreye göre tümü)
         var recentEvaluations = evaluations
-            .OrderByDescending(e => e.CreatedAt)
+            .OrderByDescending(e => e.CallDate ?? e.ControlDate ?? e.CreatedAt)
             .Select(e => new PersonnelEvaluationSummaryDto
             {
                 EvaluationId = e.Id,
-                EvaluationDate = e.CreatedAt,
+                EvaluationDate = e.CallDate ?? e.ControlDate ?? e.CreatedAt,
                 ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                 ChecklistName = e.Project.Checklist?.Name ?? "",
                 EvaluatorName = e.Evaluator != null ? $"{e.Evaluator.FirstName} {e.Evaluator.LastName}" : null,
@@ -2166,15 +2189,14 @@ public class ReportService : IReportService
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
-                    Year = e.CreatedAt.Year,
-                    Month = e.CreatedAt.Month,
+                    EvalDate = e.CallDate ?? e.ControlDate ?? e.CreatedAt,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     WeightPoints = a.Question.WeightPoints,
                     IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
                         ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
                         : a.IsPenaltyApplied
                 }))
-            .GroupBy(x => new { x.ProjectName, x.QuestionText, x.Year, x.Month })
+            .GroupBy(x => new { x.ProjectName, x.QuestionText, Year = x.EvalDate.Year, Month = x.EvalDate.Month })
             .Select(g => new PersonnelProcessAnalysisDto
             {
                 ProjectName = g.Key.ProjectName,
@@ -2295,6 +2317,8 @@ public class ReportService : IReportService
         groupSheet.Cell(1, 2).Style.Font.Bold = true;
         groupSheet.Cell(1, 3).Value = "Başarı Yüzdesi";
         groupSheet.Cell(1, 3).Style.Font.Bold = true;
+        groupSheet.Cell(1, 4).Value = "Hata Sayısı";
+        groupSheet.Cell(1, 4).Style.Font.Bold = true;
 
         row = 2;
         foreach (var group in report.GroupPerformances)
@@ -2302,6 +2326,7 @@ public class ReportService : IReportService
             groupSheet.Cell(row, 1).Value = group.GroupName;
             groupSheet.Cell(row, 2).Value = group.EvaluationCount;
             groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F1}%";
+            groupSheet.Cell(row, 4).Value = group.ErrorCount;
             row++;
         }
         groupSheet.Columns().AdjustToContents();
@@ -3371,6 +3396,8 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.ListeningTime", defaultValue: "Dinleme Saati"),
             await _localizationService.GetResourceAsync("Report.Duration", defaultValue: "Süre"),
             await _localizationService.GetResourceAsync("Report.Comment", defaultValue: "Yorum"),
+            await _localizationService.GetResourceAsync("Evaluation.Descriptions", defaultValue: "Açıklamalar"),
+            await _localizationService.GetResourceAsync("Evaluation.EvaluationComment", defaultValue: "Denetim Yorumu"),
             await _localizationService.GetResourceAsync("Report.PeriodMonth", defaultValue: "Periyot (Ay)"),
             await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
         };
@@ -3399,15 +3426,17 @@ public class ReportService : IReportService
             worksheet.Cell(row, 8).Value = item.CreatedAt.ToString("HH:mm");
             worksheet.Cell(row, 9).Value = item.Duration ?? "";
             worksheet.Cell(row, 10).Value = item.Comment ?? "";
-            worksheet.Cell(row, 11).Value = period;
-            worksheet.Cell(row, 12).Value = item.ScorePercentage ?? 0;
+            worksheet.Cell(row, 11).Value = item.Descriptions ?? "";
+            worksheet.Cell(row, 12).Value = item.EvaluationComment ?? "";
+            worksheet.Cell(row, 13).Value = period;
+            worksheet.Cell(row, 14).Value = item.ScorePercentage ?? 0;
 
             row++;
         }
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 4 }, noteColumns: new[] { 10 });
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, callIdColumns: new[] { 4 }, noteColumns: new[] { 10, 11, 12 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -3542,7 +3571,10 @@ public class ReportService : IReportService
                     GroupName = a.Question.GroupName,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     MaxPoints = a.Question.WeightPoints,
-                    EvaluationId = e.Id
+                    EvaluationId = e.Id,
+                    IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
+                        ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
+                        : a.IsPenaltyApplied
                 }))
             .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.GroupName })
             .Select(g => new QuestionGroupAverageReportDto
@@ -3553,7 +3585,8 @@ public class ReportService : IReportService
                 EvaluationCount = g.Select(x => x.EvaluationId).Distinct().Count(),
                 AverageScore = g.Sum(x => x.MaxPoints) > 0
                     ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 2)
-                    : 0
+                    : 0,
+                ErrorCount = g.Count(x => x.IsError)
             })
             .OrderBy(x => x.ProjectName)
             .ThenBy(x => x.GroupName)
@@ -3575,7 +3608,10 @@ public class ReportService : IReportService
                     QuestionId = a.QuestionId,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     MaxPoints = a.Question.WeightPoints,
-                    EvaluationId = e.Id
+                    EvaluationId = e.Id,
+                    IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
+                        ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
+                        : a.IsPenaltyApplied
                 }))
             .GroupBy(x => new { x.ProjectName, x.PeriodName, x.Year, x.GroupName, x.QuestionId, x.QuestionText, x.QuestionOrder })
             .Select(g => new
@@ -3588,7 +3624,8 @@ public class ReportService : IReportService
                 EvaluationCount = g.Select(x => x.EvaluationId).Distinct().Count(),
                 AverageScore = g.Sum(x => x.MaxPoints) > 0
                     ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.MaxPoints) * 100, 2)
-                    : 0
+                    : 0,
+                ErrorCount = g.Count(x => x.IsError)
             })
             .OrderBy(x => x.ProjectName)
             .ThenBy(x => x.GroupName)
@@ -3607,7 +3644,8 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Kontrol Grubu"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
-            await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
+            await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan"),
+            await _localizationService.GetResourceAsync("Report.ErrorCount", defaultValue: "Hata Sayısı")
         };
 
         for (int i = 0; i < headers.Length; i++)
@@ -3627,6 +3665,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 4).Value = item.EvaluationCount;
             worksheet.Cell(row, 5).Value = item.AverageScore;
             worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.00";
+            worksheet.Cell(row, 6).Value = item.ErrorCount;
             row++;
         }
 
@@ -3644,7 +3683,8 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
             await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Periyot"),
             await _localizationService.GetResourceAsync("Report.ListeningCount", defaultValue: "Dinleme Sayısı"),
-            await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
+            await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan"),
+            await _localizationService.GetResourceAsync("Report.ErrorCount", defaultValue: "Hata Sayısı")
         };
 
         for (int i = 0; i < headers2.Length; i++)
@@ -3665,6 +3705,7 @@ public class ReportService : IReportService
             worksheet2.Cell(row, 5).Value = item.EvaluationCount;
             worksheet2.Cell(row, 6).Value = item.AverageScore;
             worksheet2.Cell(row, 6).Style.NumberFormat.Format = "0.00";
+            worksheet2.Cell(row, 7).Value = item.ErrorCount;
             row++;
         }
 
@@ -7591,6 +7632,8 @@ public class ReportService : IReportService
             await _localizationService.GetResourceAsync("Report.ControlDate", defaultValue: "Kontrol Tarihi"),
             await _localizationService.GetResourceAsync("Report.ControlTime", defaultValue: "Kontrol Saati"),
             await _localizationService.GetResourceAsync("Report.Comment", defaultValue: "Yorum"),
+            await _localizationService.GetResourceAsync("Evaluation.Descriptions", defaultValue: "Açıklamalar"),
+            await _localizationService.GetResourceAsync("Evaluation.EvaluationComment", defaultValue: "Denetim Yorumu"),
             await _localizationService.GetResourceAsync("Report.PeriodMonth", defaultValue: "Periyot (Ay)"),
             await _localizationService.GetResourceAsync("Report.AverageScore", defaultValue: "Ortalama Puan")
         };
@@ -7616,15 +7659,17 @@ public class ReportService : IReportService
             worksheet.Cell(row, 5).Value = (item.ControlDate ?? item.EvaluationDate)?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 6).Value = item.ControlTime ?? "";
             worksheet.Cell(row, 7).Value = item.Comment ?? "";
-            worksheet.Cell(row, 8).Value = period;
-            worksheet.Cell(row, 9).Value = item.ScorePercentage ?? 0;
+            worksheet.Cell(row, 8).Value = item.Descriptions ?? "";
+            worksheet.Cell(row, 9).Value = item.EvaluationComment ?? "";
+            worksheet.Cell(row, 10).Value = period;
+            worksheet.Cell(row, 11).Value = item.ScorePercentage ?? 0;
 
             row++;
         }
 
         // Auto-fit columns
         worksheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(worksheet, noteColumns: new[] { 7 });
+        ExcelHelper.ApplyLongTextColumnStyles(worksheet, noteColumns: new[] { 7, 8, 9 });
 
         // Save to memory stream
         using var stream = new MemoryStream();
@@ -8365,7 +8410,10 @@ public class ReportService : IReportService
                 MaxPossibleScore = g.Sum(a => a.Question!.WeightPoints),
                 PercentageScore = g.Sum(a => a.Question!.WeightPoints) > 0
                     ? Math.Round(g.Sum(a => a.EarnedPoints ?? 0) / g.Sum(a => a.Question!.WeightPoints) * 100, 2)
-                    : 0
+                    : 0,
+                ErrorCount = g.Count(a => a.Question!.ScoringTypeId == ScoringTypes.Ids.Scored
+                    ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
+                    : a.IsPenaltyApplied)
             })
             .OrderByDescending(s => s.PercentageScore)
             .ToList();
@@ -8468,15 +8516,14 @@ public class ReportService : IReportService
                 {
                     ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
                     QuestionText = a.Question!.Text,
-                    Year = e.CreatedAt.Year,
-                    Month = e.CreatedAt.Month,
+                    EvalDate = e.CallDate ?? e.ControlDate ?? e.CreatedAt,
                     EarnedPoints = a.EarnedPoints ?? 0,
                     WeightPoints = a.Question.WeightPoints,
                     IsError = a.Question.ScoringTypeId == ScoringTypes.Ids.Scored
                         ? (a.EarnedPoints ?? 0) < a.Question.WeightPoints
                         : a.IsPenaltyApplied
                 }))
-            .GroupBy(x => new { x.ProjectName, x.QuestionText, x.Year, x.Month })
+            .GroupBy(x => new { x.ProjectName, x.QuestionText, Year = x.EvalDate.Year, Month = x.EvalDate.Month })
             .Select(g => new PersonnelProcessAnalysisDto
             {
                 ProjectName = g.Key.ProjectName,
@@ -8599,6 +8646,8 @@ public class ReportService : IReportService
         groupSheet.Cell(1, 2).Style.Font.Bold = true;
         groupSheet.Cell(1, 3).Value = "Başarı Yüzdesi";
         groupSheet.Cell(1, 3).Style.Font.Bold = true;
+        groupSheet.Cell(1, 4).Value = "Hata Sayısı";
+        groupSheet.Cell(1, 4).Style.Font.Bold = true;
 
         row = 2;
         foreach (var group in report.GroupPerformances)
@@ -8606,6 +8655,7 @@ public class ReportService : IReportService
             groupSheet.Cell(row, 1).Value = group.GroupName;
             groupSheet.Cell(row, 2).Value = group.EvaluationCount;
             groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F1}%";
+            groupSheet.Cell(row, 4).Value = group.ErrorCount;
             row++;
         }
         groupSheet.Columns().AdjustToContents();

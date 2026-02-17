@@ -421,8 +421,15 @@ public class ChecklistService : IChecklistService
 
     private void UpdateSubCriteria(Question question, List<UpdateSubCriteriaDto>? subCriteriaDtos)
     {
-        if (subCriteriaDtos == null)
+        if (subCriteriaDtos == null || subCriteriaDtos.Count == 0)
+        {
+            // Tüm alt kriterler silindi
+            foreach (var subCriteria in question.SubCriteria.ToList())
+            {
+                subCriteria.IsDeleted = true;
+            }
             return;
+        }
 
         var existingSubCriteriaIds = question.SubCriteria.Select(sc => sc.Id).ToHashSet();
         var dtoSubCriteriaIds = subCriteriaDtos.Where(sc => sc.Id.HasValue).Select(sc => sc.Id!.Value).ToHashSet();

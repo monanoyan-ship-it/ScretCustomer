@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Evaluation;
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
@@ -296,7 +297,10 @@ public class EvaluationsApiController : BaseApiController
     /// </summary>
     [HttpGet("my-evaluations")]
     [Authorize(Roles = "CustomerOperator,CustomerSupervisor,CustomerManager,Admin")]
-    public async Task<IActionResult> GetMyEvaluations()
+    public async Task<IActionResult> GetMyEvaluations(
+        [FromQuery] List<int>? projectIds,
+        [FromQuery] List<DateRangeFilter>? dateRanges,
+        [FromQuery] string? evaluationType = null)
     {
         try
         {
@@ -314,7 +318,7 @@ public class EvaluationsApiController : BaseApiController
                 return BadRequest(CreateErrorResponse("Bu endpoint sadece müşteri personeli için kullanılabilir."));
             }
 
-            var evaluations = await _evaluationService.GetByEvaluatedCustomerPersonnelIdAsync(userId);
+            var evaluations = await _evaluationService.GetByEvaluatedCustomerPersonnelIdAsync(userId, projectIds, dateRanges, evaluationType);
             return Ok(evaluations);
         }
         catch (Exception ex)

@@ -13,6 +13,89 @@
         </div>
     </div>
 
+    <!-- Filtreler (chip-based pattern - internalEvaluations.js referans) -->
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-body py-2">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <!-- Add Filter Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                        <i class="bi bi-plus-circle me-1"></i>@Html.T("Common.AddFilter", "Filtre Ekle")
+                    </button>
+                    <div class="dropdown-menu p-3" style="min-width: 300px;">
+                        <!-- Filter Type Selector -->
+                        <div class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                                <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                                <option value="donem">@Html.T("GolgeMusteri.Donem", "Dönem")</option>
+                                <option value="durum">@Html.T("Common.Status", "Durum")</option>
+                                <option value="firma">@Html.T("GolgeMusteri.HedefFirma", "Firma")</option>
+                                <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                            </select>
+                        </div>
+                        <!-- Dönem -->
+                        <div data-bind="visible: selectedFilterType() === 'donem'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="options: donemler, optionsText: 'ad', optionsValue: 'id', value: tempFilter.donemId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                        </div>
+                        <!-- Durum -->
+                        <div data-bind="visible: selectedFilterType() === 'durum'" class="mb-2">
+                            <select class="form-select form-select-sm" data-bind="value: tempFilter.durumId">
+                                <option value="">@Html.T("Common.Select", "Seçin...")</option>
+                                <option value="1">Beklemede</option>
+                                <option value="2">Tamamlandı</option>
+                            </select>
+                        </div>
+                        <!-- Firma (text) -->
+                        <div data-bind="visible: selectedFilterType() === 'firma'" class="mb-2">
+                            <input type="text" class="form-control form-control-sm" autocomplete="off" data-bind="value: tempFilter.firma" placeholder="@Html.T("GolgeMusteri.HedefFirma", "Firma adı...")">
+                        </div>
+                        <!-- Date Range -->
+                        <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                            <div class="d-flex gap-1 mb-1">
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                                <span class="align-self-center">-</span>
+                                <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                            </div>
+                            <div class="d-flex flex-wrap gap-1">
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('today'); }, css: tempFilter.dateRangeType() === 'today' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Today", "Bugün")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('yesterday'); }, css: tempFilter.dateRangeType() === 'yesterday' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Yesterday", "Dün")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisWeek'); }, css: tempFilter.dateRangeType() === 'thisWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisWeek", "Bu Hafta")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastWeek'); }, css: tempFilter.dateRangeType() === 'lastWeek' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastWeek", "Geçen Hafta")</button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisMonth'); }, css: tempFilter.dateRangeType() === 'thisMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisMonth", "Bu Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastMonth'); }, css: tempFilter.dateRangeType() === 'lastMonth' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastMonth", "Geçen Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last3Months'); }, css: tempFilter.dateRangeType() === 'last3Months' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Last3Months", "Son 3 Ay")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('last6Months'); }, css: tempFilter.dateRangeType() === 'last6Months' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.Last6Months", "Son 6 Ay")</button>
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('thisYear'); }, css: tempFilter.dateRangeType() === 'thisYear' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.ThisYear", "Bu Yıl")</button>
+                                <button type="button" class="btn btn-sm" data-bind="click: function() { setDateRange('lastYear'); }, css: tempFilter.dateRangeType() === 'lastYear' ? 'btn-success' : 'btn-outline-secondary'">@Html.T("Common.LastYear", "Geçen Yıl")</button>
+                            </div>
+                        </div>
+                        <!-- Add Button -->
+                        <button type="button" class="btn btn-success btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
+                            <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Filters (Chips) -->
+                <!-- ko foreach: activeFilters -->
+                <span class="badge bg-success d-flex align-items-center gap-1 py-2 px-2">
+                    <span data-bind="text: label"></span>: <strong data-bind="text: displayValue"></strong>
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6rem;" data-bind="click: $parent.removeFilter"></button>
+                </span>
+                <!-- /ko -->
+
+                <!-- Clear All -->
+                <button class="btn btn-outline-danger btn-sm" data-bind="visible: activeFilters().length > 0, click: clearFilters">
+                    <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Özet -->
     <div class="row g-3 mb-3">
         <div class="col-md-4">

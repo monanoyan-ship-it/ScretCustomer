@@ -12,6 +12,7 @@ function MyPerformanceViewModel() {
     self.evaluations = ko.observableArray([]);
     self.reportCard = ko.observable(null);
     self.searchText = ko.observable('');
+    self.projects = ko.observableArray([]);
 
     // Details modal
     self.isDetailsModalOpen = ko.observable(false);
@@ -22,6 +23,206 @@ function MyPerformanceViewModel() {
     // Pagination
     self.currentPage = ko.observable(1);
     self.pageSize = ko.observable(10);
+
+    // Filter system (personnelReportCard.js pattern'inden birebir kopyalandı)
+    self.activeFilters = ko.observableArray([]);
+    self.selectedFilterType = ko.observable('');
+
+    self.tempFilter = {
+        projectId: ko.observable(null),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        dateRangeType: ko.observable(''),
+        evaluationType: ko.observable('')
+    };
+
+    self.filterLabels = {
+        project: 'Proje',
+        dateRange: 'Tarih',
+        evaluationType: 'Değerlendirme Tipi'
+    };
+
+    self.evaluationTypeLabels = {
+        'internal': 'İç Değerlendirme',
+        'external': 'Dış Değerlendirme'
+    };
+
+    self.dateRanges = ko.observableArray([
+        { systemName: 'today', name: 'Bugün' },
+        { systemName: 'yesterday', name: 'Dün' },
+        { systemName: 'thisWeek', name: 'Bu Hafta' },
+        { systemName: 'lastWeek', name: 'Geçen Hafta' },
+        { systemName: 'thisMonth', name: 'Bu Ay' },
+        { systemName: 'lastMonth', name: 'Geçen Ay' },
+        { systemName: 'last3Months', name: 'Son 3 Ay' },
+        { systemName: 'last6Months', name: 'Son 6 Ay' },
+        { systemName: 'thisYear', name: 'Bu Yıl' },
+        { systemName: 'lastYear', name: 'Geçen Yıl' }
+    ]);
+
+    // Can add filter
+    self.canAddFilter = ko.computed(function() {
+        var type = self.selectedFilterType();
+        if (!type) return false;
+        switch (type) {
+            case 'project': return self.tempFilter.projectId();
+            case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
+            case 'evaluationType': return !!self.tempFilter.evaluationType();
+            default: return false;
+        }
+    });
+
+    // Calculate date range
+    self.calculateDateRange = function(rangeType) {
+        var today = new Date();
+        var start, end;
+        var formatDate = function(date) { return date.toISOString().split('T')[0]; };
+
+        switch (rangeType) {
+            case 'today': start = end = today; break;
+            case 'yesterday': start = end = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1); break;
+            case 'thisWeek':
+                var dow = today.getDay();
+                var diff = today.getDate() - dow + (dow === 0 ? -6 : 1);
+                start = new Date(today.getFullYear(), today.getMonth(), diff);
+                end = today;
+                break;
+            case 'lastWeek':
+                var dow = today.getDay();
+                var diff = today.getDate() - dow + (dow === 0 ? -6 : 1);
+                start = new Date(today.getFullYear(), today.getMonth(), diff - 7);
+                end = new Date(today.getFullYear(), today.getMonth(), diff - 1);
+                break;
+            case 'thisMonth': start = new Date(today.getFullYear(), today.getMonth(), 1); end = today; break;
+            case 'lastMonth': start = new Date(today.getFullYear(), today.getMonth() - 1, 1); end = new Date(today.getFullYear(), today.getMonth(), 0); break;
+            case 'last3Months': start = new Date(today.getFullYear(), today.getMonth() - 2, 1); end = today; break;
+            case 'last6Months': start = new Date(today.getFullYear(), today.getMonth() - 5, 1); end = today; break;
+            case 'thisYear': start = new Date(today.getFullYear(), 0, 1); end = today; break;
+            case 'lastYear': start = new Date(today.getFullYear() - 1, 0, 1); end = new Date(today.getFullYear() - 1, 11, 31); break;
+            default: return null;
+        }
+        return { start: formatDate(start), end: formatDate(end) };
+    };
+
+    // Set temp date range
+    self.setTempDateRange = function(rangeType) {
+        var range = self.calculateDateRange(rangeType);
+        if (range) {
+            self.tempFilter.startDate(range.start);
+            self.tempFilter.endDate(range.end);
+            self.tempFilter.dateRangeType(rangeType);
+        }
+    };
+
+    // Add filter
+    self.addFilter = function() {
+        var type = self.selectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type, label: self.filterLabels[type], value: null, displayValue: '' };
+
+        switch (type) {
+            case 'project':
+                var projectId = self.tempFilter.projectId();
+                var project = self.projects().find(function(p) { return p.id == projectId; });
+                if (!project) return;
+                if (self.activeFilters().some(function(f) { return f.type === 'project' && f.value == projectId; })) {
+                    toastr.warning('Bu proje zaten eklenmiş.');
+                    self.tempFilter.projectId(null);
+                    return;
+                }
+                filter.value = projectId;
+                filter.displayValue = project.code ? project.code + ' - ' + project.name : project.name;
+                self.tempFilter.projectId(null);
+                break;
+
+            case 'dateRange':
+                var startDate = self.tempFilter.startDate();
+                var endDate = self.tempFilter.endDate();
+                var dateRangeType = self.tempFilter.dateRangeType();
+                if (!startDate && !endDate) return;
+                filter.value = { startDate: startDate, endDate: endDate, dateRangeType: dateRangeType };
+                if (dateRangeType) {
+                    var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
+                    filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
+                } else {
+                    filter.displayValue = (startDate || '...') + ' - ' + (endDate || '...');
+                }
+                self.tempFilter.startDate('');
+                self.tempFilter.endDate('');
+                self.tempFilter.dateRangeType('');
+                break;
+
+            case 'evaluationType':
+                var evalType = self.tempFilter.evaluationType();
+                if (!evalType) return;
+                if (self.activeFilters().some(function(f) { return f.type === 'evaluationType'; })) {
+                    toastr.warning('Değerlendirme tipi filtresi zaten eklenmiş. Önce mevcut olanı kaldırın.');
+                    self.tempFilter.evaluationType('');
+                    return;
+                }
+                filter.value = evalType;
+                filter.displayValue = self.evaluationTypeLabels[evalType] || evalType;
+                self.tempFilter.evaluationType('');
+                break;
+
+            default: return;
+        }
+
+        self.activeFilters.push(filter);
+        self.selectedFilterType('');
+        self.loadAll();
+    };
+
+    // Remove filter
+    self.removeFilter = function(filter) {
+        self.activeFilters.remove(filter);
+        self.loadAll();
+    };
+
+    // Clear all filters
+    self.clearAllFilters = function() {
+        self.activeFilters.removeAll();
+        self.loadAll();
+    };
+
+    // Build query params (dateRanges[N] format - her iki endpoint için ortak)
+    self.buildQueryParams = function() {
+        var params = [];
+        var projectIds = [];
+        var dateRangeIndex = 0;
+
+        self.activeFilters().forEach(function(f) {
+            if (f.type === 'project') {
+                projectIds.push(f.value);
+            } else if (f.type === 'dateRange') {
+                if (f.value.startDate) params.push('dateRanges[' + dateRangeIndex + '].startDate=' + f.value.startDate);
+                if (f.value.endDate) params.push('dateRanges[' + dateRangeIndex + '].endDate=' + f.value.endDate);
+                dateRangeIndex++;
+            } else if (f.type === 'evaluationType') {
+                params.push('evaluationType=' + f.value);
+            }
+        });
+
+        projectIds.forEach(function(id) { params.push('projectIds=' + id); });
+        return params.length > 0 ? '?' + params.join('&') : '';
+    };
+
+
+    // Load projects
+    self.loadProjects = function() {
+        customerApiFetch('/api/customer/portal/projects')
+            .then(function(response) {
+                if (!response.ok) throw new Error('Proje listesi yüklenemedi');
+                return response.json();
+            })
+            .then(function(data) {
+                self.projects(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading projects:', error);
+            });
+    };
 
     // Summary computed values (from evaluations)
     self.totalEvaluations = ko.computed(function() {
@@ -120,7 +321,7 @@ function MyPerformanceViewModel() {
     self.loadEvaluations = function() {
         self.currentPage(1);
 
-        fetch('/api/evaluations/my-evaluations', {
+        fetch('/api/evaluations/my-evaluations' + self.buildQueryParams(), {
             method: 'GET',
             credentials: 'include'
         })
@@ -141,7 +342,9 @@ function MyPerformanceViewModel() {
 
     // Load report card
     self.loadReportCard = function() {
-        fetch('/api/customer/portal/reports/my-report-card', {
+        var url = '/api/customer/portal/reports/my-report-card' + self.buildQueryParams();
+
+        fetch(url, {
             method: 'GET',
             credentials: 'include'
         })
@@ -168,9 +371,11 @@ function MyPerformanceViewModel() {
     self.loadAll = function() {
         self.isLoading(true);
 
+        var queryParams = self.buildQueryParams();
+
         Promise.all([
-            fetch('/api/evaluations/my-evaluations', { credentials: 'include' }).then(function(r) { return r.ok ? r.json() : []; }),
-            fetch('/api/customer/portal/reports/my-report-card', { credentials: 'include' }).then(function(r) { return r.ok ? r.json() : null; })
+            fetch('/api/evaluations/my-evaluations' + queryParams, { credentials: 'include' }).then(function(r) { return r.ok ? r.json() : []; }),
+            fetch('/api/customer/portal/reports/my-report-card' + queryParams, { credentials: 'include' }).then(function(r) { return r.ok ? r.json() : null; })
         ])
         .then(function(results) {
             self.evaluations(results[0] || []);
@@ -300,7 +505,7 @@ function MyPerformanceViewModel() {
     // Export to Excel
     self.exportToExcel = function() {
         self.isExporting(true);
-        var url = '/api/customer/portal/reports/my-report-card/export';
+        var url = '/api/customer/portal/reports/my-report-card/export' + self.buildQueryParams();
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
@@ -329,7 +534,7 @@ function MyPerformanceViewModel() {
     // Export to Word
     self.exportToWord = function() {
         self.isExporting(true);
-        var url = '/api/customer/portal/reports/my-report-card/export-word';
+        var url = '/api/customer/portal/reports/my-report-card/export-word' + self.buildQueryParams();
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
@@ -358,7 +563,7 @@ function MyPerformanceViewModel() {
     // Export to PDF
     self.exportToPdf = function() {
         self.isExporting(true);
-        var url = '/api/customer/portal/reports/my-report-card/export-pdf';
+        var url = '/api/customer/portal/reports/my-report-card/export-pdf' + self.buildQueryParams();
 
         fetch(url, { credentials: 'include' })
             .then(function(response) {
@@ -385,6 +590,7 @@ function MyPerformanceViewModel() {
     };
 
     // Initialize
+    self.loadProjects();
     self.loadAll();
 }
 

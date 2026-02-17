@@ -1,9 +1,11 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.Evaluation;
+using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Repositories;
@@ -208,11 +210,74 @@ public class EvaluationService : IEvaluationService
     /// Temsilcinin kendisi hakkındaki değerlendirmeleri getirir (EvaluatedCustomerPersonnelId ile)
     /// CustomerOperator'ın kendi performansını görmesi için kullanılır
     /// </summary>
-    public async Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId)
+    public async Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId, List<int>? projectIds = null, List<DateRangeFilter>? dateRanges = null, string? evaluationType = null)
     {
         // Projection kullanarak N+1 problemini çöz
-        return await _context.Evaluations
-            .Where(e => e.EvaluatedCustomerPersonnelId == customerPersonnelId && !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed)
+        var query = _context.Evaluations
+            .Where(e => e.EvaluatedCustomerPersonnelId == customerPersonnelId && !e.IsDeleted && e.StatusId == EvaluationStatuses.Ids.Completed);
+
+        // Proje filtresi
+        if (projectIds != null && projectIds.Any())
+            query = query.Where(e => projectIds.Contains(e.ProjectId));
+
+        // Tarih filtresi (CallDate bazlı - CustomerPortal kuralı: CreatedAt değil CallDate kullan)
+        // Çoklu dateRanges OR ile birleştirilir (Ocak 2025 + Ocak 2026 = sadece bu iki ay)
+        if (dateRanges != null && dateRanges.Any())
+        {
+            var validRanges = dateRanges.Where(dr => dr.StartDate.HasValue || dr.EndDate.HasValue).ToList();
+            if (validRanges.Any())
+            {
+                // Her dateRange için start/end çiftlerini UTC'ye çevir
+                var rangePairs = validRanges.Select(dr => new
+                {
+                    Start = dr.StartDate.HasValue ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc) : (DateTime?)null,
+                    End = dr.EndDate.HasValue ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1), DateTimeKind.Utc) : (DateTime?)null
+                }).ToList();
+
+                // OR predicate: herhangi bir aralığa düşen kayıtlar
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var callDate = Expression.Property(param, nameof(Evaluation.CallDate));
+                var controlDate = Expression.Property(param, nameof(Evaluation.ControlDate));
+                // e.CallDate ?? e.ControlDate
+                var dateExpr = Expression.Coalesce(callDate, controlDate);
+
+                Expression? orBody = null;
+                foreach (var rp in rangePairs)
+                {
+                    Expression? rangeExpr = null;
+                    if (rp.Start.HasValue)
+                    {
+                        var startConst = Expression.Constant((DateTime?)rp.Start.Value, typeof(DateTime?));
+                        rangeExpr = Expression.GreaterThanOrEqual(dateExpr, startConst);
+                    }
+                    if (rp.End.HasValue)
+                    {
+                        var endConst = Expression.Constant((DateTime?)rp.End.Value, typeof(DateTime?));
+                        var ltExpr = Expression.LessThan(dateExpr, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, ltExpr) : ltExpr;
+                    }
+                    if (rangeExpr != null)
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+                }
+
+                if (orBody != null)
+                {
+                    var lambda = Expression.Lambda<Func<Evaluation, bool>>(orBody, param);
+                    query = query.Where(lambda);
+                }
+            }
+        }
+
+        // Değerlendirme tipi filtresi
+        if (!string.IsNullOrEmpty(evaluationType))
+        {
+            if (evaluationType == "internal")
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
+            else if (evaluationType == "external")
+                query = query.Where(e => e.EvaluatorId != null);
+        }
+
+        return await query
             .OrderByDescending(e => e.Id)
             .Select(e => new EvaluationDto
             {

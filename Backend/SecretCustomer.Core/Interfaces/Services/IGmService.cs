@@ -44,7 +44,7 @@ public interface IGmService
     Task<List<GmAtamaDto>> GetAtamalarAsync(int donemId, int? userId = null, int? durumId = null);
 
     // Aramalarım (kullanıcı)
-    Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, int? donemId = null);
+    Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, List<int>? donemIds = null, List<int>? durumIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null);
     Task<bool> CompleteAtamaAsync(int atamaId, int userId, CompleteGmAtamaDto dto);
 }
 

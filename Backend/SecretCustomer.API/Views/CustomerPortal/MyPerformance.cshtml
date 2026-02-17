@@ -107,21 +107,93 @@
             </div>
         </div>
 
-        <!-- Export Buttons -->
-        <div class="d-flex justify-content-end mb-3" data-bind="visible: reportCard()">
-            <div class="btn-group">
-                <button class="btn btn-success btn-sm" data-bind="click: exportToExcel, disable: isExporting">
-                    <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-excel me-1"></i>Excel</span>
-                    <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
-                </button>
-                <button class="btn btn-primary btn-sm" data-bind="click: exportToWord, disable: isExporting">
-                    <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-word me-1"></i>Word</span>
-                    <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
-                </button>
-                <button class="btn btn-danger btn-sm" data-bind="click: exportToPdf, disable: isExporting">
-                    <span data-bind="visible: !isExporting()"><i class="bi bi-file-pdf me-1"></i>PDF</span>
-                    <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
-                </button>
+        <!-- Filtreler -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body py-2">
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <!-- Filtre Ekle Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            <i class="bi bi-funnel"></i> @Html.T("Common.AddFilter", "Filtre Ekle")
+                        </button>
+                        <div class="dropdown-menu p-3" style="min-width: 300px;">
+                            <!-- Filter Type -->
+                            <div class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
+                                    <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                                    <option value="project">@Html.T("Common.Project", "Proje")</option>
+                                    <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                    <option value="evaluationType">@Html.T("Report.EvaluationType", "Değerlendirme Tipi")</option>
+                                </select>
+                            </div>
+
+                            <!-- Project Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="value: tempFilter.projectId, options: projects, optionsValue: 'id', optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                            </div>
+
+                            <!-- Date Range Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                                <div class="d-flex gap-1 mb-2">
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
+                                    <span class="align-self-center">-</span>
+                                    <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.endDate">
+                                </div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('thisMonth'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'thisMonth' }">@Html.T("DateRange.ThisMonth", "Bu Ay")</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('lastMonth'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'lastMonth' }">@Html.T("DateRange.LastMonth", "Geçen Ay")</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('last3Months'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'last3Months' }">@Html.T("DateRange.Last3Months", "Son 3 Ay")</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bind="click: function() { setTempDateRange('thisYear'); }, css: { 'btn-primary': tempFilter.dateRangeType() === 'thisYear' }">@Html.T("DateRange.ThisYear", "Bu Yıl")</button>
+                                </div>
+                            </div>
+
+                            <!-- Evaluation Type Filter -->
+                            <div data-bind="visible: selectedFilterType() === 'evaluationType'" class="mb-2">
+                                <select class="form-select form-select-sm" data-bind="value: tempFilter.evaluationType">
+                                    <option value="">@Html.T("Common.Select", "Seçin...")</option>
+                                    <option value="internal">@Html.T("Report.InternalEvaluation", "İç Değerlendirme")</option>
+                                    <option value="external">@Html.T("Report.ExternalEvaluation", "Dış Değerlendirme")</option>
+                                </select>
+                            </div>
+
+                            <!-- Add Button -->
+                            <button type="button" class="btn btn-primary btn-sm w-100" data-bind="click: addFilter, enable: canAddFilter">
+                                <i class="bi bi-plus"></i> @Html.T("Common.Add", "Ekle")
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Filters -->
+                    <!-- ko foreach: activeFilters -->
+                    <span class="badge bg-primary d-flex align-items-center gap-1 py-2">
+                        <span data-bind="text: label + ': ' + displayValue"></span>
+                        <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.5rem;" data-bind="click: $parent.removeFilter"></button>
+                    </span>
+                    <!-- /ko -->
+
+                    <!-- Clear All -->
+                    <button class="btn btn-outline-danger btn-sm" data-bind="visible: activeFilters().length > 0, click: clearAllFilters">
+                        <i class="bi bi-x-circle"></i> @Html.T("Common.ClearAll", "Temizle")
+                    </button>
+
+                    <!-- Export Buttons (sağa hizalı) -->
+                    <div class="ms-auto" data-bind="visible: reportCard()">
+                        <div class="btn-group">
+                            <button class="btn btn-success btn-sm" data-bind="click: exportToExcel, disable: isExporting">
+                                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-excel me-1"></i>Excel</span>
+                                <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
+                            </button>
+                            <button class="btn btn-primary btn-sm" data-bind="click: exportToWord, disable: isExporting">
+                                <span data-bind="visible: !isExporting()"><i class="bi bi-file-earmark-word me-1"></i>Word</span>
+                                <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
+                            </button>
+                            <button class="btn btn-danger btn-sm" data-bind="click: exportToPdf, disable: isExporting">
+                                <span data-bind="visible: !isExporting()"><i class="bi bi-file-pdf me-1"></i>PDF</span>
+                                <span data-bind="visible: isExporting"><span class="spinner-border spinner-border-sm"></span></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

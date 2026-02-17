@@ -1837,7 +1837,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/my-report-card")]
     public async Task<IActionResult> GetMyReportCard(
         [FromQuery] List<int>? projectIds,
-        [FromQuery] List<DateRangeFilter>? dateRanges)
+        [FromQuery] List<DateRangeFilter>? dateRanges,
+        [FromQuery] string? evaluationType = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1862,7 +1863,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 ProjectIds = projectIds,
-                DateRanges = dateRanges
+                DateRanges = dateRanges,
+                EvaluationType = evaluationType
             };
 
             var result = await _reportService.GetPersonnelReportCardAsync(filter);
@@ -1891,7 +1893,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/my-report-card/export")]
     public async Task<IActionResult> ExportMyReportCard(
         [FromQuery] List<int>? projectIds,
-        [FromQuery] List<DateRangeFilter>? dateRanges)
+        [FromQuery] List<DateRangeFilter>? dateRanges,
+        [FromQuery] string? evaluationType = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1916,7 +1919,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 ProjectIds = projectIds,
-                DateRanges = dateRanges
+                DateRanges = dateRanges,
+                EvaluationType = evaluationType
             };
 
             var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
@@ -1935,7 +1939,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/my-report-card/export-word")]
     public async Task<IActionResult> ExportMyReportCardToWord(
         [FromQuery] List<int>? projectIds,
-        [FromQuery] List<DateRangeFilter>? dateRanges)
+        [FromQuery] List<DateRangeFilter>? dateRanges,
+        [FromQuery] string? evaluationType = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -1960,7 +1965,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 ProjectIds = projectIds,
-                DateRanges = dateRanges
+                DateRanges = dateRanges,
+                EvaluationType = evaluationType
             };
 
             var result = await _reportService.ExportPersonnelReportCardToWordAsync(filter);
@@ -2065,7 +2071,8 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/my-report-card/export-pdf")]
     public async Task<IActionResult> ExportMyReportCardToPdf(
         [FromQuery] List<int>? projectIds,
-        [FromQuery] List<DateRangeFilter>? dateRanges)
+        [FromQuery] List<DateRangeFilter>? dateRanges,
+        [FromQuery] string? evaluationType = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -2086,7 +2093,8 @@ public class CustomerPortalApiController : ControllerBase
             {
                 PersonnelId = personnelId,
                 ProjectIds = projectIds,
-                DateRanges = dateRanges
+                DateRanges = dateRanges,
+                EvaluationType = evaluationType
             };
 
             var report = await _reportService.GetPersonnelReportCardAsync(filter);

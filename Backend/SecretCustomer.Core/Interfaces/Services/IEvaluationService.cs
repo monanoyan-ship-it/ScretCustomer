@@ -1,4 +1,5 @@
 using SecretCustomer.Core.DTOs.Evaluation;
+using SecretCustomer.Core.DTOs.Report;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
@@ -13,7 +14,7 @@ public interface IEvaluationService
     /// Temsilcinin kendisi hakkındaki değerlendirmeleri getirir (EvaluatedCustomerPersonnelId ile)
     /// CustomerOperator'ın kendi performansını görmesi için kullanılır
     /// </summary>
-    Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId);
+    Task<IEnumerable<EvaluationDto>> GetByEvaluatedCustomerPersonnelIdAsync(int customerPersonnelId, List<int>? projectIds = null, List<DateRangeFilter>? dateRanges = null, string? evaluationType = null);
 
     Task<EvaluationDto> SubmitEvaluationAsync(SubmitEvaluationDto dto);
     Task<EvaluationDto> StartEvaluationAsync(int projectId, int? evaluatorId);

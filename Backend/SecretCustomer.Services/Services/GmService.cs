@@ -834,18 +834,46 @@ public class GmService : IGmService
     // ARAMALARIM (KULLANICI)
     // =============================================
 
-    public async Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, int? donemId = null)
+    public async Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, List<int>? donemIds = null, List<int>? durumIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.GmAtamalar
             .Include(x => x.GmDonem)
             .Include(x => x.GmDonemSoru)
                 .ThenInclude(ds => ds!.GmHedefFirma)
             .Include(x => x.User)
-            .Where(x => x.UserId == userId)
-            .Where(x => x.GmDonem!.DurumId == GmDonemDurumlari.Ids.Aktif);
+            .Where(x => x.UserId == userId);
 
-        if (donemId.HasValue)
-            query = query.Where(x => x.GmDonemId == donemId.Value);
+        // Dönem filtresi: belirli dönem seçildiyse onu, yoksa sadece aktif dönemleri getir
+        if (donemIds != null && donemIds.Any())
+            query = query.Where(x => donemIds.Contains(x.GmDonemId));
+        else
+            query = query.Where(x => x.GmDonem!.DurumId == GmDonemDurumlari.Ids.Aktif);
+
+        // Durum filtresi
+        if (durumIds != null && durumIds.Any())
+            query = query.Where(x => durumIds.Contains(x.DurumId));
+
+        // Firma arama
+        if (firmaArama != null && firmaArama.Any(f => !string.IsNullOrWhiteSpace(f)))
+        {
+            var searchTerm = firmaArama.First(f => !string.IsNullOrWhiteSpace(f));
+            query = query.Where(x => x.GmDonemSoru!.GmHedefFirma != null &&
+                EF.Functions.ILike(x.GmDonemSoru.GmHedefFirma.FirmaAdi, "%" + searchTerm + "%"));
+        }
+
+        // Tarih aralığı (plan tarihi veya gerçekleşme tarihi)
+        if (startDate.HasValue)
+        {
+            var startUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(x => (x.GerceklesmeTarihi != null && x.GerceklesmeTarihi >= startUtc) ||
+                                     (x.PlanTarihi != null && x.PlanTarihi >= startUtc));
+        }
+        if (endDate.HasValue)
+        {
+            var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(x => (x.GerceklesmeTarihi != null && x.GerceklesmeTarihi <= endUtc) ||
+                                     (x.PlanTarihi != null && x.PlanTarihi <= endUtc));
+        }
 
         return await query
             .OrderBy(x => x.DurumId)

@@ -30,14 +30,19 @@ public class GmAramalarimApiController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAramalarim([FromQuery] int? donemId)
+    public async Task<IActionResult> GetAramalarim(
+        [FromQuery] List<int>? donemIds,
+        [FromQuery] List<int>? durumIds,
+        [FromQuery] List<string>? firmaArama,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
     {
         try
         {
             var userId = GetUserId();
             if (userId == 0) return Unauthorized();
 
-            var result = await _gmService.GetAramalarimAsync(userId, donemId);
+            var result = await _gmService.GetAramalarimAsync(userId, donemIds, durumIds, firmaArama, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)
