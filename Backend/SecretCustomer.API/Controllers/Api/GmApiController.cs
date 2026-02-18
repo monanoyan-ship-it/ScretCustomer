@@ -432,6 +432,106 @@ public class GmApiController : BaseApiController
         }
     }
 
+    // =============================================
+    // KUPONLU SORU IMPORT (AKTİF DÖNEM)
+    // =============================================
+
+    [HttpPost("donemler/{donemId}/kuponlu-sorular/import")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> ImportKuponluSorular(int donemId, [FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Dosya seçilmedi." });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".xlsx" && ext != ".xls")
+                return BadRequest(new { message = "Sadece Excel dosyaları (.xlsx, .xls) kabul edilir." });
+
+            using var stream = file.OpenReadStream();
+            var (imported, skipped, errors) = await _gmService.ImportKuponluSorularFromExcelAsync(donemId, customerId, hedefFirmaId, stream);
+
+            return Ok(new { imported, skipped, errors, message = $"{imported} kuponlu soru eklendi, {skipped} satır atlandı." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kuponlu soru Excel import hatası");
+            return StatusCode(500, CreateErrorResponse("Kuponlu Excel import sırasında hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/kuponlu-sorular/import-with-matching")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> ImportKuponluSorularWithMatching(int donemId, IFormFile file)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(new { message = "Dosya seçilmedi." });
+
+            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (ext != ".xlsx" && ext != ".xls")
+                return BadRequest(new { message = "Sadece Excel dosyaları (.xlsx, .xls) kabul edilir." });
+
+            using var stream = file.OpenReadStream();
+            var result = await _gmService.ImportKuponluSorularWithMatchingAsync(donemId, stream);
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kuponlu soru Excel import (eşleştirmeli) hatası");
+            return StatusCode(500, CreateErrorResponse("Kuponlu Excel import sırasında hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/kuponlu-sorular/save-unmatched")]
+    public async Task<IActionResult> SaveUnmatchedKuponluSorular(int donemId, [FromBody] List<SaveUnmatchedSoruItem> items)
+    {
+        try
+        {
+            var saved = await _gmService.SaveUnmatchedKuponluSorularAsync(donemId, items);
+            return Ok(new { saved, message = $"{saved} kuponlu soru kaydedildi." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kuponlu eşleşmeyen sorular kaydedilirken hata");
+            return StatusCode(500, CreateErrorResponse("Kaydetme sırasında hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("donemler/{donemId}/kuponlu-dagit")]
+    public async Task<IActionResult> KuponluDagit(int donemId)
+    {
+        try
+        {
+            var atamaCount = await _gmService.KuponluDagitAsync(donemId);
+            return Ok(new { success = true, atamaCount, message = $"{atamaCount} kuponlu atama oluşturuldu." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Kuponlu dağıtım yapılırken hata");
+            return StatusCode(500, CreateErrorResponse("Kuponlu dağıtım yapılırken hata oluştu", ex));
+        }
+    }
+
     [HttpPost("donemler/{donemId}/tamamla")]
     public async Task<IActionResult> Tamamla(int donemId)
     {

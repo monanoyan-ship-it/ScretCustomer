@@ -164,8 +164,11 @@ public class GmService : IGmService
         var donem = await _context.GmDonemler.FindAsync(donemId);
         if (donem == null)
             throw new InvalidOperationException("Dönem bulunamadı.");
-        if (donem.DurumId != GmDonemDurumlari.Ids.Taslak)
-            throw new InvalidOperationException("Sadece taslak dönemlere soru eklenebilir.");
+        // Taslak: her tür soru eklenebilir. Aktif: sadece kuponlu soru eklenebilir.
+        if (donem.DurumId == GmDonemDurumlari.Ids.Tamamlandi)
+            throw new InvalidOperationException("Tamamlanmış dönemlere soru eklenemez.");
+        if (donem.DurumId == GmDonemDurumlari.Ids.Aktif && !dto.IsKuponlu)
+            throw new InvalidOperationException("Aktif dönemlere sadece kuponlu soru eklenebilir.");
 
         var entity = new GmDonemSoru
         {
@@ -219,8 +222,11 @@ public class GmService : IGmService
             .FirstOrDefaultAsync(x => x.Id == donemSoruId);
         if (entity == null) return null;
 
-        if (entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak)
-            throw new InvalidOperationException("Sadece taslak dönemlerdeki sorular güncellenebilir.");
+        // Taslak: her soru düzenlenebilir. Aktif: sadece kuponlu sorular düzenlenebilir.
+        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Tamamlandi)
+            throw new InvalidOperationException("Tamamlanmış dönemlerdeki sorular güncellenemez.");
+        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Aktif && !entity.IsKuponlu)
+            throw new InvalidOperationException("Aktif dönemlerde sadece kuponlu sorular güncellenebilir.");
 
         entity.SoruMetni = dto.SoruMetni;
         entity.BeklenenCevap = dto.BeklenenCevap;
@@ -262,7 +268,17 @@ public class GmService : IGmService
         var entity = await _context.GmDonemSorular
             .Include(x => x.GmDonem)
             .FirstOrDefaultAsync(x => x.Id == donemSoruId);
-        if (entity == null || entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Taslak) return false;
+        if (entity == null) return false;
+
+        // Taslak: her soru silinebilir. Aktif: sadece kuponlu + ataması olmayan sorular silinebilir.
+        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Tamamlandi) return false;
+        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Aktif)
+        {
+            if (!entity.IsKuponlu) return false;
+            // Ataması varsa silinemez
+            var hasAtama = await _context.GmAtamalar.AnyAsync(a => a.GmDonemSoruId == entity.Id && !a.IsDeleted);
+            if (hasAtama) return false;
+        }
 
         entity.IsDeleted = true;
         await _context.SaveChangesAsync();
@@ -746,12 +762,22 @@ public class GmService : IGmService
             throw new InvalidOperationException("Döneme en az bir soru eklenmeli.");
 
         var personeller = donem.Personeller.ToList();
-        var sorular = donem.Sorular.ToList();
+        // Kuponlu sorular aktif etten hariç - sonradan ayrıca dağıtılacak
+        var sorular = donem.Sorular.Where(s => !s.IsKuponlu).ToList();
 
         // İş günlerini hesapla
         var isGunleri = GetIsGunleri(donem.BaslangicTarihi, donem.BitisTarihi);
         if (!isGunleri.Any())
             throw new InvalidOperationException("Dönem aralığında iş günü bulunamadı.");
+
+        // Normal soru yoksa sadece kuponlu var, atamasız aktif et
+        if (!sorular.Any())
+        {
+            donem.DurumId = GmDonemDurumlari.Ids.Aktif;
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Dönem aktif edildi: {donem.Ad}. Normal soru yok, kuponlu sorular sonradan dağıtılacak.", "GolgeMusteri");
+            return 0;
+        }
 
         // Tüm atamaları üret
         var atamalar = new List<GmAtama>();
@@ -787,6 +813,304 @@ public class GmService : IGmService
         await _context.SaveChangesAsync();
 
         await _auditLog.LogInfoAsync($"GM Dönem aktif edildi: {donem.Ad}. {atamalar.Count} atama oluşturuldu.", "GolgeMusteri");
+
+        return atamalar.Count;
+    }
+
+    // =============================================
+    // KUPONLU SORU EXCEL IMPORT (AKTİF DÖNEM İÇİN)
+    // Excel formatı: Soru (A), Beklenen Cevap (B), Aranma Sayısı (C), Kupon Kodu (D)
+    // =============================================
+
+    public async Task<(int imported, int skipped, List<string> errors)> ImportKuponluSorularFromExcelAsync(int donemId, int customerId, int hedefFirmaId, Stream excelStream)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Aktif)
+            throw new InvalidOperationException("Kuponlu soru import sadece aktif dönemlerde yapılabilir.");
+
+        var errors = new List<string>();
+        int imported = 0, skipped = 0;
+
+        using var workbook = new XLWorkbook(excelStream);
+        var ws = workbook.Worksheets.First();
+        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+
+        for (int row = 2; row <= lastRow; row++)
+        {
+            var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
+            var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
+            var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
+            var kuponKodu = ws.Cell(row, 4).GetString()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(soruMetni))
+            {
+                skipped++;
+                continue;
+            }
+
+            if (soruMetni.Length > 2000)
+            {
+                errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
+                skipped++;
+                continue;
+            }
+
+            int aranmaSayisi = 1;
+            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
+            {
+                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
+                {
+                    errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
+                    aranmaSayisi = 1;
+                }
+            }
+
+            var entity = new GmDonemSoru
+            {
+                GmDonemId = donemId,
+                CustomerId = customerId,
+                GmHedefFirmaId = hedefFirmaId,
+                SoruMetni = soruMetni,
+                BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                AranmaSayisi = aranmaSayisi,
+                IsKuponlu = true,
+                KuponKodu = string.IsNullOrWhiteSpace(kuponKodu) ? null : kuponKodu,
+                SiraNo = 0
+            };
+
+            _context.GmDonemSorular.Add(entity);
+            imported++;
+        }
+
+        if (imported > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Kuponlu soru Excel import: {imported} soru eklendi (DonemId: {donemId}, HedefFirmaId: {hedefFirmaId})", "GolgeMusteri");
+        }
+
+        return (imported, skipped, errors);
+    }
+
+    /// <summary>
+    /// Kuponlu soru import (firma eşleştirmeli, aktif dönem).
+    /// Excel formatı: Hedef Firma (A), Soru (B), Beklenen Cevap (C), Aranma Sayısı (D), Kupon Kodu (E)
+    /// </summary>
+    public async Task<ImportDonemSorularResult> ImportKuponluSorularWithMatchingAsync(int donemId, Stream excelStream)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Aktif)
+            throw new InvalidOperationException("Kuponlu soru import sadece aktif dönemlerde yapılabilir.");
+
+        var hedefFirmalar = await _context.GmHedefFirmalar
+            .Where(x => !x.IsDeleted)
+            .ToListAsync();
+
+        var firmaLookup = new Dictionary<string, GmHedefFirma>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in hedefFirmalar)
+        {
+            var key = f.FirmaAdi.Trim();
+            if (!firmaLookup.ContainsKey(key))
+                firmaLookup[key] = f;
+        }
+
+        var result = new ImportDonemSorularResult();
+
+        using var workbook = new XLWorkbook(excelStream);
+        var ws = workbook.Worksheets.First();
+        var lastRow = ws.LastRowUsed()?.RowNumber() ?? 0;
+
+        for (int row = 2; row <= lastRow; row++)
+        {
+            var hedefFirmaAdi = ws.Cell(row, 1).GetString()?.Trim();
+            var soruMetni = ws.Cell(row, 2).GetString()?.Trim();
+            var beklenenCevap = ws.Cell(row, 3).GetString()?.Trim();
+            var aranmaSayisiStr = ws.Cell(row, 4).GetString()?.Trim();
+            var kuponKodu = ws.Cell(row, 5).GetString()?.Trim();
+
+            if (string.IsNullOrWhiteSpace(soruMetni))
+            {
+                result.Skipped++;
+                continue;
+            }
+
+            if (soruMetni.Length > 2000)
+            {
+                result.Errors.Add($"Satır {row}: Soru metni 2000 karakterden uzun.");
+                result.Skipped++;
+                continue;
+            }
+
+            int aranmaSayisi = 1;
+            if (!string.IsNullOrWhiteSpace(aranmaSayisiStr))
+            {
+                if (!int.TryParse(aranmaSayisiStr, out aranmaSayisi) || aranmaSayisi < 1)
+                {
+                    result.Errors.Add($"Satır {row}: Geçersiz aranma sayısı '{aranmaSayisiStr}'.");
+                    aranmaSayisi = 1;
+                }
+            }
+
+            var firmaKey = (hedefFirmaAdi ?? "").Trim();
+            if (firmaKey.Length > 0 && firmaLookup.TryGetValue(firmaKey, out var firma))
+            {
+                var entity = new GmDonemSoru
+                {
+                    GmDonemId = donemId,
+                    CustomerId = firma.CustomerId,
+                    GmHedefFirmaId = firma.Id,
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi,
+                    IsKuponlu = true,
+                    KuponKodu = string.IsNullOrWhiteSpace(kuponKodu) ? null : kuponKodu,
+                    SiraNo = 0
+                };
+                _context.GmDonemSorular.Add(entity);
+                result.Imported++;
+
+                result.Matched.Add(new ImportMatchedItem
+                {
+                    HedefFirmaAdi = firma.FirmaAdi,
+                    HedefFirmaId = firma.Id,
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi
+                });
+            }
+            else
+            {
+                result.Unmatched.Add(new ImportUnmatchedItem
+                {
+                    RowIndex = row,
+                    ExcelHedefFirmaAdi = hedefFirmaAdi ?? "",
+                    SoruMetni = soruMetni,
+                    BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
+                    AranmaSayisi = aranmaSayisi
+                });
+            }
+        }
+
+        if (result.Imported > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Kuponlu soru Excel import (eşleştirmeli): {result.Imported} soru eklendi, {result.Unmatched.Count} eşleşmedi (DonemId: {donemId})", "GolgeMusteri");
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Kuponlu import'ta eşleşmeyen soruları kaydet (aktif dönem).
+    /// </summary>
+    public async Task<int> SaveUnmatchedKuponluSorularAsync(int donemId, List<SaveUnmatchedSoruItem> items)
+    {
+        var donem = await _context.GmDonemler.FindAsync(donemId);
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+        if (donem.DurumId != GmDonemDurumlari.Ids.Aktif)
+            throw new InvalidOperationException("Bu işlem sadece aktif dönemlerde yapılabilir.");
+
+        int saved = 0;
+        foreach (var item in items)
+        {
+            if (item.GmHedefFirmaId <= 0 || string.IsNullOrWhiteSpace(item.SoruMetni))
+                continue;
+
+            var entity = new GmDonemSoru
+            {
+                GmDonemId = donemId,
+                CustomerId = item.CustomerId,
+                GmHedefFirmaId = item.GmHedefFirmaId,
+                SoruMetni = item.SoruMetni,
+                BeklenenCevap = string.IsNullOrWhiteSpace(item.BeklenenCevap) ? null : item.BeklenenCevap,
+                AranmaSayisi = item.AranmaSayisi < 1 ? 1 : item.AranmaSayisi,
+                IsKuponlu = true,
+                SiraNo = 0
+            };
+            _context.GmDonemSorular.Add(entity);
+            saved++;
+        }
+
+        if (saved > 0)
+        {
+            await _context.SaveChangesAsync();
+            await _auditLog.LogInfoAsync($"GM Kuponlu eşleşmeyen sorular kaydedildi: {saved} soru (DonemId: {donemId})", "GolgeMusteri");
+        }
+
+        return saved;
+    }
+
+    public async Task<int> KuponluDagitAsync(int donemId)
+    {
+        var donem = await _context.GmDonemler
+            .Include(x => x.Personeller.Where(p => !p.IsDeleted))
+            .Include(x => x.Sorular.Where(s => !s.IsDeleted))
+            .FirstOrDefaultAsync(x => x.Id == donemId);
+
+        if (donem == null)
+            throw new InvalidOperationException("Dönem bulunamadı.");
+
+        if (donem.DurumId != GmDonemDurumlari.Ids.Aktif)
+            throw new InvalidOperationException("Kuponlu dağıtım sadece aktif dönemlerde yapılabilir.");
+
+        if (!donem.Personeller.Any())
+            throw new InvalidOperationException("Döneme en az bir personel eklenmeli.");
+
+        // Zaten ataması olan kuponlu soru ID'lerini bul
+        var atamasiOlanSoruIds = await _context.GmAtamalar
+            .Where(a => a.GmDonemId == donemId && !a.IsDeleted)
+            .Select(a => a.GmDonemSoruId)
+            .Distinct()
+            .ToListAsync();
+
+        // Henüz ataması olmayan kuponlu soruları al
+        var kuponluSorular = donem.Sorular
+            .Where(s => s.IsKuponlu && !atamasiOlanSoruIds.Contains(s.Id))
+            .OrderBy(s => s.SiraNo)
+            .ToList();
+
+        if (!kuponluSorular.Any())
+            throw new InvalidOperationException("Dağıtılacak kuponlu soru bulunamadı.");
+
+        var personeller = donem.Personeller.ToList();
+        var isGunleri = GetIsGunleri(donem.BaslangicTarihi, donem.BitisTarihi);
+        if (!isGunleri.Any())
+            throw new InvalidOperationException("Dönem aralığında iş günü bulunamadı.");
+
+        var atamalar = new List<GmAtama>();
+        var personelIndex = 0;
+        var gunIndex = 0;
+
+        foreach (var donemSoru in kuponluSorular)
+        {
+            var aranma = donemSoru.AranmaSayisi;
+            for (int i = 0; i < aranma; i++)
+            {
+                var personel = personeller[personelIndex % personeller.Count];
+                var planTarihi = isGunleri[gunIndex % isGunleri.Count];
+
+                atamalar.Add(new GmAtama
+                {
+                    GmDonemId = donemId,
+                    GmDonemSoruId = donemSoru.Id,
+                    UserId = personel.UserId,
+                    PlanTarihi = planTarihi,
+                    DurumId = GmAtamaDurumlari.Ids.Beklemede
+                });
+
+                personelIndex++;
+                gunIndex++;
+            }
+        }
+
+        _context.GmAtamalar.AddRange(atamalar);
+        await _context.SaveChangesAsync();
+
+        await _auditLog.LogInfoAsync($"GM Kuponlu dağıtım: {atamalar.Count} atama oluşturuldu ({kuponluSorular.Count} soru). Dönem: {donem.Ad}", "GolgeMusteri");
 
         return atamalar.Count;
     }

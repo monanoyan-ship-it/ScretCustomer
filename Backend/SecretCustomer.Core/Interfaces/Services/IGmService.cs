@@ -31,8 +31,16 @@ public interface IGmService
     Task<bool> AddDonemPersonelAsync(int donemId, int userId);
     Task<bool> RemoveDonemPersonelAsync(int donemPersonelId);
 
-    // Aktif Et (dağıtım algoritması)
+    // Kuponlu soru import (aktif dönem için ayrı endpoint'ler)
+    Task<(int imported, int skipped, List<string> errors)> ImportKuponluSorularFromExcelAsync(int donemId, int customerId, int hedefFirmaId, Stream excelStream);
+    Task<ImportDonemSorularResult> ImportKuponluSorularWithMatchingAsync(int donemId, Stream excelStream);
+    Task<int> SaveUnmatchedKuponluSorularAsync(int donemId, List<SaveUnmatchedSoruItem> items);
+
+    // Aktif Et (dağıtım algoritması - kuponlu sorular hariç)
     Task<int> AktifEtAsync(int donemId);
+
+    // Kuponlu soru dağıtımı (aktif dönemde, ataması olmayan kuponlu soruları dağıt)
+    Task<int> KuponluDagitAsync(int donemId);
 
     // Dönem tamamla
     Task<bool> TamamlaAsync(int donemId);

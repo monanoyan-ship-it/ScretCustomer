@@ -72,6 +72,12 @@ function DonemlerViewModel() {
         $('#soruEkleModal').modal('show');
     };
 
+    // Aktif dönemde kuponlu soru ekleme - isKuponlu otomatik true
+    self.showAddKuponluSoruModal = function () {
+        self.showAddSoruModal();
+        self.soruForm.isKuponlu(true);
+    };
+
     self.showEditSoruModal = function (soru) {
         self.soruIsEditing(true);
         self.soruEditingId(soru.id);
@@ -210,9 +216,15 @@ function DonemlerViewModel() {
         formData.append('hedefFirmaId', self.importForm.hedefFirmaId());
         formData.append('file', fileInput.files[0]);
 
+        // Aktif dönemde kuponlu endpoint kullan
+        var isAktif = self.selectedDonem() && self.selectedDonem().durumId === 2;
+        var importUrl = isAktif
+            ? '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlu-sorular/import'
+            : '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import';
+
         self.isImporting(true);
         $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import',
+            url: importUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -256,9 +268,15 @@ function DonemlerViewModel() {
         var formData = new FormData();
         formData.append('file', fileInput.files[0]);
 
+        // Aktif dönemde kuponlu endpoint kullan
+        var isAktif = self.selectedDonem() && self.selectedDonem().durumId === 2;
+        var importMatchUrl = isAktif
+            ? '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlu-sorular/import-with-matching'
+            : '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import-with-matching';
+
         self.isImportingMatch(true);
         $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/import-with-matching',
+            url: importMatchUrl,
             type: 'POST',
             data: formData,
             processData: false,
@@ -330,9 +348,15 @@ function DonemlerViewModel() {
             return;
         }
 
+        // Aktif dönemde kuponlu endpoint kullan
+        var isAktif = self.selectedDonem() && self.selectedDonem().durumId === 2;
+        var saveUrl = isAktif
+            ? '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlu-sorular/save-unmatched'
+            : '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/save-unmatched';
+
         self.isSavingUnmatched(true);
         $.ajax({
-            url: '/api/gm/donemler/' + self.selectedDonem().id + '/sorular/save-unmatched',
+            url: saveUrl,
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(items)
@@ -548,6 +572,28 @@ function DonemlerViewModel() {
                     self.closeDonem();
                 })
                 .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Aktif etme başarısız.'); });
+            }
+        });
+    };
+
+    self.kuponluDagit = function () {
+        if (!self.selectedDonem()) return;
+        showConfirmModal({
+            title: 'Kuponlu Dağıtım',
+            message: 'Henüz dağıtılmamış kuponlu soruları personellere dağıtmak istediğinize emin misiniz?',
+            type: 'warning',
+            confirmText: 'Evet, Dağıt',
+            confirmIcon: 'bi-ticket-perforated',
+            onConfirm: function () {
+                $.ajax({
+                    url: '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlu-dagit',
+                    type: 'POST'
+                })
+                .done(function (data) {
+                    toastr.success(data.message || 'Kuponlu dağıtım tamamlandı.');
+                    self.loadDonemDetail(self.selectedDonem().id);
+                })
+                .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Kuponlu dağıtım başarısız.'); });
             }
         });
     };
