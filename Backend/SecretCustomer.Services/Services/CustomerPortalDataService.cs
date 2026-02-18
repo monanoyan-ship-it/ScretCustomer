@@ -1912,12 +1912,18 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (startDate.HasValue)
         {
             var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
-            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= start);
+            query = query.Where(e =>
+             (e.CallDate.HasValue && e.CallDate.Value >= start) ||
+             (e.ControlDate.HasValue && e.ControlDate.Value >= start)
+            );
         }
         if (endDate.HasValue)
         {
             var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
-            query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= end);
+            query = query.Where(e =>
+             (e.CallDate.HasValue && e.CallDate.Value <= end) ||
+             (e.ControlDate.HasValue && e.ControlDate.Value <= end)
+            );
         }
 
         // Project filter
