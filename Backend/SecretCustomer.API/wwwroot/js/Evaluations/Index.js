@@ -1471,8 +1471,8 @@ function EvaluationsViewModel() {
             evaluatedOrganizationId: self.formData().selectedOrganizationId || null,
             evaluatedPersonnelId: self.isNewPersonnelMode() ? null : (self.evaluatedPersonnelId() || null),
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
-            controlDate: new Date().toISOString().split('T')[0],
-            controlTime: self.controlTime() || null,
+            controlDate: self.controlDate ? (self.controlDate() || null) : null,
+            controlTime: self.controlTime ? (self.controlTime() || null) : null,
             formOpenedAt: new Date().toISOString(),
             newPersonnel: self.isNewPersonnelMode() ? {
                 firstName: self.newPersonnelFirstName(),
