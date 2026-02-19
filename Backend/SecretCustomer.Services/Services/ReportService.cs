@@ -83,41 +83,71 @@ public class ReportService : IReportService
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
-        // Date Range filter - CallDate ve CreatedAt ayrı ayrı
+        // Date Range filter - CallDate ve CreatedAt ayrı ayrı, çoklu aralık OR ile birleştirilir
         if (filter.DateRanges?.Any() == true)
         {
-            // CallDate filtresi
+            // CallDate filtresi (OR predicate)
             var callDateRanges = filter.DateRanges.Where(dr => dr.FilterType == "callDate").ToList();
             if (callDateRanges.Any())
             {
-                var dr = callDateRanges.First();
-                if (dr.StartDate.HasValue)
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var callDateProp = Expression.Property(param, nameof(Evaluation.CallDate));
+                Expression? orBody = null;
+                foreach (var dr in callDateRanges)
                 {
-                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
-                    query = query.Where(e => e.CallDate != null && e.CallDate >= startUtc);
+                    Expression? rangeExpr = null;
+                    if (dr.StartDate.HasValue)
+                    {
+                        var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                        var startConst = Expression.Constant((DateTime?)startUtc, typeof(DateTime?));
+                        rangeExpr = Expression.GreaterThanOrEqual(callDateProp, startConst);
+                    }
+                    if (dr.EndDate.HasValue)
+                    {
+                        var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                        var endConst = Expression.Constant((DateTime?)endUtc, typeof(DateTime?));
+                        var leExpr = Expression.LessThanOrEqual(callDateProp, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                    }
+                    if (rangeExpr != null)
+                    {
+                        var notNull = Expression.NotEqual(callDateProp, Expression.Constant(null, typeof(DateTime?)));
+                        rangeExpr = Expression.AndAlso(notNull, rangeExpr);
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+                    }
                 }
-                if (dr.EndDate.HasValue)
-                {
-                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                    query = query.Where(e => e.CallDate != null && e.CallDate <= endUtc);
-                }
+                if (orBody != null)
+                    query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
             }
 
-            // CreatedAt filtresi
+            // CreatedAt filtresi (OR predicate)
             var createdAtRanges = filter.DateRanges.Where(dr => dr.FilterType == "createdAt" || string.IsNullOrEmpty(dr.FilterType)).ToList();
             if (createdAtRanges.Any())
             {
-                var dr = createdAtRanges.First();
-                if (dr.StartDate.HasValue)
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var createdAtProp = Expression.Property(param, nameof(Evaluation.CreatedAt));
+                Expression? orBody = null;
+                foreach (var dr in createdAtRanges)
                 {
-                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
-                    query = query.Where(e => e.CreatedAt >= startUtc);
+                    Expression? rangeExpr = null;
+                    if (dr.StartDate.HasValue)
+                    {
+                        var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                        var startConst = Expression.Constant(startUtc, typeof(DateTime));
+                        rangeExpr = Expression.GreaterThanOrEqual(createdAtProp, startConst);
+                    }
+                    if (dr.EndDate.HasValue)
+                    {
+                        var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                        var endConst = Expression.Constant(endUtc, typeof(DateTime));
+                        var leExpr = Expression.LessThanOrEqual(createdAtProp, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                    }
+                    if (rangeExpr != null)
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
                 }
-                if (dr.EndDate.HasValue)
-                {
-                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                    query = query.Where(e => e.CreatedAt <= endUtc);
-                }
+                if (orBody != null)
+                    query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
             }
         }
 
@@ -290,41 +320,71 @@ public class ReportService : IReportService
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
 
-        // Date Range filter - CallDate ve CreatedAt ayrı ayrı
+        // Date Range filter - CallDate ve CreatedAt ayrı ayrı, çoklu aralık OR ile birleştirilir
         if (filter.DateRanges?.Any() == true)
         {
-            // CallDate filtresi
+            // CallDate filtresi (OR predicate)
             var callDateRanges = filter.DateRanges.Where(dr => dr.FilterType == "callDate").ToList();
             if (callDateRanges.Any())
             {
-                var dr = callDateRanges.First();
-                if (dr.StartDate.HasValue)
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var callDateProp = Expression.Property(param, nameof(Evaluation.CallDate));
+                Expression? orBody = null;
+                foreach (var dr in callDateRanges)
                 {
-                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
-                    query = query.Where(e => e.CallDate != null && e.CallDate >= startUtc);
+                    Expression? rangeExpr = null;
+                    if (dr.StartDate.HasValue)
+                    {
+                        var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                        var startConst = Expression.Constant((DateTime?)startUtc, typeof(DateTime?));
+                        rangeExpr = Expression.GreaterThanOrEqual(callDateProp, startConst);
+                    }
+                    if (dr.EndDate.HasValue)
+                    {
+                        var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                        var endConst = Expression.Constant((DateTime?)endUtc, typeof(DateTime?));
+                        var leExpr = Expression.LessThanOrEqual(callDateProp, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                    }
+                    if (rangeExpr != null)
+                    {
+                        var notNull = Expression.NotEqual(callDateProp, Expression.Constant(null, typeof(DateTime?)));
+                        rangeExpr = Expression.AndAlso(notNull, rangeExpr);
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+                    }
                 }
-                if (dr.EndDate.HasValue)
-                {
-                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                    query = query.Where(e => e.CallDate != null && e.CallDate <= endUtc);
-                }
+                if (orBody != null)
+                    query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
             }
 
-            // CreatedAt filtresi
+            // CreatedAt filtresi (OR predicate)
             var createdAtRanges = filter.DateRanges.Where(dr => dr.FilterType == "createdAt" || string.IsNullOrEmpty(dr.FilterType)).ToList();
             if (createdAtRanges.Any())
             {
-                var dr = createdAtRanges.First();
-                if (dr.StartDate.HasValue)
+                var param = Expression.Parameter(typeof(Evaluation), "e");
+                var createdAtProp = Expression.Property(param, nameof(Evaluation.CreatedAt));
+                Expression? orBody = null;
+                foreach (var dr in createdAtRanges)
                 {
-                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
-                    query = query.Where(e => e.CreatedAt >= startUtc);
+                    Expression? rangeExpr = null;
+                    if (dr.StartDate.HasValue)
+                    {
+                        var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                        var startConst = Expression.Constant(startUtc, typeof(DateTime));
+                        rangeExpr = Expression.GreaterThanOrEqual(createdAtProp, startConst);
+                    }
+                    if (dr.EndDate.HasValue)
+                    {
+                        var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                        var endConst = Expression.Constant(endUtc, typeof(DateTime));
+                        var leExpr = Expression.LessThanOrEqual(createdAtProp, endConst);
+                        rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                    }
+                    if (rangeExpr != null)
+                        orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
                 }
-                if (dr.EndDate.HasValue)
-                {
-                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                    query = query.Where(e => e.CreatedAt <= endUtc);
-                }
+                if (orBody != null)
+                    query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
             }
         }
 
@@ -7275,20 +7335,33 @@ public class ReportService : IReportService
                      (e.EvaluatedCustomerPersonnel.Email != null && e.EvaluatedCustomerPersonnel.Email.ToLower().Contains(term)))));
         }
 
-        // Tarih filtresi
+        // Tarih filtresi (çoklu aralık OR ile birleştirilir)
         if (filter.DateRanges?.Any() == true)
         {
-            var dateRange = filter.DateRanges.First();
-            if (dateRange.StartDate.HasValue)
+            var param = Expression.Parameter(typeof(Evaluation), "e");
+            var createdAtProp = Expression.Property(param, nameof(Evaluation.CreatedAt));
+            Expression? orBody = null;
+            foreach (var dr in filter.DateRanges)
             {
-                var startUtc = DateTime.SpecifyKind(dateRange.StartDate.Value.Date, DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt >= startUtc);
+                Expression? rangeExpr = null;
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    var startConst = Expression.Constant(startUtc, typeof(DateTime));
+                    rangeExpr = Expression.GreaterThanOrEqual(createdAtProp, startConst);
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    var endConst = Expression.Constant(endUtc, typeof(DateTime));
+                    var leExpr = Expression.LessThanOrEqual(createdAtProp, endConst);
+                    rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                }
+                if (rangeExpr != null)
+                    orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
             }
-            if (dateRange.EndDate.HasValue)
-            {
-                var endUtc = DateTime.SpecifyKind(dateRange.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
-                query = query.Where(e => e.CreatedAt <= endUtc);
-            }
+            if (orBody != null)
+                query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
         }
 
         var totalCount = await query.CountAsync();
