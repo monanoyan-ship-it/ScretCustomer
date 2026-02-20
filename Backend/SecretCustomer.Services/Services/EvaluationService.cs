@@ -862,8 +862,18 @@ public class EvaluationService : IEvaluationService
             ? (dto.EvaluatedCustomerPersonnelId ?? dto.EvaluatedPersonnelId)
             : null;
         evaluation.EvaluatedUnknownPersonnel = dto.EvaluatedUnknownPersonnel;
-        evaluation.ControlDate = ToUtc(dto.ControlDate);
-        evaluation.ControlTime = dto.ControlTime;
+        // ControlDate sadece fiziksel ziyaret tipleri için geçerli (MysteryShopping, PhysicalAudit, QualityControl)
+        var physicalProjectTypes = new[] { ProjectTypes.Ids.MysteryShopping, ProjectTypes.Ids.PhysicalAudit, ProjectTypes.Ids.QualityControl };
+        if (physicalProjectTypes.Contains(project.ProjectTypeId))
+        {
+            evaluation.ControlDate = ToUtc(dto.ControlDate);
+            evaluation.ControlTime = dto.ControlTime;
+        }
+        else
+        {
+            evaluation.ControlDate = null;
+            evaluation.ControlTime = null;
+        }
         // FieldWorker ziyaretleri için bayi ID
         evaluation.CustomerDealerId = dto.CustomerDealerId > 0 ? dto.CustomerDealerId : null;
         evaluation.YellowCardCount = scoreResult.YellowCardCount;
