@@ -744,7 +744,7 @@ var EvaluationPopupViewModel = function() {
             evaluatedOrganizationId: self.formData().selectedOrganizationId || null,
             evaluatedPersonnelId: self.isNewPersonnelMode() ? null : (self.evaluatedPersonnelId() || null),
             evaluatedUnknownPersonnel: self.evaluatedUnknownPersonnel() || null,
-            controlDate: new Date().toISOString().split('T')[0],
+            controlDate: null,
             controlTime: self.controlTime() || null,
             formOpenedAt: new Date().toISOString(),
             newPersonnel: self.isNewPersonnelMode() ? {
