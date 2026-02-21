@@ -1,6 +1,6 @@
 @{
-    ViewData["Title"] = "Egitim Anketi";
-    Layout = "~/Views/Shared/_CustomerPortalLayout.cshtml";
+    ViewData["Title"] = Html.T("TrainingQuiz.PageTitle", "Egitim Anketi");
+    Layout = "_CustomerLayout";
     var participantId = ViewBag.ParticipantId;
 }
 
@@ -8,7 +8,7 @@
     <!-- Loading -->
     <div data-bind="visible: isLoading" class="text-center py-5">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;"></div>
-        <p class="mt-3 text-muted">Anket yukleniyor...</p>
+        <p class="mt-3 text-muted">@Html.T("TrainingQuiz.Loading", "Anket yukleniyor...")</p>
     </div>
 
     <!-- Error -->
@@ -17,50 +17,44 @@
         <h4 class="mt-3">@Html.T("Common.Error", "Hata")</h4>
         <p class="text-muted" data-bind="text: errorMessage"></p>
         <a href="/CustomerPortal/MyTrainings" class="btn btn-secondary mt-3">
-            <i class="bi bi-arrow-left"></i> Egitimlerime Don
+            <i class="bi bi-arrow-left"></i> @Html.T("TrainingQuiz.BackToTrainings", "Egitimlerime Don")
         </a>
     </div>
 
     <!-- No Quiz -->
     <div data-bind="visible: !isLoading() && !hasError() && !quizData()" class="text-center py-5">
         <i class="bi bi-clipboard-x text-warning" style="font-size: 4rem;"></i>
-        <h4 class="mt-3">Anket Bulunamadi</h4>
-        <p class="text-muted">Bu egitim icin anket tanimlanmamis veya daha once tamamladiniz.</p>
+        <h4 class="mt-3">@Html.T("TrainingQuiz.NotFound", "Anket Bulunamadi")</h4>
+        <p class="text-muted">@Html.T("TrainingQuiz.NotFoundDescription", "Bu egitim icin anket tanimlanmamis veya daha once tamamladiniz.")</p>
         <a href="/CustomerPortal/MyTrainings" class="btn btn-secondary mt-3">
-            <i class="bi bi-arrow-left"></i> Egitimlerime Don
+            <i class="bi bi-arrow-left"></i> @Html.T("TrainingQuiz.BackToTrainings", "Egitimlerime Don")
         </a>
     </div>
 
     <!-- Quiz Already Passed -->
-    <div data-bind="visible: !isLoading() && !hasError() && quizData() && quizData().lastAttemptResult && quizData().lastAttemptResult.isPassed" class="text-center py-5">
+    <!-- ko if: !isLoading() && !hasError() && quizData() && quizData().lastAttemptResult && quizData().lastAttemptResult.isPassed -->
+    <div class="text-center py-5">
         <div class="card shadow-sm mx-auto" style="max-width: 500px;">
             <div class="card-body p-5">
                 <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-                <h3 class="mt-3 text-success">Anketi Zaten Tamamladiniz!</h3>
-                <p class="text-muted">Bu anketi daha once basariyla tamamladiniz.</p>
-                <div class="my-4">
-                    <div style="font-size: 3rem; font-weight: bold;" class="text-success" data-bind="text: quizData().lastAttemptResult.scorePercentage + '%'"></div>
-                    <small class="text-muted">Basari Orani</small>
-                </div>
-                <a href="/CustomerPortal/MyTrainings" class="btn btn-secondary">
-                    <i class="bi bi-arrow-left"></i> Egitimlerime Don
+                <h3 class="mt-3 text-success">@Html.T("TrainingQuiz.AlreadyCompleted", "Anketi Zaten Tamamladiniz!")</h3>
+                <p class="text-muted">@Html.T("TrainingQuiz.AlreadyCompletedDescription", "Bu anketi daha once tamamladiniz.")</p>
+                <a href="/CustomerPortal/MyTrainings" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-left"></i> @Html.T("TrainingQuiz.BackToTrainings", "Egitimlerime Don")
                 </a>
             </div>
         </div>
     </div>
+    <!-- /ko -->
 
     <!-- Quiz Content -->
-    <div data-bind="visible: !isLoading() && !hasError() && quizData() && !(quizData().lastAttemptResult && quizData().lastAttemptResult.isPassed) && !showResult()">
+    <!-- ko if: quizData() -->
+    <div data-bind="visible: !isLoading() && !hasError() && !(quizData().lastAttemptResult && quizData().lastAttemptResult.isPassed) && !showResult()">
         <div class="card shadow-sm mx-auto" style="max-width: 800px;">
             <!-- Header -->
             <div class="card-header bg-light">
                 <h5 class="mb-1" data-bind="text: quizData() ? quizData().title : ''"></h5>
                 <small class="text-muted" data-bind="text: quizData() ? quizData().description : ''"></small>
-                <!-- ko if: quizData() && quizData().passingScore -->
-                <div class="mt-2">
-                    <span class="badge bg-info">Gecme Notu: %<span data-bind="text: quizData().passingScore"></span></span>
-                </div>
-                <!-- /ko -->
             </div>
 
             <!-- Quiz Body -->
@@ -74,7 +68,7 @@
                 <!-- Question -->
                 <div data-bind="with: currentQuestion">
                     <div class="mb-4">
-                        <span class="badge bg-secondary mb-2">Soru <span data-bind="text: $parent.currentIndex() + 1"></span> / <span data-bind="text: $parent.questions().length"></span></span>
+                        <span class="badge bg-secondary mb-2">@Html.T("TrainingQuiz.QuestionLabel", "Soru") <span data-bind="text: $parent.currentIndex() + 1"></span> / <span data-bind="text: $parent.questions().length"></span></span>
                         <h5 data-bind="text: text"></h5>
                         <!-- ko if: helpText -->
                         <small class="text-muted" data-bind="text: helpText"></small>
@@ -101,71 +95,43 @@
                 <div class="d-flex justify-content-between mt-4 pt-3 border-top">
                     <button type="button" class="btn btn-outline-secondary"
                             data-bind="click: prevQuestion, visible: currentIndex() > 0">
-                        <i class="bi bi-chevron-left"></i> Onceki
+                        <i class="bi bi-chevron-left"></i> @Html.T("Common.Previous", "Onceki")
                     </button>
                     <div></div>
                     <button type="button" class="btn btn-primary"
                             data-bind="click: nextQuestion, visible: currentIndex() < questions().length - 1">
-                        Sonraki <i class="bi bi-chevron-right"></i>
+                        @Html.T("Common.Next", "Sonraki") <i class="bi bi-chevron-right"></i>
                     </button>
                     <button type="button" class="btn btn-success"
                             data-bind="click: submitQuiz, visible: currentIndex() >= questions().length - 1, disable: isSubmitting">
                         <span data-bind="visible: isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
-                        <i class="bi bi-check-lg" data-bind="visible: !isSubmitting()"></i> Gonder
+                        <i class="bi bi-check-lg" data-bind="visible: !isSubmitting()"></i> @Html.T("Common.Submit", "Gonder")
                     </button>
                 </div>
             </div>
         </div>
     </div>
+    <!-- /ko -->
 
     <!-- Result -->
-    <div data-bind="visible: showResult() && quizResult()" class="text-center py-5">
+    <!-- ko if: showResult() && quizResult() -->
+    <div class="text-center py-5">
         <div class="card shadow-sm mx-auto" style="max-width: 500px;">
             <div class="card-body p-5">
-                <!-- Passed -->
-                <div data-bind="visible: quizResult() && quizResult().isPassed">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
-                    <h3 class="mt-3 text-success">Tebrikler!</h3>
-                    <p class="text-muted">Anketi basariyla tamamladiniz.</p>
-                </div>
-                <!-- Failed -->
-                <div data-bind="visible: quizResult() && !quizResult().isPassed">
-                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 5rem;"></i>
-                    <h3 class="mt-3 text-danger">Basarisiz</h3>
-                    <p class="text-muted">Gecme notuna ulasamadiniz. Tekrar deneyebilirsiniz.</p>
-                </div>
-
-                <!-- Score -->
-                <div class="my-4">
-                    <div style="font-size: 3rem; font-weight: bold;" data-bind="text: quizResult() ? quizResult().scorePercentage + '%' : '', css: { 'text-success': quizResult() && quizResult().isPassed, 'text-danger': quizResult() && !quizResult().isPassed }"></div>
-                    <div class="progress mx-auto mt-2" style="height: 10px; max-width: 300px;">
-                        <div class="progress-bar" role="progressbar"
-                             data-bind="style: { width: (quizResult() ? quizResult().scorePercentage : 0) + '%' },
-                                        css: { 'bg-success': quizResult() && quizResult().isPassed, 'bg-danger': quizResult() && !quizResult().isPassed }"></div>
-                    </div>
-                    <div class="mt-2">
-                        <span class="text-muted">
-                            <span data-bind="text: quizResult() ? quizResult().totalScore : 0"></span> /
-                            <span data-bind="text: quizResult() ? quizResult().maxPossibleScore : 0"></span> puan
-                        </span>
-                    </div>
-                    <!-- ko if: quizResult() && quizResult().passingScore -->
-                    <small class="text-muted d-block mt-1">Gecme notu: %<span data-bind="text: quizResult().passingScore"></span></small>
-                    <!-- /ko -->
-                </div>
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 5rem;"></i>
+                <h3 class="mt-3 text-success">@Html.T("TrainingQuiz.Saved", "Anketiniz Kaydedildi!")</h3>
+                <p class="text-muted">@Html.T("TrainingQuiz.ThankYou", "Katiliminiz icin tesekkur ederiz.")</p>
 
                 <!-- Actions -->
                 <div class="mt-4">
-                    <a href="/CustomerPortal/MyTrainings" class="btn btn-secondary me-2">
-                        <i class="bi bi-arrow-left"></i> Egitimlerime Don
+                    <a href="/CustomerPortal/MyTrainings" class="btn btn-primary">
+                        <i class="bi bi-arrow-left"></i> @Html.T("TrainingQuiz.BackToTrainings", "Egitimlerime Don")
                     </a>
-                    <button type="button" class="btn btn-primary" data-bind="click: retryQuiz, visible: quizResult() && !quizResult().isPassed">
-                        <i class="bi bi-arrow-repeat"></i> Tekrar Dene
-                    </button>
                 </div>
             </div>
         </div>
     </div>
+    <!-- /ko -->
 </div>
 
 @section Scripts {

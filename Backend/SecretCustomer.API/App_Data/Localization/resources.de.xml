@@ -8953,6 +8953,36 @@
   <LocaleResource Name="TrainingQuiz.ViewResponses">
     <Value>Antworten anzeigen</Value>
   </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.PageTitle">
+    <Value>Schulungsumfrage</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Loading">
+    <Value>Umfrage wird geladen...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.BackToTrainings">
+    <Value>Zurück zu meinen Schulungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFound">
+    <Value>Umfrage nicht gefunden</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFoundDescription">
+    <Value>Für diese Schulung ist keine Umfrage definiert oder Sie haben sie bereits abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompleted">
+    <Value>Umfrage bereits abgeschlossen!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompletedDescription">
+    <Value>Sie haben diese Umfrage bereits abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.QuestionLabel">
+    <Value>Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Saved">
+    <Value>Ihre Umfrage wurde gespeichert!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.ThankYou">
+    <Value>Vielen Dank für Ihre Teilnahme.</Value>
+  </LocaleResource>
   <LocaleResource Name="TrainingVideo.CreateSuccess">
     <Value>Video erfolgreich erstellt</Value>
   </LocaleResource>

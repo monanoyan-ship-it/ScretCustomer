@@ -8960,6 +8960,36 @@
   <LocaleResource Name="TrainingQuiz.ViewResponses">
     <Value>View Responses</Value>
   </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.PageTitle">
+    <Value>Training Quiz</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Loading">
+    <Value>Loading quiz...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.BackToTrainings">
+    <Value>Back to My Trainings</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFound">
+    <Value>Quiz Not Found</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFoundDescription">
+    <Value>No quiz is defined for this training or you have already completed it.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompleted">
+    <Value>Quiz Already Completed!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompletedDescription">
+    <Value>You have already completed this quiz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.QuestionLabel">
+    <Value>Question</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Saved">
+    <Value>Your Quiz Has Been Saved!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.ThankYou">
+    <Value>Thank you for your participation.</Value>
+  </LocaleResource>
   <LocaleResource Name="TrainingVideo.CreateSuccess">
     <Value>Video created successfully</Value>
   </LocaleResource>

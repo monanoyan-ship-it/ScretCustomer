@@ -8957,6 +8957,36 @@
   <LocaleResource Name="TrainingQuiz.ViewResponses">
     <Value>Yanıtları Gör</Value>
   </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.PageTitle">
+    <Value>Eğitim Anketi</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Loading">
+    <Value>Anket yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.BackToTrainings">
+    <Value>Eğitimlerime Dön</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFound">
+    <Value>Anket Bulunamadı</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.NotFoundDescription">
+    <Value>Bu eğitim için anket tanımlanmamış veya daha önce tamamladınız.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompleted">
+    <Value>Anketi Zaten Tamamladınız!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.AlreadyCompletedDescription">
+    <Value>Bu anketi daha önce tamamladınız.</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.QuestionLabel">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.Saved">
+    <Value>Anketiniz Kaydedildi!</Value>
+  </LocaleResource>
+  <LocaleResource Name="TrainingQuiz.ThankYou">
+    <Value>Katılımınız için teşekkür ederiz.</Value>
+  </LocaleResource>
   <LocaleResource Name="TrainingVideo.CreateSuccess">
     <Value>Video başarıyla oluşturuldu</Value>
   </LocaleResource>

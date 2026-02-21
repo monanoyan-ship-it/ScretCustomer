@@ -248,11 +248,7 @@
                     self.quizResult(result);
                     self.showResult(true);
 
-                    if (result.isPassed) {
-                        toastr.success('Tebrikler! Anketi basariyla tamamladiniz.');
-                    } else {
-                        toastr.warning('Gecme notuna ulasamadiniz.');
-                    }
+                    toastr.success('Anketiniz kaydedildi. Katiliminiz icin tesekkurler.');
                 },
                 error: function (xhr) {
                     toastr.error('Anket gonderilemedi');
