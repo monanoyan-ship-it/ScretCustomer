@@ -813,6 +813,29 @@ function ListeningsViewModel() {
             });
     };
 
+    // Puansız Soru Raporu
+    self.exportUnscoredQuestionsReport = function() {
+        self.isExporting(true);
+
+        var params = self.buildFilterParams();
+        delete params.page;
+        delete params.pageSize;
+
+        var filename = 'Puansiz_Soru_Raporu_' + self.getTimestamp() + '.xlsx';
+        ApiService.downloadPost('/reports/export/unscored-questions', params, filename)
+            .then(function() {
+                toastr.success('Puansız Soru Raporu indirildi');
+                self.closeReportsModal();
+            })
+            .catch(function(error) {
+                console.error('Error exporting unscored questions report:', error);
+                toastr.error('Rapor oluşturulurken hata oluştu');
+            })
+            .finally(function() {
+                self.isExporting(false);
+            });
+    };
+
     // Müşteri Değerlendirme Raporu
     self.exportCustomerEvaluationReport = function() {
         self.isExporting(true);

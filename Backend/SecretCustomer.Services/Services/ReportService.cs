@@ -9000,4 +9000,275 @@ public class ReportService : IReportService
         };
     }
 
+    // ===== PUANSIZ SORU RAPORU =====
+
+    public async Task<ExcelExportDto> ExportUnscoredQuestionsReportAsync(ReportFilterDto filter)
+    {
+        var query = _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.AssignmentPeriod)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.CustomerDealer)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
+            .AsQueryable();
+
+        // Apply filters - Çoklu değer desteği (OR mantığı)
+        if (filter.ProjectIds?.Any() == true)
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
+
+        if (filter.ProjectTypes?.Any() == true)
+        {
+            var projectTypeIds = filter.ProjectTypes
+                .Select(pt => ProjectTypes.GetBySystemName(pt))
+                .Where(pt => pt != null)
+                .Select(pt => pt!.Id)
+                .ToList();
+            if (projectTypeIds.Any())
+                query = query.Where(e => projectTypeIds.Contains(e.Project.ProjectTypeId));
+        }
+        else if (filter.ProjectIds?.Any() != true)
+        {
+            query = query.Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.CallAuditing);
+        }
+
+        if (filter.EvaluatorIds?.Any() == true)
+            query = query.Where(e => e.EvaluatorId.HasValue && filter.EvaluatorIds.Contains(e.EvaluatorId.Value));
+
+        if (filter.ChecklistIds?.Any() == true)
+            query = query.Where(e => filter.ChecklistIds.Contains(e.Project.ChecklistId));
+
+        // Date Range filter (çoklu - OR mantığı)
+        if (filter.DateRanges?.Any() == true)
+        {
+            var datePredicates = filter.DateRanges.Select(dr =>
+            {
+                DateTime? startUtc = dr.StartDate.HasValue
+                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
+                    : null;
+                DateTime? endUtc = dr.EndDate.HasValue
+                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                    : null;
+                return (Start: startUtc, End: endUtc);
+            }).ToList();
+
+            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
+            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
+
+            if (minStart != DateTime.MinValue)
+                query = query.Where(e => e.CreatedAt >= minStart);
+            if (maxEnd != DateTime.MaxValue)
+                query = query.Where(e => e.CreatedAt <= maxEnd);
+        }
+
+        // Customer filter (çoklu)
+        if (filter.CustomerIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                filter.CustomerIds.Contains(e.EvaluatedCustomerPersonnel.CustomerId));
+
+        // Project customer filter (for CustomerPortal - filter by project's customer)
+        if (filter.ProjectCustomerIds?.Any() == true)
+            query = query.Where(e => e.Project.CustomerId.HasValue && filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
+
+        // Organization filter (çoklu)
+        if (filter.OrganizationIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+
+        // Period filter (çoklu)
+        if (filter.PeriodIds?.Any() == true)
+            query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
+
+        // Evaluation source filter (çoklu)
+        if (filter.EvaluationSources?.Any() == true)
+        {
+            var hasInternal = filter.EvaluationSources.Contains("internal");
+            var hasOurs = filter.EvaluationSources.Contains("ours");
+
+            if (hasInternal && !hasOurs)
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId != null);
+            else if (hasOurs && !hasInternal)
+                query = query.Where(e => e.EvaluatorCustomerPersonnelId == null);
+        }
+
+        // Personnel filter (çoklu)
+        if (filter.PersonnelIds?.Any() == true)
+            query = query.Where(e => e.EvaluatedCustomerPersonnelId.HasValue && filter.PersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+
+        var evaluations = await query.Take(10000).ToListAsync();
+
+        // ===== SHEET 1: Detaylı (her değerlendirme-cevap satırı) =====
+        var detailData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && a.Question.ScoringTypeId == ScoringTypes.Ids.Unscored)
+                .Select(a => new
+                {
+                    ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
+                    PeriodName = e.AssignmentPeriod?.Name ?? "",
+                    Date = e.CallDate ?? e.ControlDate,
+                    CallId = e.CallId ?? "",
+                    EvaluatedName = e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.FullName
+                        : (e.EvaluatedPersonnel != null
+                            ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
+                            : e.EvaluatedUnknownPersonnel
+                                ?? e.CustomerDealer?.Name
+                                ?? "-"),
+                    GroupName = a.Question!.GroupName ?? "",
+                    QuestionText = a.Question.Text,
+                    SelectedSubCriteria = a.SubCriteriaSelections.Any()
+                        ? string.Join(", ", a.SubCriteriaSelections
+                            .OrderBy(s => s.SubCriteria?.Order ?? 0)
+                            .Select(s => s.SubCriteria?.Description ?? ""))
+                        : "",
+                    Notes = a.Notes ?? ""
+                }))
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.GroupName)
+            .ThenBy(x => x.QuestionText)
+            .ToList();
+
+        // ===== SHEET 2: Gruplu (alt kriter dağılımı) =====
+        var groupedData = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && a.Question.ScoringTypeId == ScoringTypes.Ids.Unscored)
+                .SelectMany(a => a.SubCriteriaSelections
+                    .Where(s => s.SubCriteria != null)
+                    .Select(s => new
+                    {
+                        ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "",
+                        GroupName = a.Question!.GroupName ?? "",
+                        QuestionText = a.Question.Text,
+                        QuestionId = a.QuestionId,
+                        SubCriteriaDescription = s.SubCriteria!.Description,
+                        SubCriteriaId = s.SubCriteriaId,
+                        EvaluationId = e.Id
+                    })))
+            .GroupBy(x => new { x.ProjectName, x.GroupName, x.QuestionId, x.QuestionText, x.SubCriteriaId, x.SubCriteriaDescription })
+            .Select(g => new
+            {
+                g.Key.ProjectName,
+                g.Key.GroupName,
+                g.Key.QuestionId,
+                g.Key.QuestionText,
+                g.Key.SubCriteriaDescription,
+                SelectionCount = g.Count(),
+            })
+            .OrderBy(x => x.ProjectName)
+            .ThenBy(x => x.GroupName)
+            .ThenBy(x => x.QuestionText)
+            .ThenByDescending(x => x.SelectionCount)
+            .ToList();
+
+        // Soru başına toplam değerlendirme sayısı (oran hesabı için)
+        var questionEvalCounts = evaluations
+            .SelectMany(e => e.Answers
+                .Where(a => a.Question != null && a.Question.ScoringTypeId == ScoringTypes.Ids.Unscored)
+                .Select(a => new { ProjectName = e.Project != null ? (e.Project.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name) ?? "" : "", a.QuestionId, EvaluationId = e.Id }))
+            .GroupBy(x => new { x.ProjectName, x.QuestionId })
+            .ToDictionary(g => (g.Key.ProjectName, g.Key.QuestionId), g => g.Select(x => x.EvaluationId).Distinct().Count());
+
+        // Excel oluştur
+        using var workbook = new XLWorkbook();
+
+        // ===== SHEET 1: Puansız Soru Detay =====
+        var ws1 = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.UnscoredQuestionsDetail", defaultValue: "Puansız Soru Detay"));
+
+        var headers1 = new[] {
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Report.Period", defaultValue: "Dönem"),
+            await _localizationService.GetResourceAsync("Common.Date", defaultValue: "Tarih"),
+            "CallId",
+            await _localizationService.GetResourceAsync("Evaluation.EvaluatedPerson", defaultValue: "Değerlendirilen"),
+            await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Soru Grubu"),
+            await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
+            await _localizationService.GetResourceAsync("Report.SelectedSubCriteria", defaultValue: "Seçilen Alt Kriterler"),
+            await _localizationService.GetResourceAsync("Common.Notes", defaultValue: "Not")
+        };
+
+        for (int i = 0; i < headers1.Length; i++)
+        {
+            ws1.Cell(1, i + 1).Value = headers1[i];
+            ws1.Cell(1, i + 1).Style.Font.Bold = true;
+            ws1.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        int row = 2;
+        foreach (var item in detailData)
+        {
+            ws1.Cell(row, 1).Value = item.ProjectName;
+            ws1.Cell(row, 2).Value = item.PeriodName;
+            ws1.Cell(row, 3).Value = item.Date?.ToString("dd.MM.yyyy") ?? "";
+            ws1.Cell(row, 4).Value = item.CallId;
+            ws1.Cell(row, 5).Value = item.EvaluatedName;
+            ws1.Cell(row, 6).Value = item.GroupName;
+            ws1.Cell(row, 7).Value = item.QuestionText;
+            ws1.Cell(row, 8).Value = item.SelectedSubCriteria;
+            ws1.Cell(row, 9).Value = item.Notes;
+            row++;
+        }
+
+        ws1.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(ws1);
+
+        // ===== SHEET 2: Alt Kriter Dağılımı =====
+        var ws2 = workbook.Worksheets.Add(await _localizationService.GetResourceAsync("Report.UnscoredQuestionsGrouped", defaultValue: "Alt Kriter Dağılımı"));
+
+        var headers2 = new[] {
+            await _localizationService.GetResourceAsync("Common.Project", defaultValue: "Proje"),
+            await _localizationService.GetResourceAsync("Report.QuestionGroup", defaultValue: "Soru Grubu"),
+            await _localizationService.GetResourceAsync("Report.Question", defaultValue: "Soru"),
+            await _localizationService.GetResourceAsync("Report.SubCriteria", defaultValue: "Alt Kriter"),
+            await _localizationService.GetResourceAsync("Report.SelectionCount", defaultValue: "Seçilme Sayısı"),
+            await _localizationService.GetResourceAsync("Report.TotalEvaluations", defaultValue: "Toplam Değerlendirme"),
+            await _localizationService.GetResourceAsync("Report.SelectionRate", defaultValue: "Oran (%)")
+        };
+
+        for (int i = 0; i < headers2.Length; i++)
+        {
+            ws2.Cell(1, i + 1).Value = headers2[i];
+            ws2.Cell(1, i + 1).Style.Font.Bold = true;
+            ws2.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        row = 2;
+        foreach (var item in groupedData)
+        {
+            var totalForQuestion = questionEvalCounts.TryGetValue((item.ProjectName, item.QuestionId), out var cnt)
+                ? cnt : 0;
+
+            ws2.Cell(row, 1).Value = item.ProjectName;
+            ws2.Cell(row, 2).Value = item.GroupName;
+            ws2.Cell(row, 3).Value = item.QuestionText;
+            ws2.Cell(row, 4).Value = item.SubCriteriaDescription;
+            ws2.Cell(row, 5).Value = item.SelectionCount;
+            ws2.Cell(row, 6).Value = totalForQuestion;
+            ws2.Cell(row, 7).Value = totalForQuestion > 0
+                ? Math.Round((decimal)item.SelectionCount / totalForQuestion * 100, 2)
+                : 0;
+            ws2.Cell(row, 7).Style.NumberFormat.Format = "0.00";
+            row++;
+        }
+
+        ws2.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(ws2);
+
+        // Save to memory stream
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return new ExcelExportDto
+        {
+            FileName = $"Puansiz_Soru_Raporu_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
+            FileContent = stream.ToArray(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
+    }
+
 }

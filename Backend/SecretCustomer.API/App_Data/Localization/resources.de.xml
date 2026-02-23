@@ -10708,4 +10708,31 @@
   <LocaleResource Name="Training.Watching">
     <Value>Schaut zu</Value>
   </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestions">
+    <Value>Unbewertete Fragen Bericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsDetail">
+    <Value>Unbewertete Fragen Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsGrouped">
+    <Value>Unterkriterien Verteilung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectedSubCriteria">
+    <Value>Ausgewählte Unterkriterien</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionCount">
+    <Value>Auswahlanzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionRate">
+    <Value>Rate (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalEvaluations">
+    <Value>Gesamtbewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SubCriteria">
+    <Value>Unterkriterium</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
+    <Value>Unterkriterien-Auswahl und Verteilung der unbewerteten Fragen</Value>
+  </LocaleResource>
 </Language>

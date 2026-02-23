@@ -10732,4 +10732,31 @@
   <LocaleResource Name="GolgeMusteri.Aramalarim">
     <Value>Aramalarım</Value>
   </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestions">
+    <Value>Puansız Soru Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsDetail">
+    <Value>Puansız Soru Detay</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsGrouped">
+    <Value>Alt Kriter Dağılımı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectedSubCriteria">
+    <Value>Seçilen Alt Kriterler</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionCount">
+    <Value>Seçilme Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionRate">
+    <Value>Oran (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalEvaluations">
+    <Value>Toplam Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SubCriteria">
+    <Value>Alt Kriter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
+    <Value>Puansız soruların alt kriter seçimleri ve dağılımı</Value>
+  </LocaleResource>
 </Language>

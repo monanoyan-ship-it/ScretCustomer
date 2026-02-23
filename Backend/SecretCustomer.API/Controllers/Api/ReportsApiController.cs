@@ -390,6 +390,24 @@ public class ReportsApiController : BaseApiController
         }
     }
 
+    /// <summary>
+    /// Puansız Soru Raporu - Excel export (2 sheet: Detay + Alt Kriter Dağılımı)
+    /// </summary>
+    [HttpPost("export/unscored-questions")]
+    public async Task<IActionResult> ExportUnscoredQuestionsReport([FromBody] ReportFilterDto filter)
+    {
+        try
+        {
+            var result = await _reportService.ExportUnscoredQuestionsReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error exporting unscored questions report to Excel");
+            return StatusCode(500, CreateErrorResponse("Puansız soru raporu oluşturulurken hata oluştu.", ex));
+        }
+    }
+
     // ===== CEZALI KL RAPORU =====
 
     /// <summary>

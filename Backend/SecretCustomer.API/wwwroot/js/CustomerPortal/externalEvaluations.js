@@ -688,6 +688,15 @@ function CustomerExternalEvaluationsViewModel() {
             .finally(function() { self.isExporting(false); });
     };
 
+    self.exportUnscoredQuestionsReport = function() {
+        self.isExporting(true);
+        var filename = 'Puansiz_Soru_Raporu_' + self.getTimestamp() + '.xlsx';
+        customerApiDownloadPost('/api/customer/portal/reports/export/unscored-questions', self.buildExportFilter(), filename)
+            .then(function() { toastr.success('Rapor indirildi'); })
+            .catch(function(error) { console.error('Error exporting report:', error); toastr.error('Rapor oluşturulurken hata oluştu'); })
+            .finally(function() { self.isExporting(false); });
+    };
+
     self.exportCustomerEvaluationReport = function() {
         self.isExporting(true);
         var filename = 'Musteri_Degerlendirme_Raporu_' + self.getTimestamp() + '.xlsx';

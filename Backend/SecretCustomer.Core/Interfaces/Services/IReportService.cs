@@ -108,6 +108,11 @@ public interface IReportService
     // MT Raporu Excel export (Başarı, Gelişim Alanı, Süreç Analizi, Endeks Başarı)
     Task<ExcelExportDto> ExportMTReportAsync(ReportFilterDto filter);
 
+    // ===== PUANSIZ SORU RAPORU =====
+
+    // Puansız Soru Raporu Excel export (2 sheet: Detay + Alt Kriter Dağılımı)
+    Task<ExcelExportDto> ExportUnscoredQuestionsReportAsync(ReportFilterDto filter);
+
     // ===== ANKET SONUÇLARI RAPORU =====
 
     // Anket sonuçları raporu (Online Survey projeleri için)

@@ -1221,6 +1221,36 @@ public class CustomerPortalApiController : ControllerBase
     }
 
     /// <summary>
+    /// Puansız Soru Raporu - Excel export (CustomerPortal)
+    /// </summary>
+    [HttpPost("reports/export/unscored-questions")]
+    public async Task<IActionResult> ExportUnscoredQuestionsReport([FromBody] ReportFilterDto filter)
+    {
+        var customerId = GetCustomerId();
+        if (customerId == null)
+            return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
+
+        try
+        {
+            // Müşteri sadece kendi projesinin raporunu görebilir
+            filter.ProjectCustomerIds = new List<int> { customerId.Value };
+
+            // Supervisor filtrelemesi
+            var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
+            if (allowedPersonnelIds != null)
+                filter.PersonnelIds = allowedPersonnelIds;
+
+            var result = await _reportService.ExportUnscoredQuestionsReportAsync(filter);
+            return File(result.FileContent, result.ContentType, result.FileName);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[CustomerPortal] Error exporting unscored questions report for customer {CustomerId}", customerId);
+            return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
+        }
+    }
+
+    /// <summary>
     /// Cezalı KL Raporu (CustomerPortal) - EvaluatorName hariç
     /// </summary>
     [HttpGet("reports/penalties")]

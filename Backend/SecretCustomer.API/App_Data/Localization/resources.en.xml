@@ -10715,4 +10715,31 @@
   <LocaleResource Name="Training.Watching">
     <Value>Watching</Value>
   </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestions">
+    <Value>Unscored Questions Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsDetail">
+    <Value>Unscored Questions Detail</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.UnscoredQuestionsGrouped">
+    <Value>Sub-Criteria Distribution</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectedSubCriteria">
+    <Value>Selected Sub-Criteria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionCount">
+    <Value>Selection Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SelectionRate">
+    <Value>Rate (%)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.TotalEvaluations">
+    <Value>Total Evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Report.SubCriteria">
+    <Value>Sub-Criteria</Value>
+  </LocaleResource>
+  <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
+    <Value>Sub-criteria selections and distribution of unscored questions</Value>
+  </LocaleResource>
 </Language>
