@@ -1,10 +1,28 @@
 function AramalarimViewModel() {
     var self = this;
 
+    // Tab
+    var role = window.userRole || '';
+    self.showTabs = role === 'QualitySpecialist' || role === 'Admin';
+    self.activeTab = ko.observable('aramalarim');
+
     self.atamalar = ko.observableArray([]);
     self.isLoading = ko.observable(true);
     self.isSaving = ko.observable(false);
     self.completingAtama = ko.observable(null);
+
+    // Aramalar tab (tamamlanan aramalar - tüm kullanıcılar)
+    self.tamamlananAramalar = ko.observableArray([]);
+    self.isAramalarLoading = ko.observable(false);
+    self.aramalarLoaded = false;
+    self.selectedAtama = ko.observable(null);
+
+    // Tab change handler
+    self.activeTab.subscribe(function (tab) {
+        if (tab === 'aramalar' && !self.aramalarLoaded) {
+            self.loadTamamlananAramalar();
+        }
+    });
 
     // Filter data
     self.donemler = ko.observableArray([]);
@@ -237,7 +255,7 @@ function AramalarimViewModel() {
     };
 
     self.loadDonemler = function () {
-        $.get('/api/gm/donemler')
+        $.get('/api/gm/aramalarim/donemler')
             .done(function (data) { self.donemler(data); });
     };
 
@@ -252,6 +270,24 @@ function AramalarimViewModel() {
             .done(function (data) { self.atamalar(data); })
             .fail(function () { toastr.error('Aramalar yüklenirken hata oluştu.'); })
             .always(function () { self.isLoading(false); });
+    };
+
+    // Tamamlanan aramalar (Aramalar tab)
+    self.loadTamamlananAramalar = function () {
+        self.isAramalarLoading(true);
+
+        $.get('/api/gm/aramalarim/tamamlanan')
+            .done(function (data) {
+                self.tamamlananAramalar(data);
+                self.aramalarLoaded = true;
+            })
+            .fail(function () { toastr.error('Tamamlanan aramalar yüklenirken hata oluştu.'); })
+            .always(function () { self.isAramalarLoading(false); });
+    };
+
+    self.showAtamaDetailModal = function (atama) {
+        self.selectedAtama(atama);
+        $('#atamaDetailModal').modal('show');
     };
 
     self.showCompleteModal = function (atama) {
@@ -281,7 +317,7 @@ function AramalarimViewModel() {
                 gerceklesmeTarihi: self.completeForm.gerceklesmeTarihi(),
                 aramaSaati: self.completeForm.aramaSaati(),
                 not: self.completeForm.not() || null,
-                kuponKodu: self.completeForm.kuponKodu() || null
+                kuponKodu: self.completingAtama() ? self.completingAtama().kuponKodu : null
             })
         })
         .done(function () {

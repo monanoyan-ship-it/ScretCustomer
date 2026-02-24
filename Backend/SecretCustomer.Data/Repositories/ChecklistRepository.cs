@@ -113,11 +113,11 @@ public class ChecklistRepository : IChecklistRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Checklists.AnyAsync(c => c.Id == id);
+        return await _context.Checklists.AnyAsync(c => c.Id == id && !c.IsDeleted);
     }
 
     public async Task<int> GetVersionCountAsync(string name)
     {
-        return await _context.Checklists.CountAsync(c => c.Name.StartsWith(name));
+        return await _context.Checklists.CountAsync(c => c.Name.StartsWith(name) && !c.IsDeleted);
     }
 }

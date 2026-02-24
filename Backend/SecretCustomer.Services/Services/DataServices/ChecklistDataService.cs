@@ -16,7 +16,7 @@ public class ChecklistDataService : IChecklistDataService
     }
 
     public async Task<Checklist?> GetByIdAsync(int id)
-        => await _context.Checklists.FindAsync(id);
+        => await _context.Checklists.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
 
     public async Task<List<Checklist>> GetAllAsync()
         => await _context.Checklists.Where(x => !x.IsDeleted).ToListAsync();

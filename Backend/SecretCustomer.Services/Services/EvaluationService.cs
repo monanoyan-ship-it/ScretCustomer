@@ -1745,7 +1745,7 @@ public class EvaluationService : IEvaluationService
         var checklist = await _context.Checklists
             .Include(c => c.Questions.Where(q => !q.IsDeleted))
                 .ThenInclude(q => q.SubCriteria.Where(sc => sc.IsActive))
-            .FirstOrDefaultAsync(c => c.Id == request.ChecklistId);
+            .FirstOrDefaultAsync(c => c.Id == request.ChecklistId && !c.IsDeleted);
 
         if (checklist == null)
         {

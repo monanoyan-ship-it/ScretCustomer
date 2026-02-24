@@ -52,6 +52,39 @@ public class GmAramalarimApiController : BaseApiController
         }
     }
 
+    [HttpGet("donemler")]
+    public async Task<IActionResult> GetDonemler()
+    {
+        try
+        {
+            var result = await _gmService.GetDonemlerAsync();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dönemler yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpGet("tamamlanan")]
+    public async Task<IActionResult> GetTamamlananAramalar(
+        [FromQuery] List<int>? donemIds,
+        [FromQuery] DateTime? startDate,
+        [FromQuery] DateTime? endDate)
+    {
+        try
+        {
+            var result = await _gmService.GetTamamlananAramalarAsync(donemIds, startDate, endDate);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Tamamlanan aramalar yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Tamamlanan aramalar yüklenirken hata oluştu", ex));
+        }
+    }
+
     [HttpPost("{atamaId}/tamamla")]
     public async Task<IActionResult> CompleteAtama(int atamaId, [FromBody] CompleteGmAtamaDto dto)
     {

@@ -357,7 +357,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Proje tipine göre ayrı aylık değerlendirme trendleri
     /// </summary>
     [HttpGet("dashboard/monthly-trend-by-type")]
-    public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] int? projectTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -365,7 +365,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var result = await _cpDataService.GetMonthlyTrendByTypeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate);
+        var result = await _cpDataService.GetMonthlyTrendByTypeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectTypeId);
         return Ok(result);
     }
 
@@ -2295,14 +2295,14 @@ public class CustomerPortalApiController : ControllerBase
 
     private string GetScoreClass(decimal score)
     {
-        if (score >= 80) return "text-success";
+        if (score >= 90) return "text-success";
         if (score >= 60) return "text-warning";
         return "text-danger";
     }
 
     private string GetBadgeClass(decimal score)
     {
-        if (score >= 80) return "bg-success";
+        if (score >= 90) return "bg-success";
         if (score >= 60) return "bg-warning";
         return "bg-danger";
     }

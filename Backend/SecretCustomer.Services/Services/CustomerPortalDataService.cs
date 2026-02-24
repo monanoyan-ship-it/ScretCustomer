@@ -444,7 +444,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         return monthlyData;
     }
 
-    public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate)
+    public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, int? projectTypeId = null)
     {
         var now = TurkeyTime.Now;
         var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -471,6 +471,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             evaluationsQuery = evaluationsQuery.Where(e =>
                 e.EvaluatedCustomerPersonnelId.HasValue &&
                 allowedPersonnelIds.Contains(e.EvaluatedCustomerPersonnelId.Value));
+        }
+
+        // Belirli proje tipine göre filtrele (panel bazlı yenileme için)
+        if (projectTypeId.HasValue)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e => e.Project.ProjectTypeId == projectTypeId.Value);
         }
 
         var evaluations = await evaluationsQuery.ToListAsync();
@@ -1375,6 +1381,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var query = _context.Evaluations
             .Include(e => e.Project)
                 .ThenInclude(p => p.Checklist)
+            .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
                         e.StatusId != EvaluationStatuses.Ids.Cancelled); // Taslaklar dahil, iptal edilenler hariç
@@ -1415,6 +1422,9 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 scoringMethodId = e.Project.Checklist != null ? e.Project.Checklist.ScoringMethodId : 1,
+                personnelName = e.EvaluatedCustomerPersonnel != null
+                    ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
+                    : e.EvaluatedUnknownPersonnel ?? "-",
                 score = e.ScorePercentage ?? 0,
                 statusId = e.StatusId
             })
@@ -1426,6 +1436,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             e.evaluationDate,
             e.projectName,
             e.checklistName,
+            e.personnelName,
             scoringMethod = ScoringMethods.GetById(e.scoringMethodId)?.SystemName ?? "Maximum",
             e.score,
             status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
@@ -3109,6 +3120,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
 
             var evaluations = await _context.Evaluations
+                .Include(e => e.Project)
                 .Where(e => e.AssignmentPeriodId.HasValue &&
                            periodIds.Contains(e.AssignmentPeriodId.Value) &&
                            e.EvaluatedCustomerPersonnelId.HasValue &&
@@ -3119,30 +3131,52 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 {
                     e.AssignmentPeriodId,
                     e.EvaluatedCustomerPersonnelId,
-                    e.ScorePercentage
+                    e.ScorePercentage,
+                    IsInternal = e.EvaluatorCustomerPersonnelId != null,
+                    ProjectCode = e.Project.Code ?? ""
                 })
                 .ToListAsync();
 
-            // Headers
+            // Headers - Row 1: Merge header for period groups, Row 2: Sub-headers
             sheet.Cell(1, 1).Value = "Personel";
             sheet.Cell(1, 1).Style.Font.Bold = true;
+            sheet.Range(1, 1, 2, 1).Merge();
             sheet.Cell(1, 2).Value = "Organizasyon";
             sheet.Cell(1, 2).Style.Font.Bold = true;
+            sheet.Range(1, 2, 2, 2).Merge();
+            sheet.Cell(1, 3).Value = "Projeler";
+            sheet.Cell(1, 3).Style.Font.Bold = true;
+            sheet.Range(1, 3, 2, 3).Merge();
 
-            int col = 3;
+            int col = 4;
             foreach (var period in assignmentPeriods)
             {
                 sheet.Cell(1, col).Value = period.Name;
                 sheet.Cell(1, col).Style.Font.Bold = true;
-                col++;
+                sheet.Range(1, col, 1, col + 2).Merge();
+                sheet.Cell(2, col).Value = "Genel";
+                sheet.Cell(2, col).Style.Font.Bold = true;
+                sheet.Cell(2, col + 1).Value = "İç";
+                sheet.Cell(2, col + 1).Style.Font.Bold = true;
+                sheet.Cell(2, col + 2).Value = "Dış";
+                sheet.Cell(2, col + 2).Style.Font.Bold = true;
+                col += 3;
             }
             sheet.Cell(1, col).Value = "Genel Ortalama";
             sheet.Cell(1, col).Style.Font.Bold = true;
-            sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+            sheet.Range(1, col, 2, col).Merge();
+            sheet.Cell(1, col + 1).Value = "İç Ortalama";
             sheet.Cell(1, col + 1).Style.Font.Bold = true;
+            sheet.Range(1, col + 1, 2, col + 1).Merge();
+            sheet.Cell(1, col + 2).Value = "Dış Ortalama";
+            sheet.Cell(1, col + 2).Style.Font.Bold = true;
+            sheet.Range(1, col + 2, 2, col + 2).Merge();
+            sheet.Cell(1, col + 3).Value = "Toplam Değerlendirme";
+            sheet.Cell(1, col + 3).Style.Font.Bold = true;
+            sheet.Range(1, col + 3, 2, col + 3).Merge();
 
             // Data rows
-            int row = 2;
+            int row = 3;
             foreach (var p in personnel)
             {
                 var personEvals = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
@@ -3151,15 +3185,26 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 sheet.Cell(row, 1).Value = p.FullName;
                 sheet.Cell(row, 2).Value = p.OrganizationName;
 
-                col = 3;
+                var projectCodes = personEvals
+                    .Where(e => !string.IsNullOrEmpty(e.ProjectCode))
+                    .Select(e => e.ProjectCode)
+                    .Distinct()
+                    .OrderBy(c => c);
+                sheet.Cell(row, 3).Value = string.Join(", ", projectCodes);
+
+                col = 4;
                 foreach (var period in assignmentPeriods)
                 {
                     var periodEvals = personEvals.Where(e => e.AssignmentPeriodId == period.Id).ToList();
+                    var internalEvals = periodEvals.Where(e => e.IsInternal).ToList();
+                    var externalEvals = periodEvals.Where(e => !e.IsInternal).ToList();
+
+                    // Genel
                     if (periodEvals.Any())
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
                         sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                        if (avg >= 80)
+                        if (avg >= 90)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
                         else if (avg >= 60)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
@@ -3170,13 +3215,64 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     {
                         sheet.Cell(row, col).Value = "-";
                     }
-                    col++;
+
+                    // İç
+                    if (internalEvals.Any())
+                    {
+                        var avg = internalEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 1);
+                    }
+                    else
+                    {
+                        sheet.Cell(row, col + 1).Value = "-";
+                    }
+
+                    // Dış
+                    if (externalEvals.Any())
+                    {
+                        var avg = externalEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 1);
+                    }
+                    else
+                    {
+                        sheet.Cell(row, col + 2).Value = "-";
+                    }
+
+                    col += 3;
                 }
 
+                // Genel Ortalama
                 var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
                 sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
                 sheet.Cell(row, col).Style.Font.Bold = true;
-                sheet.Cell(row, col + 1).Value = personEvals.Count;
+
+                // İç Ortalama
+                var allInternal = personEvals.Where(e => e.IsInternal).ToList();
+                if (allInternal.Any())
+                {
+                    var internalAvg = allInternal.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 1);
+                    sheet.Cell(row, col + 1).Style.Font.Bold = true;
+                }
+                else
+                {
+                    sheet.Cell(row, col + 1).Value = "-";
+                }
+
+                // Dış Ortalama
+                var allExternal = personEvals.Where(e => !e.IsInternal).ToList();
+                if (allExternal.Any())
+                {
+                    var externalAvg = allExternal.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 1);
+                    sheet.Cell(row, col + 2).Style.Font.Bold = true;
+                }
+                else
+                {
+                    sheet.Cell(row, col + 2).Value = "-";
+                }
+
+                sheet.Cell(row, col + 3).Value = personEvals.Count;
 
                 row++;
             }
@@ -3209,7 +3305,9 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 {
                     e.EvaluatedCustomerPersonnelId,
                     e.ScorePercentage,
-                    e.CallDate
+                    e.CallDate,
+                    IsInternal = e.EvaluatorCustomerPersonnelId != null,
+                    ProjectCode = e.Project!.Code ?? ""
                 })
                 .ToListAsync();
 
@@ -3225,26 +3323,46 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 })
                 .ToList();
 
-            // Headers
+            // Headers - Row 1: Merge header for period groups, Row 2: Sub-headers
             sheet.Cell(1, 1).Value = "Personel";
             sheet.Cell(1, 1).Style.Font.Bold = true;
+            sheet.Range(1, 1, 2, 1).Merge();
             sheet.Cell(1, 2).Value = "Organizasyon";
             sheet.Cell(1, 2).Style.Font.Bold = true;
+            sheet.Range(1, 2, 2, 2).Merge();
+            sheet.Cell(1, 3).Value = "Projeler";
+            sheet.Cell(1, 3).Style.Font.Bold = true;
+            sheet.Range(1, 3, 2, 3).Merge();
 
-            int col = 3;
+            int col = 4;
             foreach (var period in monthlyPeriods)
             {
                 sheet.Cell(1, col).Value = period.Name;
                 sheet.Cell(1, col).Style.Font.Bold = true;
-                col++;
+                sheet.Range(1, col, 1, col + 2).Merge();
+                sheet.Cell(2, col).Value = "Genel";
+                sheet.Cell(2, col).Style.Font.Bold = true;
+                sheet.Cell(2, col + 1).Value = "İç";
+                sheet.Cell(2, col + 1).Style.Font.Bold = true;
+                sheet.Cell(2, col + 2).Value = "Dış";
+                sheet.Cell(2, col + 2).Style.Font.Bold = true;
+                col += 3;
             }
             sheet.Cell(1, col).Value = "Genel Ortalama";
             sheet.Cell(1, col).Style.Font.Bold = true;
-            sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+            sheet.Range(1, col, 2, col).Merge();
+            sheet.Cell(1, col + 1).Value = "İç Ortalama";
             sheet.Cell(1, col + 1).Style.Font.Bold = true;
+            sheet.Range(1, col + 1, 2, col + 1).Merge();
+            sheet.Cell(1, col + 2).Value = "Dış Ortalama";
+            sheet.Cell(1, col + 2).Style.Font.Bold = true;
+            sheet.Range(1, col + 2, 2, col + 2).Merge();
+            sheet.Cell(1, col + 3).Value = "Toplam Değerlendirme";
+            sheet.Cell(1, col + 3).Style.Font.Bold = true;
+            sheet.Range(1, col + 3, 2, col + 3).Merge();
 
             // Data rows
-            int row = 2;
+            int row = 3;
             foreach (var p in personnel)
             {
                 var personEvals = allEvaluations.Where(e => e.EvaluatedCustomerPersonnelId == p.Id).ToList();
@@ -3253,17 +3371,28 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 sheet.Cell(row, 1).Value = p.FullName;
                 sheet.Cell(row, 2).Value = p.OrganizationName;
 
-                col = 3;
+                var projectCodes = personEvals
+                    .Where(e => !string.IsNullOrEmpty(e.ProjectCode))
+                    .Select(e => e.ProjectCode)
+                    .Distinct()
+                    .OrderBy(c => c);
+                sheet.Cell(row, 3).Value = string.Join(", ", projectCodes);
+
+                col = 4;
                 foreach (var period in monthlyPeriods)
                 {
                     var periodEvals = personEvals
                         .Where(e => e.CallDate!.Value.Year == period.Year && e.CallDate!.Value.Month == period.Month)
                         .ToList();
+                    var internalEvals = periodEvals.Where(e => e.IsInternal).ToList();
+                    var externalEvals = periodEvals.Where(e => !e.IsInternal).ToList();
+
+                    // Genel
                     if (periodEvals.Any())
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
                         sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                        if (avg >= 80)
+                        if (avg >= 90)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
                         else if (avg >= 60)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
@@ -3274,13 +3403,64 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     {
                         sheet.Cell(row, col).Value = "-";
                     }
-                    col++;
+
+                    // İç
+                    if (internalEvals.Any())
+                    {
+                        var avg = internalEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 1);
+                    }
+                    else
+                    {
+                        sheet.Cell(row, col + 1).Value = "-";
+                    }
+
+                    // Dış
+                    if (externalEvals.Any())
+                    {
+                        var avg = externalEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 1);
+                    }
+                    else
+                    {
+                        sheet.Cell(row, col + 2).Value = "-";
+                    }
+
+                    col += 3;
                 }
 
+                // Genel Ortalama
                 var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
                 sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
                 sheet.Cell(row, col).Style.Font.Bold = true;
-                sheet.Cell(row, col + 1).Value = personEvals.Count;
+
+                // İç Ortalama
+                var allInternal = personEvals.Where(e => e.IsInternal).ToList();
+                if (allInternal.Any())
+                {
+                    var internalAvg = allInternal.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 1);
+                    sheet.Cell(row, col + 1).Style.Font.Bold = true;
+                }
+                else
+                {
+                    sheet.Cell(row, col + 1).Value = "-";
+                }
+
+                // Dış Ortalama
+                var allExternal = personEvals.Where(e => !e.IsInternal).ToList();
+                if (allExternal.Any())
+                {
+                    var externalAvg = allExternal.Average(e => (double)e.ScorePercentage!.Value);
+                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 1);
+                    sheet.Cell(row, col + 2).Style.Font.Bold = true;
+                }
+                else
+                {
+                    sheet.Cell(row, col + 2).Value = "-";
+                }
+
+                sheet.Cell(row, col + 3).Value = personEvals.Count;
 
                 row++;
             }

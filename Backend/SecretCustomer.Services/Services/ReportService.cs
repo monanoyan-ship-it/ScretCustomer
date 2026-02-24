@@ -1944,15 +1944,20 @@ public class ReportService : IReportService
 
         return personnelFromEvaluations
             .GroupBy(p => p.EvaluatedCustomerPersonnelId)
-            .Select(g => new PersonnelListItemDto
+            .Select(g =>
             {
-                Id = g.Key!.Value,
-                Name = $"{g.First().FirstName} {g.First().LastName}",
-                Title = null,
-                CustomerId = g.First().CustomerId,
-                CustomerName = g.First().CustomerName,
-                OrganizationId = g.First().OrganizationId,
-                OrganizationName = g.First().OrganizationName
+                // Organizasyon bilgisi olan değerlendirmeyi tercih et (First() non-deterministic olabilir)
+                var withOrg = g.FirstOrDefault(x => x.OrganizationId.HasValue) ?? g.First();
+                return new PersonnelListItemDto
+                {
+                    Id = g.Key!.Value,
+                    Name = $"{withOrg.FirstName} {withOrg.LastName}",
+                    Title = null,
+                    CustomerId = withOrg.CustomerId,
+                    CustomerName = withOrg.CustomerName,
+                    OrganizationId = withOrg.OrganizationId,
+                    OrganizationName = withOrg.OrganizationName
+                };
             })
             .OrderBy(p => p.Name)
             .ToList();

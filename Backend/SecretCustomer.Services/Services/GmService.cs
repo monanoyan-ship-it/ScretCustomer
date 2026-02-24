@@ -798,7 +798,8 @@ public class GmService : IGmService
                     GmDonemSoruId = donemSoru.Id,
                     UserId = personel.UserId,
                     PlanTarihi = planTarihi,
-                    DurumId = GmAtamaDurumlari.Ids.Beklemede
+                    DurumId = GmAtamaDurumlari.Ids.Beklemede,
+                    KuponKodu = donemSoru.KuponKodu
                 });
 
                 personelIndex++;
@@ -1099,7 +1100,8 @@ public class GmService : IGmService
                     GmDonemSoruId = donemSoru.Id,
                     UserId = personel.UserId,
                     PlanTarihi = planTarihi,
-                    DurumId = GmAtamaDurumlari.Ids.Beklemede
+                    DurumId = GmAtamaDurumlari.Ids.Beklemede,
+                    KuponKodu = donemSoru.KuponKodu
                 });
 
                 personelIndex++;
@@ -1245,6 +1247,44 @@ public class GmService : IGmService
                 gunler.Add(gun);
         }
         return gunler;
+    }
+
+    public async Task<object> GetTamamlananAramalarAsync(List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var query = _context.GmAtamalar
+            .Include(a => a.GmDonem)
+            .Include(a => a.GmDonemSoru)
+                .ThenInclude(ds => ds.GmHedefFirma)
+            .Include(a => a.User)
+            .Where(a => a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi);
+
+        if (donemIds?.Any() == true)
+        {
+            query = query.Where(a => donemIds.Contains(a.GmDonemId));
+        }
+        else
+        {
+            // Varsayılan: sadece aktif dönemler
+            query = query.Where(a => a.GmDonem.DurumId == GmDonemDurumlari.Ids.Aktif);
+        }
+
+        if (startDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(a => a.GerceklesmeTarihi >= start || a.PlanTarihi >= start);
+        }
+        if (endDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            query = query.Where(a => a.GerceklesmeTarihi <= end || a.PlanTarihi <= end);
+        }
+
+        var result = await query
+            .OrderByDescending(a => a.GerceklesmeTarihi ?? a.PlanTarihi)
+            .Select(a => MapToAtamaDto(a))
+            .ToListAsync();
+
+        return result;
     }
 
     private static GmAtamaDto MapToAtamaDto(GmAtama x)

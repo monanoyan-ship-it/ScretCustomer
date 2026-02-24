@@ -54,6 +54,9 @@ public interface IGmService
     // Aramalarım (kullanıcı)
     Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, List<int>? donemIds = null, List<int>? durumIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null);
     Task<bool> CompleteAtamaAsync(int atamaId, int userId, CompleteGmAtamaDto dto);
+
+    // Tamamlanan aramalar (QualitySpecialist dinleme listesi)
+    Task<object> GetTamamlananAramalarAsync(List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null);
 }
 
 // Request DTOs (interface ile birlikte tanımlanıyor)

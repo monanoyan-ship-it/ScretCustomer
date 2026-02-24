@@ -300,7 +300,7 @@ function PerformanceByPeriodViewModel() {
     // Score cell class helper
     self.getScoreCellClass = function(score) {
         if (score === null || score === undefined) return '';
-        if (score >= 80) return 'table-success-light';
+        if (score >= 90) return 'table-success-light';
         if (score >= 60) return 'table-warning-light';
         return 'table-danger-light';
     };

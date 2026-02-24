@@ -15,7 +15,7 @@ function CustomerDashboardViewModel() {
 
     // Helper functions
     self.getScoreBadgeClass = function(score) {
-        if (score >= 80) return 'bg-success';
+        if (score >= 90) return 'bg-success';
         if (score >= 60) return 'bg-warning';
         return 'bg-danger';
     };
@@ -523,6 +523,7 @@ function CustomerDashboardViewModel() {
         if (panelType === 'enneagram' || panelType === 'survey') {
             var byTypeUrl = '/api/customer/portal/dashboard/monthly-trend-by-type';
             var byTypeParams = [];
+            byTypeParams.push('projectTypeId=' + projectTypeId);
             if (panel.startDate()) byTypeParams.push('startDate=' + panel.startDate());
             if (panel.endDate()) byTypeParams.push('endDate=' + panel.endDate());
             if (byTypeParams.length > 0) byTypeUrl += '?' + byTypeParams.join('&');
