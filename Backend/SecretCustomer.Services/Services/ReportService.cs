@@ -1945,12 +1945,38 @@ public class ReportService : IReportService
             })
             .ToListAsync();
 
+        // Evaluation'da organizasyon olmayan personeller için CustomerPersonnelOrganization'dan fallback
+        var personnelIds = personnelFromEvaluations
+            .Select(p => p.EvaluatedCustomerPersonnelId!.Value)
+            .Distinct()
+            .ToList();
+
+        var personnelOrgMap = await _context.CustomerPersonnelOrganizations
+            .Where(cpo => personnelIds.Contains(cpo.CustomerPersonnelId))
+            .Select(cpo => new
+            {
+                cpo.CustomerPersonnelId,
+                cpo.CustomerOrganizationId,
+                OrganizationName = cpo.CustomerOrganization.Name
+            })
+            .GroupBy(x => x.CustomerPersonnelId)
+            .ToDictionaryAsync(g => g.Key, g => g.First());
+
         return personnelFromEvaluations
             .GroupBy(p => p.EvaluatedCustomerPersonnelId)
             .Select(g =>
             {
-                // Organizasyon bilgisi olan değerlendirmeyi tercih et (First() non-deterministic olabilir)
                 var withOrg = g.FirstOrDefault(x => x.OrganizationId.HasValue) ?? g.First();
+                var orgId = withOrg.OrganizationId;
+                var orgName = withOrg.OrganizationName;
+
+                // Evaluation'da organizasyon yoksa mevcut atamadan al
+                if (!orgId.HasValue && personnelOrgMap.TryGetValue(g.Key!.Value, out var cpoOrg))
+                {
+                    orgId = cpoOrg.CustomerOrganizationId;
+                    orgName = cpoOrg.OrganizationName;
+                }
+
                 return new PersonnelListItemDto
                 {
                     Id = g.Key!.Value,
@@ -1958,8 +1984,8 @@ public class ReportService : IReportService
                     Title = null,
                     CustomerId = withOrg.CustomerId,
                     CustomerName = withOrg.CustomerName,
-                    OrganizationId = withOrg.OrganizationId,
-                    OrganizationName = withOrg.OrganizationName
+                    OrganizationId = orgId,
+                    OrganizationName = orgName
                 };
             })
             .OrderBy(p => p.Name)
