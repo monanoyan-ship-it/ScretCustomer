@@ -237,9 +237,12 @@ var EvaluationPopupViewModel = function() {
     // toggleNotApplicable artık subscribe ile yönetiliyor (getAnswer içinde)
 
     // Puan hesapla (orantılı)
+    // Normal sorular: orantılı hesaplama (earned / rawMax × maxTotal)
+    // Sarı/Kırmızı kart: rawMax'a eklenmez, seçilen puan earned'dan düşülür, skor minimum 0
     self.calculateScore = function() {
-        var earnedPoints = 0;  // Seçilen puanların toplamı
-        var rawMax = 0;        // Cevaplanmış soruların max puanları toplamı
+        var earnedPoints = 0;  // Normal soruların kazanılan puanları
+        var rawMax = 0;        // Normal soruların max puanları toplamı
+        var penaltyDeduction = 0; // Ceza puanları toplamı
 
         self.questions().forEach(function(q) {
             if (!q.subCriteria || q.subCriteria.length === 0) return;
@@ -247,16 +250,21 @@ var EvaluationPopupViewModel = function() {
             var answer = self.answers[q.id];
             var selectedOptionId = answer ? answer.selectedOptionId() : null;
 
-            // Sadece cevaplanmış soruları hesaba kat
-            if (selectedOptionId) {
-                // Bu sorunun en yüksek puanlı seçeneğini bul
+            if (!selectedOptionId) return;
+
+            var pts = answer.points();
+            pts = (pts !== undefined && pts !== null) ? pts : 0;
+
+            if (q.penaltyType && q.penaltyType !== 'None') {
+                // Sarı/Kırmızı kart: rawMax'a eklenmez, seçilen puan ceza olarak düşülür
+                penaltyDeduction += Math.abs(pts);
+            } else {
+                // Normal soru: orantılı hesaplamaya dahil
                 var maxOptionPoints = Math.max.apply(null, q.subCriteria.map(function(sc) {
                     return sc.weightPoints !== undefined ? sc.weightPoints : 0;
                 }));
                 rawMax += maxOptionPoints;
-
-                var pts = answer.points();
-                earnedPoints += (pts !== undefined && pts !== null) ? pts : 0;
+                earnedPoints += pts;
             }
         });
 
@@ -264,9 +272,10 @@ var EvaluationPopupViewModel = function() {
         var maxTotalPoints = self.formData() ? (self.formData().maxTotalPoints || 100) : 100;
         self.maxScore(maxTotalPoints);
 
-        // Orantılı hesaplama: (kazanılan / ham max) × maxTotalPoints
+        // Orantılı hesaplama: ((kazanılan - ceza) / ham max) × maxTotalPoints, minimum 0
         if (rawMax > 0) {
-            self.currentScore((earnedPoints / rawMax) * maxTotalPoints);
+            var score = ((earnedPoints - penaltyDeduction) / rawMax) * maxTotalPoints;
+            self.currentScore(Math.max(0, score));
         } else {
             self.currentScore(0);
         }
