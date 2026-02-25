@@ -177,6 +177,12 @@ public class SubmitAnswerDto
     /// Zorunlu olmayan sorular için kullanıcı tarafından belirlenir
     /// </summary>
     public bool IsIncluded { get; set; } = true;
+
+    /// <summary>
+    /// Soru "Gerekmedi" olarak işaretlendi mi?
+    /// true ise bu soru değerlendirmede geçerli değildi demektir
+    /// </summary>
+    public bool IsNotApplicable { get; set; } = false;
 }
 
 /// <summary>

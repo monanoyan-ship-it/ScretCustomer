@@ -198,6 +198,11 @@ public class AnswerDto
     public string? RecommendedNote { get; set; }
 
     /// <summary>
+    /// Soru "Gerekmedi" olarak işaretlendi mi?
+    /// </summary>
+    public bool IsNotApplicable { get; set; }
+
+    /// <summary>
     /// Seçilen alt kriter ID'leri
     /// </summary>
     public List<int>? SelectedSubCriteriaIds { get; set; }

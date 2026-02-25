@@ -168,25 +168,52 @@ var EvaluationPopupViewModel = function() {
     self.isShowingSummary = ko.observable(false);
     self.summaryData = ko.observable(null);
 
+    // Validasyon hatası olan soru ID'leri (formda kırmızı border göstermek için)
+    self.invalidQuestionIds = ko.observableArray([]);
+
     // Soru için answer objesi al/oluştur
     self.getAnswer = function(questionId) {
         if (!self.answers[questionId]) {
             self.answers[questionId] = {
                 selectedOptionId: ko.observable(null),
                 points: ko.observable(0),
-                comment: ko.observable('')
+                comment: ko.observable(''),
+                isNotApplicable: ko.observable(false)
             };
             // Seçim değiştiğinde puanları yeniden hesapla
             self.answers[questionId].selectedOptionId.subscribe(function() {
                 self.calculateScore();
             });
+            // Gerekmedi işaretlendiğinde subcriteria seçimini temizle ve validasyon hatasını kaldır
+            (function(qId) {
+                self.answers[qId].isNotApplicable.subscribe(function(newValue) {
+                    if (newValue) {
+                        self.answers[qId].points(0);
+                        self.answers[qId].selectedOptionId(null);
+                    }
+                    self.invalidQuestionIds.remove(qId);
+                });
+            })(questionId);
         }
         return self.answers[questionId];
     };
 
-    // Seçenek seçildiğinde
+    // Seçenek seçildiğinde (zorunlu olmayan sorularda toggle davranışı)
     self.selectOption = function(questionId, optionId, points) {
         var answer = self.getAnswer(questionId);
+
+        // Aynı seçenek tekrar tıklanırsa ve soru zorunlu değilse → seçimi temizle
+        var question = self.questions().find(function(q) { return q.id === questionId; });
+        if (answer.selectedOptionId() === optionId && question && !question.isRequired) {
+            answer.points(0);
+            answer.selectedOptionId(null);
+            return;
+        }
+
+        // Subcriteria seçildiğinde "Gerekmedi" temizle ve validasyon hatasını kaldır
+        answer.isNotApplicable(false);
+        self.invalidQuestionIds.remove(questionId);
+
         // ÖNCE points'i set et, SONRA selectedOptionId'yi (subscription calculateScore'u tetikler)
         answer.points(points);
         answer.selectedOptionId(optionId);
@@ -201,6 +228,13 @@ var EvaluationPopupViewModel = function() {
     self.getComment = function(questionId) {
         return self.getAnswer(questionId).comment;
     };
+
+    // Gerekmedi durumunu al (observable döndür)
+    self.getIsNotApplicable = function(questionId) {
+        return self.getAnswer(questionId).isNotApplicable;
+    };
+
+    // toggleNotApplicable artık subscribe ile yönetiliyor (getAnswer içinde)
 
     // Puan hesapla (orantılı)
     self.calculateScore = function() {
@@ -335,6 +369,7 @@ var EvaluationPopupViewModel = function() {
                         }
                         answer.points(a.earnedPoints || 0);
                         answer.comment(a.notes || '');
+                        answer.isNotApplicable(a.isNotApplicable || false);
                     });
                 }
 
@@ -428,6 +463,36 @@ var EvaluationPopupViewModel = function() {
             return;
         }
 
+        // Zorunlu olmayan + penalty=None sorularda: subcriteria ya da "Gerekmedi" seçilmiş olmalı
+        var incompleteOptional = [];
+        var invalidIds = [];
+        self.questions().forEach(function(q) {
+            if (!q.isRequired && q.penaltyType === 'None') {
+                var answer = self.answers[q.id];
+                var selectedId = answer ? answer.selectedOptionId() : null;
+                var isNA = answer ? answer.isNotApplicable() : false;
+                if (!selectedId && !isNA) {
+                    incompleteOptional.push(q.order + '. ' + q.text);
+                    invalidIds.push(q.id);
+                }
+            }
+        });
+
+        if (incompleteOptional.length > 0) {
+            self.invalidQuestionIds(invalidIds);
+            var msg = incompleteOptional.length + ' opsiyonel soruda seçim yapılmamış veya "Gerekmedi" işaretlenmemiş:\n';
+            msg += incompleteOptional.join('\n');
+            toastr.error(msg, '', { timeOut: 10000 });
+
+            // İlk hatalı soruya scroll
+            var firstInvalidEl = document.querySelector('[data-question-id="' + invalidIds[0] + '"]');
+            if (firstInvalidEl) {
+                firstInvalidEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+        self.invalidQuestionIds([]);
+
         // CallId duplicate kontrolü (async)
         var callIdVal = self.callId();
         if (callIdVal && callIdVal.length >= 3) {
@@ -478,11 +543,14 @@ var EvaluationPopupViewModel = function() {
                 }
             }
 
+            var isNA = answer ? answer.isNotApplicable() : false;
+
             answersArray.push({
                 index: index++,
                 questionText: q.text,
                 isRequired: q.isRequired,
                 isAnswered: isAnswered,
+                isNotApplicable: isNA,
                 answerText: answerText,
                 points: points,
                 comment: answer ? answer.comment() : ''
@@ -546,20 +614,19 @@ var EvaluationPopupViewModel = function() {
         self.isSaving(true);
         self.errorMessage('');
 
-        // Cevapları hazırla
+        // Cevapları hazırla - TÜM soruları gönder (raporlama için cevaplanmayan sorular da kaydedilmeli)
         var answersArray = [];
         self.questions().forEach(function(q) {
             var answer = self.answers[q.id];
-            if (answer) {
-                var selectedId = answer.selectedOptionId();
-                if (selectedId) {
-                    answersArray.push({
-                        questionId: q.id,
-                        selectedSubCriteriaIds: [selectedId],
-                        notes: answer.comment() || ''
-                    });
-                }
-            }
+            var selectedId = answer ? answer.selectedOptionId() : null;
+            var isNA = answer ? answer.isNotApplicable() : false;
+
+            answersArray.push({
+                questionId: q.id,
+                selectedSubCriteriaIds: selectedId ? [selectedId] : [],
+                notes: answer ? (answer.comment() || '') : '',
+                isNotApplicable: isNA
+            });
         });
 
         // Yeni personel modunda ad soyad'ı birleştir

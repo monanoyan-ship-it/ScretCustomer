@@ -10346,6 +10346,9 @@
   <LocaleResource Name="Evaluation.NotRequired">
     <Value>Gerekmedi</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.NotApplicable">
+    <Value>Gerekmedi</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.Weight">
     <Value>Ağırlık</Value>
   </LocaleResource>

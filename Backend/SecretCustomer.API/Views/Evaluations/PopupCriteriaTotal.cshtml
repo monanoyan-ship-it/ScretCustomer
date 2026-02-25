@@ -132,7 +132,7 @@
                                         </tr>
                                     </thead>
                                     <tbody data-bind="foreach: answers">
-                                        <tr data-bind="css: { 'table-secondary': !isAnswered && !isRequired }">
+                                        <tr data-bind="css: { 'table-secondary': isNotApplicable || (!isAnswered && !isRequired) }">
                                             <td data-bind="text: index"></td>
                                             <td>
                                                 <span data-bind="text: questionText"></span>
@@ -144,19 +144,25 @@
                                                 <!-- /ko -->
                                             </td>
                                             <td>
-                                                <!-- ko if: isAnswered -->
+                                                <!-- ko if: isNotApplicable -->
+                                                <span class="badge bg-secondary"><i class="bi bi-dash-circle me-1"></i>@Html.T("Evaluation.NotApplicable", "Gerekmedi")</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: !isNotApplicable && isAnswered -->
                                                 <span data-bind="text: answerText"></span>
                                                 <!-- /ko -->
-                                                <!-- ko ifnot: isAnswered -->
-                                                <span class="text-muted fst-italic" data-bind="text: isRequired ? '@Html.T("Evaluation.NotAnswered", "Cevaplanmadı")' : '@Html.T("Evaluation.NotRequired", "Gerekmedi")'"></span>
+                                                <!-- ko if: !isNotApplicable && !isAnswered -->
+                                                <span class="text-muted fst-italic" data-bind="text: isRequired ? '@Html.T("Evaluation.NotAnswered", "Cevaplanmadı")' : '-'"></span>
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-end">
-                                                <!-- ko if: isAnswered -->
+                                                <!-- ko if: isNotApplicable -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: !isNotApplicable && isAnswered -->
                                                 <span class="badge" data-bind="text: (points >= 0 ? '+' : '') + points,
                                                     css: { 'bg-success': points > 0, 'bg-warning text-dark': points === 0, 'bg-danger': points < 0 }"></span>
                                                 <!-- /ko -->
-                                                <!-- ko ifnot: isAnswered -->
+                                                <!-- ko if: !isNotApplicable && !isAnswered -->
                                                 <span class="text-muted">-</span>
                                                 <!-- /ko -->
                                             </td>
@@ -418,7 +424,7 @@
                         <div class="card-body p-0">
                             <!-- Gruptaki Sorular -->
                             <div data-bind="foreach: questions">
-                                <div class="border-bottom">
+                                <div class="border-bottom" data-bind="attr: { 'data-question-id': id }, css: { 'question-invalid': $root.invalidQuestionIds.indexOf(id) >= 0 }">
                                     <div class="p-3 bg-light border-bottom d-flex justify-content-between align-items-center">
                                         <div>
                                             <span class="badge bg-secondary me-2" data-bind="text: order"></span>
@@ -427,18 +433,27 @@
                                             <span class="badge bg-warning text-dark ms-2">@Html.T("Common.Optional", "Opsiyonel")</span>
                                             <!-- /ko -->
                                         </div>
-                                        <div>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <!-- ko if: !isRequired && $parent.penaltyType === 'None' -->
+                                            <label class="form-check form-check-inline mb-0" style="cursor: pointer;">
+                                                <input type="checkbox" class="form-check-input"
+                                                       data-bind="checked: $root.getIsNotApplicable(id)" />
+                                                <span class="form-check-label text-muted small">@Html.T("Evaluation.NotApplicable", "Gerekmedi")</span>
+                                            </label>
+                                            <!-- /ko -->
                                             <!-- ko if: helpText -->
                                             <i class="bi bi-info-circle text-info" data-bs-toggle="tooltip" data-bind="attr: { title: helpText }"></i>
                                             <!-- /ko -->
                                         </div>
                                     </div>
                                     <!-- SubCriteria Seçenekleri -->
-                                    <div class="list-group list-group-flush" data-bind="foreach: subCriteria">
+                                    <div class="list-group list-group-flush" data-bind="foreach: subCriteria, css: { 'subcriteria-disabled': $root.getIsNotApplicable(id)() }">
                                         <label class="list-group-item list-group-item-action py-2 px-3 d-flex align-items-center"
-                                               data-bind="css: { 'active': $root.getSelectedOption($parent.id)() === id }, click: function() { $root.selectOption($parent.id, id, weightPoints); }">
+                                               data-bind="css: { 'active': $root.getSelectedOption($parent.id)() === id },
+                                                          click: function() { if (!$root.getIsNotApplicable($parent.id)()) { $root.selectOption($parent.id, id, weightPoints); } }">
                                             <input type="radio" class="form-check-input me-3 flex-shrink-0"
-                                                   data-bind="attr: { name: 'q_' + $parent.id, value: id }, checked: $root.getSelectedOption($parent.id), checkedValue: id" />
+                                                   data-bind="attr: { name: 'q_' + $parent.id, value: id }, checked: $root.getSelectedOption($parent.id), checkedValue: id,
+                                                              enable: !$root.getIsNotApplicable($parent.id)()" />
                                             <span class="flex-grow-1" data-bind="text: description"></span>
                                             <span class="badge ms-2" data-bind="text: (weightPoints >= 0 ? '+' : '') + weightPoints, css: { 'bg-success': weightPoints > 0, 'bg-warning text-dark': weightPoints === 0, 'bg-danger': weightPoints < 0 }"></span>
                                         </label>
@@ -515,6 +530,17 @@
         }
         .list-group-item .form-check-input {
             margin-top: 0;
+        }
+        .subcriteria-disabled .list-group-item {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .question-invalid {
+            border-left: 4px solid #dc3545 !important;
+            background-color: #fff5f5;
+        }
+        .question-invalid .bg-light {
+            background-color: #fde8e8 !important;
         }
     </style>
 }

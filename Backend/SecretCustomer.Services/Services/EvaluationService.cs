@@ -1202,6 +1202,7 @@ public class EvaluationService : IEvaluationService
             Notes = dto.Notes,
             RecommendationNotes = dto.RecommendationNotes,
             IsPenaltyApplied = dto.ApplyPenalty,
+            IsNotApplicable = dto.IsNotApplicable,
             AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(dto.SelectedPenaltyType)?.Id
                 ?? PenaltyTypes.Ids.None
         };
@@ -1215,6 +1216,7 @@ public class EvaluationService : IEvaluationService
         answer.Notes = dto.Notes;
         answer.RecommendationNotes = dto.RecommendationNotes;
         answer.IsPenaltyApplied = dto.ApplyPenalty;
+        answer.IsNotApplicable = dto.IsNotApplicable;
         answer.AppliedPenaltyTypeId = PenaltyTypes.GetBySystemName(dto.SelectedPenaltyType)?.Id
             ?? PenaltyTypes.Ids.None;
         answer.UpdatedAt = TurkeyTime.Now;
@@ -1355,6 +1357,7 @@ public class EvaluationService : IEvaluationService
             PenaltyType = a.Question != null ? PenaltyTypes.GetById(a.Question.PenaltyTypeId)?.SystemName : null,
             HelpText = a.Question?.HelpText,
             RecommendedNote = a.Question?.RecommendedNote,
+            IsNotApplicable = a.IsNotApplicable,
             SelectedSubCriteriaIds = a.SubCriteriaSelections?.Select(s => s.SubCriteriaId).ToList(),
             SelectedSubCriteria = a.SubCriteriaSelections?.Select(s => s.SubCriteria?.Description ?? "").Where(d => !string.IsNullOrEmpty(d)).ToList()
         };

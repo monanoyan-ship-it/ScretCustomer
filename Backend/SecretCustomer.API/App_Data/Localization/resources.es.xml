@@ -10340,6 +10340,9 @@
   <LocaleResource Name="Evaluation.NotRequired">
     <Value>No Requerido</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.NotApplicable">
+    <Value>No Aplicable</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.Weight">
     <Value>Peso</Value>
   </LocaleResource>

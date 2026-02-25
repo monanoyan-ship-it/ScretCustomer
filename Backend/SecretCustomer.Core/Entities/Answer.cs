@@ -70,6 +70,12 @@ public class Answer : BaseEntity
     public bool IsPenaltyApplied { get; set; } = false;
 
     /// <summary>
+    /// Soru "Gerekmedi" olarak işaretlendi mi? (Zorunlu olmayan sorular için)
+    /// Raporlama: Bu değerlendirmede ilgili kriter geçerli değildi
+    /// </summary>
+    public bool IsNotApplicable { get; set; } = false;
+
+    /// <summary>
     /// Uygulanan ceza tipi (PenaltyTypes.Ids kullanılır)
     /// </summary>
     [ExcelColumn("Ceza Tipi", 9, ColumnType = ExcelColumnTypes.Ids.Dropdown,
