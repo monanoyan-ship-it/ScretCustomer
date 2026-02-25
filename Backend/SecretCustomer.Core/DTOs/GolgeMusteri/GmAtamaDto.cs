@@ -20,6 +20,8 @@ public class GmAtamaDto
     public string? AramaSaati { get; set; }
     public string? Not { get; set; }
     public string? KuponKodu { get; set; }
+    public string? GorusulenTemsilci { get; set; }
+    public int CustomerId { get; set; }
     public int DurumId { get; set; }
     public string? DurumText { get; set; }
     public string? DurumCss { get; set; }
@@ -39,4 +41,7 @@ public class CompleteGmAtamaDto
 
     [StringLength(100, ErrorMessage = "Kupon kodu en fazla 100 karakter olabilir")]
     public string? KuponKodu { get; set; }
+
+    [StringLength(200, ErrorMessage = "Temsilci adı en fazla 200 karakter olabilir")]
+    public string? GorusulenTemsilci { get; set; }
 }

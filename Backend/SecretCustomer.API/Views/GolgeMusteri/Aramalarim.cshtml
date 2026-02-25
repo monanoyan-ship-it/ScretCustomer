@@ -192,6 +192,7 @@
                                     <th>Soru</th>
                                     <th>Tarih</th>
                                     <th>Saat</th>
+                                    <th>@Html.T("GolgeMusteri.GorusulenTemsilci", "Temsilci")</th>
                                     <th>Not</th>
                                     <th>Kupon</th>
                                 </tr>
@@ -202,6 +203,7 @@
                                     <td><small data-bind="text: soruMetni ? (soruMetni.length > 40 ? soruMetni.substring(0,40)+'...' : soruMetni) : '-'"></small></td>
                                     <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
                                     <td data-bind="text: aramaSaati || '-'"></td>
+                                    <td data-bind="text: gorusulenTemsilci || '-'"></td>
                                     <td><small class="text-muted" data-bind="text: not || '-'"></small></td>
                                     <td><code data-bind="text: kuponKodu || '-'"></code></td>
                                 </tr>
@@ -239,6 +241,7 @@
                                     <th>@Html.T("GolgeMusteri.Arayan", "Arayan")</th>
                                     <th>@Html.T("Common.Date", "Tarih")</th>
                                     <th>@Html.T("Common.Time", "Saat")</th>
+                                    <th>@Html.T("GolgeMusteri.GorusulenTemsilci", "Temsilci")</th>
                                     <th>@Html.T("Common.Note", "Not")</th>
                                     <th>@Html.T("GolgeMusteri.KuponKodu", "Kupon")</th>
                                 </tr>
@@ -252,6 +255,7 @@
                                     <td data-bind="text: userName || '-'"></td>
                                     <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
                                     <td data-bind="text: aramaSaati || '-'"></td>
+                                    <td data-bind="text: gorusulenTemsilci || '-'"></td>
                                     <td><small class="text-muted" data-bind="text: not ? (not.length > 20 ? not.substring(0,20)+'...' : not) : '-'"></small></td>
                                     <td><code data-bind="text: kuponKodu || '-'"></code></td>
                                 </tr>
@@ -313,6 +317,12 @@
                                 <th class="text-muted">@Html.T("Common.Time", "Saat")</th>
                                 <td data-bind="text: aramaSaati || '-'"></td>
                             </tr>
+                            <!-- ko if: gorusulenTemsilci -->
+                            <tr>
+                                <th class="text-muted">@Html.T("GolgeMusteri.GorusulenTemsilci", "Temsilci")</th>
+                                <td data-bind="text: gorusulenTemsilci"></td>
+                            </tr>
+                            <!-- /ko -->
                             <tr>
                                 <th class="text-muted">@Html.T("Common.Note", "Not")</th>
                                 <td data-bind="text: not || '-'"></td>
@@ -358,6 +368,28 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Saat <span class="text-danger">*</span></label>
                             <input type="time" class="form-control" data-bind="value: completeForm.aramaSaati">
+                        </div>
+                    </div>
+                    <!-- Görüşülen Temsilci -->
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.GorusulenTemsilci", "Görüşülen Temsilci")</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" autocomplete="off"
+                                   placeholder="@Html.T("GolgeMusteri.GorusulenTemsilciAra", "Ad soyad yazarak arayın...")"
+                                   data-bind="value: completeForm.gorusulenTemsilci, valueUpdate: 'afterkeydown', event: { focus: onTemsilciInputFocus, blur: onTemsilciInputBlur }">
+                            <!-- Autocomplete dropdown -->
+                            <div class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; max-height: 200px; overflow-y: auto;"
+                                 data-bind="visible: isTemsilciDropdownVisible() && filteredPersonnel().length > 0">
+                                <!-- ko foreach: filteredPersonnel -->
+                                <button type="button" class="list-group-item list-group-item-action py-1 px-2"
+                                        data-bind="click: $parent.selectTemsilci, event: { mousedown: function() { return true; } }">
+                                    <small data-bind="text: name"></small>
+                                    <!-- ko if: title -->
+                                    <small class="text-muted" data-bind="text: ' - ' + title"></small>
+                                    <!-- /ko -->
+                                </button>
+                                <!-- /ko -->
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">

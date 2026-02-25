@@ -29,7 +29,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         var projects = await _context.Projects
             .Where(p => p.CustomerId == customerId &&
                    p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
-                   !p.IsDeleted &&
+                   p.IsActive && !p.IsDeleted &&
                    !enneagramChecklistIds.Contains(p.ChecklistId))
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
@@ -562,7 +562,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         var projects = await _context.Projects
             .Where(p => p.CustomerId == customerId &&
                    enneagramChecklistIds.Contains(p.ChecklistId) &&
-                   !p.IsDeleted)
+                   p.IsActive && !p.IsDeleted)
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync();
 

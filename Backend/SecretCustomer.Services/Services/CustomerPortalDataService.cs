@@ -1564,7 +1564,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
 
         var projectsQuery = _context.Projects
-            .Where(p => p.CustomerId == customerId && !p.IsDeleted);
+            .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
 
         // Project filter
         if (projectIds?.Any() == true)
@@ -1677,7 +1677,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         else
         {
             projectCount = await _context.Projects
-                .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
+                .CountAsync(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
         }
 
         // Get score thresholds for this customer (fallback: 80/60)
@@ -2539,7 +2539,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         return await _context.Projects.AnyAsync(p => p.Id == projectId &&
             p.CustomerId == customerId &&
             p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
-            !p.IsDeleted);
+            p.IsActive && !p.IsDeleted);
     }
 
     public async Task<bool> ValidateDealerBelongsToCustomerAsync(int dealerId, int customerId)
@@ -2799,7 +2799,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var customerProjectsQuery = _context.Projects
             .Where(p => p.CustomerId == customerId &&
                    enneagramChecklistIds.Contains(p.ChecklistId) &&
-                   !p.IsDeleted);
+                   p.IsActive && !p.IsDeleted);
 
         if (projectId.HasValue)
         {

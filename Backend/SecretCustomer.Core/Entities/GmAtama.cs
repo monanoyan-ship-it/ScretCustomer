@@ -52,6 +52,11 @@ public class GmAtama : BaseEntity
     public string? KuponKodu { get; set; }
 
     /// <summary>
+    /// Görüşülen temsilci ad soyad
+    /// </summary>
+    public string? GorusulenTemsilci { get; set; }
+
+    /// <summary>
     /// Atama durumu (GmAtamaDurumlari)
     /// </summary>
     public int DurumId { get; set; } = GmAtamaDurumlari.Ids.Beklemede;

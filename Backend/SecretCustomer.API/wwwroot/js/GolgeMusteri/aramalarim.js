@@ -3,7 +3,7 @@ function AramalarimViewModel() {
 
     // Tab
     var role = window.userRole || '';
-    self.showTabs = role === 'QualitySpecialist' || role === 'Admin';
+    self.showTabs = role === 'QualitySpecialist' || role === 'Admin' || role === 'Inspector';
     self.activeTab = ko.observable('aramalarim');
 
     self.atamalar = ko.observableArray([]);
@@ -64,7 +64,52 @@ function AramalarimViewModel() {
         gerceklesmeTarihi: ko.observable(''),
         aramaSaati: ko.observable(''),
         not: ko.observable(''),
-        kuponKodu: ko.observable('')
+        kuponKodu: ko.observable(''),
+        gorusulenTemsilci: ko.observable('')
+    };
+
+    // Temsilci (personnel) autocomplete
+    self.availablePersonnel = ko.observableArray([]);
+    self.isTemsilciDropdownVisible = ko.observable(false);
+    self.personnelLoadedForCustomer = null;
+
+    self.filteredPersonnel = ko.computed(function () {
+        var search = (self.completeForm.gorusulenTemsilci() || '').toLowerCase().trim();
+        if (!search) return [];
+        return self.availablePersonnel().filter(function (p) {
+            return p.name.toLowerCase().indexOf(search) >= 0;
+        }).slice(0, 15);
+    });
+
+    self.loadPersonnelForCustomer = function (customerId) {
+        if (!customerId || self.personnelLoadedForCustomer === customerId) return;
+        $.get('/api/customer-personnel/by-customer/' + customerId)
+            .done(function (data) {
+                var personnel = (data || []).map(function (p) {
+                    return {
+                        id: p.id,
+                        name: p.fullName || ((p.firstName || '') + ' ' + (p.lastName || '')).trim(),
+                        title: p.title || ''
+                    };
+                });
+                self.availablePersonnel(personnel);
+                self.personnelLoadedForCustomer = customerId;
+            });
+    };
+
+    self.selectTemsilci = function (personnel) {
+        self.completeForm.gorusulenTemsilci(personnel.name);
+        self.isTemsilciDropdownVisible(false);
+    };
+
+    self.onTemsilciInputFocus = function () {
+        self.isTemsilciDropdownVisible(true);
+        return true;
+    };
+
+    self.onTemsilciInputBlur = function () {
+        setTimeout(function () { self.isTemsilciDropdownVisible(false); }, 200);
+        return true;
     };
 
     self.bekleyenler = ko.computed(function () {
@@ -298,6 +343,11 @@ function AramalarimViewModel() {
         self.completeForm.aramaSaati(now);
         self.completeForm.not('');
         self.completeForm.kuponKodu('');
+        self.completeForm.gorusulenTemsilci('');
+        // Load personnel for autocomplete
+        if (atama.customerId) {
+            self.loadPersonnelForCustomer(atama.customerId);
+        }
         $('#completeModal').modal('show');
     };
 
@@ -317,7 +367,8 @@ function AramalarimViewModel() {
                 gerceklesmeTarihi: self.completeForm.gerceklesmeTarihi(),
                 aramaSaati: self.completeForm.aramaSaati(),
                 not: self.completeForm.not() || null,
-                kuponKodu: self.completingAtama() ? self.completingAtama().kuponKodu : null
+                kuponKodu: self.completingAtama() ? self.completingAtama().kuponKodu : null,
+                gorusulenTemsilci: self.completeForm.gorusulenTemsilci() || null
             })
         })
         .done(function () {

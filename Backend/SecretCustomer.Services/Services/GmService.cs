@@ -1226,6 +1226,7 @@ public class GmService : IGmService
         entity.AramaSaati = dto.AramaSaati;
         entity.Not = dto.Not;
         entity.KuponKodu = dto.KuponKodu;
+        entity.GorusulenTemsilci = dto.GorusulenTemsilci;
         entity.DurumId = GmAtamaDurumlari.Ids.Tamamlandi;
 
         await _context.SaveChangesAsync();
@@ -1311,6 +1312,8 @@ public class GmService : IGmService
             AramaSaati = x.AramaSaati,
             Not = x.Not,
             KuponKodu = x.KuponKodu ?? donemSoru?.KuponKodu,
+            GorusulenTemsilci = x.GorusulenTemsilci,
+            CustomerId = donemSoru?.CustomerId ?? 0,
             DurumId = x.DurumId,
             DurumText = GmAtamaDurumlari.GetById(x.DurumId)?.Description ?? "Bilinmiyor",
             DurumCss = GmAtamaDurumlari.GetById(x.DurumId)?.CssClass ?? "bg-secondary"

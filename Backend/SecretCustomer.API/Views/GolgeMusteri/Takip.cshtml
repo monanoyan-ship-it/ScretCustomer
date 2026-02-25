@@ -88,6 +88,7 @@
                             <th>Plan Tarihi</th>
                             <th>Gerçekleşme</th>
                             <th>Saat</th>
+                            <th>Temsilci</th>
                             <th>Durum</th>
                             <th style="width: 70px;"></th>
                         </tr>
@@ -100,6 +101,7 @@
                             <td data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></td>
                             <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
                             <td data-bind="text: aramaSaati || '-'"></td>
+                            <td data-bind="text: gorusulenTemsilci || '-'"></td>
                             <td>
                                 <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
                             </td>
@@ -142,6 +144,7 @@
                             <tr><th>Plan Tarihi</th><td data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></td></tr>
                             <tr><th>Gerçekleşme</th><td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td></tr>
                             <tr><th>Saat</th><td data-bind="text: aramaSaati || '-'"></td></tr>
+                            <tr><th>Temsilci</th><td data-bind="text: gorusulenTemsilci || '-'"></td></tr>
                             <tr><th>Durum</th><td><span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span></td></tr>
                             <!-- ko if: isKuponlu -->
                             <tr><th>Kupon Kodu</th><td><code data-bind="text: kuponKodu || '-'"></code></td></tr>
