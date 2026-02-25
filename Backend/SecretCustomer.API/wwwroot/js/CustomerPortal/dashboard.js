@@ -14,10 +14,8 @@ function CustomerDashboardViewModel() {
     self.scoreDistributionCharts = {};
 
     // Helper functions
-    self.getScoreBadgeClass = function(score) {
-        if (score >= 90) return 'bg-success';
-        if (score >= 60) return 'bg-warning';
-        return 'bg-danger';
+    self.getScoreBadgeClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreBadgeClass(score, projectTypeId);
     };
 
     self.getStatusBadgeClass = function(status) {

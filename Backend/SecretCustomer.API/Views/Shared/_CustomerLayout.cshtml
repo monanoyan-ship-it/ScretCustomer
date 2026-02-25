@@ -601,6 +601,80 @@
             });
         }
 
+        // Global Score Threshold Helper
+        var ScoreThresholds = (function() {
+            var _thresholds = {}; // projectTypeId -> { success, warning }
+            var _default = { success: 80, warning: 60 };
+            var _loaded = false;
+            var _loadPromise = null;
+
+            function load() {
+                if (_loadPromise) return _loadPromise;
+                _loadPromise = customerApiFetch('/api/customer/portal/score-thresholds')
+                    .then(function(r) { return r.json(); })
+                    .then(function(data) {
+                        (data || []).forEach(function(t) {
+                            _thresholds[t.projectTypeId] = {
+                                success: t.successThreshold || 80,
+                                warning: t.warningThreshold || 60
+                            };
+                        });
+                        _loaded = true;
+                    })
+                    .catch(function() { _loaded = true; });
+                return _loadPromise;
+            }
+
+            function get(projectTypeId) {
+                if (projectTypeId && _thresholds[projectTypeId]) return _thresholds[projectTypeId];
+                return _default;
+            }
+
+            function getScoreClass(score, projectTypeId) {
+                var t = get(projectTypeId);
+                if (score >= t.success) return 'text-success';
+                if (score >= t.warning) return 'text-warning';
+                if (score > 0) return 'text-danger';
+                return 'text-muted';
+            }
+
+            function getProgressBarClass(score, projectTypeId) {
+                var t = get(projectTypeId);
+                if (score >= t.success) return 'bg-success';
+                if (score >= t.warning) return 'bg-warning';
+                if (score > 0) return 'bg-danger';
+                return 'bg-secondary';
+            }
+
+            function getScoreBadgeClass(score, projectTypeId) {
+                var t = get(projectTypeId);
+                if (score === null || score === undefined) return 'bg-secondary';
+                if (score >= t.success) return 'bg-success';
+                if (score >= t.warning) return 'bg-warning text-dark';
+                return 'bg-danger';
+            }
+
+            function getScoreCellClass(score, projectTypeId) {
+                if (score === null || score === undefined) return '';
+                var t = get(projectTypeId);
+                if (score >= t.success) return 'table-success-light';
+                if (score >= t.warning) return 'table-warning-light';
+                return 'table-danger-light';
+            }
+
+            // Sayfa yüklenirken otomatik çağır
+            load();
+
+            return {
+                load: load,
+                get: get,
+                getScoreClass: getScoreClass,
+                getProgressBarClass: getProgressBarClass,
+                getScoreBadgeClass: getScoreBadgeClass,
+                getScoreCellClass: getScoreCellClass
+            };
+        })();
+
         // API helper for downloading files (POST request with JSON body)
         function customerApiDownloadPost(url, data, filename) {
             return fetch(url, {

@@ -1680,6 +1680,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 .CountAsync(p => p.CustomerId == customerId && !p.IsDeleted);
         }
 
+        // Get score thresholds for this customer (fallback: 80/60)
+        var thresholds = await _customerScoreThresholdService.GetAllAsync(customerId);
+        // Use the first available threshold (general/default) - pick highest success/warning across project types
+        var successThreshold = thresholds.Any() ? thresholds.Max(t => t.SuccessThreshold) : 80;
+        var warningThreshold = thresholds.Any() ? thresholds.Max(t => t.WarningThreshold) : 60;
+
         var summary = new
         {
             periodStart = start,
@@ -1689,10 +1695,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             averageScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
             minScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
             maxScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0,
-            excellentCount = evaluations.Count(e => e.ScorePercentage >= 90),
-            goodCount = evaluations.Count(e => e.ScorePercentage >= 80 && e.ScorePercentage < 90),
-            averageCount = evaluations.Count(e => e.ScorePercentage >= 60 && e.ScorePercentage < 80),
-            poorCount = evaluations.Count(e => e.ScorePercentage < 60)
+            successCount = evaluations.Count(e => e.ScorePercentage >= successThreshold),
+            warningCount = evaluations.Count(e => e.ScorePercentage >= warningThreshold && e.ScorePercentage < successThreshold),
+            dangerCount = evaluations.Count(e => e.ScorePercentage < warningThreshold),
+            successThreshold,
+            warningThreshold
         };
 
         return summary;
@@ -3050,6 +3057,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
     public async Task<(byte[] FileContent, string FileName)?> ExportPerformanceByPeriodAsync(int customerId, List<int>? allowedPersonnelIds, List<int>? allowedOrgIds, List<int>? projectIds, List<int>? organizationIds, DateTime? startDate, DateTime? endDate)
     {
+        // Get score thresholds for Excel color coding
+        var excelThresholds = await _customerScoreThresholdService.GetAllAsync(customerId);
+        var excelSuccessThreshold = excelThresholds.Any() ? (double)excelThresholds.Max(t => t.SuccessThreshold) : 80.0;
+        var excelWarningThreshold = excelThresholds.Any() ? (double)excelThresholds.Max(t => t.WarningThreshold) : 60.0;
+
         // Proje filtresi
         var projectsQuery = _context.Projects
             .Where(p => p.CustomerId == customerId && p.IsActive && !p.IsDeleted);
@@ -3216,9 +3228,9 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
                         sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                        if (avg >= 90)
+                        if (avg >= excelSuccessThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
-                        else if (avg >= 60)
+                        else if (avg >= excelWarningThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
                         else
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
@@ -3404,9 +3416,9 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
                         sheet.Cell(row, col).Value = Math.Round(avg, 1);
-                        if (avg >= 90)
+                        if (avg >= excelSuccessThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
-                        else if (avg >= 60)
+                        else if (avg >= excelWarningThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
                         else
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;

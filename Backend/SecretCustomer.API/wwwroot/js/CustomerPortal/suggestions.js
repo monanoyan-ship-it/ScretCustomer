@@ -2,6 +2,11 @@
 function CustomerSuggestionsViewModel() {
     var self = this;
 
+    // Score helpers (parametric thresholds)
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
+    };
+
     // State
     self.isLoading = ko.observable(false);
     self.isExporting = ko.observable(false);

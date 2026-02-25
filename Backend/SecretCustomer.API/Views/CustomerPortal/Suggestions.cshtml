@@ -351,7 +351,7 @@
                                         <span data-bind="text: givenPoints != null ? givenPoints.toFixed(1) : '-'"></span>
                                         <span class="text-muted" data-bind="text: ' / ' + (maxPoints || 0)"></span>
                                         <!-- ko if: percentageScore != null -->
-                                        <small class="d-block" data-bind="text: '(' + percentageScore.toFixed(1) + '%)', css: { 'text-success': percentageScore >= 70, 'text-warning': percentageScore >= 40 && percentageScore < 70, 'text-danger': percentageScore < 40 }"></small>
+                                        <small class="d-block" data-bind="text: '(' + percentageScore.toFixed(1) + '%)', css: $root.getScoreClass(percentageScore)"></small>
                                         <!-- /ko -->
                                     </td>
                                     <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
@@ -426,7 +426,7 @@
                                     <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <!-- ko if: scorePercentage != null -->
-                                        <span data-bind="text: scorePercentage.toFixed(1) + '%', css: { 'text-success': scorePercentage >= 70, 'text-warning': scorePercentage >= 40 && scorePercentage < 70, 'text-danger': scorePercentage < 40 }"></span>
+                                        <span data-bind="text: scorePercentage.toFixed(1) + '%', css: $root.getScoreClass(scorePercentage)"></span>
                                         <!-- /ko -->
                                         <!-- ko if: scorePercentage == null -->
                                         <span class="text-muted">-</span>

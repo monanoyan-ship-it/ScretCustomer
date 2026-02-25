@@ -421,7 +421,7 @@
                                 <td data-bind="text: personnelName"></td>
                                 <td data-bind="text: checklistName"></td>
                                 <td>
-                                    <span class="badge" data-bind="text: score.toFixed(1), css: $parent.getScoreBadgeClass(score)"></span>
+                                    <span class="badge" data-bind="text: score.toFixed(1), css: $parent.getScoreBadgeClass(score, projectTypeId)"></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -473,7 +473,7 @@
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: organizationName"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score)"></span>
+                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
                                         </td>
                                         <td class="text-center">
                                             <!-- ko if: yellowCardCount > 0 -->
@@ -611,7 +611,7 @@
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: checklistName"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score)"></span>
+                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge" data-bind="text: statusText, css: $root.getEvalStatusBadgeClass(status)"></span>

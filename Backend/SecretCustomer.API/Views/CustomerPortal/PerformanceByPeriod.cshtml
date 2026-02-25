@@ -169,10 +169,10 @@
         </div>
         <!-- Legend -->
         <div class="card-footer bg-white">
-            <small class="text-muted">
-                <span class="badge bg-success me-2">&nbsp;</span> 90%+ |
-                <span class="badge bg-warning text-dark me-2">&nbsp;</span> 60-89% |
-                <span class="badge bg-danger me-2">&nbsp;</span> &lt;60% |
+            <small class="text-muted" id="threshold-legend">
+                <span class="badge bg-success me-2">&nbsp;</span> <span id="legend-success"></span> |
+                <span class="badge bg-warning text-dark me-2">&nbsp;</span> <span id="legend-warning"></span> |
+                <span class="badge bg-danger me-2">&nbsp;</span> <span id="legend-danger"></span> |
                 <span class="badge bg-warning text-dark badge-sm me-1">2</span> @Html.T("Report.YellowCard", "Sari Kart") |
                 <span class="badge bg-danger badge-sm me-1">1</span> @Html.T("Report.RedCard", "Kirmizi Kart")
             </small>

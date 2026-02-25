@@ -6,11 +6,8 @@ function CustomerProjectsViewModel() {
     self.projects = ko.observableArray([]);
 
     // Helper
-    self.getScoreClass = function(score) {
-        if (score >= 80) return 'text-success';
-        if (score >= 60) return 'text-warning';
-        if (score > 0) return 'text-danger';
-        return 'text-muted';
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
     // Load projects

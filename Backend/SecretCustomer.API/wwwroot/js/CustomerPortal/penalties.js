@@ -536,10 +536,8 @@ function CustomerPenaltiesViewModel() {
     };
 
     // Score class helper
-    self.getScoreClass = function(score) {
-        if (score >= 80) return 'text-success';
-        if (score >= 60) return 'text-warning';
-        return 'text-danger';
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
     // Initialize

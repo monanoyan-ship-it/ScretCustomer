@@ -366,7 +366,7 @@
                                     <small class="text-muted d-block" data-bind="text: checklistName || ''"></small>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge fs-6" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage)"></span>
+                                    <span class="badge fs-6" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage, projectTypeId)"></span>
                                 </td>
                                 <td class="text-center">
                                     <!-- ko if: yellowCardCount > 0 || redCardCount > 0 -->
@@ -440,12 +440,12 @@
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
                                         <small class="text-muted">@Html.T("CustomerPortal.MyPerformance.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="progress" style="height: 25px;">
-                                            <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $parent.getProgressBarClass(scorePercentage || 0), text: (scorePercentage || 0).toFixed(2) + '%'"></div>
+                                            <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $parent.getProgressBarClass(scorePercentage || 0, projectTypeId), text: (scorePercentage || 0).toFixed(2) + '%'"></div>
                                         </div>
                                     </div>
                                 </div>

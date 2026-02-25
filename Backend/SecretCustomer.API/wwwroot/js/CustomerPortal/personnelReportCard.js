@@ -441,18 +441,12 @@ function CustomerPersonnelReportCardViewModel() {
             .finally(function() { self.isExportingDetail(false); });
     };
 
-    self.getScoreClass = function(score) {
-        if (score >= 80) return 'text-success';
-        if (score >= 60) return 'text-warning';
-        if (score > 0) return 'text-danger';
-        return 'text-muted';
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
-    self.getProgressBarClass = function(score) {
-        if (score >= 80) return 'bg-success';
-        if (score >= 60) return 'bg-warning';
-        if (score > 0) return 'bg-danger';
-        return 'bg-secondary';
+    self.getProgressBarClass = function(score, projectTypeId) {
+        return ScoreThresholds.getProgressBarClass(score, projectTypeId);
     };
 
     // Export to PDF

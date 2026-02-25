@@ -418,7 +418,7 @@
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
                                         <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">

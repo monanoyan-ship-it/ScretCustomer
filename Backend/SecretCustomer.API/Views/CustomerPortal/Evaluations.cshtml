@@ -304,7 +304,7 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <div class="progress me-2" style="height: 6px; width: 50px;">
-                                        <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: scorePercentage >= 70 ? 'bg-success' : (scorePercentage >= 50 ? 'bg-warning' : 'bg-danger')"></div>
+                                        <div class="progress-bar" data-bind="style: { width: (scorePercentage || 0) + '%' }, css: $root.getProgressBarClass(scorePercentage || 0, projectTypeId)"></div>
                                     </div>
                                     <small data-bind="text: (scorePercentage || 0).toFixed(2) + '%'"></small>
                                 </div>
@@ -465,7 +465,7 @@
                             <div class="col-md-3">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: scorePercentage >= 70 ? 'text-success' : (scorePercentage >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $root.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
                                         <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                 </div>
@@ -753,7 +753,7 @@
                                             <div class="progress mt-3" style="height: 25px;">
                                                 <div class="progress-bar" role="progressbar"
                                                      data-bind="style: { width: scorePercentage.toFixed(2) + '%' },
-                                                                css: { 'bg-success': scorePercentage >= 70, 'bg-warning': scorePercentage >= 50 && scorePercentage < 70, 'bg-danger': scorePercentage < 50 }">
+                                                                css: $root.getProgressBarClass(scorePercentage, projectTypeId)">
                                                 </div>
                                             </div>
                                         </div>
@@ -1122,7 +1122,7 @@
                                                 <div class="progress" style="height: 20px;">
                                                     <div class="progress-bar" role="progressbar"
                                                          data-bind="style: { width: scorePercentageCalc() + '%' },
-                                                                    css: scorePercentageCalc() >= 70 ? 'bg-success' : (scorePercentageCalc() >= 50 ? 'bg-warning' : 'bg-danger')">
+                                                                    css: $root.getProgressBarClass(scorePercentageCalc())">
                                                     </div>
                                                 </div>
                                             </div>

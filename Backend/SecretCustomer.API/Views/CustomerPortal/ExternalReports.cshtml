@@ -136,28 +136,22 @@
                     </div>
                     <div class="card-body">
                         <div class="row text-center">
-                            <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(90, 101, '@Html.T("Report.ScoreExcellent", "Mükemmel (90+)")', 'success'); }">
-                                    <div class="display-6 text-success" data-bind="text: summary().excellentCount || 0"></div>
-                                    <small class="text-muted">90+</small>
+                            <div class="col-4">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(summary().successThreshold || 80, 101, '@Html.T("Report.ScoreSuccess", "Başarılı")' + ' (' + (summary().successThreshold || 80) + '+)', 'success'); }">
+                                    <div class="display-6 text-success" data-bind="text: summary().successCount || 0"></div>
+                                    <small class="text-muted" data-bind="text: (summary().successThreshold || 80) + '+'"></small>
                                 </a>
                             </div>
-                            <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(80, 90, '@Html.T("Report.ScoreGood", "İyi (80-89)")', 'primary'); }">
-                                    <div class="display-6 text-primary" data-bind="text: summary().goodCount || 0"></div>
-                                    <small class="text-muted">80-89</small>
+                            <div class="col-4">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(summary().warningThreshold || 60, summary().successThreshold || 80, '@Html.T("Report.ScoreAverage", "Orta")' + ' (' + (summary().warningThreshold || 60) + '-' + ((summary().successThreshold || 80) - 1) + ')', 'warning'); }">
+                                    <div class="display-6 text-warning" data-bind="text: summary().warningCount || 0"></div>
+                                    <small class="text-muted" data-bind="text: (summary().warningThreshold || 60) + '-' + ((summary().successThreshold || 80) - 1)"></small>
                                 </a>
                             </div>
-                            <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(60, 80, 'Orta (60-79)', 'warning'); }">
-                                    <div class="display-6 text-warning" data-bind="text: summary().averageCount || 0"></div>
-                                    <small class="text-muted">60-79</small>
-                                </a>
-                            </div>
-                            <div class="col-3">
-                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(0, 60, '@Html.T("Report.ScorePoor", "Düşük (<60)")', 'danger'); }">
-                                    <div class="display-6 text-danger" data-bind="text: summary().poorCount || 0"></div>
-                                    <small class="text-muted">&lt;60</small>
+                            <div class="col-4">
+                                <a href="#" class="text-decoration-none" data-bind="click: function() { showScoreRangeDetail(0, summary().warningThreshold || 60, '@Html.T("Report.ScorePoor", "Düşük")' + ' (<' + (summary().warningThreshold || 60) + ')', 'danger'); }">
+                                    <div class="display-6 text-danger" data-bind="text: summary().dangerCount || 0"></div>
+                                    <small class="text-muted" data-bind="text: '&lt;' + (summary().warningThreshold || 60)"></small>
                                 </a>
                             </div>
                         </div>
@@ -261,7 +255,7 @@
                                         <td data-bind="text: projectName"></td>
                                         <td data-bind="text: personnelName"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage || 0)"></span>
+                                            <span class="badge" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreBadgeClass(scorePercentage || 0, projectTypeId)"></span>
                                         </td>
                                         <td class="text-center">
                                             <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
@@ -313,14 +307,14 @@
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0)"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
                                         <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
                                         <div class="progress" style="height: 25px;">
                                             <div class="progress-bar" role="progressbar"
                                                  data-bind="style: { width: (scorePercentage || 0) + '%' },
-                                                            css: $parent.getProgressBarClass(scorePercentage || 0),
+                                                            css: $parent.getProgressBarClass(scorePercentage || 0, projectTypeId),
                                                             text: (scorePercentage || 0).toFixed(2) + '%'">
                                             </div>
                                         </div>

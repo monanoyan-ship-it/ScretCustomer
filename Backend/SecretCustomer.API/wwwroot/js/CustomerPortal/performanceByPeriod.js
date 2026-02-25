@@ -298,12 +298,20 @@ function PerformanceByPeriodViewModel() {
     };
 
     // Score cell class helper
-    self.getScoreCellClass = function(score) {
-        if (score === null || score === undefined) return '';
-        if (score >= 90) return 'table-success-light';
-        if (score >= 60) return 'table-warning-light';
-        return 'table-danger-light';
+    self.getScoreCellClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreCellClass(score, projectTypeId);
     };
+
+    // Update legend with parametric thresholds
+    ScoreThresholds.load().then(function() {
+        var t = ScoreThresholds.get();
+        var legendSuccess = document.getElementById('legend-success');
+        var legendWarning = document.getElementById('legend-warning');
+        var legendDanger = document.getElementById('legend-danger');
+        if (legendSuccess) legendSuccess.textContent = t.success + '%+';
+        if (legendWarning) legendWarning.textContent = t.warning + '-' + (t.success - 1) + '%';
+        if (legendDanger) legendDanger.textContent = '<' + t.warning + '%';
+    });
 
     // Initialize
     self.loadFilterOptions();

@@ -70,11 +70,8 @@ function CustomerInternalReportsViewModel() {
     self.detailsData = ko.observable(null);
 
     // Helpers
-    self.getScoreBadgeClass = function(score) {
-        if (score >= 90) return 'bg-success';
-        if (score >= 80) return 'bg-primary';
-        if (score >= 60) return 'bg-warning text-dark';
-        return 'bg-danger';
+    self.getScoreBadgeClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreBadgeClass(score, projectTypeId);
     };
 
     // Can add filter computed
@@ -483,18 +480,12 @@ function CustomerInternalReportsViewModel() {
     };
 
     // Score class helpers for details modal
-    self.getScoreClass = function(score) {
-        if (score >= 90) return 'text-success';
-        if (score >= 80) return 'text-primary';
-        if (score >= 60) return 'text-warning';
-        return 'text-danger';
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
-    self.getProgressBarClass = function(score) {
-        if (score >= 90) return 'bg-success';
-        if (score >= 80) return 'bg-primary';
-        if (score >= 60) return 'bg-warning';
-        return 'bg-danger';
+    self.getProgressBarClass = function(score, projectTypeId) {
+        return ScoreThresholds.getProgressBarClass(score, projectTypeId);
     };
 
     // Initialize with default date filter (last 3 months)

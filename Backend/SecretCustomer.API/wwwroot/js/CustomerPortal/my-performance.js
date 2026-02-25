@@ -433,35 +433,23 @@ function MyPerformanceViewModel() {
     };
 
     // Helper: Get score badge class
-    self.getScoreBadgeClass = function(score) {
-        if (score === null || score === undefined) return 'bg-secondary';
-        if (score >= 80) return 'bg-success';
-        if (score >= 60) return 'bg-warning text-dark';
-        return 'bg-danger';
+    self.getScoreBadgeClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreBadgeClass(score, projectTypeId);
     };
 
     // Helper: Get score text class
-    self.getScoreTextClass = function(score) {
-        if (score === null || score === undefined) return 'text-secondary';
-        if (score >= 80) return 'text-success';
-        if (score >= 60) return 'text-warning';
-        return 'text-danger';
+    self.getScoreTextClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
     // Helper: Get score class (for detail modal)
-    self.getScoreClass = function(score) {
-        if (score >= 80) return 'text-success';
-        if (score >= 60) return 'text-warning';
-        if (score > 0) return 'text-danger';
-        return 'text-muted';
+    self.getScoreClass = function(score, projectTypeId) {
+        return ScoreThresholds.getScoreClass(score, projectTypeId);
     };
 
     // Helper: Get progress bar class (for detail modal)
-    self.getProgressBarClass = function(score) {
-        if (score >= 80) return 'bg-success';
-        if (score >= 60) return 'bg-warning';
-        if (score > 0) return 'bg-danger';
-        return 'bg-secondary';
+    self.getProgressBarClass = function(score, projectTypeId) {
+        return ScoreThresholds.getProgressBarClass(score, projectTypeId);
     };
 
     // Helper: Copy to clipboard
