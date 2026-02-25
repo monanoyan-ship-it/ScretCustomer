@@ -186,6 +186,7 @@ public class EvaluationAnswerDto
     public decimal WeightPoints { get; set; }
     public string? PenaltyType { get; set; }
     public string? ScoringType { get; set; }
+    public bool IsNotApplicable { get; set; }
     public List<string>? SelectedSubCriteria { get; set; }
 }
 
@@ -201,6 +202,7 @@ public class FlatQuestionAnswerDto
     public decimal? MaxPoints { get; set; }
     public List<string> SelectedSubCriteria { get; set; } = new();
     public string? Comment { get; set; }
+    public bool IsNotApplicable { get; set; }
 }
 
 /// <summary>
@@ -228,6 +230,7 @@ public class QuestionAnswerReportDto
     public decimal? MaxPoints { get; set; }
     public string? PenaltyType { get; set; }
     public string? Notes { get; set; }
+    public bool IsNotApplicable { get; set; }
     public List<string> SelectedSubCriteria { get; set; } = new();
 }
 

@@ -446,11 +446,16 @@
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-center">
+                                                <!-- ko if: $data.isNotApplicable -->
+                                                <span class="badge bg-secondary">@Html.T("Evaluation.NotApplicable", "Gerekmedi")</span>
+                                                <!-- /ko -->
+                                                <!-- ko ifnot: $data.isNotApplicable -->
                                                 <!-- ko if: $data.scoringType !== 'Unscored' && $data.givenPoints !== null && $data.givenPoints !== undefined -->
                                                 <span class="badge bg-primary" data-bind="text: $data.givenPoints + '/' + $data.maxPoints"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.scoringType === 'Unscored' || $data.givenPoints === null || $data.givenPoints === undefined -->
                                                 <span class="text-muted">-</span>
+                                                <!-- /ko -->
                                                 <!-- /ko -->
                                             </td>
                                             <td>

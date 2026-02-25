@@ -561,6 +561,7 @@ public class ReportService : IReportService
                         MaxPoints = a.Question.WeightPoints,
                         PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
                         Notes = a.Notes,
+                        IsNotApplicable = a.IsNotApplicable,
                         SelectedSubCriteria = a.SubCriteriaSelections
                             .Select(s => s.SubCriteria.Description)
                             .ToList()
@@ -584,7 +585,8 @@ public class ReportService : IReportService
                     SelectedSubCriteria = a.SubCriteriaSelections
                         .Select(s => s.SubCriteria.Description)
                         .ToList(),
-                    Comment = a.Notes
+                    Comment = a.Notes,
+                    IsNotApplicable = a.IsNotApplicable
                 }).ToList(),
 
             // Dinleme detay modalı için düz cevap listesi
@@ -610,6 +612,7 @@ public class ReportService : IReportService
                     WeightPoints = a.Question.WeightPoints,
                     PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName,
                     ScoringType = ScoringTypes.GetById(a.Question.ScoringTypeId)?.SystemName,
+                    IsNotApplicable = a.IsNotApplicable,
                     SelectedSubCriteria = a.SubCriteriaSelections
                         .Select(s => s.SubCriteria.Description)
                         .ToList()
