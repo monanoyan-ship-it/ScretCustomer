@@ -2574,6 +2574,9 @@
   <LocaleResource Name="Role.FieldWorker">
     <Value>Saha Çalışanı</Value>
   </LocaleResource>
+  <LocaleResource Name="Role.Inspector">
+    <Value>Kontrolör</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Assignment Types -->
   <LocaleResource Name="AssignmentType.InternalBranch">
     <Value>İç Şube Değerlendirmesi</Value>
@@ -4626,6 +4629,9 @@
   </LocaleResource>
   <LocaleResource Name="Personnel.Role.FieldWorker">
     <Value>Saha Çalışanı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Personnel.Role.Inspector">
+    <Value>Kontrolör</Value>
   </LocaleResource>
   <LocaleResource Name="Personnel.UsernameHint">
     <Value>Sadece İngilizce harf, rakam, nokta ve alt çizgi</Value>

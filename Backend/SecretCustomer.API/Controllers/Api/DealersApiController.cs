@@ -7,7 +7,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/dealers")]
-[Authorize(Roles = "Admin,QualitySpecialist")]
+[Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
 public class DealersApiController : BaseApiController
 {
     private readonly IDealerService _dealerService;

@@ -24,7 +24,7 @@ public class GolgeMusteriController : Controller
         return View();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Inspector")]
     public IActionResult Takip()
     {
         return View();

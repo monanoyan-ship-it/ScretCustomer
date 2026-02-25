@@ -501,17 +501,19 @@ function AssignmentsViewModel() {
     };
 
     self.loadEvaluators = function() {
-        // Admin (role 1) ve QualitySpecialist (role 2) kullanıcılarını çek
+        // Admin (role 1), QualitySpecialist (role 2) ve Inspector (role 4) kullanıcılarını çek
         // FieldWorker'lar ayrı yükleniyor (loadFieldWorkers)
         Promise.all([
             fetch('/api/users/role/1', { credentials: 'include' }).then(function(r) { return r.json(); }),
-            fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); })
+            fetch('/api/users/role/2', { credentials: 'include' }).then(function(r) { return r.json(); }),
+            fetch('/api/users/role/4', { credentials: 'include' }).then(function(r) { return r.json(); })
         ])
         .then(function(results) {
             var admins = results[0] || [];
             var qualitySpecialists = results[1] || [];
+            var inspectors = results[2] || [];
             // Birleştir ve tekrarları kaldır (id'ye göre)
-            var combined = admins.concat(qualitySpecialists);
+            var combined = admins.concat(qualitySpecialists).concat(inspectors);
             var unique = [];
             var ids = {};
             combined.forEach(function(u) {

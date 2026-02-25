@@ -50,8 +50,9 @@ public static class UserRoles
     public static readonly TypeItem Admin = new(1, "Admin", "Role.Admin", "Sistem yoneticisi", "bi-shield-fill-check", "bg-danger", 1);
     public static readonly TypeItem QualitySpecialist = new(2, "QualitySpecialist", "Role.QualitySpecialist", "Kalite uzmani", "bi-clipboard-check", "bg-primary", 2, isDefault: true);
     public static readonly TypeItem FieldWorker = new(3, "FieldWorker", "Role.FieldWorker", "Saha calisani", "bi-person-badge", "bg-success", 3);
+    public static readonly TypeItem Inspector = new(4, "Inspector", "Role.Inspector", "Kontrolor - kalite uzmani yetkileri + golge musteri takip", "bi-person-check", "bg-info", 4);
 
-    public static IEnumerable<TypeItem> All => new[] { Admin, QualitySpecialist, FieldWorker };
+    public static IEnumerable<TypeItem> All => new[] { Admin, QualitySpecialist, FieldWorker, Inspector };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -61,6 +62,7 @@ public static class UserRoles
         public const int Admin = 1;
         public const int QualitySpecialist = 2;
         public const int FieldWorker = 3;
+        public const int Inspector = 4;
     }
 }
 

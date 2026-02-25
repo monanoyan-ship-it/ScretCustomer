@@ -31,7 +31,7 @@ public class ProjectsApiController : BaseApiController
     /// Tüm projeleri getir - Optimize edilmiş liste
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetAll([FromQuery] ProjectFilterDto filter)
     {
         try
@@ -50,7 +50,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje özetlerini getir (Dashboard için)
     /// </summary>
     [HttpGet("summaries")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetSummaries()
     {
         try
@@ -69,7 +69,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje ID ile getir
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -92,7 +92,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje detaylarını getir (Şubeler ve Takım üyeleri dahil)
     /// </summary>
     [HttpGet("{id}/detail")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetDetail(int id)
     {
         try
@@ -393,7 +393,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje istatistiklerini getir
     /// </summary>
     [HttpGet("{id}/statistics")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetStatistics(int id, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         try
@@ -416,7 +416,7 @@ public class ProjectsApiController : BaseApiController
     /// Müşteri bazlı projeleri getir
     /// </summary>
     [HttpGet("by-customer/{customerId}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetByCustomer(int customerId)
     {
         try
@@ -435,7 +435,7 @@ public class ProjectsApiController : BaseApiController
     /// Proje yöneticisi bazlı projeleri getir
     /// </summary>
     [HttpGet("by-manager/{managerId}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetByManager(int managerId)
     {
         try
@@ -454,7 +454,7 @@ public class ProjectsApiController : BaseApiController
     /// Aktif projeleri getir
     /// </summary>
     [HttpGet("active")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetActiveProjects()
     {
         try
@@ -473,7 +473,7 @@ public class ProjectsApiController : BaseApiController
     /// Yaklaşan bitiş tarihli projeleri getir
     /// </summary>
     [HttpGet("upcoming-deadlines")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetUpcomingDeadlines([FromQuery] int daysAhead = 7)
     {
         try

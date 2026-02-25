@@ -6,7 +6,7 @@ namespace SecretCustomer.API.Controllers;
 /// <summary>
 /// Proje yönetimi MVC controller
 /// </summary>
-[Authorize(Roles = "Admin,QualitySpecialist")]
+[Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
 public class ProjectsController : Controller
 {
     /// <summary>

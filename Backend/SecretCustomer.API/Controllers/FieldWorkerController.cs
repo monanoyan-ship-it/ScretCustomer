@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecretCustomer.API.Controllers;
 
-[Authorize(Roles = "FieldWorker,Admin,QualitySpecialist")]
+[Authorize(Roles = "FieldWorker,Admin,QualitySpecialist,Inspector")]
 public class FieldWorkerController : Controller
 {
     public IActionResult Index()

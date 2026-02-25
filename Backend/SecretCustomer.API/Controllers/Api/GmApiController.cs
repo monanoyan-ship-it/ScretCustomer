@@ -7,7 +7,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/gm")]
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = "Admin,Inspector")]
 public class GmApiController : BaseApiController
 {
     private readonly IGmService _gmService;
@@ -33,6 +33,7 @@ public class GmApiController : BaseApiController
     // HEDEF FIRMA
     // =============================================
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("hedef-firmalar")]
     public async Task<IActionResult> GetHedefFirmalar([FromQuery] int? customerId)
     {
@@ -48,6 +49,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("hedef-firmalar/{id}")]
     public async Task<IActionResult> GetHedefFirma(int id)
     {
@@ -64,6 +66,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("hedef-firmalar")]
     public async Task<IActionResult> CreateHedefFirma([FromBody] CreateGmHedefFirmaDto dto)
     {
@@ -79,6 +82,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("hedef-firmalar/{id}")]
     public async Task<IActionResult> UpdateHedefFirma(int id, [FromBody] UpdateGmHedefFirmaDto dto)
     {
@@ -95,6 +99,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("hedef-firmalar/{id}")]
     public async Task<IActionResult> DeleteHedefFirma(int id)
     {
@@ -115,6 +120,7 @@ public class GmApiController : BaseApiController
     // DÖNEM SORU
     // =============================================
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("donem-sorular")]
     public async Task<IActionResult> GetDonemSorular([FromQuery] int? customerId, [FromQuery] int? hedefFirmaId, [FromQuery] int? donemId)
     {
@@ -130,6 +136,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/soru")]
     public async Task<IActionResult> CreateDonemSoru(int donemId, [FromBody] CreateDonemSoruRequest request)
     {
@@ -149,6 +156,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("donem-soru/{id}")]
     public async Task<IActionResult> UpdateDonemSoru(int id, [FromBody] UpdateDonemSoruRequest request)
     {
@@ -169,6 +177,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("donem-soru/{donemSoruId}")]
     public async Task<IActionResult> RemoveDonemSoru(int donemSoruId)
     {
@@ -185,6 +194,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/sorular/import")]
     [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> ImportDonemSorular(int donemId, [FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
@@ -214,6 +224,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/sorular/import-with-matching")]
     [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> ImportDonemSorularWithMatching(int donemId, IFormFile file)
@@ -243,6 +254,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/sorular/save-unmatched")]
     public async Task<IActionResult> SaveUnmatchedSorular(int donemId, [FromBody] List<SaveUnmatchedSoruItem> items)
     {
@@ -281,6 +293,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpGet("donemler/{id}")]
     public async Task<IActionResult> GetDonemDetail(int id)
     {
@@ -297,6 +310,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler")]
     public async Task<IActionResult> CreateDonem([FromBody] CreateGmDonemDto dto)
     {
@@ -313,6 +327,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPut("donemler/{id}")]
     public async Task<IActionResult> UpdateDonem(int id, [FromBody] UpdateGmDonemDto dto)
     {
@@ -333,6 +348,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/kopyala")]
     public async Task<IActionResult> CopyDonem(int donemId, [FromBody] CopyDonemRequest request)
     {
@@ -353,6 +369,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("donemler/{id}")]
     public async Task<IActionResult> DeleteDonem(int id)
     {
@@ -377,6 +394,7 @@ public class GmApiController : BaseApiController
     // DÖNEM ALT YÖNETİM
     // =============================================
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/personel")]
     public async Task<IActionResult> AddDonemPersonel(int donemId, [FromBody] AddDonemPersonelRequest request)
     {
@@ -393,6 +411,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpDelete("donem-personel/{donemPersonelId}")]
     public async Task<IActionResult> RemoveDonemPersonel(int donemPersonelId)
     {
@@ -413,6 +432,7 @@ public class GmApiController : BaseApiController
     // AKTİF ET & TAMAMLA
     // =============================================
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/aktif-et")]
     public async Task<IActionResult> AktifEt(int donemId)
     {
@@ -436,6 +456,7 @@ public class GmApiController : BaseApiController
     // KUPONLU SORU IMPORT (AKTİF DÖNEM)
     // =============================================
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/kuponlu-sorular/import")]
     [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> ImportKuponluSorular(int donemId, [FromForm] int customerId, [FromForm] int hedefFirmaId, IFormFile file)
@@ -465,6 +486,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/kuponlu-sorular/import-with-matching")]
     [RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> ImportKuponluSorularWithMatching(int donemId, IFormFile file)
@@ -494,6 +516,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/kuponlu-sorular/save-unmatched")]
     public async Task<IActionResult> SaveUnmatchedKuponluSorular(int donemId, [FromBody] List<SaveUnmatchedSoruItem> items)
     {
@@ -513,6 +536,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/kuponlu-dagit")]
     public async Task<IActionResult> KuponluDagit(int donemId)
     {
@@ -532,6 +556,7 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/tamamla")]
     public async Task<IActionResult> Tamamla(int donemId)
     {

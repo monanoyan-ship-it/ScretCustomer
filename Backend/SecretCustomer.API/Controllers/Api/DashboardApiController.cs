@@ -42,7 +42,7 @@ public class DashboardApiController : BaseApiController
     }
 
     [HttpGet("team-leader/{branchId}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> GetTeamLeaderDashboard(
         int branchId,
         [FromQuery] DateTime? startDate = null,

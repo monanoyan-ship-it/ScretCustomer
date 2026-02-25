@@ -54,7 +54,7 @@ public class ProjectFilesApiController : BaseApiController
     /// Dosya yukle
     /// </summary>
     [HttpPost("project/{projectId}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> Upload(int projectId, IFormFile file, [FromForm] string? description)
     {
         try
@@ -183,7 +183,7 @@ public class ProjectFilesApiController : BaseApiController
     /// Dosya sil
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> Delete(int id)
     {
         try
@@ -219,7 +219,7 @@ public class ProjectFilesApiController : BaseApiController
     /// Dosya aciklamasini guncelle
     /// </summary>
     [HttpPut("{id}/description")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> UpdateDescription(int id, [FromBody] UpdateProjectFileDescriptionDto dto)
     {
         try

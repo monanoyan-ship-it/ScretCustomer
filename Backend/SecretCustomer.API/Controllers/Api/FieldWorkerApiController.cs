@@ -8,7 +8,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/fieldworker")]
-[Authorize(Roles = "FieldWorker,Admin,QualitySpecialist")]
+[Authorize(Roles = "FieldWorker,Admin,QualitySpecialist,Inspector")]
 public class FieldWorkerApiController : BaseApiController
 {
     private readonly IFieldWorkerService _fieldWorkerService;

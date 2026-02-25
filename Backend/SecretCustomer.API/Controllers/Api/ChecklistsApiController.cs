@@ -30,7 +30,7 @@ public class ChecklistsApiController : BaseApiController
     /// Optimize edilmiş liste - Questions yüklemez
     /// </summary>
     [HttpGet]
-    [Authorize(Roles = "Admin,QualitySpecialist,Evaluator")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector,Evaluator")]
     public async Task<IActionResult> GetAll([FromQuery] ChecklistFilterDto filter)
     {
         try
@@ -49,7 +49,7 @@ public class ChecklistsApiController : BaseApiController
     /// Get checklist by ID - Admin, QualitySpecialist, and Evaluator can access
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Roles = "Admin,QualitySpecialist,Evaluator")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector,Evaluator")]
     public async Task<IActionResult> GetById(int id)
     {
         try
@@ -197,7 +197,7 @@ public class ChecklistsApiController : BaseApiController
     /// Belirli bir kontrol listesinin soru gruplarını getir (autocomplete için)
     /// </summary>
     [HttpGet("{id}/question-groups")]
-    [Authorize(Roles = "Admin,QualitySpecialist,Evaluator")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector,Evaluator")]
     public async Task<IActionResult> GetQuestionGroups(int id)
     {
         try
@@ -216,7 +216,7 @@ public class ChecklistsApiController : BaseApiController
     /// Kontrol listesini Excel olarak dışa aktar (sorular ve alt kriterler dahil)
     /// </summary>
     [HttpGet("{id}/export/excel")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> ExportToExcel(int id)
     {
         try

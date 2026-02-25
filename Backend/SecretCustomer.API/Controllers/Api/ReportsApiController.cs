@@ -10,7 +10,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [ApiController]
 [Route("api/reports")]
-[Authorize(Roles = "Admin,QualitySpecialist")]
+[Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
 public class ReportsApiController : BaseApiController
 {
     private readonly IReportService _reportService;

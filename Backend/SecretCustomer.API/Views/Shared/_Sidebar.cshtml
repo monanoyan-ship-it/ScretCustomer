@@ -39,16 +39,16 @@
                 </a>
             </li>
 
-            <!-- Değerlendirmeler - QualitySpecialist & Admin -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
+            <!-- Değerlendirmeler - QualitySpecialist, Inspector & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isInspector() || isAdmin()">
                 <a href="/Evaluations" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-pencil-square me-2"></i>
                     @Html.T("Menu.Evaluations", "Değerlendirmeler")
                 </a>
             </li>
 
-            <!-- Aramalarım - QualitySpecialist & Admin -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
+            <!-- Aramalarım - QualitySpecialist, Inspector & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isInspector() || isAdmin()">
                 <a href="/GolgeMusteri/Aramalarim" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-telephone me-2"></i>
                     @Html.T("GolgeMusteri.Aramalarim", "Aramalarım")
@@ -175,8 +175,8 @@
                 </div>
             </li>
 
-            <!-- ==================== GÖLGE MÜŞTERİ (Admin Only) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin()">
+            <!-- ==================== GÖLGE MÜŞTERİ (Admin & Inspector) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin() || isInspector()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuGolgeMusteri" role="button" aria-expanded="false">
                     <span><i class="bi bi-telephone-outbound me-2"></i>@Html.T("Menu.GolgeMusteri", "Gölge Müşteri")</span>
@@ -184,17 +184,17 @@
                 </a>
                 <div class="collapse" id="menuGolgeMusteri">
                     <ul class="nav flex-column submenu">
-                        <li>
+                        <li data-bind="visible: isAdmin()">
                             <a href="/GolgeMusteri/HedefFirmalar" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-building me-2"></i>@Html.T("GolgeMusteri.HedefFirmalar", "Hedef Firmalar")
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: isAdmin()">
                             <a href="/GolgeMusteri/Sorular" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-question-circle me-2"></i>@Html.T("GolgeMusteri.Sorular", "Sorular")
                             </a>
                         </li>
-                        <li>
+                        <li data-bind="visible: isAdmin()">
                             <a href="/GolgeMusteri/Donemler" class="nav-link text-white-50 py-1" data-bind="click: closeSidebar">
                                 <i class="bi bi-calendar3 me-2"></i>@Html.T("GolgeMusteri.Donemler", "Dönemler")
                             </a>
@@ -391,6 +391,10 @@
 
         self.isFieldWorker = ko.computed(function() {
             return self.userRole() === 'FieldWorker';
+        });
+
+        self.isInspector = ko.computed(function() {
+            return self.userRole() === 'Inspector';
         });
 
         // CustomerPersonnel rolleri

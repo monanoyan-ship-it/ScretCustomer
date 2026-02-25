@@ -12,7 +12,7 @@ namespace SecretCustomer.API.Controllers.Api;
 
 [Route("api/surveys")]
 [ApiController]
-[Authorize(Roles = "Admin,QualitySpecialist")]
+[Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
 public class SurveyApiController : ControllerBase
 {
     private readonly ISurveyService _surveyService;

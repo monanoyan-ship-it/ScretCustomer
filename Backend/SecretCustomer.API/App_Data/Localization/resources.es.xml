@@ -4377,6 +4377,9 @@
   <LocaleResource Name="Personnel.Role.FieldWorker">
     <Value>Trabajador de Campo</Value>
   </LocaleResource>
+  <LocaleResource Name="Personnel.Role.Inspector">
+    <Value>Inspector</Value>
+  </LocaleResource>
   <LocaleResource Name="Personnel.UsernameHint">
     <Value>Solo letras inglesas, números, puntos y guiones bajos</Value>
   </LocaleResource>
@@ -4547,6 +4550,9 @@
   </LocaleResource>
   <LocaleResource Name="Role.QualitySpecialist">
     <Value>Especialista en Calidad</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.Inspector">
+    <Value>Inspector</Value>
   </LocaleResource>
   <LocaleResource Name="Role.TeamLeader">
     <Value>Líder de Equipo</Value>

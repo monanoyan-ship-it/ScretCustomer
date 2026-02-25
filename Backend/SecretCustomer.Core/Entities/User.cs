@@ -26,7 +26,7 @@ public class User : BaseEntity
 
     [ExcelColumn("Rol", 5, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Kullanıcının sistem rolü",
-        DropdownOptions = "[\"Admin\", \"QualitySpecialist\", \"FieldWorker\"]",
+        DropdownOptions = "[\"Admin\", \"QualitySpecialist\", \"FieldWorker\", \"Inspector\"]",
         SampleValue = "QualitySpecialist")]
     public int RoleId { get; set; }
 

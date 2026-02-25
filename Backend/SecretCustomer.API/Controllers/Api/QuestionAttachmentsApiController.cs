@@ -54,7 +54,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// Dosya yükle
     /// </summary>
     [HttpPost("question/{questionId}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> Upload(int questionId, IFormFile file, [FromForm] string? description)
     {
         try
@@ -167,7 +167,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// Dosya sil
     /// </summary>
     [HttpDelete("{id}")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> Delete(int id)
     {
         try
@@ -203,7 +203,7 @@ public class QuestionAttachmentsApiController : BaseApiController
     /// Dosya sırasını güncelle
     /// </summary>
     [HttpPut("{id}/order")]
-    [Authorize(Roles = "Admin,QualitySpecialist")]
+    [Authorize(Roles = "Admin,QualitySpecialist,Inspector")]
     public async Task<IActionResult> UpdateOrder(int id, [FromBody] int newOrder)
     {
         try
