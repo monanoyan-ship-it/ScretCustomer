@@ -143,7 +143,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }
@@ -201,7 +202,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }
@@ -323,7 +325,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }
@@ -380,7 +383,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }
@@ -435,7 +439,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }
@@ -617,6 +622,17 @@ public class EvaluationService : IEvaluationService
         // Get available periods (only Open periods)
         var periods = new List<PeriodOptionDto>();
 
+        // PerEvaluation bildirim kuralı kontrolü
+        var notifCustomerId = project.CustomerId ?? project.Checklist?.CustomerId;
+        var hasPerEvaluationNotification = false;
+        if (notifCustomerId.HasValue)
+        {
+            hasPerEvaluationNotification = await _context.CustomerNotificationRules
+                .AnyAsync(r => r.CustomerId == notifCustomerId.Value
+                    && r.FrequencyId == EvaluationNotificationFrequencies.Ids.PerEvaluation
+                    && r.IsActive && !r.IsDeleted);
+        }
+
         return new EvaluationFormDto
         {
             ProjectId = projectId,
@@ -645,7 +661,8 @@ public class EvaluationService : IEvaluationService
             AvailablePeriods = periods,
             // Soruları GroupName'e göre grupla
             PenaltyGroups = BuildPenaltyGroupsFromQuestions(project.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
-            ExistingAnswers = new List<AnswerDto>() // Yeni form, cevap yok
+            ExistingAnswers = new List<AnswerDto>(), // Yeni form, cevap yok
+            HasPerEvaluationNotification = hasPerEvaluationNotification
         };
     }
 
@@ -696,6 +713,17 @@ public class EvaluationService : IEvaluationService
         // Dönemler
         var periods = new List<PeriodOptionDto>();
 
+        // PerEvaluation bildirim kuralı kontrolü
+        var existingCustomerId = project.CustomerId ?? project.Checklist?.CustomerId;
+        var hasPerEvalNotification = false;
+        if (existingCustomerId.HasValue)
+        {
+            hasPerEvalNotification = await _context.CustomerNotificationRules
+                .AnyAsync(r => r.CustomerId == existingCustomerId.Value
+                    && r.FrequencyId == EvaluationNotificationFrequencies.Ids.PerEvaluation
+                    && r.IsActive && !r.IsDeleted);
+        }
+
         return new EvaluationFormDto
         {
             ProjectId = project.Id,
@@ -725,7 +753,8 @@ public class EvaluationService : IEvaluationService
             PenaltyGroups = BuildPenaltyGroupsFromQuestions(project.Checklist?.Questions.Where(q => !q.IsDeleted).ToList()),
             ExistingAnswers = evaluation.Answers
                 .Select(a => MapAnswerToDto(a))
-                .ToList()
+                .ToList(),
+            HasPerEvaluationNotification = hasPerEvalNotification
         };
     }
 
@@ -902,9 +931,12 @@ public class EvaluationService : IEvaluationService
             }
         }
 
-        // "Her Kayıtta" bildirim gönder (tamamlandıysa)
-        if (targetStatusId == EvaluationStatuses.Ids.Completed)
+        // "Her Kayıtta" bildirim gönder (tamamlandıysa ve sendNotification true ise)
+        if (targetStatusId == EvaluationStatuses.Ids.Completed && dto.SendNotification)
         {
+            evaluation.IsNotificationSent = true;
+            await _context.SaveChangesAsync();
+
             var evaluationId = evaluation.Id;
             // BaseUrl'i Task.Run öncesinde yakala (HttpContext Task.Run içinde yok)
             var request = _httpContextAccessor.HttpContext?.Request;
@@ -992,6 +1024,33 @@ public class EvaluationService : IEvaluationService
         }
 
         return result;
+    }
+
+    public async Task SendNotificationAsync(int evaluationId)
+    {
+        var evaluation = await _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.EvaluatedOrganization)
+            .FirstOrDefaultAsync(e => e.Id == evaluationId && !e.IsDeleted);
+
+        if (evaluation == null)
+            throw new KeyNotFoundException($"Değerlendirme #{evaluationId} bulunamadı.");
+
+        if (evaluation.StatusId != EvaluationStatuses.Ids.Completed)
+            throw new InvalidOperationException("Sadece tamamlanmış değerlendirmeler için bildirim gönderilebilir.");
+
+        var notificationService = _serviceProvider.GetService<IEvaluationNotificationService>();
+        if (notificationService == null)
+            throw new InvalidOperationException("Bildirim servisi bulunamadı.");
+
+        var request = _httpContextAccessor.HttpContext?.Request;
+        var baseUrl = request != null ? $"{request.Scheme}://{request.Host}" : "";
+
+        await notificationService.SendSingleEvaluationNotificationAsync(evaluation, baseUrl);
+
+        evaluation.IsNotificationSent = true;
+        await _context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -1585,6 +1644,7 @@ public class EvaluationService : IEvaluationService
                 ? ScoringMethods.GetById(evaluation.Project.Checklist.ScoringMethodId)?.SystemName
                 : null,
             CreatedAt = evaluation.CreatedAt,
+            IsNotificationSent = evaluation.IsNotificationSent,
             Answers = evaluation.Answers.Select(a => MapAnswerToDto(a)).ToList()
         };
     }
@@ -2196,7 +2256,8 @@ public class EvaluationService : IEvaluationService
                         ? ScoringMethods.GetById(e.Project.Checklist.ScoringMethodId)!.SystemName
                         : null
                     : null,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                IsNotificationSent = e.IsNotificationSent
             })
             .ToListAsync();
     }

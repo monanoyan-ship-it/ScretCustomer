@@ -5481,6 +5481,21 @@
   <LocaleResource Name="Evaluation.ConfirmAndSave">
     <Value>Confirm and Save</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithMail">
+    <Value>Complete with Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithoutMail">
+    <Value>Complete without Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SendMail">
+    <Value>Send Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSendConfirm">
+    <Value>Send notification email for this evaluation?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSentSuccess">
+    <Value>Email sent successfully</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Control Time</Value>
   </LocaleResource>

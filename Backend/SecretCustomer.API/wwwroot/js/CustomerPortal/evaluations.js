@@ -577,6 +577,35 @@ function EvaluationsViewModel() {
         return evaluation.status === 'Draft';
     };
 
+    // Mail bildirim gönder (tamamlanmış + mail gönderilmemiş)
+    self.sendNotification = function(evaluation) {
+        showConfirmModal(T('Evaluation.MailSendConfirm', 'Bu değerlendirme için bildirim maili gönderilsin mi?'), function() {
+            fetch('/api/evaluations/' + evaluation.id + '/send-notification', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(function(response) {
+                if (!response.ok) return response.json().then(function(err) { throw new Error(err.message || 'Hata'); });
+                return response.json();
+            })
+            .then(function(result) {
+                toastr.success(T('Evaluation.MailSentSuccess', 'Mail başarıyla gönderildi'));
+                // Listedeki öğeyi güncelle (liste yenileme yerine)
+                var items = self.allEvaluations();
+                for (var i = 0; i < items.length; i++) {
+                    if (items[i].id === evaluation.id) {
+                        items[i].isNotificationSent = true;
+                        break;
+                    }
+                }
+                self.allEvaluations(items);
+            })
+            .catch(function(error) {
+                toastr.error(error.message || 'Mail gönderilirken bir hata oluştu.');
+            });
+        });
+    };
+
     // ========================
     // LIST FUNCTIONS
     // ========================

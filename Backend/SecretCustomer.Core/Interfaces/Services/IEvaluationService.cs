@@ -141,6 +141,11 @@ public interface IEvaluationService
         List<int>? projectIds, List<string>? statuses);
 
     /// <summary>
+    /// Sonradan bildirim maili gönderir (tamamlanmış değerlendirme için)
+    /// </summary>
+    Task SendNotificationAsync(int evaluationId);
+
+    /// <summary>
     /// Excel export için değerlendirmeleri getirir (entity olarak, Excel oluşturma controller'da kalır)
     /// </summary>
     Task<List<EvaluationExportDto>> GetEvaluationsForExportAsync(int userId, string? userType,
@@ -273,6 +278,11 @@ public class EvaluationFormDto
     // Dönem bilgileri
     public int? SelectedPeriodId { get; set; }
     public List<PeriodOptionDto> AvailablePeriods { get; set; } = new();
+
+    /// <summary>
+    /// Müşterinin PerEvaluation bildirim kuralı var mı?
+    /// </summary>
+    public bool HasPerEvaluationNotification { get; set; }
 
     // Ceza tipine göre soru grupları (Sorular, Sarı Kartlar, Kırmızı Kartlar)
     public List<PenaltyGroupDto> PenaltyGroups { get; set; } = new();

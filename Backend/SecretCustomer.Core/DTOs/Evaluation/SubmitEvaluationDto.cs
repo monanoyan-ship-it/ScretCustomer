@@ -115,6 +115,11 @@ public class SubmitEvaluationDto
     public bool SaveAsDraft { get; set; } = false;
 
     /// <summary>
+    /// Bildirim maili gönderilsin mi? (Popup'tan gelir)
+    /// </summary>
+    public bool SendNotification { get; set; } = true;
+
+    /// <summary>
     /// Yeni personel bilgisi (Listede Yok seçildiğinde)
     /// Doldurulursa PersonnelRequest oluşturulur
     /// </summary>

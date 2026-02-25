@@ -17,6 +17,8 @@ var EvaluationPopupViewModel = function() {
     self.errorMessage = ko.observable('');
     self.formSuccessMessage = ko.observable('');
     self.formData = ko.observable(null);
+    self.hasPerEvaluationNotification = ko.observable(false);
+    self.sendNotification = ko.observable(true);
 
     // Özet görünümü
     self.isShowingSummary = ko.observable(false);
@@ -449,6 +451,7 @@ var EvaluationPopupViewModel = function() {
             })
             .then(function(data) {
                 self.formData(data);
+                self.hasPerEvaluationNotification(data.hasPerEvaluationNotification || false);
 
                 // Load existing values if any
                 if (data.callId) self.callId(data.callId);
@@ -1028,9 +1031,22 @@ var EvaluationPopupViewModel = function() {
     // CONFIRM SUBMIT (Index.js ile birebir aynı)
     // ========================
 
+    // Mailli tamamla
+    self.confirmSubmitWithMail = function() {
+        self.sendNotification(true);
+        self.confirmSubmit();
+    };
+
+    // Mailsiz tamamla
+    self.confirmSubmitWithoutMail = function() {
+        self.sendNotification(false);
+        self.confirmSubmit();
+    };
+
     self.confirmSubmit = function() {
         self.isSavingForm(true);
         var data = self.prepareData();
+        data.sendNotification = self.sendNotification();
 
         fetch('/api/evaluations/submit', {
             method: 'POST',

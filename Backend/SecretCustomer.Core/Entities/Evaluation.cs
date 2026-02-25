@@ -205,6 +205,11 @@ public class Evaluation : BaseEntity
     public int? CustomerDealerId { get; set; }
     public CustomerDealer? CustomerDealer { get; set; }
 
+    /// <summary>
+    /// Bildirim maili gönderildi mi?
+    /// </summary>
+    public bool IsNotificationSent { get; set; } = false;
+
     // Navigation properties
     public ICollection<Answer> Answers { get; set; } = new List<Answer>();
     public ICollection<EvaluationAttachment> Attachments { get; set; } = new List<EvaluationAttachment>();

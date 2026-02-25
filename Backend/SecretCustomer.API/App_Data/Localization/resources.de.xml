@@ -5343,6 +5343,21 @@
   <LocaleResource Name="Evaluation.ConfirmAndSave">
     <Value>Bestätigen und Speichern</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithMail">
+    <Value>Mit E-Mail abschließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithoutMail">
+    <Value>Ohne E-Mail abschließen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SendMail">
+    <Value>E-Mail senden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSendConfirm">
+    <Value>Benachrichtigungs-E-Mail für diese Bewertung senden?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSentSuccess">
+    <Value>E-Mail erfolgreich gesendet</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Kontrollzeit</Value>
   </LocaleResource>

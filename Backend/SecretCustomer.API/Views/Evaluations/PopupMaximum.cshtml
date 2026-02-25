@@ -220,12 +220,25 @@
                             <button type="button" class="btn btn-outline-secondary me-2" data-bind="click: $parent.backToForm">
                                 <i class="bi bi-arrow-left me-2"></i>@Html.T("Evaluation.BackToForm", "Geri Dön")
                             </button>
+                            <!-- ko ifnot: $parent.hasPerEvaluationNotification -->
                             <button type="button" class="btn btn-lg btn-success" data-bind="click: $parent.confirmSubmit, disable: $parent.isSavingForm">
                                 <!-- ko if: $parent.isSavingForm() -->
                                 <span class="spinner-border spinner-border-sm me-2"></span>
                                 <!-- /ko -->
                                 <i class="bi bi-check-circle me-2"></i>@Html.T("Evaluation.ConfirmAndSave", "Onayla ve Kaydet")
                             </button>
+                            <!-- /ko -->
+                            <!-- ko if: $parent.hasPerEvaluationNotification -->
+                            <button type="button" class="btn btn-lg btn-success me-2" data-bind="click: function() { $parent.confirmSubmitWithMail(); }, disable: $parent.isSavingForm">
+                                <!-- ko if: $parent.isSavingForm() -->
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <!-- /ko -->
+                                <i class="bi bi-envelope-check me-2"></i>@Html.T("Evaluation.CompleteWithMail", "Mailli Tamamla")
+                            </button>
+                            <button type="button" class="btn btn-lg btn-outline-primary" data-bind="click: function() { $parent.confirmSubmitWithoutMail(); }, disable: $parent.isSavingForm">
+                                <i class="bi bi-check-circle me-2"></i>@Html.T("Evaluation.CompleteWithoutMail", "Mailsiz Tamamla")
+                            </button>
+                            <!-- /ko -->
                         </div>
                     </div>
                 </div>

@@ -5479,6 +5479,21 @@
   <LocaleResource Name="Evaluation.ConfirmAndSave">
     <Value>Onayla ve Kaydet</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithMail">
+    <Value>Mailli Tamamla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.CompleteWithoutMail">
+    <Value>Mailsiz Tamamla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.SendMail">
+    <Value>Mail Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSendConfirm">
+    <Value>Bu değerlendirme için bildirim maili gönderilsin mi?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Evaluation.MailSentSuccess">
+    <Value>Mail başarıyla gönderildi</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Kontrol Saati</Value>
   </LocaleResource>

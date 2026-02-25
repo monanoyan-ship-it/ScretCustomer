@@ -123,6 +123,11 @@ public class EvaluationDto
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
+    /// <summary>
+    /// Bildirim maili gönderildi mi?
+    /// </summary>
+    public bool IsNotificationSent { get; set; }
+
     public List<AnswerDto> Answers { get; set; } = new();
 
     /// <summary>

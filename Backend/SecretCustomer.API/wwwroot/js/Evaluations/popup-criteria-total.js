@@ -11,6 +11,8 @@ var EvaluationPopupViewModel = function() {
     self.errorMessage = ko.observable('');
     self.formData = ko.observable(null);
     self.currentUserId = ko.observable(null); // Mevcut kullanıcı ID (User veya CustomerPersonnel)
+    self.hasPerEvaluationNotification = ko.observable(false);
+    self.sendNotification = ko.observable(true);
 
     // Form alanları
     self.callId = ko.observable('');
@@ -314,6 +316,7 @@ var EvaluationPopupViewModel = function() {
             })
             .then(function(data) {
                 self.formData(data);
+                self.hasPerEvaluationNotification(data.hasPerEvaluationNotification || false);
 
                 // penaltyGroups'u sakla (görüntü için) ve soruları düzleştir (hesaplama için)
                 var allQuestions = [];
@@ -597,6 +600,23 @@ var EvaluationPopupViewModel = function() {
 
     // Özetten onayla ve kaydet
     self.confirmSubmit = function() {
+        self.sendNotification(true);
+        self._validateAndSave();
+    };
+
+    // Mailli tamamla
+    self.confirmSubmitWithMail = function() {
+        self.sendNotification(true);
+        self._validateAndSave();
+    };
+
+    // Mailsiz tamamla
+    self.confirmSubmitWithoutMail = function() {
+        self.sendNotification(false);
+        self._validateAndSave();
+    };
+
+    self._validateAndSave = function() {
         // Zorunlu soruların cevaplanıp cevaplanmadığını kontrol et
         var unansweredRequired = [];
         self.questions().forEach(function(q, idx) {
@@ -709,7 +729,8 @@ var EvaluationPopupViewModel = function() {
             evaluationComment: self.generalComment(),
             evaluatedPersonnelId: self.evaluatedPersonnelId() || null,
             evaluatedUnknownPersonnel: unknownPersonnel || null,
-            answers: answersArray
+            answers: answersArray,
+            sendNotification: isComplete ? self.sendNotification() : false
         };
 
         var url = isComplete ? '/api/evaluations/submit' : '/api/evaluations/draft';

@@ -743,6 +743,33 @@ public class EvaluationsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Tamamlanmış değerlendirme için sonradan bildirim maili gönderir
+    /// </summary>
+    [HttpPost("{id:int}/send-notification")]
+    [Authorize]
+    public async Task<IActionResult> SendNotification(int id)
+    {
+        try
+        {
+            await _evaluationService.SendNotificationAsync(id);
+            return Ok(new { message = await _localizationService.GetResourceAsync("Evaluation.MailSentSuccess") });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(CreateErrorResponse(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error sending notification for evaluation {EvaluationId}", id);
+            return StatusCode(500, CreateErrorResponse("Bildirim gönderilirken hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
     /// Durum ID'sinden Türkçe durum adını döndürür
     /// </summary>
     private static string GetStatusDisplayName(int statusId)
