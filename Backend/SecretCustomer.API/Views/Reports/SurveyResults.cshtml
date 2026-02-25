@@ -37,7 +37,7 @@
                             <div class="flex-grow-1 me-2">
                                 <div class="d-flex align-items-center">
                                     <strong data-bind="text: respondentName || 'Anonim'" class="me-2"></strong>
-                                    <span class="badge" data-bind="text: score !== null ? score.toFixed(1) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
+                                    <span class="badge" data-bind="text: score !== null ? score.toFixed(2) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
                                 </div>
                                 <small class="text-muted">
                                     <span data-bind="text: projectName"></span>
@@ -100,11 +100,11 @@
                                         <span class="badge bg-primary" data-bind="text: totalResponses"></span>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge" data-bind="text: responseRate.toFixed(1) + '%', css: { 'bg-success': responseRate >= 50, 'bg-warning': responseRate >= 20 && responseRate < 50, 'bg-danger': responseRate < 20 }"></span>
+                                        <span class="badge" data-bind="text: responseRate.toFixed(2) + '%', css: { 'bg-success': responseRate >= 50, 'bg-warning': responseRate >= 20 && responseRate < 50, 'bg-danger': responseRate < 20 }"></span>
                                     </td>
                                     <td class="text-center">
                                         <!-- ko if: averageScore !== null -->
-                                        <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
+                                        <span class="badge" data-bind="text: averageScore.toFixed(2) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
                                         <!-- /ko -->
                                         <!-- ko if: averageScore === null -->
                                         <span class="badge bg-secondary">-</span>
@@ -172,7 +172,7 @@
                             </div>
                             <div>
                                 <small class="text-muted">@Html.T("Report.OverallAverage", "Genel Ortalama"):</small>
-                                <span class="badge" data-bind="text: questionDistribution() ? questionDistribution().overallAverageScore.toFixed(1) + '%' : '-', css: { 'bg-success': questionDistribution() && questionDistribution().overallAverageScore >= 70, 'bg-warning': questionDistribution() && questionDistribution().overallAverageScore >= 40 && questionDistribution().overallAverageScore < 70, 'bg-danger': questionDistribution() && questionDistribution().overallAverageScore < 40, 'bg-secondary': !questionDistribution() }"></span>
+                                <span class="badge" data-bind="text: questionDistribution() ? questionDistribution().overallAverageScore.toFixed(2) + '%' : '-', css: { 'bg-success': questionDistribution() && questionDistribution().overallAverageScore >= 70, 'bg-warning': questionDistribution() && questionDistribution().overallAverageScore >= 40 && questionDistribution().overallAverageScore < 70, 'bg-danger': questionDistribution() && questionDistribution().overallAverageScore < 40, 'bg-secondary': !questionDistribution() }"></span>
                             </div>
                         </div>
                     </div>
@@ -221,7 +221,7 @@
                                     </td>
                                     <td class="text-center">
                                         <!-- ko if: averageScore !== null -->
-                                        <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
+                                        <span class="badge" data-bind="text: averageScore.toFixed(2) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
                                         <!-- /ko -->
                                         <!-- ko if: averageScore === null -->
                                         <span class="badge bg-secondary">-</span>
@@ -272,7 +272,7 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar bg-info" data-bind="style: { width: percentage + '%' }, text: percentage.toFixed(1) + '%'"></div>
+                                            <div class="progress-bar bg-info" data-bind="style: { width: percentage + '%' }, text: percentage.toFixed(2) + '%'"></div>
                                         </div>
                                     </td>
                                 </tr>
@@ -329,7 +329,7 @@
                                 </td>
                                 <td data-bind="text: projectName"></td>
                                 <td class="text-center">
-                                    <span class="badge" data-bind="text: score !== null ? score.toFixed(1) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
+                                    <span class="badge" data-bind="text: score !== null ? score.toFixed(2) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
                                 </td>
                                 <td>
                                     <small data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : '-'"></small>
@@ -388,11 +388,11 @@
                             </div>
                             <div class="text-center">
                                 <small class="text-muted d-block">@Html.T("Report.Rate", "Oran")</small>
-                                <strong class="fs-5" data-bind="text: responseRate.toFixed(1) + '%'"></strong>
+                                <strong class="fs-5" data-bind="text: responseRate.toFixed(2) + '%'"></strong>
                             </div>
                             <div class="text-center">
                                 <small class="text-muted d-block">@Html.T("Report.AvgScore", "Ort. Puan")</small>
-                                <span class="badge fs-6" data-bind="text: averageScore !== null ? averageScore.toFixed(1) + '%' : '-', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40, 'bg-secondary': averageScore === null }"></span>
+                                <span class="badge fs-6" data-bind="text: averageScore !== null ? averageScore.toFixed(2) + '%' : '-', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40, 'bg-secondary': averageScore === null }"></span>
                             </div>
                         </div>
                     </div>
@@ -419,7 +419,7 @@
                                     <td class="text-center" data-bind="text: questionCount"></td>
                                     <td class="text-center">
                                         <!-- ko if: averageScore !== null -->
-                                        <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
+                                        <span class="badge" data-bind="text: averageScore.toFixed(2) + '%', css: { 'bg-success': averageScore >= 70, 'bg-warning': averageScore >= 40 && averageScore < 70, 'bg-danger': averageScore < 40 }"></span>
                                         <!-- /ko -->
                                         <!-- ko if: averageScore === null -->
                                         <span class="badge bg-secondary">-</span>
@@ -457,7 +457,7 @@
                                         <!-- /ko -->
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge" data-bind="text: score !== null ? score.toFixed(1) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
+                                        <span class="badge" data-bind="text: score !== null ? score.toFixed(2) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
                                     </td>
                                     <td>
                                         <small data-bind="text: completedAt ? new Date(completedAt).toLocaleDateString('tr-TR') : '-'"></small>
@@ -518,7 +518,7 @@
                             <small class="text-muted" data-bind="text: projectName"></small>
                         </div>
                         <div class="col-md-6 text-end">
-                            <span class="badge fs-5" data-bind="text: score !== null ? score.toFixed(1) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
+                            <span class="badge fs-5" data-bind="text: score !== null ? score.toFixed(2) + '%' : '-', css: { 'bg-success': score >= 70, 'bg-warning': score >= 40 && score < 70, 'bg-danger': score < 40, 'bg-secondary': score === null }"></span>
                             <small class="text-muted d-block" data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : ''"></small>
                         </div>
                     </div>
@@ -605,7 +605,7 @@
                                 </div>
                                 <div class="text-center">
                                     <small class="text-muted d-block">@Html.T("Report.OverallAverage", "Genel Ortalama")</small>
-                                    <span class="badge fs-6" data-bind="text: overallAverageScore !== null ? overallAverageScore.toFixed(1) + '%' : '-', css: { 'bg-success': overallAverageScore >= 70, 'bg-warning text-dark': overallAverageScore >= 40 && overallAverageScore < 70, 'bg-danger': overallAverageScore < 40, 'bg-secondary': overallAverageScore === null }"></span>
+                                    <span class="badge fs-6" data-bind="text: overallAverageScore !== null ? overallAverageScore.toFixed(2) + '%' : '-', css: { 'bg-success': overallAverageScore >= 70, 'bg-warning text-dark': overallAverageScore >= 40 && overallAverageScore < 70, 'bg-danger': overallAverageScore < 40, 'bg-secondary': overallAverageScore === null }"></span>
                                 </div>
                             </div>
                         </div>
@@ -632,7 +632,7 @@
                                     </td>
                                     <td class="text-center">
                                         <!-- ko if: averageScorePercentage !== null -->
-                                        <span class="badge" data-bind="text: averageScorePercentage.toFixed(1) + '%', css: { 'bg-success': averageScorePercentage >= 70, 'bg-warning text-dark': averageScorePercentage >= 40 && averageScorePercentage < 70, 'bg-danger': averageScorePercentage < 40 }"></span>
+                                        <span class="badge" data-bind="text: averageScorePercentage.toFixed(2) + '%', css: { 'bg-success': averageScorePercentage >= 70, 'bg-warning text-dark': averageScorePercentage >= 40 && averageScorePercentage < 70, 'bg-danger': averageScorePercentage < 40 }"></span>
                                         <!-- /ko -->
                                         <!-- ko if: averageScorePercentage === null -->
                                         <span class="badge bg-secondary">-</span>
@@ -644,7 +644,7 @@
                                             <div class="d-flex align-items-center mb-1">
                                                 <div class="flex-grow-1 text-truncate me-2" data-bind="text: answerText, attr: { title: answerText }"></div>
                                                 <span class="badge bg-secondary me-1" data-bind="text: selectionCount"></span>
-                                                <span class="badge bg-primary" style="min-width: 50px" data-bind="text: percentage.toFixed(1) + '%'"></span>
+                                                <span class="badge bg-primary" style="min-width: 50px" data-bind="text: percentage.toFixed(2) + '%'"></span>
                                             </div>
                                         </div>
                                         <!-- /ko -->

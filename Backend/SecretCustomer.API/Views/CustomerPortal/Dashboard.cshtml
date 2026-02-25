@@ -36,7 +36,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <small class="text-muted">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
-                                <h3 class="mb-0 mt-1" data-bind="text: (stats().averageScore || 0).toFixed(1)"></h3>
+                                <h3 class="mb-0 mt-1" data-bind="text: (stats().averageScore || 0).toFixed(2)"></h3>
                             </div>
                             <div class="bg-primary bg-opacity-10 rounded-circle p-2">
                                 <i class="bi bi-star-fill text-primary fs-5"></i>
@@ -421,7 +421,7 @@
                                 <td data-bind="text: personnelName"></td>
                                 <td data-bind="text: checklistName"></td>
                                 <td>
-                                    <span class="badge" data-bind="text: score.toFixed(1), css: $parent.getScoreBadgeClass(score, projectTypeId)"></span>
+                                    <span class="badge" data-bind="text: score.toFixed(2), css: $parent.getScoreBadgeClass(score, projectTypeId)"></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -473,7 +473,7 @@
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: organizationName"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
+                                            <span class="badge" data-bind="text: score.toFixed(2), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
                                         </td>
                                         <td class="text-center">
                                             <!-- ko if: yellowCardCount > 0 -->
@@ -611,7 +611,7 @@
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: checklistName"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: score.toFixed(1), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
+                                            <span class="badge" data-bind="text: score.toFixed(2), css: $root.getScoreBadgeClass(score, projectTypeId)"></span>
                                         </td>
                                         <td class="text-center">
                                             <span class="badge" data-bind="text: statusText, css: $root.getEvalStatusBadgeClass(status)"></span>

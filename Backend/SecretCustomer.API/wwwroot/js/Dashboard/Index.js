@@ -208,7 +208,7 @@ function DashboardViewModel() {
                                 var label = context.dataset.label || '';
                                 var value = context.raw;
                                 if (context.datasetIndex === 0) {
-                                    return label + ': ' + value.toFixed(1) + '%';
+                                    return label + ': ' + value.toFixed(2) + '%';
                                 }
                                 return label + ': ' + value;
                             }

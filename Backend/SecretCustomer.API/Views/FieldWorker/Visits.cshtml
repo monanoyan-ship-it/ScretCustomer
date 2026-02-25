@@ -470,7 +470,7 @@
                             <div class="col-md-3">
                                 <div class="card text-center">
                                     <div class="card-body">
-                                        <h2 class="mb-0 text-primary" data-bind="text: (totalScore || 0).toFixed(1) + ' / ' + (maxScore || 0).toFixed(1)"></h2>
+                                        <h2 class="mb-0 text-primary" data-bind="text: (totalScore || 0).toFixed(2) + ' / ' + (maxScore || 0).toFixed(2)"></h2>
                                         <small class="text-muted">@Html.T("Evaluation.RawScore", "Ham Puan")</small>
                                     </div>
                                 </div>
@@ -640,10 +640,10 @@
                                                 </td>
                                                 <td class="text-center">
                                                     <!-- ko if: $data.scoringType === 'Scored' -->
-                                                    <span class="text-success" data-bind="text: ($data.earnedPoints || 0).toFixed(1)"></span>
+                                                    <span class="text-success" data-bind="text: ($data.earnedPoints || 0).toFixed(2)"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: $data.scoringType === 'Penalty' && $data.isPenaltyApplied -->
-                                                    <span class="text-danger fw-bold" data-bind="text: '-' + ($data.earnedPoints || 0).toFixed(1)"></span>
+                                                    <span class="text-danger fw-bold" data-bind="text: '-' + ($data.earnedPoints || 0).toFixed(2)"></span>
                                                     <span class="badge ms-1" data-bind="css: $data.penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-danger', text: $data.penaltyType === 'YellowCard' ? '@Html.T("Common.Yellow", "Sarı")' : '@Html.T("Common.Red", "Kırmızı")'"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: $data.scoringType === 'Penalty' && !$data.isPenaltyApplied -->

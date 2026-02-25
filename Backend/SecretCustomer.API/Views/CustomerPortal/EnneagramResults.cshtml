@@ -72,7 +72,7 @@
             <div class="col-md-3">
                 <div class="card bg-warning text-dark">
                     <div class="card-body text-center">
-                        <h3 data-bind="text: summary().averageCompletionRate ? summary().averageCompletionRate.toFixed(1) + '%' : '-'"></h3>
+                        <h3 data-bind="text: summary().averageCompletionRate ? summary().averageCompletionRate.toFixed(2) + '%' : '-'"></h3>
                         <small>@Html.T("Report.CompletionRate", "Tamamlama Orani")</small>
                     </div>
                 </div>
@@ -141,7 +141,7 @@
                                             <!-- /ko -->
                                         </td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: averagePercentage.toFixed(0) + '%', css: { 'bg-success': averagePercentage >= 70, 'bg-warning text-dark': averagePercentage >= 50 && averagePercentage < 70, 'bg-secondary': averagePercentage < 50 }"></span>
+                                            <span class="badge" data-bind="text: averagePercentage.toFixed(2) + '%', css: { 'bg-success': averagePercentage >= 70, 'bg-warning text-dark': averagePercentage >= 50 && averagePercentage < 70, 'bg-secondary': averagePercentage < 50 }"></span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -155,7 +155,7 @@
                             <div class="mb-1">
                                 <div class="d-flex justify-content-between small">
                                     <span data-bind="text: personalityType"></span>
-                                    <span data-bind="text: averagePercentage.toFixed(0) + '%'"></span>
+                                    <span data-bind="text: averagePercentage.toFixed(2) + '%'"></span>
                                 </div>
                                 <div class="progress" style="height: 12px;">
                                     <div class="progress-bar" data-bind="style: { width: averagePercentage + '%' }, css: { 'bg-success': averagePercentage >= 70, 'bg-warning': averagePercentage >= 50 && averagePercentage < 70, 'bg-secondary': averagePercentage < 50 }"></div>
@@ -207,10 +207,10 @@
                                 <td data-bind="text: projectName"></td>
                                 <td class="text-center">
                                     <span class="badge bg-purple" data-bind="text: dominantType"></span>
-                                    <small class="text-muted d-block" data-bind="text: dominantPercentage ? dominantPercentage.toFixed(0) + '%' : ''"></small>
+                                    <small class="text-muted d-block" data-bind="text: dominantPercentage ? dominantPercentage.toFixed(2) + '%' : ''"></small>
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-primary" data-bind="text: totalScore ? totalScore.toFixed(0) : '-'"></span>
+                                    <span class="badge bg-primary" data-bind="text: totalScore ? totalScore.toFixed(2) : '-'"></span>
                                 </td>
                                 <td>
                                     <small data-bind="text: completedAt ? new Date(completedAt).toLocaleString('tr-TR') : '-'"></small>
@@ -286,7 +286,7 @@
                                             <td class="text-center" data-bind="text: totalPoints"></td>
                                             <td class="text-center" data-bind="text: maxPoints"></td>
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: percentage.toFixed(0) + '%', css: { 'bg-success': percentage >= 70, 'bg-warning text-dark': percentage >= 50 && percentage < 70, 'bg-secondary': percentage < 50 }"></span>
+                                                <span class="badge" data-bind="text: percentage.toFixed(2) + '%', css: { 'bg-success': percentage >= 70, 'bg-warning text-dark': percentage >= 50 && percentage < 70, 'bg-secondary': percentage < 50 }"></span>
                                             </td>
                                             <td>
                                                 <div class="progress" style="height: 20px;">

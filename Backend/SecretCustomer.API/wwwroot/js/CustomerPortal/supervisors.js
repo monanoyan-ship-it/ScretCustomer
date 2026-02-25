@@ -110,7 +110,7 @@ function CustomerSupervisorsViewModel() {
         var sum = monthsWithData.reduce(function(total, item) {
             return total + (item.averageScore || 0);
         }, 0);
-        return (sum / monthsWithData.length).toFixed(1);
+        return (sum / monthsWithData.length).toFixed(2);
     });
 
     self.getScoreClass = function(score, projectTypeId) {

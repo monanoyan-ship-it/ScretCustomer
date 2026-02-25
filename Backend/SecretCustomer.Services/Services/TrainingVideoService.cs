@@ -401,7 +401,7 @@ public class TrainingVideoService : ITrainingVideoService
                 TotalParticipants = total,
                 CompletedParticipants = completed,
                 InProgressParticipants = inProgress,
-                CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
+                CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 2) : 0,
                 EmailSentParticipants = emailSent,
                 NotStartedParticipants = notStarted
             };
@@ -1227,7 +1227,7 @@ public class TrainingVideoService : ITrainingVideoService
             TotalParticipants = total,
             CompletedParticipants = completed,
             InProgressParticipants = inProgress,
-            CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 1) : 0,
+            CompletionPercentage = total > 0 ? Math.Round((decimal)completed / total * 100, 2) : 0,
             SourceProjectId = assignment.SourceProjectId,
             SourceProjectName = !string.IsNullOrEmpty(assignment.SourceProject?.Code) ? $"{assignment.SourceProject.Code} - {assignment.SourceProject.Name}" : assignment.SourceProject?.Name,
             ScoreThreshold = assignment.ScoreThreshold,

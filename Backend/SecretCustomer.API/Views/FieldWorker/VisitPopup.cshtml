@@ -200,10 +200,10 @@
                                             </td>
                                             <td class="text-center">
                                                 <!-- ko if: $data.scoringType === 'Scored' -->
-                                                <span class="text-success" data-bind="text: $data.earnedPoints.toFixed(1)"></span>
+                                                <span class="text-success" data-bind="text: $data.earnedPoints.toFixed(2)"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.scoringType === 'Penalty' && $data.earnedPoints < 0 -->
-                                                <span class="text-danger" data-bind="text: $data.earnedPoints.toFixed(1)"></span>
+                                                <span class="text-danger" data-bind="text: $data.earnedPoints.toFixed(2)"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.scoringType === 'Penalty' && $data.earnedPoints >= 0 -->
                                                 <span class="text-muted">-</span>

@@ -129,7 +129,7 @@ public class ProjectService : IProjectService
                                (p.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0);
                 var totalCompleted = (p.SurveyInvitations?.Count(si => !si.IsDeleted && si.IsCompleted) ?? 0) +
                                     (p.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.IsCompleted) ?? 0);
-                completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 1) : -1;
+                completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 2) : -1;
             }
 
             return new ProjectSummaryDto
@@ -954,7 +954,7 @@ public class ProjectService : IProjectService
                            (project.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.StatusId == SurveyInvitationStatuses.Ids.Sent) ?? 0);
             var totalCompleted = (project.SurveyInvitations?.Count(si => !si.IsDeleted && si.IsCompleted) ?? 0) +
                                 (project.SurveyExternalInvitations?.Count(sei => !sei.IsDeleted && sei.IsCompleted) ?? 0);
-            completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 1) : -1;
+            completionPercentage = totalSent > 0 ? Math.Round((decimal)totalCompleted / totalSent * 100, 2) : -1;
         }
 
         // Calculate average score from project evaluations
@@ -963,7 +963,7 @@ public class ProjectService : IProjectService
             .Select(e => e.ScorePercentage!.Value)
             .ToList() ?? new List<decimal>();
 
-        var averageScore = evaluations.Any() ? Math.Round(evaluations.Average(), 1) : 0;
+        var averageScore = evaluations.Any() ? Math.Round(evaluations.Average(), 2) : 0;
 
         // Calculate card counts from all evaluations
         var yellowCards = project.Evaluations?

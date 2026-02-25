@@ -1696,7 +1696,7 @@ public class CustomerPortalApiController : ControllerBase
                 worksheet.Cell(row, 3).Value = item.GroupName;
                 worksheet.Cell(row, 4).Value = item.SuggestionCount;
                 worksheet.Cell(row, 5).Value = item.EvaluationCount;
-                worksheet.Cell(row, 6).Value = Math.Round(item.AverageScore, 1);
+                worksheet.Cell(row, 6).Value = Math.Round(item.AverageScore, 2);
                 row++;
             }
 
@@ -2214,9 +2214,9 @@ public class CustomerPortalApiController : ControllerBase
         sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
         sb.AppendLine("<table>");
         sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
-        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F1}%</strong></td></tr>");
-        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F1}%</td></tr>");
-        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F2}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F2}%</td></tr>");
+        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
         sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
         sb.AppendLine("</table></div>");
@@ -2228,7 +2228,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
             foreach (var trend in report.MonthlyTrend)
             {
-                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F1}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
+                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F2}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
         }
@@ -2240,7 +2240,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
             foreach (var group in report.GroupPerformances)
             {
-                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F1}%</span></td></tr>");
+                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F2}%</span></td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
         }
@@ -2254,7 +2254,7 @@ public class CustomerPortalApiController : ControllerBase
             {
                 sb.AppendLine("<h3 class='text-success'>Güçlü Yönler</h3><ul>");
                 foreach (var s in report.Strengths.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F0}%</span> {s.QuestionText}</li>");
+                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F2}%</span> {s.QuestionText}</li>");
                 sb.AppendLine("</ul>");
             }
 
@@ -2262,7 +2262,7 @@ public class CustomerPortalApiController : ControllerBase
             {
                 sb.AppendLine("<h3 class='text-danger'>Geliştirilmeli</h3><ul>");
                 foreach (var w in report.Weaknesses.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F0}%</span> {w.QuestionText}</li>");
+                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F2}%</span> {w.QuestionText}</li>");
                 sb.AppendLine("</ul>");
             }
 
@@ -2282,7 +2282,7 @@ public class CustomerPortalApiController : ControllerBase
                 if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
                 if (string.IsNullOrEmpty(cards)) cards = "-";
 
-                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F1}%</span></td><td class='text-center'>{cards}</td></tr>");
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
         }
@@ -3124,9 +3124,9 @@ public class CustomerPortalApiController : ControllerBase
         sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
         sb.AppendLine("<table>");
         sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
-        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{(report.AverageScore >= 80 ? "text-success" : report.AverageScore >= 60 ? "text-warning" : "text-danger")}'>{report.AverageScore:F1}%</strong></td></tr>");
-        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F1}%</td></tr>");
-        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F1}%</td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{(report.AverageScore >= 80 ? "text-success" : report.AverageScore >= 60 ? "text-warning" : "text-danger")}'>{report.AverageScore:F2}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F2}%</td></tr>");
+        sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
         sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
         sb.AppendLine("</table></div>");
@@ -3136,7 +3136,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
             sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
             foreach (var t in report.MonthlyTrend)
-                sb.AppendLine($"<tr><td>{t.MonthName}</td><td class='text-center'>{t.EvaluationCount}</td><td class='text-center'><span class='badge {(t.AverageScore >= 80 ? "bg-success" : t.AverageScore >= 60 ? "bg-warning" : "bg-danger")}'>{t.AverageScore:F1}%</span></td><td class='text-center'>{t.YellowCards}</td><td class='text-center'>{t.RedCards}</td></tr>");
+                sb.AppendLine($"<tr><td>{t.MonthName}</td><td class='text-center'>{t.EvaluationCount}</td><td class='text-center'><span class='badge {(t.AverageScore >= 80 ? "bg-success" : t.AverageScore >= 60 ? "bg-warning" : "bg-danger")}'>{t.AverageScore:F2}%</span></td><td class='text-center'>{t.YellowCards}</td><td class='text-center'>{t.RedCards}</td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
@@ -3145,7 +3145,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
             sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
             foreach (var g in report.GroupPerformances)
-                sb.AppendLine($"<tr><td>{g.GroupName}</td><td class='text-center'><span class='badge {(g.PercentageScore >= 80 ? "bg-success" : g.PercentageScore >= 60 ? "bg-warning" : "bg-danger")}'>{g.PercentageScore:F1}%</span></td></tr>");
+                sb.AppendLine($"<tr><td>{g.GroupName}</td><td class='text-center'><span class='badge {(g.PercentageScore >= 80 ? "bg-success" : g.PercentageScore >= 60 ? "bg-warning" : "bg-danger")}'>{g.PercentageScore:F2}%</span></td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
@@ -3156,14 +3156,14 @@ public class CustomerPortalApiController : ControllerBase
             {
                 sb.AppendLine("<h3 style='color:#198754;margin:10px 12px 5px;'>Güçlü Yönler</h3><ul style='margin:0 12px 10px;'>");
                 foreach (var s in report.Strengths.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F0}%</span> {s.QuestionText}</li>");
+                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F2}%</span> {s.QuestionText}</li>");
                 sb.AppendLine("</ul>");
             }
             if (report.Weaknesses.Any())
             {
                 sb.AppendLine("<h3 style='color:#dc3545;margin:10px 12px 5px;'>Geliştirilmeli</h3><ul style='margin:0 12px 10px;'>");
                 foreach (var w in report.Weaknesses.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F0}%</span> {w.QuestionText}</li>");
+                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F2}%</span> {w.QuestionText}</li>");
                 sb.AppendLine("</ul>");
             }
             sb.AppendLine("</div>");
@@ -3180,7 +3180,7 @@ public class CustomerPortalApiController : ControllerBase
                 if (eval.YellowCards > 0) cards += $"<span class='badge bg-warning'>{eval.YellowCards}</span> ";
                 if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
                 if (string.IsNullOrEmpty(cards)) cards = "-";
-                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {(eval.ScorePercentage >= 80 ? "bg-success" : eval.ScorePercentage >= 60 ? "bg-warning" : "bg-danger")}'>{eval.ScorePercentage:F1}%</span></td><td class='text-center'>{cards}</td><td>{eval.PersonnelName ?? "-"}</td></tr>");
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {(eval.ScorePercentage >= 80 ? "bg-success" : eval.ScorePercentage >= 60 ? "bg-warning" : "bg-danger")}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td><td>{eval.PersonnelName ?? "-"}</td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
         }

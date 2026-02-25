@@ -446,7 +446,7 @@
                                 <tr><th>@Html.T("Checklist.RedCardQuestions", "Kırmızı Kart Sorusu"):</th><td data-bind="text: questions().filter(function(q) { return q.penaltyType() === 'RedCard'; }).length"></td></tr>
                                 <tr>
                                     <th>@Html.T("Checklist.ScoredWeightPoints", "Puanlı Soru Ağırlığı"):</th>
-                                    <td><span class="text-primary fw-bold" data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored' && q.penaltyType() === 'None'; }).reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(1)"></span></td>
+                                    <td><span class="text-primary fw-bold" data-bind="text: questions().filter(function(q) { return q.scoringType() === 'Scored' && q.penaltyType() === 'None'; }).reduce(function(sum, q) { return sum + (parseFloat(q.weightPoints()) || 0); }, 0).toFixed(2)"></span></td>
                                 </tr>
                                 <tr><th>@Html.T("Common.Status", "Durum"):</th><td><span class="badge" data-bind="css: isActive ? 'bg-success' : 'bg-secondary', text: isActive ? '@Html.T("Common.Active", "Aktif")' : '@Html.T("Common.Inactive", "Pasif")'"></span></td></tr>
                             </table>

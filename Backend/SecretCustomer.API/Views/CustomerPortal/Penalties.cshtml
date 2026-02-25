@@ -418,7 +418,7 @@
                             <div class="card-body">
                                 <div class="row align-items-center">
                                     <div class="col-md-2 text-center border-end">
-                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(1) + '%', css: $parent.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
+                                        <h2 class="mb-0" data-bind="text: (scorePercentage || 0).toFixed(2) + '%', css: $parent.getScoreClass(scorePercentage || 0, projectTypeId)"></h2>
                                         <small class="text-muted">@Html.T("Report.TotalScore", "Toplam Puan")</small>
                                     </div>
                                     <div class="col-md-10">
@@ -490,7 +490,7 @@
                                                     <!-- /ko -->
                                                 </td>
                                                 <td class="text-center">
-                                                    <span data-bind="text: earnedPoints != null ? earnedPoints.toFixed(1) : '-'"></span>
+                                                    <span data-bind="text: earnedPoints != null ? earnedPoints.toFixed(2) : '-'"></span>
                                                     <!-- ko if: penaltyType === 'YellowCard' -->
                                                     <span class="badge bg-warning text-dark ms-1"><i class="bi bi-card-fill"></i></span>
                                                     <!-- /ko -->

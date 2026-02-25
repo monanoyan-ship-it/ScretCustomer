@@ -679,7 +679,7 @@ public class ReportService : IReportService
             // CustomerPortal için sadece Puan göster (bold label)
             worksheet.Cell(row, 5).Value = "Puan:";
             worksheet.Cell(row, 5).Style.Font.Bold = true;
-            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F1}" : "-";
+            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F2}" : "-";
         }
         row++;
 
@@ -703,7 +703,7 @@ public class ReportService : IReportService
         if (!excludeEvaluatorInfo)
         {
             worksheet.Cell(row, 5).Value = "Puan";
-            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F1}" : "-";
+            worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F2}" : "-";
         }
         row++;
 
@@ -755,7 +755,7 @@ public class ReportService : IReportService
             var earnedPts = question.GivenPoints ?? 0;
             string answerDisplay;
             if (maxPts > 0)
-                answerDisplay = $"{earnedPts:F0}/{maxPts:F0}";
+                answerDisplay = $"{earnedPts:F2}/{maxPts:F2}";
             else
                 answerDisplay = "-";
             worksheet.Cell(row, 3).Value = answerDisplay;
@@ -2299,7 +2299,7 @@ public class ReportService : IReportService
                 Year = g.Key.Year,
                 PeriodMonth = $"{g.Key.Year}{g.Key.Month:D2}",
                 AverageScore = g.Sum(x => x.WeightPoints) > 0
-                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.WeightPoints) * 100, 0)
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.WeightPoints) * 100, 2)
                     : 0,
                 ErrorCount = g.Count(x => x.IsError)
             })
@@ -2364,11 +2364,11 @@ public class ReportService : IReportService
         infoSheet.Cell(7, 1).Value = "Toplam Değerlendirme:";
         infoSheet.Cell(7, 2).Value = report.TotalEvaluations;
         infoSheet.Cell(8, 1).Value = "Ortalama Puan:";
-        infoSheet.Cell(8, 2).Value = $"{report.AverageScore:F1}%";
+        infoSheet.Cell(8, 2).Value = $"{report.AverageScore:F2}%";
         infoSheet.Cell(9, 1).Value = "En Yüksek Puan:";
-        infoSheet.Cell(9, 2).Value = $"{report.BestScore:F1}%";
+        infoSheet.Cell(9, 2).Value = $"{report.BestScore:F2}%";
         infoSheet.Cell(10, 1).Value = "En Düşük Puan:";
-        infoSheet.Cell(10, 2).Value = $"{report.WorstScore:F1}%";
+        infoSheet.Cell(10, 2).Value = $"{report.WorstScore:F2}%";
         infoSheet.Cell(11, 1).Value = "Toplam Sarı Kart:";
         infoSheet.Cell(11, 2).Value = report.TotalYellowCards;
         infoSheet.Cell(12, 1).Value = "Toplam Kırmızı Kart:";
@@ -2395,7 +2395,7 @@ public class ReportService : IReportService
         {
             trendSheet.Cell(row, 1).Value = trend.MonthName;
             trendSheet.Cell(row, 2).Value = trend.EvaluationCount;
-            trendSheet.Cell(row, 3).Value = $"{trend.AverageScore:F1}%";
+            trendSheet.Cell(row, 3).Value = $"{trend.AverageScore:F2}%";
             trendSheet.Cell(row, 4).Value = trend.YellowCards;
             trendSheet.Cell(row, 5).Value = trend.RedCards;
             row++;
@@ -2419,7 +2419,7 @@ public class ReportService : IReportService
         {
             groupSheet.Cell(row, 1).Value = group.GroupName;
             groupSheet.Cell(row, 2).Value = group.EvaluationCount;
-            groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F1}%";
+            groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F2}%";
             groupSheet.Cell(row, 4).Value = group.ErrorCount;
             row++;
         }
@@ -2458,7 +2458,7 @@ public class ReportService : IReportService
             evalSheet.Cell(row, 4).Value = eval.Duration ?? "-";
             evalSheet.Cell(row, 5).Value = eval.ProjectName;
             evalSheet.Cell(row, 6).Value = eval.ChecklistName;
-            evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F1}%";
+            evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F2}%";
             evalSheet.Cell(row, 8).Value = eval.YellowCards;
             evalSheet.Cell(row, 9).Value = eval.RedCards;
             evalSheet.Cell(row, 10).Value = eval.Notes ?? "-";
@@ -2479,7 +2479,7 @@ public class ReportService : IReportService
         {
             analysisSheet.Cell(row, 1).Value = strength.GroupName;
             analysisSheet.Cell(row, 2).Value = strength.QuestionText;
-            analysisSheet.Cell(row, 3).Value = $"{strength.PercentageScore:F1}%";
+            analysisSheet.Cell(row, 3).Value = $"{strength.PercentageScore:F2}%";
             row++;
         }
 
@@ -2493,7 +2493,7 @@ public class ReportService : IReportService
         {
             analysisSheet.Cell(row, 1).Value = weakness.GroupName;
             analysisSheet.Cell(row, 2).Value = weakness.QuestionText;
-            analysisSheet.Cell(row, 3).Value = $"{weakness.PercentageScore:F1}%";
+            analysisSheet.Cell(row, 3).Value = $"{weakness.PercentageScore:F2}%";
             row++;
         }
         analysisSheet.Columns().AdjustToContents();
@@ -2671,7 +2671,7 @@ public class ReportService : IReportService
             var group = report.GroupPerformances[i];
             var dataRow = questionTable.GetRow(i + 1);
             dataRow.GetCell(0).SetText(group.GroupName);
-            dataRow.GetCell(1).SetText($"{group.PercentageScore:F0}");
+            dataRow.GetCell(1).SetText($"{group.PercentageScore:F2}");
         }
 
         doc.CreateParagraph();
@@ -2721,7 +2721,7 @@ public class ReportService : IReportService
                 eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-",
                 eval.CallId ?? "-",
                 eval.Notes ?? "",
-                $"{eval.ScorePercentage:F0}"
+                $"{eval.ScorePercentage:F2}"
             };
 
             for (int c = 0; c < 4; c++)
@@ -2916,7 +2916,7 @@ public class ReportService : IReportService
                 GivenPoints = a.EarnedPoints,
                 MaxPoints = a.Question?.WeightPoints ?? 0,
                 PercentageScore = a.Question?.WeightPoints > 0 && a.EarnedPoints.HasValue
-                    ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 1)
+                    ? Math.Round((a.EarnedPoints.Value / a.Question.WeightPoints) * 100, 2)
                     : null,
                 ProjectName = a.Evaluation.Project != null ? (a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name) ?? "" : "",
                 EvaluatorName = a.Evaluation.Evaluator != null
@@ -3405,7 +3405,7 @@ public class ReportService : IReportService
             detailsSheet.Cell(row, col++).Value = item.RecommendationNotes ?? "";
             detailsSheet.Cell(row, col++).Value = item.GivenPoints ?? 0;
             detailsSheet.Cell(row, col++).Value = item.MaxPoints ?? 0;
-            detailsSheet.Cell(row, col++).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F1}%" : "";
+            detailsSheet.Cell(row, col++).Value = item.PercentageScore.HasValue ? $"{item.PercentageScore:F2}%" : "";
 
             if (!excludeEvaluator)
             {
@@ -3445,7 +3445,7 @@ public class ReportService : IReportService
             questionsSheet.Cell(row, 2).Value = q.ChecklistName;
             questionsSheet.Cell(row, 3).Value = q.GroupName;
             questionsSheet.Cell(row, 4).Value = q.SuggestionCount;
-            questionsSheet.Cell(row, 5).Value = $"{q.AverageScore:F1}%";
+            questionsSheet.Cell(row, 5).Value = $"{q.AverageScore:F2}%";
             row++;
         }
 
@@ -4918,7 +4918,7 @@ public class ReportService : IReportService
                 g.Key.QuestionText,
                 g.Key.Year,
                 g.Key.PeriodMonth,
-                AverageScore = Math.Round(g.Average(x => x.ScorePercentage), 0),
+                AverageScore = Math.Round(g.Average(x => x.ScorePercentage), 2),
                 ErrorCount = g.Count(x => x.IsError)
             })
             .OrderBy(x => x.ProjectName)
@@ -5007,7 +5007,7 @@ public class ReportService : IReportService
                         CallId = e.CallId ?? "-",
                         PeriodMonth = (e.CallDate ?? e.CreatedAt).ToString("yyyyMM"),
                         CriteriaScore = a.Question.MaxPoints > 0
-                            ? Math.Round((a.GivenPoints ?? 0) / a.Question.MaxPoints * 100, 0)
+                            ? Math.Round((a.GivenPoints ?? 0) / a.Question.MaxPoints * 100, 2)
                             : 0,
                         AuditComment = e.EvaluationComment ?? "",
                         Suggestions = string.Join(", ", suggestions),
@@ -5032,7 +5032,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 8).Value = item.CriteriaScore;
             worksheet.Cell(row, 9).Value = item.AuditComment;
             worksheet.Cell(row, 10).Value = item.Suggestions;
-            worksheet.Cell(row, 11).Value = Math.Round(item.AverageScore, 0);
+            worksheet.Cell(row, 11).Value = Math.Round(item.AverageScore, 2);
             row++;
         }
 
@@ -5114,7 +5114,7 @@ public class ReportService : IReportService
                 var scoredAnswers = answers.Where(a => a.AnswerNumeric.HasValue).ToList();
                 if (scoredAnswers.Any())
                 {
-                    avgScore = Math.Round((decimal)scoredAnswers.Average(a => (a.AnswerNumeric!.Value / (decimal)question.MaxPoints) * 100), 1);
+                    avgScore = Math.Round((decimal)scoredAnswers.Average(a => (a.AnswerNumeric!.Value / (decimal)question.MaxPoints) * 100), 2);
 
                     // Puan dağılımı
                     scoreDist = new List<ScoreDistributionDto>();
@@ -5125,7 +5125,7 @@ public class ReportService : IReportService
                         {
                             Score = i,
                             Count = count,
-                            Percentage = responseCount > 0 ? Math.Round((decimal)count / responseCount * 100, 1) : 0
+                            Percentage = responseCount > 0 ? Math.Round((decimal)count / responseCount * 100, 2) : 0
                         });
                     }
                 }
@@ -5144,7 +5144,7 @@ public class ReportService : IReportService
                             SubCriteriaId = sc.Id,
                             Description = sc.Description,
                             SelectionCount = selectionCount,
-                            SelectionPercentage = responseCount > 0 ? Math.Round((decimal)selectionCount / responseCount * 100, 1) : 0
+                            SelectionPercentage = responseCount > 0 ? Math.Round((decimal)selectionCount / responseCount * 100, 2) : 0
                         };
                     })
                     .ToList();
@@ -5238,9 +5238,9 @@ public class ReportService : IReportService
             OrganizationName = project.Organization?.Name,
             TotalResponses = evaluations.Count,
             TotalInvited = invitedCount > 0 ? invitedCount : evaluations.Count,
-            CompletionRate = invitedCount > 0 ? Math.Round((decimal)evaluations.Count / invitedCount * 100, 1) : 100,
+            CompletionRate = invitedCount > 0 ? Math.Round((decimal)evaluations.Count / invitedCount * 100, 2) : 100,
             AverageScore = evaluations.Any(e => e.ScorePercentage.HasValue)
-                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 1)
+                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
                 : 0,
             TotalQuestions = questions.Count,
             QuestionResults = questionResults,
@@ -5424,8 +5424,8 @@ public class ReportService : IReportService
                 ProjectCode = project.Code,
                 TotalInvitations = invitationCount,
                 TotalResponses = completedCount,
-                ResponseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 1) : 0,
-                AverageScore = completedCount > 0 ? Math.Round(avgScore, 1) : null,
+                ResponseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 2) : 0,
+                AverageScore = completedCount > 0 ? Math.Round(avgScore, 2) : null,
                 LastResponseAt = lastResponse,
                 IsActive = project.IsActive
             });
@@ -5744,7 +5744,7 @@ public class ReportService : IReportService
                     GroupName = group.Key ?? "Genel",
                     QuestionCount = group.Count(),
                     TotalResponses = evaluations.Count,
-                    AverageScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 1) : null
+                    AverageScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 2) : null
                 });
             }
             else
@@ -5811,9 +5811,9 @@ public class ReportService : IReportService
             OrganizationName = project.Organization?.Name,
             TotalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
             TotalResponses = evaluations.Count,
-            ResponseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 1) : 100,
+            ResponseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 2) : 100,
             AverageScore = evaluations.Any(e => e.ScorePercentage.HasValue)
-                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 1)
+                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
                 : null,
             TotalQuestions = questions.Count,
             GroupScores = groupScores.OrderBy(g => g.GroupName).ToList(),
@@ -5839,7 +5839,7 @@ public class ReportService : IReportService
         sheet.Cell(3, 1).Value = "Toplam Yanıt:";
         sheet.Cell(3, 2).Value = detail.TotalResponses;
         sheet.Cell(4, 1).Value = "Ortalama Puan:";
-        sheet.Cell(4, 2).Value = detail.AverageScore.HasValue ? $"{detail.AverageScore:F1}%" : "-";
+        sheet.Cell(4, 2).Value = detail.AverageScore.HasValue ? $"{detail.AverageScore:F2}%" : "-";
 
         // Table header
         var row = 6;
@@ -5855,7 +5855,7 @@ public class ReportService : IReportService
         {
             sheet.Cell(row, 1).Value = group.GroupName;
             sheet.Cell(row, 2).Value = group.QuestionCount;
-            sheet.Cell(row, 3).Value = group.AverageScore.HasValue ? $"{group.AverageScore:F1}%" : "-";
+            sheet.Cell(row, 3).Value = group.AverageScore.HasValue ? $"{group.AverageScore:F2}%" : "-";
             row++;
         }
 
@@ -5897,7 +5897,7 @@ public class ReportService : IReportService
         sheet1.Cell(2, 2).Value = results.TotalResponses;
         sheet1.Cell(2, 3).Value = "Genel Ortalama:";
         sheet1.Cell(2, 4).Value = scoreDetail?.OverallAverageScore.HasValue == true
-            ? $"%{scoreDetail.OverallAverageScore:F1}"
+            ? $"%{scoreDetail.OverallAverageScore:F2}"
             : "-";
         sheet1.Range(2, 1, 2, 4).Style.Font.Bold = true;
 
@@ -5925,7 +5925,7 @@ public class ReportService : IReportService
             sheet1.Cell(row, 2).Value = question.QuestionText;
             sheet1.Cell(row, 3).Value = question.ResponseCount;
             sheet1.Cell(row, 4).Value = avgScore.HasValue
-                ? $"%{avgScore:F1}"
+                ? $"%{avgScore:F2}"
                 : "-";
             row++;
         }
@@ -5955,7 +5955,7 @@ public class ReportService : IReportService
             sheet2.Cell(2, 2).Value = scoreDetail.TotalResponses;
             sheet2.Cell(2, 3).Value = "Genel Ortalama:";
             sheet2.Cell(2, 4).Value = scoreDetail.OverallAverageScore.HasValue
-                ? $"%{scoreDetail.OverallAverageScore:F1}"
+                ? $"%{scoreDetail.OverallAverageScore:F2}"
                 : "-";
 
             // Tablo başlıkları
@@ -5982,7 +5982,7 @@ public class ReportService : IReportService
                     {
                         sheet2.Cell(row, 5).Value = dist.AnswerText;
                         sheet2.Cell(row, 6).Value = dist.SelectionCount;
-                        sheet2.Cell(row, 7).Value = $"%{dist.Percentage:F1}";
+                        sheet2.Cell(row, 7).Value = $"%{dist.Percentage:F2}";
                         row++;
                     }
 
@@ -6000,7 +6000,7 @@ public class ReportService : IReportService
                     sheet2.Cell(questionStartRow, 2).Value = question.QuestionText;
                     sheet2.Cell(questionStartRow, 3).Value = question.ResponseCount;
                     sheet2.Cell(questionStartRow, 4).Value = question.AverageScorePercentage.HasValue
-                        ? $"%{question.AverageScorePercentage:F1}"
+                        ? $"%{question.AverageScorePercentage:F2}"
                         : "-";
                 }
                 else
@@ -6010,7 +6010,7 @@ public class ReportService : IReportService
                     sheet2.Cell(row, 2).Value = question.QuestionText;
                     sheet2.Cell(row, 3).Value = question.ResponseCount;
                     sheet2.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
-                        ? $"%{question.AverageScorePercentage:F1}"
+                        ? $"%{question.AverageScorePercentage:F2}"
                         : "-";
                     sheet2.Cell(row, 5).Value = "-";
                     sheet2.Cell(row, 6).Value = "-";
@@ -6157,7 +6157,7 @@ public class ReportService : IReportService
             sheet.Cell(row, col++).Value = participantEmail;
 
             // Genel Puan
-            sheet.Cell(row, col++).Value = eval.ScorePercentage.HasValue ? $"{eval.ScorePercentage:F1}%" : "-";
+            sheet.Cell(row, col++).Value = eval.ScorePercentage.HasValue ? $"{eval.ScorePercentage:F2}%" : "-";
 
             // Tarih
             sheet.Cell(row, col++).Value = eval.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "";
@@ -6389,13 +6389,13 @@ public class ReportService : IReportService
 
                 // Hedef yüzdeleri hesapla
                 if (dto.DailyTarget.HasValue && dto.DailyTarget > 0)
-                    dto.DailyPercentage = Math.Round((decimal)dto.TodayCount / dto.DailyTarget.Value * 100, 1);
+                    dto.DailyPercentage = Math.Round((decimal)dto.TodayCount / dto.DailyTarget.Value * 100, 2);
                 if (dto.WeeklyTarget.HasValue && dto.WeeklyTarget > 0)
-                    dto.WeeklyPercentage = Math.Round((decimal)dto.WeekCount / dto.WeeklyTarget.Value * 100, 1);
+                    dto.WeeklyPercentage = Math.Round((decimal)dto.WeekCount / dto.WeeklyTarget.Value * 100, 2);
                 if (dto.MonthlyTarget.HasValue && dto.MonthlyTarget > 0)
-                    dto.MonthlyPercentage = Math.Round((decimal)dto.MonthCount / dto.MonthlyTarget.Value * 100, 1);
+                    dto.MonthlyPercentage = Math.Round((decimal)dto.MonthCount / dto.MonthlyTarget.Value * 100, 2);
                 if (dto.YearlyTarget.HasValue && dto.YearlyTarget > 0)
-                    dto.YearlyPercentage = Math.Round((decimal)dto.YearCount / dto.YearlyTarget.Value * 100, 1);
+                    dto.YearlyPercentage = Math.Round((decimal)dto.YearCount / dto.YearlyTarget.Value * 100, 2);
 
                 return dto;
             })
@@ -6485,7 +6485,7 @@ public class ReportService : IReportService
                     ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value), 2)
                     : null,
                 AverageScore = g.Where(a => a.EarnedPoints.HasValue).Any() && g.Key.WeightPoints > 0
-                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 1)
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 2)
                     : null
             })
             .OrderBy(q => q.GroupName)
@@ -6494,7 +6494,7 @@ public class ReportService : IReportService
 
         // Genel ortalama hesapla
         var overallAverage = questionStats.Where(q => q.AverageScore.HasValue).Any()
-            ? Math.Round(questionStats.Where(q => q.AverageScore.HasValue).Average(q => q.AverageScore!.Value), 1)
+            ? Math.Round(questionStats.Where(q => q.AverageScore.HasValue).Average(q => q.AverageScore!.Value), 2)
             : 0;
 
         return new SurveyQuestionScoreDistributionResultDto
@@ -6533,7 +6533,7 @@ public class ReportService : IReportService
         worksheet.Cell(1, 1).Style.Font.FontSize = 14;
         worksheet.Range(1, 1, 1, 5).Merge();
 
-        worksheet.Cell(2, 1).Value = $"Toplam Yanıt: {data.TotalResponses} | Genel Ortalama: %{data.OverallAverageScore:F1}";
+        worksheet.Cell(2, 1).Value = $"Toplam Yanıt: {data.TotalResponses} | Genel Ortalama: %{data.OverallAverageScore:F2}";
         worksheet.Range(2, 1, 2, 5).Merge();
 
         // Headers
@@ -6558,7 +6558,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 3).Value = q.ResponseCount;
             worksheet.Cell(row, 4).Value = q.AverageRawScore.HasValue ? $"{q.AverageRawScore:F2} / {q.MaxPoints}" : "-";
             worksheet.Cell(row, 5).Value = q.AverageScore.HasValue ? q.AverageScore.Value : 0;
-            worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.0";
+            worksheet.Cell(row, 5).Style.NumberFormat.Format = "0.00";
 
             // Renklendirme
             if (q.AverageScore.HasValue)
@@ -6621,7 +6621,7 @@ public class ReportService : IReportService
                         answerSheet.Cell(ansRow, 3).Value = ans.SelectionCount;
                         answerSheet.Cell(ansRow, 4).Value = q.ResponseCount;
                         answerSheet.Cell(ansRow, 5).Value = ans.Percentage;
-                        answerSheet.Cell(ansRow, 5).Style.NumberFormat.Format = "0.0";
+                        answerSheet.Cell(ansRow, 5).Style.NumberFormat.Format = "0.00";
                         ansRow++;
                     }
                 }
@@ -6717,7 +6717,7 @@ public class ReportService : IReportService
                 var penaltyAppliedCount = group.Count(a => a.IsPenaltyApplied);
                 // Yüzde olarak göster (ne kadar ceza uygulandı)
                 avgScorePercentage = responseCount > 0
-                    ? Math.Round((decimal)penaltyAppliedCount / responseCount * 100, 1)
+                    ? Math.Round((decimal)penaltyAppliedCount / responseCount * 100, 2)
                     : 0;
             }
             // Normal puanlı sorular
@@ -6729,7 +6729,7 @@ public class ReportService : IReportService
                 {
                     // EarnedPoints varsa onu kullan
                     var avgEarned = answersWithEarned.Average(a => a.EarnedPoints!.Value);
-                    avgScorePercentage = Math.Round(avgEarned / question.WeightPoints * 100, 1);
+                    avgScorePercentage = Math.Round(avgEarned / question.WeightPoints * 100, 2);
                 }
                 else
                 {
@@ -6741,7 +6741,7 @@ public class ReportService : IReportService
                     if (answerScores.Any())
                     {
                         var avgScore = answerScores.Average();
-                        avgScorePercentage = Math.Round((decimal)avgScore / question.WeightPoints * 100, 1);
+                        avgScorePercentage = Math.Round((decimal)avgScore / question.WeightPoints * 100, 2);
                     }
                 }
             }
@@ -6758,7 +6758,7 @@ public class ReportService : IReportService
                     .Count(ss => ss.SubCriteriaId == subCriteria.Id);
 
                 var percentage = responseCount > 0
-                    ? Math.Round((decimal)selectionCount / responseCount * 100, 1)
+                    ? Math.Round((decimal)selectionCount / responseCount * 100, 2)
                     : 0;
 
                 answerDistributions.Add(new SurveyAnswerDistributionDto
@@ -6803,7 +6803,7 @@ public class ReportService : IReportService
             ProjectId = projectId,
             ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluationIds.Count,
-            OverallAverageScore = Math.Round(overallAverage, 1),
+            OverallAverageScore = Math.Round(overallAverage, 2),
             Questions = questionDetails
         };
     }
@@ -6833,7 +6833,7 @@ public class ReportService : IReportService
         worksheet.Cell(2, 1).Value = "Toplam Yanıt:";
         worksheet.Cell(2, 2).Value = data.TotalResponses;
         worksheet.Cell(3, 1).Value = "Genel Ortalama:";
-        worksheet.Cell(3, 2).Value = data.OverallAverageScore.HasValue ? $"%{data.OverallAverageScore:F1}" : "-";
+        worksheet.Cell(3, 2).Value = data.OverallAverageScore.HasValue ? $"%{data.OverallAverageScore:F2}" : "-";
 
         worksheet.Range(1, 1, 3, 1).Style.Font.Bold = true;
 
@@ -6867,12 +6867,12 @@ public class ReportService : IReportService
                     worksheet.Cell(row, 2).Value = question.QuestionText;
                     worksheet.Cell(row, 3).Value = question.ResponseCount;
                     worksheet.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
-                        ? $"%{question.AverageScorePercentage:F1}"
+                        ? $"%{question.AverageScorePercentage:F2}"
                         : "-";
                     worksheet.Cell(row, 5).Value = answer.AnswerText;
                     worksheet.Cell(row, 6).Value = answer.Points;
                     worksheet.Cell(row, 7).Value = answer.SelectionCount;
-                    worksheet.Cell(row, 8).Value = $"%{answer.Percentage:F1}";
+                    worksheet.Cell(row, 8).Value = $"%{answer.Percentage:F2}";
                     row++;
                 }
 
@@ -6892,7 +6892,7 @@ public class ReportService : IReportService
                 worksheet.Cell(row, 2).Value = question.QuestionText;
                 worksheet.Cell(row, 3).Value = question.ResponseCount;
                 worksheet.Cell(row, 4).Value = question.AverageScorePercentage.HasValue
-                    ? $"%{question.AverageScorePercentage:F1}"
+                    ? $"%{question.AverageScorePercentage:F2}"
                     : "-";
                 worksheet.Cell(row, 5).Value = "-";
                 worksheet.Cell(row, 6).Value = "-";
@@ -7059,7 +7059,7 @@ public class ReportService : IReportService
                 {
                     var validScores = groupData.Where(x => x.Score.HasValue && x.MaxPoints > 0).ToList();
                     var avgScore = validScores.Any()
-                        ? Math.Round((decimal)validScores.Average(x => (double)(x.Score!.Value / x.MaxPoints * 100)), 1)
+                        ? Math.Round((decimal)validScores.Average(x => (double)(x.Score!.Value / x.MaxPoints * 100)), 2)
                         : (decimal?)null;
 
                     row.GroupScores.Add(new GroupScoreDto
@@ -7090,7 +7090,7 @@ public class ReportService : IReportService
             }
 
             // Genel ortalama
-            row.OverallAverage = totalCount > 0 ? Math.Round(totalScore / totalCount, 1) : 0;
+            row.OverallAverage = totalCount > 0 ? Math.Round(totalScore / totalCount, 2) : 0;
 
             rows.Add(row);
         }
@@ -7569,7 +7569,7 @@ public class ReportService : IReportService
             worksheet.Cell(row, 2).Value = result.RespondentEmail ?? "";
             worksheet.Cell(row, 3).Value = result.ProjectName;
             worksheet.Cell(row, 4).Value = result.DominantType ?? "-";
-            worksheet.Cell(row, 5).Value = result.DominantPercentage.HasValue ? $"%{result.DominantPercentage:F0}" : "-";
+            worksheet.Cell(row, 5).Value = result.DominantPercentage.HasValue ? $"%{result.DominantPercentage:F2}" : "-";
             worksheet.Cell(row, 6).Value = result.TotalScore ?? 0;
             worksheet.Cell(row, 7).Value = result.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
             row++;
@@ -8107,7 +8107,7 @@ public class ReportService : IReportService
         worksheet.Cell(row, 3).Value = "Kontrol Saati";
         worksheet.Cell(row, 4).Value = detail.ControlTime ?? "-";
         worksheet.Cell(row, 5).Value = "Puan";
-        worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F1}" : "-";
+        worksheet.Cell(row, 6).Value = detail.ScorePercentage.HasValue ? $"%{detail.ScorePercentage:F2}" : "-";
         row++;
 
         row++; // Boş satır
@@ -8158,7 +8158,7 @@ public class ReportService : IReportService
             var earnedPts = question.GivenPoints ?? 0;
             string answerDisplay;
             if (maxPts > 0)
-                answerDisplay = $"{earnedPts:F0}/{maxPts:F0}";
+                answerDisplay = $"{earnedPts:F2}/{maxPts:F2}";
             else
                 answerDisplay = "-";
             worksheet.Cell(row, 3).Value = answerDisplay;
@@ -8266,7 +8266,7 @@ public class ReportService : IReportService
                 e.CompletedAt,
                 e.TotalScore,
                 e.MaxScore,
-                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
+                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 2) : 0,
                 PersonnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel ?? "-",
@@ -8308,7 +8308,7 @@ public class ReportService : IReportService
                 e.CompletedAt,
                 e.TotalScore,
                 e.MaxScore,
-                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 1) : 0,
+                ScorePercentage = (e.MaxScore ?? 0) > 0 ? Math.Round((decimal)(e.TotalScore ?? 0) / (decimal)e.MaxScore!.Value * 100, 2) : 0,
                 DealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 ProjectName = e.Project!.Name,
                 e.EvaluationComment
@@ -8639,7 +8639,7 @@ public class ReportService : IReportService
                 Year = g.Key.Year,
                 PeriodMonth = $"{g.Key.Year}{g.Key.Month:D2}",
                 AverageScore = g.Sum(x => x.WeightPoints) > 0
-                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.WeightPoints) * 100, 0)
+                    ? Math.Round(g.Sum(x => x.EarnedPoints) / g.Sum(x => x.WeightPoints) * 100, 2)
                     : 0,
                 ErrorCount = g.Count(x => x.IsError)
             })
@@ -8706,11 +8706,11 @@ public class ReportService : IReportService
         infoSheet.Cell(8, 1).Value = "Toplam Değerlendirme:";
         infoSheet.Cell(8, 2).Value = report.TotalEvaluations;
         infoSheet.Cell(9, 1).Value = "Ortalama Puan:";
-        infoSheet.Cell(9, 2).Value = $"{report.AverageScore:F1}%";
+        infoSheet.Cell(9, 2).Value = $"{report.AverageScore:F2}%";
         infoSheet.Cell(10, 1).Value = "En Yüksek Puan:";
-        infoSheet.Cell(10, 2).Value = $"{report.BestScore:F1}%";
+        infoSheet.Cell(10, 2).Value = $"{report.BestScore:F2}%";
         infoSheet.Cell(11, 1).Value = "En Düşük Puan:";
-        infoSheet.Cell(11, 2).Value = $"{report.WorstScore:F1}%";
+        infoSheet.Cell(11, 2).Value = $"{report.WorstScore:F2}%";
         infoSheet.Cell(12, 1).Value = "Toplam Sarı Kart:";
         infoSheet.Cell(12, 2).Value = report.TotalYellowCards;
         infoSheet.Cell(13, 1).Value = "Toplam Kırmızı Kart:";
@@ -8737,7 +8737,7 @@ public class ReportService : IReportService
         {
             trendSheet.Cell(row, 1).Value = trend.MonthName;
             trendSheet.Cell(row, 2).Value = trend.EvaluationCount;
-            trendSheet.Cell(row, 3).Value = $"{trend.AverageScore:F1}%";
+            trendSheet.Cell(row, 3).Value = $"{trend.AverageScore:F2}%";
             trendSheet.Cell(row, 4).Value = trend.YellowCards;
             trendSheet.Cell(row, 5).Value = trend.RedCards;
             row++;
@@ -8761,7 +8761,7 @@ public class ReportService : IReportService
         {
             groupSheet.Cell(row, 1).Value = group.GroupName;
             groupSheet.Cell(row, 2).Value = group.EvaluationCount;
-            groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F1}%";
+            groupSheet.Cell(row, 3).Value = $"{group.PercentageScore:F2}%";
             groupSheet.Cell(row, 4).Value = group.ErrorCount;
             row++;
         }
@@ -8798,7 +8798,7 @@ public class ReportService : IReportService
             evalSheet.Cell(row, 4).Value = eval.ControlTime ?? "-";
             evalSheet.Cell(row, 5).Value = eval.ProjectName;
             evalSheet.Cell(row, 6).Value = eval.ChecklistName;
-            evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F1}%";
+            evalSheet.Cell(row, 7).Value = $"{eval.ScorePercentage:F2}%";
             evalSheet.Cell(row, 8).Value = eval.YellowCards;
             evalSheet.Cell(row, 9).Value = eval.RedCards;
             row++;
@@ -8818,7 +8818,7 @@ public class ReportService : IReportService
         {
             analysisSheet.Cell(row, 1).Value = strength.GroupName;
             analysisSheet.Cell(row, 2).Value = strength.QuestionText;
-            analysisSheet.Cell(row, 3).Value = $"{strength.PercentageScore:F1}%";
+            analysisSheet.Cell(row, 3).Value = $"{strength.PercentageScore:F2}%";
             row++;
         }
 
@@ -8832,7 +8832,7 @@ public class ReportService : IReportService
         {
             analysisSheet.Cell(row, 1).Value = weakness.GroupName;
             analysisSheet.Cell(row, 2).Value = weakness.QuestionText;
-            analysisSheet.Cell(row, 3).Value = $"{weakness.PercentageScore:F1}%";
+            analysisSheet.Cell(row, 3).Value = $"{weakness.PercentageScore:F2}%";
             row++;
         }
         analysisSheet.Columns().AdjustToContents();
@@ -8966,7 +8966,7 @@ public class ReportService : IReportService
             var group = report.GroupPerformances[i];
             var dataRow = questionTable.GetRow(i + 1);
             dataRow.GetCell(0).SetText(group.GroupName);
-            dataRow.GetCell(1).SetText($"{group.PercentageScore:F0}");
+            dataRow.GetCell(1).SetText($"{group.PercentageScore:F2}");
         }
 
         doc.CreateParagraph();
@@ -9008,7 +9008,7 @@ public class ReportService : IReportService
                 eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-",
                 eval.PersonnelName ?? "-",
                 eval.Notes ?? "",
-                $"{eval.ScorePercentage:F0}"
+                $"{eval.ScorePercentage:F2}"
             };
 
             for (int c = 0; c < 4; c++)

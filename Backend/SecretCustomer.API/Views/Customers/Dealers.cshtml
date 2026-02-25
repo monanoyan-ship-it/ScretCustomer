@@ -130,7 +130,7 @@
                                     </span>
                                     <!-- ko if: averageScore -->
                                     <span class="badge bg-success ms-1" title="@Html.T("Dealer.AverageScore", "Ortalama Puan")">
-                                        <i class="bi bi-star me-1"></i><span data-bind="text: averageScore ? averageScore.toFixed(1) + '%' : '-'"></span>
+                                        <i class="bi bi-star me-1"></i><span data-bind="text: averageScore ? averageScore.toFixed(2) + '%' : '-'"></span>
                                     </span>
                                     <!-- /ko -->
                                 </td>

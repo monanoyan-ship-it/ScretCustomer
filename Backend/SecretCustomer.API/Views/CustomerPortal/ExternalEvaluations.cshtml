@@ -173,7 +173,7 @@
         <div data-bind="visible: !isLoading()" class="col-md-4">
             <div class="card border-0 shadow-sm">
                 <div class="card-body text-center">
-                    <h3 class="text-primary" data-bind="text: averageScore().toFixed(1)"></h3>
+                    <h3 class="text-primary" data-bind="text: averageScore().toFixed(2)"></h3>
                     <small class="text-muted">@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                 </div>
             </div>
@@ -598,7 +598,7 @@
                                                     <!-- /ko -->
                                                     <!-- ko ifnot: $data.isNotApplicable -->
                                                     <!-- ko if: $data.scoringType !== 'Unscored' && $data.maxPoints > 0 -->
-                                                    <span class="text-success" data-bind="text: ($data.givenPoints || 0).toFixed(1)"></span>
+                                                    <span class="text-success" data-bind="text: ($data.givenPoints || 0).toFixed(2)"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: $data.scoringType === 'Unscored' || !($data.maxPoints > 0) -->
                                                     <span class="text-muted">-</span>

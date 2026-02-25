@@ -1873,7 +1873,7 @@ public class EvaluationService : IEvaluationService
 
         await _context.SaveChangesAsync();
 
-        return (true, $"Puan yeniden hesaplandı: %{result.Percentage:F1}");
+        return (true, $"Puan yeniden hesaplandı: %{result.Percentage:F2}");
     }
 
     public async Task<List<string>> GetPastDescriptionsAsync()

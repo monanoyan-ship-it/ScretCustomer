@@ -720,12 +720,12 @@
                                             <!-- Dinamik Scope Puanlari -->
                                             <!-- ko foreach: scopeScores -->
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: score !== null ? score.toFixed(1) + '%' : '-',
+                                                <span class="badge" data-bind="text: score !== null ? score.toFixed(2) + '%' : '-',
                                                     css: { 'bg-danger': score !== null && score < 30, 'bg-warning text-dark': score !== null && score >= 30 && score < 50, 'bg-info': score !== null && score >= 50 && score < 70, 'bg-success': score !== null && score >= 70, 'bg-secondary': score === null }"></span>
                                             </td>
                                             <!-- /ko -->
                                             <td class="text-center">
-                                                <strong class="badge" data-bind="text: avgScore.toFixed(1) + '%',
+                                                <strong class="badge" data-bind="text: avgScore.toFixed(2) + '%',
                                                     css: { 'bg-danger': avgScore < 30, 'bg-warning text-dark': avgScore >= 30 && avgScore < 50, 'bg-info': avgScore >= 50 && avgScore < 70, 'bg-success': avgScore >= 70 }"></strong>
                                             </td>
                                         </tr>

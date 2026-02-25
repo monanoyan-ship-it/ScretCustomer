@@ -303,7 +303,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
                 year = monthStart.Year,
                 count = monthEvals.Count,
-                averageScore = Math.Round(avgScore, 1)
+                averageScore = Math.Round(avgScore, 2)
             });
         }
 
@@ -363,7 +363,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             organizationCount,
             totalEvaluations,
-            averageScore = Math.Round(averageScore, 1),
+            averageScore = Math.Round(averageScore, 2),
             thisMonthEvaluations
         };
     }
@@ -435,7 +435,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
                 year = monthStart.Year,
                 count = monthEvals.Count,
-                averageScore = Math.Round(avgScore, 1),
+                averageScore = Math.Round(avgScore, 2),
                 yellowCardCount,
                 redCardCount
             });
@@ -607,11 +607,11 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         var totalInvitations = internalInvCount + externalInvCount;
         var totalResponses = evals.Count;
-        var responseRate = totalInvitations > 0 ? Math.Round((decimal)totalResponses / totalInvitations * 100, 1) : 0m;
+        var responseRate = totalInvitations > 0 ? Math.Round((decimal)totalResponses / totalInvitations * 100, 2) : 0m;
 
         // Ortalama puan
         var withScore = evals.Where(e => e.ScorePercentage.HasValue).ToList();
-        var averageScore = withScore.Any() ? Math.Round((double)withScore.Average(e => (double)e.ScorePercentage!.Value), 1) : 0.0;
+        var averageScore = withScore.Any() ? Math.Round((double)withScore.Average(e => (double)e.ScorePercentage!.Value), 2) : 0.0;
 
         // Aylık yanıt trendi (yanıt sayısı + ortalama puan)
         var trend = new List<object>();
@@ -622,7 +622,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             var monthEvals = evals.Where(e => e.CreatedAt >= monthStart && e.CreatedAt < monthEnd).ToList();
             var monthWithScore = monthEvals.Where(e => e.ScorePercentage.HasValue).ToList();
             var monthAvgScore = monthWithScore.Any()
-                ? Math.Round((double)monthWithScore.Average(e => (double)e.ScorePercentage!.Value), 1)
+                ? Math.Round((double)monthWithScore.Average(e => (double)e.ScorePercentage!.Value), 2)
                 : (double?)null;
 
             trend.Add(new
@@ -678,7 +678,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(kvp => new
             {
                 personalityType = kvp.Key,
-                averagePercentage = kvp.Value.Any() ? Math.Round((double)kvp.Value.Average(), 1) : 0.0,
+                averagePercentage = kvp.Value.Any() ? Math.Round((double)kvp.Value.Average(), 2) : 0.0,
                 responseCount = kvp.Value.Count
             })
             .OrderByDescending(d => d.averagePercentage)
@@ -714,7 +714,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             foreach (var t in allTypes)
             {
                 types[t] = monthScores.ContainsKey(t) && monthScores[t].Any()
-                    ? Math.Round((double)monthScores[t].Average(), 1)
+                    ? Math.Round((double)monthScores[t].Average(), 2)
                     : (double?)null;
             }
             typeTrend.Add(new { month = monthLabel, year = monthStart.Year, types });
@@ -801,7 +801,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
                     year = monthStart.Year,
                     count = monthEvals.Count,
-                    averageScore = Math.Round(avgScore, 1),
+                    averageScore = Math.Round(avgScore, 2),
                     yellowCardCount = monthEvals.Sum(e => e.YellowCardCount),
                     redCardCount = monthEvals.Sum(e => e.RedCardCount)
                 });
@@ -813,7 +813,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     month = monthStart.ToString("MMM", new System.Globalization.CultureInfo("tr-TR")),
                     year = monthStart.Year,
                     count = monthEvals.Count,
-                    averageScore = Math.Round(avgScore, 1)
+                    averageScore = Math.Round(avgScore, 2)
                 });
             }
         }
@@ -927,7 +927,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     avgScore = monthAnswers.Average(a =>
                         (double)(a.EarnedPoints!.Value / a.WeightPoints * 100));
                 }
-                monthlyScores.Add(Math.Round(avgScore, 1));
+                monthlyScores.Add(Math.Round(avgScore, 2));
             }
 
             groupTrends.Add(new
@@ -1050,7 +1050,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     avgScore = monthAnswers.Average(a =>
                         (double)(a.EarnedPoints!.Value / a.WeightPoints * 100));
                 }
-                monthlyScores.Add(Math.Round(avgScore, 1));
+                monthlyScores.Add(Math.Round(avgScore, 2));
             }
 
             questionTrends.Add(new
@@ -1221,6 +1221,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     : "-",
                 organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : "-",
                 score = e.ScorePercentage ?? 0,
+                projectTypeId = e.Project!.ProjectTypeId,
                 e.YellowCardCount,
                 e.RedCardCount
             })
@@ -1369,6 +1370,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel ?? "-",
                 score = e.ScorePercentage ?? 0,
+                projectTypeId = e.Project!.ProjectTypeId,
                 statusId = e.StatusId
             })
             .ToListAsync();
@@ -1381,6 +1383,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             e.checklistName,
             e.personnelName,
             e.score,
+            e.projectTypeId,
             status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
             statusText = GetStatusText(e.statusId)
         });
@@ -1438,6 +1441,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : e.EvaluatedUnknownPersonnel ?? "-",
                 score = e.ScorePercentage ?? 0,
+                projectTypeId = e.Project!.ProjectTypeId,
                 statusId = e.StatusId
             })
             .ToListAsync();
@@ -1451,6 +1455,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             e.personnelName,
             scoringMethod = ScoringMethods.GetById(e.scoringMethodId)?.SystemName ?? "Maximum",
             e.score,
+            e.projectTypeId,
             status = EvaluationStatuses.GetById(e.statusId)?.SystemName ?? "",
             statusText = GetStatusText(e.statusId)
         });
@@ -1617,7 +1622,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 projectCode = p.Code ?? "",
                 projectName = p.Name,
                 evaluationCount = projectEvals.Count,
-                averageScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
+                averageScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(projectEvals.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 2) : 0,
                 minScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
                 maxScore = projectEvals.Where(e => e.ScorePercentage.HasValue).Any() ? projectEvals.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0
             };
@@ -1692,7 +1697,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             periodEnd = end,
             totalEvaluations = evaluations.Count,
             projectCount,
-            averageScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0,
+            averageScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 2) : 0,
             minScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Min(e => e.ScorePercentage!.Value) : 0,
             maxScore = evaluations.Where(e => e.ScorePercentage.HasValue).Any() ? evaluations.Where(e => e.ScorePercentage.HasValue).Max(e => e.ScorePercentage!.Value) : 0,
             successCount = evaluations.Count(e => e.ScorePercentage >= successThreshold),
@@ -1818,7 +1823,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 month = g.Key.Month,
                 monthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy", new System.Globalization.CultureInfo("tr-TR")),
                 count = g.Count(),
-                averageScore = g.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 1) : 0
+                averageScore = g.Where(e => e.ScorePercentage.HasValue).Any() ? Math.Round(g.Where(e => e.ScorePercentage.HasValue).Average(e => (double)e.ScorePercentage!.Value), 2) : 0
             })
             .ToList();
 
@@ -2078,7 +2083,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? "Unknown"
         });
 
-        return new { items, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) };
+        return new { items, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 2) };
     }
 
     // ==================== EXTERNAL EVALUATIONS ====================
@@ -2214,7 +2219,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             })
             .ToListAsync();
 
-        return new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 1) };
+        return new { items = evaluations, total, page = page ?? 1, pageSize = pageSize ?? 20, averageScore = Math.Round(averageScore, 2) };
     }
 
     // ==================== EVALUATION DETAIL ====================
@@ -2454,7 +2459,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             overallTrend.Add(new
             {
                 count = periodEvals.Count,
-                averageScore = Math.Round(avgScore, 1)
+                averageScore = Math.Round(avgScore, 2)
             });
         }
 
@@ -2496,7 +2501,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     .ToList();
 
                 var avgScore = orgEvals.Any() ? orgEvals.Average(e => (double)e.ScorePercentage!.Value) : 0;
-                orgData.Add(Math.Round(avgScore, 1));
+                orgData.Add(Math.Round(avgScore, 2));
             }
 
             organizationTrends.Add(new
@@ -2940,7 +2945,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                         periodId = period.Id,
                         periodName = period.Name,
                         evaluationCount = periodEvals.Count,
-                        averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 1) : (double?)null,
+                        averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : (double?)null,
                         yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
                         redCardCount = periodEvals.Sum(e => e.RedCardCount)
                     };
@@ -3032,7 +3037,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     periodId = period.Id,
                     periodName = period.Name,
                     evaluationCount = periodEvals.Count,
-                    averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 1) : (double?)null,
+                    averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : (double?)null,
                     yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
                     redCardCount = periodEvals.Sum(e => e.RedCardCount)
                 };
@@ -3227,7 +3232,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (periodEvals.Any())
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col).Value = Math.Round(avg, 2);
                         if (avg >= excelSuccessThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
                         else if (avg >= excelWarningThreshold)
@@ -3244,7 +3249,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (internalEvals.Any())
                     {
                         var avg = internalEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 2);
                     }
                     else
                     {
@@ -3255,7 +3260,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (externalEvals.Any())
                     {
                         var avg = externalEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 2);
                     }
                     else
                     {
@@ -3267,7 +3272,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
                 // Genel Ortalama
                 var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
-                sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
+                sheet.Cell(row, col).Value = Math.Round(overallAvg, 2);
                 sheet.Cell(row, col).Style.Font.Bold = true;
 
                 // İç Ortalama
@@ -3275,7 +3280,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 if (allInternal.Any())
                 {
                     var internalAvg = allInternal.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 1);
+                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 2);
                     sheet.Cell(row, col + 1).Style.Font.Bold = true;
                 }
                 else
@@ -3288,7 +3293,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 if (allExternal.Any())
                 {
                     var externalAvg = allExternal.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 1);
+                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 2);
                     sheet.Cell(row, col + 2).Style.Font.Bold = true;
                 }
                 else
@@ -3415,7 +3420,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (periodEvals.Any())
                     {
                         var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col).Value = Math.Round(avg, 2);
                         if (avg >= excelSuccessThreshold)
                             sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
                         else if (avg >= excelWarningThreshold)
@@ -3432,7 +3437,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (internalEvals.Any())
                     {
                         var avg = internalEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col + 1).Value = Math.Round(avg, 2);
                     }
                     else
                     {
@@ -3443,7 +3448,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                     if (externalEvals.Any())
                     {
                         var avg = externalEvals.Average(e => (double)e.ScorePercentage!.Value);
-                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 1);
+                        sheet.Cell(row, col + 2).Value = Math.Round(avg, 2);
                     }
                     else
                     {
@@ -3455,7 +3460,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
                 // Genel Ortalama
                 var overallAvg = personEvals.Average(e => (double)e.ScorePercentage!.Value);
-                sheet.Cell(row, col).Value = Math.Round(overallAvg, 1);
+                sheet.Cell(row, col).Value = Math.Round(overallAvg, 2);
                 sheet.Cell(row, col).Style.Font.Bold = true;
 
                 // İç Ortalama
@@ -3463,7 +3468,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 if (allInternal.Any())
                 {
                     var internalAvg = allInternal.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 1);
+                    sheet.Cell(row, col + 1).Value = Math.Round(internalAvg, 2);
                     sheet.Cell(row, col + 1).Style.Font.Bold = true;
                 }
                 else
@@ -3476,7 +3481,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 if (allExternal.Any())
                 {
                     var externalAvg = allExternal.Average(e => (double)e.ScorePercentage!.Value);
-                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 1);
+                    sheet.Cell(row, col + 2).Value = Math.Round(externalAvg, 2);
                     sheet.Cell(row, col + 2).Style.Font.Bold = true;
                 }
                 else

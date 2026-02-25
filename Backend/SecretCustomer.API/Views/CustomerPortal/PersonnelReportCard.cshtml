@@ -197,7 +197,7 @@
                         <div class="col">
                             <div class="card text-center h-100">
                                 <div class="card-body py-2">
-                                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= successThreshold ? 'text-success' : (averageScore >= warningThreshold ? 'text-warning' : 'text-danger')"></h3>
+                                    <h3 class="mb-0" data-bind="text: averageScore.toFixed(2) + '%', css: averageScore >= successThreshold ? 'text-success' : (averageScore >= warningThreshold ? 'text-warning' : 'text-danger')"></h3>
                                     <small class="text-muted">@Html.T("Report.Average", "Ortalama")</small>
                                 </div>
                             </div>
@@ -205,7 +205,7 @@
                         <div class="col">
                             <div class="card text-center h-100 bg-success text-white">
                                 <div class="card-body py-2">
-                                    <h3 class="mb-0" data-bind="text: bestScore.toFixed(1) + '%'"></h3>
+                                    <h3 class="mb-0" data-bind="text: bestScore.toFixed(2) + '%'"></h3>
                                     <small>@Html.T("Report.Highest", "En Yüksek")</small>
                                 </div>
                             </div>
@@ -213,7 +213,7 @@
                         <div class="col">
                             <div class="card text-center h-100 bg-danger text-white">
                                 <div class="card-body py-2">
-                                    <h3 class="mb-0" data-bind="text: worstScore.toFixed(1) + '%'"></h3>
+                                    <h3 class="mb-0" data-bind="text: worstScore.toFixed(2) + '%'"></h3>
                                     <small>@Html.T("Report.Lowest", "En Düşük")</small>
                                 </div>
                             </div>
@@ -266,7 +266,7 @@
                                             <td data-bind="text: monthName"></td>
                                             <td class="text-center" data-bind="text: evaluationCount"></td>
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= $root.report().successThreshold ? 'bg-success' : (averageScore >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                                <span class="badge" data-bind="text: averageScore.toFixed(2) + '%', css: averageScore >= $root.report().successThreshold ? 'bg-success' : (averageScore >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                             </td>
                                             <td class="text-center" data-bind="text: yellowCards"></td>
                                             <td class="text-center" data-bind="text: redCards"></td>
@@ -291,7 +291,7 @@
                                                 <td data-bind="text: groupName"></td>
                                                 <td style="width: 50%;">
                                                     <div class="progress" style="height: 18px;">
-                                                        <div class="progress-bar" data-bind="style: { width: percentageScore + '%' }, css: percentageScore >= $root.report().successThreshold ? 'bg-success' : (percentageScore >= $root.report().warningThreshold ? 'bg-warning' : 'bg-danger'), text: percentageScore.toFixed(1) + '%'"></div>
+                                                        <div class="progress-bar" data-bind="style: { width: percentageScore + '%' }, css: percentageScore >= $root.report().successThreshold ? 'bg-success' : (percentageScore >= $root.report().warningThreshold ? 'bg-warning' : 'bg-danger'), text: percentageScore.toFixed(2) + '%'"></div>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -311,7 +311,7 @@
                                     </div>
                                     <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().strengths : []">
                                         <li class="list-group-item py-1 small">
-                                            <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                            <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(2) + '%'"></span>
                                             <span data-bind="text: questionText"></span>
                                         </li>
                                     </ul>
@@ -320,7 +320,7 @@
                                     </div>
                                     <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
                                         <li class="list-group-item py-1 small">
-                                            <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                            <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(2) + '%'"></span>
                                             <span data-bind="text: questionText"></span>
                                         </li>
                                     </ul>
@@ -353,7 +353,7 @@
                                             <td data-bind="text: projectName"></td>
                                             <td data-bind="text: checklistName"></td>
                                             <td class="text-center">
-                                                <span class="badge" data-bind="text: scorePercentage.toFixed(1) + '%', css: scorePercentage >= $root.report().successThreshold ? 'bg-success' : (scorePercentage >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                                <span class="badge" data-bind="text: scorePercentage.toFixed(2) + '%', css: scorePercentage >= $root.report().successThreshold ? 'bg-success' : (scorePercentage >= $root.report().warningThreshold ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                             </td>
                                             <td class="text-center">
                                                 <span data-bind="visible: yellowCards > 0" class="badge bg-warning text-dark me-1" data-bind="text: yellowCards"></span>
@@ -514,7 +514,7 @@
                                                     <!-- /ko -->
                                                     <!-- ko ifnot: $data.isNotApplicable -->
                                                     <!-- ko if: $data.scoringType !== 'Unscored' && $data.maxPoints > 0 -->
-                                                    <span class="text-success" data-bind="text: ($data.givenPoints || 0).toFixed(1)"></span>
+                                                    <span class="text-success" data-bind="text: ($data.givenPoints || 0).toFixed(2)"></span>
                                                     <!-- /ko -->
                                                     <!-- ko if: $data.scoringType === 'Unscored' || !($data.maxPoints > 0) -->
                                                     <span class="text-muted">-</span>

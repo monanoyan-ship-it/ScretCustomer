@@ -78,8 +78,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 ProjectCode = project.Code,
                 TotalInvitations = invitationCount,
                 TotalResponses = completedCount,
-                ResponseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 1) : 0,
-                AverageScore = completedCount > 0 ? Math.Round(avgScore, 1) : null,
+                ResponseRate = invitationCount > 0 ? Math.Round((decimal)completedCount / invitationCount * 100, 2) : 0,
+                AverageScore = completedCount > 0 ? Math.Round(avgScore, 2) : null,
                 LastResponseAt = lastResponse,
                 IsActive = project.IsActive
             });
@@ -235,7 +235,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     GroupName = group.Key ?? "Genel",
                     QuestionCount = group.Count(),
                     TotalResponses = evaluations.Count,
-                    AverageScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 1) : null
+                    AverageScore = totalMaxScore > 0 ? Math.Round(totalScore / totalMaxScore * 100, 2) : null
                 });
             }
             else
@@ -301,9 +301,9 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             OrganizationName = project.Organization?.Name,
             TotalInvitations = invitationCount > 0 ? invitationCount : evaluations.Count,
             TotalResponses = evaluations.Count,
-            ResponseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 1) : 100,
+            ResponseRate = invitationCount > 0 ? Math.Round((decimal)evaluations.Count / invitationCount * 100, 2) : 100,
             AverageScore = evaluations.Any(e => e.ScorePercentage.HasValue)
-                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 1)
+                ? Math.Round((decimal)evaluations.Where(e => e.ScorePercentage.HasValue).Average(e => e.ScorePercentage!.Value), 2)
                 : null,
             TotalQuestions = questions.Count,
             GroupScores = groupScores.OrderBy(g => g.GroupName).ToList(),
@@ -374,7 +374,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value), 2)
                     : null,
                 AverageScore = g.Where(a => a.EarnedPoints.HasValue).Any() && g.Key.WeightPoints > 0
-                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 1)
+                    ? (decimal?)Math.Round(g.Where(a => a.EarnedPoints.HasValue).Average(a => a.EarnedPoints!.Value) / g.Key.WeightPoints * 100, 2)
                     : null
             })
             .OrderBy(q => q.GroupName)
@@ -382,7 +382,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .ToList();
 
         var overallAverage = questionStats.Where(q => q.AverageScore.HasValue).Any()
-            ? Math.Round(questionStats.Where(q => q.AverageScore.HasValue).Average(q => q.AverageScore!.Value), 1)
+            ? Math.Round(questionStats.Where(q => q.AverageScore.HasValue).Average(q => q.AverageScore!.Value), 2)
             : 0;
 
         return new SurveyQuestionScoreDistributionResultDto
@@ -460,7 +460,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             {
                 var penaltyAppliedCount = group.Count(a => a.IsPenaltyApplied);
                 avgScorePercentage = responseCount > 0
-                    ? Math.Round((decimal)penaltyAppliedCount / responseCount * 100, 1)
+                    ? Math.Round((decimal)penaltyAppliedCount / responseCount * 100, 2)
                     : 0;
             }
             // Normal puanlı sorular
@@ -470,7 +470,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 if (answersWithEarned.Any())
                 {
                     var avgEarned = answersWithEarned.Average(a => a.EarnedPoints!.Value);
-                    avgScorePercentage = Math.Round(avgEarned / question.WeightPoints * 100, 1);
+                    avgScorePercentage = Math.Round(avgEarned / question.WeightPoints * 100, 2);
                 }
                 else
                 {
@@ -481,7 +481,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     if (answerScores.Any())
                     {
                         var avgScore = answerScores.Average();
-                        avgScorePercentage = Math.Round((decimal)avgScore / question.WeightPoints * 100, 1);
+                        avgScorePercentage = Math.Round((decimal)avgScore / question.WeightPoints * 100, 2);
                     }
                 }
             }
@@ -497,7 +497,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     .Count(ss => ss.SubCriteriaId == subCriteria.Id);
 
                 var percentage = responseCount > 0
-                    ? Math.Round((decimal)selectionCount / responseCount * 100, 1)
+                    ? Math.Round((decimal)selectionCount / responseCount * 100, 2)
                     : 0;
 
                 answerDistributions.Add(new SurveyAnswerDistributionDto
@@ -542,7 +542,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             ProjectId = projectId,
             ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name,
             TotalResponses = evaluationIds.Count,
-            OverallAverageScore = Math.Round(overallAverage, 1),
+            OverallAverageScore = Math.Round(overallAverage, 2),
             Questions = questionDetails
         };
     }

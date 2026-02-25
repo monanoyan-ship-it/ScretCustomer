@@ -201,7 +201,7 @@
                             <div class="text-end">
                                 <span class="badge bg-info me-1" data-bind="text: suggestionCount + ' @Html.T("Report.SuggestionSuffix", "öneri")'"></span>
                                 <span class="badge bg-primary me-1" data-bind="text: evaluationCount + ' @Html.T("Report.EvaluationSuffix", "değerlendirme")'"></span>
-                                <span class="badge bg-secondary" data-bind="text: averageScore.toFixed(1) + '%'"></span>
+                                <span class="badge bg-secondary" data-bind="text: averageScore.toFixed(2) + '%'"></span>
                             </div>
                         </li>
                     </ul>
@@ -348,10 +348,10 @@
                                         <!-- /ko -->
                                     </td>
                                     <td>
-                                        <span data-bind="text: givenPoints != null ? givenPoints.toFixed(1) : '-'"></span>
+                                        <span data-bind="text: givenPoints != null ? givenPoints.toFixed(2) : '-'"></span>
                                         <span class="text-muted" data-bind="text: ' / ' + (maxPoints || 0)"></span>
                                         <!-- ko if: percentageScore != null -->
-                                        <small class="d-block" data-bind="text: '(' + percentageScore.toFixed(1) + '%)', css: $root.getScoreClass(percentageScore)"></small>
+                                        <small class="d-block" data-bind="text: '(' + percentageScore.toFixed(2) + '%)', css: $root.getScoreClass(percentageScore)"></small>
                                         <!-- /ko -->
                                     </td>
                                     <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
@@ -426,7 +426,7 @@
                                     <td data-bind="text: evaluatedPersonnelName || dealerName || '-'"></td>
                                     <td>
                                         <!-- ko if: scorePercentage != null -->
-                                        <span data-bind="text: scorePercentage.toFixed(1) + '%', css: $root.getScoreClass(scorePercentage)"></span>
+                                        <span data-bind="text: scorePercentage.toFixed(2) + '%', css: $root.getScoreClass(scorePercentage)"></span>
                                         <!-- /ko -->
                                         <!-- ko if: scorePercentage == null -->
                                         <span class="text-muted">-</span>
@@ -548,7 +548,7 @@
                                 <div class="card bg-primary text-white">
                                     <div class="card-body py-2">
                                         <small class="text-white-50">@Html.T("Common.Score", "Puan")</small>
-                                        <div class="fw-bold fs-5" data-bind="text: detailsData() && detailsData().scorePercentage != null ? detailsData().scorePercentage.toFixed(1) + '%' : '-'"></div>
+                                        <div class="fw-bold fs-5" data-bind="text: detailsData() && detailsData().scorePercentage != null ? detailsData().scorePercentage.toFixed(2) + '%' : '-'"></div>
                                     </div>
                                 </div>
                             </div>

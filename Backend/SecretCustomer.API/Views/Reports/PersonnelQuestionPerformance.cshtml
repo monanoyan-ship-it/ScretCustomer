@@ -170,7 +170,7 @@
                             <!-- ko foreach: groupScores -->
                             <td class="text-center" data-bind="css: $root.getScoreCellClass(averageScore)">
                                 <!-- ko if: averageScore !== null -->
-                                <span data-bind="text: averageScore.toFixed(1) + '%'"></span>
+                                <span data-bind="text: averageScore.toFixed(2) + '%'"></span>
                                 <small class="d-block text-muted" data-bind="text: '(' + evaluationCount + ')'"></small>
                                 <!-- ko if: errorCount > 0 -->
                                 <span class="badge bg-danger badge-sm" data-bind="text: errorCount + ' @Html.T("Common.Error", "hata")'"></span>
@@ -182,7 +182,7 @@
                             </td>
                             <!-- /ko -->
                             <td class="text-center fw-bold" data-bind="css: $root.getScoreCellClass(overallAverage)">
-                                <span data-bind="text: overallAverage.toFixed(1) + '%'"></span>
+                                <span data-bind="text: overallAverage.toFixed(2) + '%'"></span>
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-secondary" data-bind="text: totalEvaluations"></span>

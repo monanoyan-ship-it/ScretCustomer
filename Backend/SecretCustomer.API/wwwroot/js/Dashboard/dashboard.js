@@ -23,7 +23,7 @@ function DashboardViewModel() {
     });
 
     self.formattedAverageScore = ko.computed(function() {
-        return self.averageScore().toFixed(1);
+        return self.averageScore().toFixed(2);
     });
 
     self.percentageChangeClass = ko.computed(function() {

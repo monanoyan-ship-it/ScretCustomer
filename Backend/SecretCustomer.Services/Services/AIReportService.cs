@@ -228,7 +228,7 @@ public class AIReportService : IAIReportService
             .Select(g => new QuestionAverage
             {
                 QuestionText = g.Key,
-                AverageScore = Math.Round(g.Average(a => (a.EarnedPoints!.Value / a.Question!.WeightPoints) * 100), 1),
+                AverageScore = Math.Round(g.Average(a => (a.EarnedPoints!.Value / a.Question!.WeightPoints) * 100), 2),
                 AnswerCount = g.Count()
             })
             .Where(q => q.AnswerCount >= 10) // En az 10 cevap

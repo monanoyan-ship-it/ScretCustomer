@@ -78,7 +78,7 @@
         <div class="col-md-3">
             <div class="card bg-info text-white">
                 <div class="card-body text-center py-3">
-                    <h3 class="mb-0" data-bind="text: averageScore().toFixed(1) + '%'"></h3>
+                    <h3 class="mb-0" data-bind="text: averageScore().toFixed(2) + '%'"></h3>
                     <small>@Html.T("Dealer.AverageScore", "Ortalama Puan")</small>
                 </div>
             </div>
@@ -126,7 +126,7 @@
                                 <span data-bind="text: totalScore + '/' + maxPossibleScore"></span>
                             </td>
                             <td class="text-center">
-                                <span class="badge" data-bind="text: '%' + scorePercentage.toFixed(1), css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
+                                <span class="badge" data-bind="text: '%' + scorePercentage.toFixed(2), css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
                             </td>
                             <td class="text-center">
                                 <!-- ko if: isPassed -->
@@ -175,7 +175,7 @@
                             <!-- /ko -->
                         </div>
                         <div class="col-md-6 text-end">
-                            <span class="badge fs-5" data-bind="text: '%' + scorePercentage.toFixed(1), css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
+                            <span class="badge fs-5" data-bind="text: '%' + scorePercentage.toFixed(2), css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
                             <span class="badge fs-5 ms-2" data-bind="text: isPassed ? '@Html.T("QuizReports.Passed", "Gecti")' : '@Html.T("Project.Failed", "Kaldi")', css: { 'bg-success': isPassed, 'bg-danger': !isPassed }"></span>
                         </div>
                     </div>

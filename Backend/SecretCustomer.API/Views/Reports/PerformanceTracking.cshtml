@@ -275,7 +275,7 @@
                                                 <div class="progress-bar" role="progressbar"
                                                      data-bind="style: { width: Math.min(targetCompletionPercentage, 100) + '%' },
                                                                 css: targetCompletionPercentage >= 100 ? 'bg-success' : (targetCompletionPercentage >= 50 ? 'bg-primary' : 'bg-warning'),
-                                                                text: targetCompletionPercentage.toFixed(1) + '%'">
+                                                                text: targetCompletionPercentage.toFixed(2) + '%'">
                                                 </div>
                                             </div>
                                             <!-- /ko -->
@@ -287,7 +287,7 @@
                                             <!-- ko if: dailyQuota -->
                                             <span data-bind="text: todayCount + '/' + dailyQuota"></span>
                                             <br>
-                                            <small class="badge" data-bind="text: (dailyQuotaUsagePercentage || 0).toFixed(0) + '%',
+                                            <small class="badge" data-bind="text: (dailyQuotaUsagePercentage || 0).toFixed(2) + '%',
                                                    css: dailyQuotaUsagePercentage >= 100 ? 'bg-success' : (dailyQuotaUsagePercentage >= 50 ? 'bg-primary' : 'bg-secondary')"></small>
                                             <!-- /ko -->
                                             <!-- ko ifnot: dailyQuota -->
@@ -298,7 +298,7 @@
                                             <!-- ko if: monthlyQuota -->
                                             <span data-bind="text: monthCount + '/' + monthlyQuota"></span>
                                             <br>
-                                            <small class="badge" data-bind="text: (monthlyQuotaUsagePercentage || 0).toFixed(0) + '%',
+                                            <small class="badge" data-bind="text: (monthlyQuotaUsagePercentage || 0).toFixed(2) + '%',
                                                    css: monthlyQuotaUsagePercentage >= 100 ? 'bg-success' : (monthlyQuotaUsagePercentage >= 50 ? 'bg-primary' : 'bg-secondary')"></small>
                                             <!-- /ko -->
                                             <!-- ko ifnot: monthlyQuota -->
@@ -409,7 +409,7 @@
                                         </td>
                                         <td class="text-center">
                                             <!-- ko if: averageScore > 0 -->
-                                            <span class="badge" data-bind="text: averageScore.toFixed(1) + '%',
+                                            <span class="badge" data-bind="text: averageScore.toFixed(2) + '%',
                                                    css: averageScore >= (successThreshold || 80) ? 'bg-success' : (averageScore >= (warningThreshold || 60) ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                             <!-- /ko -->
                                             <!-- ko if: averageScore === 0 -->

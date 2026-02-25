@@ -883,8 +883,8 @@ public class AssignmentService : IAssignmentService
             CompletedCount = completed.Count,
             ExpiredCount = assignments.Count(a => !a.IsCompleted && a.DueDate < now),
             CancelledCount = 0, // IsDeleted ones are not included
-            CompletionRate = assignments.Count > 0 ? Math.Round((decimal)completed.Count / assignments.Count * 100, 1) : 0,
-            AverageScore = evaluationScores.Any() ? Math.Round(evaluationScores.Average(), 1) : 0,
+            CompletionRate = assignments.Count > 0 ? Math.Round((decimal)completed.Count / assignments.Count * 100, 2) : 0,
+            AverageScore = evaluationScores.Any() ? Math.Round(evaluationScores.Average(), 2) : 0,
             TotalYellowCards = completed.SelectMany(a => a.Project.Evaluations).Sum(e => e.YellowCardCount),
             TotalRedCards = completed.SelectMany(a => a.Project.Evaluations).Sum(e => e.RedCardCount)
         };
@@ -905,7 +905,7 @@ public class AssignmentService : IAssignmentService
             CompletedAssignments = p.Assignments.Count(a => a.IsCompleted),
             PendingAssignments = p.Assignments.Count(a => !a.IsCompleted),
             CompletionPercentage = p.Assignments.Count > 0
-                ? Math.Round((decimal)p.Assignments.Count(a => a.IsCompleted) / p.Assignments.Count * 100, 1)
+                ? Math.Round((decimal)p.Assignments.Count(a => a.IsCompleted) / p.Assignments.Count * 100, 2)
                 : 0
         });
     }
@@ -1314,7 +1314,7 @@ public class AssignmentService : IAssignmentService
             PendingAssignments = assignments.Count(a => !a.IsCompleted),
             OverdueAssignments = assignments.Count(a => a.DueDate < TurkeyTime.Now && !a.IsCompleted),
             CompletionRate = assignments.Count > 0
-                ? Math.Round((decimal)assignments.Count(a => a.IsCompleted) / assignments.Count * 100, 1)
+                ? Math.Round((decimal)assignments.Count(a => a.IsCompleted) / assignments.Count * 100, 2)
                 : 0
         };
     }

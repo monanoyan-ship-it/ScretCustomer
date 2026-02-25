@@ -564,7 +564,7 @@ public class SurveyApiController : ControllerBase
             completed = completedAssignments.Count,
             pending = allPersonnel.Count - completedAssignments.Count,
             completionRate = allPersonnel.Count > 0
-                ? Math.Round((decimal)completedAssignments.Count / allPersonnel.Count * 100, 1)
+                ? Math.Round((decimal)completedAssignments.Count / allPersonnel.Count * 100, 2)
                 : 0
         };
 
@@ -965,7 +965,7 @@ public class SurveyApiController : ControllerBase
             opened = invitations.Count(i => i.IsOpened),
             completed = invitations.Count(i => i.IsCompleted),
             completionRate = invitations.Count > 0
-                ? Math.Round((decimal)invitations.Count(i => i.IsCompleted) / invitations.Count * 100, 1)
+                ? Math.Round((decimal)invitations.Count(i => i.IsCompleted) / invitations.Count * 100, 2)
                 : 0
         };
 

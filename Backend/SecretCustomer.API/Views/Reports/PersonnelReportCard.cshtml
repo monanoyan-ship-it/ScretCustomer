@@ -180,7 +180,7 @@
             <div class="col-md-2">
                 <div class="card text-center h-100">
                     <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h2>
+                        <h2 class="mb-0" data-bind="text: averageScore.toFixed(2) + '%', css: averageScore >= 70 ? 'text-success' : (averageScore >= 50 ? 'text-warning' : 'text-danger')"></h2>
                         <small class="text-muted">@Html.T("Report.AverageScore", "Ortalama Puan")</small>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
             <div class="col-md-2">
                 <div class="card text-center h-100 bg-success text-white">
                     <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: bestScore.toFixed(1) + '%'"></h2>
+                        <h2 class="mb-0" data-bind="text: bestScore.toFixed(2) + '%'"></h2>
                         <small>@Html.T("Report.HighestScore", "En Yüksek")</small>
                     </div>
                 </div>
@@ -196,7 +196,7 @@
             <div class="col-md-2">
                 <div class="card text-center h-100 bg-danger text-white">
                     <div class="card-body py-3">
-                        <h2 class="mb-0" data-bind="text: worstScore.toFixed(1) + '%'"></h2>
+                        <h2 class="mb-0" data-bind="text: worstScore.toFixed(2) + '%'"></h2>
                         <small>@Html.T("Report.LowestScore", "En Düşük")</small>
                     </div>
                 </div>
@@ -251,7 +251,7 @@
                                         <td data-bind="text: monthName"></td>
                                         <td class="text-center" data-bind="text: evaluationCount"></td>
                                         <td class="text-center">
-                                            <span class="badge" data-bind="text: averageScore.toFixed(1) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
+                                            <span class="badge" data-bind="text: averageScore.toFixed(2) + '%', css: averageScore >= 70 ? 'bg-success' : (averageScore >= 50 ? 'bg-warning text-dark' : 'bg-danger')"></span>
                                         </td>
                                         <td class="text-center" data-bind="text: yellowCards"></td>
                                         <td class="text-center" data-bind="text: redCards"></td>
@@ -288,7 +288,7 @@
                                             <div class="progress-bar" role="progressbar"
                                                  data-bind="style: { width: percentageScore + '%' },
                                                             css: percentageScore >= 70 ? 'bg-success' : (percentageScore >= 50 ? 'bg-warning' : 'bg-danger'),
-                                                            text: percentageScore.toFixed(1) + '%'">
+                                                            text: percentageScore.toFixed(2) + '%'">
                                             </div>
                                         </div>
                                     </td>
@@ -312,7 +312,7 @@
                         </div>
                         <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().strengths : []">
                             <li class="list-group-item py-1 small">
-                                <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                <span class="badge bg-success me-1" data-bind="text: percentageScore.toFixed(2) + '%'"></span>
                                 <span data-bind="text: questionText"></span>
                             </li>
                         </ul>
@@ -323,7 +323,7 @@
                         </div>
                         <ul class="list-group list-group-flush" data-bind="foreach: report() ? report().weaknesses : []">
                             <li class="list-group-item py-1 small">
-                                <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(0) + '%'"></span>
+                                <span class="badge bg-danger me-1" data-bind="text: percentageScore.toFixed(2) + '%'"></span>
                                 <span data-bind="text: questionText"></span>
                             </li>
                         </ul>

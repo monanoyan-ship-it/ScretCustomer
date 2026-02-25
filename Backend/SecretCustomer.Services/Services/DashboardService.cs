@@ -285,7 +285,7 @@ public class DashboardService : IDashboardService
             ThisWeekEvaluations = weekCount,
             ThisMonthEvaluations = monthEvaluations,
             DailyTarget = dailyTarget,
-            DailyTargetPercentage = Math.Round(dailyPercentage, 1),
+            DailyTargetPercentage = Math.Round(dailyPercentage, 2),
             TodayAverageScore = Math.Round(todayAverage, 2),
             ThisWeekAverageScore = Math.Round(weekAverage, 2),
             DailyTrends = dailyTrends
@@ -486,7 +486,7 @@ public class DashboardService : IDashboardService
                 ProjectName = !string.IsNullOrEmpty(p.Code) ? $"{p.Code} - {p.Name}" : p.Name,
                 Target = target,
                 Completed = completed,
-                Percentage = target > 0 ? Math.Round((decimal)completed / target * 100, 1) : 0
+                Percentage = target > 0 ? Math.Round((decimal)completed / target * 100, 2) : 0
             };
         }).ToList();
 
@@ -497,7 +497,7 @@ public class DashboardService : IDashboardService
             PeriodEndDate = periodEnd,
             PeriodTarget = periodTarget,
             PeriodCompleted = periodCompleted,
-            PeriodPercentage = Math.Round(periodPercentage, 1),
+            PeriodPercentage = Math.Round(periodPercentage, 2),
             Remaining = Math.Max(0, periodTarget - periodCompleted),
             DailyTarget = dailyTarget,
             TodayCompleted = todayCompleted,
@@ -754,7 +754,7 @@ public class DashboardService : IDashboardService
                     SupervisorName = g.Key.SupervisorName,
                     OrganizationName = g.Key.OrganizationName,
                     EvaluationCount = g.Count(),
-                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 1),
+                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 2),
                     MinScore = g.Min(e => e.Score),
                     MaxScore = g.Max(e => e.Score)
                 })
@@ -772,7 +772,7 @@ public class DashboardService : IDashboardService
                     SupervisorName = g.Key,
                     PersonnelCount = g.Select(e => e.PersonnelName).Distinct().Count(),
                     EvaluationCount = g.Count(),
-                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 1)
+                    AverageScore = Math.Round(g.Average(e => (double)e.Score), 2)
                 })
                 .OrderByDescending(s => s.EvaluationCount)
                 .ToList()
@@ -785,7 +785,7 @@ public class DashboardService : IDashboardService
             Month = targetMonth,
             MonthName = new DateTime(targetYear, targetMonth, 1).ToString("MMMM", new System.Globalization.CultureInfo("tr-TR")),
             TotalCount = evaluations.Count,
-            AverageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)e.Score), 1) : 0,
+            AverageScore = evaluations.Any() ? Math.Round(evaluations.Average(e => (double)e.Score), 2) : 0,
             Evaluations = evaluations,
             ShowPersonnelName = showPersonnelName,
             IsManager = isManager,

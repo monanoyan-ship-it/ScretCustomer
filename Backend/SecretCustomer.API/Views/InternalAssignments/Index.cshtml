@@ -208,7 +208,7 @@
                                 </td>
                                 <td>
                                     <span data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
-                                        <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
+                                        <span data-bind="text: evaluationScore ? evaluationScore.toFixed(2) + '%' : '-'"></span>
                                     </span>
                                     <span data-bind="visible: evaluationScore === null || evaluationScore === undefined" class="text-muted">-</span>
                                 </td>
@@ -478,7 +478,7 @@
                             <strong>@Html.T("Common.Status", "Durum"):</strong> <span class="badge" data-bind="css: $parent.getStatusBadgeClass(status), text: $parent.getStatusText(status)"></span>
                         </div>
                         <div class="col-md-6" data-bind="visible: evaluationScore !== null && evaluationScore !== undefined">
-                            <strong>@Html.T("Common.Score", "Puan"):</strong> <span data-bind="text: evaluationScore ? evaluationScore.toFixed(1) + '%' : '-'"></span>
+                            <strong>@Html.T("Common.Score", "Puan"):</strong> <span data-bind="text: evaluationScore ? evaluationScore.toFixed(2) + '%' : '-'"></span>
                         </div>
                     </div>
                     <div data-bind="visible: $data.evaluatorName" class="mb-3">
