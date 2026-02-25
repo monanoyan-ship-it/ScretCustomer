@@ -897,6 +897,7 @@ var FieldWorkerVisitPopupViewModel = function() {
                     } else {
                         toastr.success(T('FieldWorker.DraftSaved', 'Ziyaret taslak olarak kaydedildi.'));
                         self.notifyOpener();
+                        window.close();
                     }
                 });
             })
@@ -1058,21 +1059,27 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.showSummary();
     };
 
-    // Opener pencereyi bilgilendir
+    // Opener pencereyi bilgilendir (filtreleri bozmadan)
     self.notifyOpener = function() {
-        if (window.opener && !window.opener.closed) {
-            try {
-                // Dashboard için postMessage kullan
-                window.opener.postMessage('visitSaved', '*');
+        if (!window.opener || window.opener.closed) return;
+        try {
+            // Dashboard için postMessage kullan
+            window.opener.postMessage('visitSaved', '*');
 
-                // Eski yöntem (evaluations sayfası için)
-                var vmElement = window.opener.document.getElementById('evaluations-app');
-                if (vmElement && ko.dataFor(vmElement)) {
-                    ko.dataFor(vmElement).loadEvaluations();
-                }
-            } catch (e) {
-                console.log('Opener refresh error:', e);
+            // /Evaluations sayfası
+            var evalEl = window.opener.document.getElementById('evaluations-app');
+            if (evalEl && ko.dataFor(evalEl) && ko.dataFor(evalEl).loadEvaluations) {
+                ko.dataFor(evalEl).loadEvaluations();
             }
+            // /GolgeMusteri/Aramalarim sayfası
+            var aramaEl = window.opener.document.getElementById('aramalarim-app');
+            if (aramaEl && ko.dataFor(aramaEl)) {
+                var vm = ko.dataFor(aramaEl);
+                if (vm.loadAtamalar) vm.loadAtamalar();
+                if (vm.loadTamamlananAramalar) vm.loadTamamlananAramalar();
+            }
+        } catch (e) {
+            console.log('Opener refresh error:', e);
         }
     };
 

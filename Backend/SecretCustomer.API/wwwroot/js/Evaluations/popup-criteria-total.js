@@ -727,22 +727,9 @@ var EvaluationPopupViewModel = function() {
         .then(function(result) {
             toastr.success(isComplete ? 'Değerlendirme tamamlandı' : 'Taslak kaydedildi');
 
-            // Opener'ı bilgilendir
-            if (window.opener && !window.opener.closed) {
-                // Ana sayfadaki ViewModel'in loadEvaluations metodunu çağır
-                try {
-                    var vmElement = window.opener.document.getElementById('evaluations-app');
-                    if (vmElement && ko.dataFor(vmElement)) {
-                        ko.dataFor(vmElement).loadEvaluations();
-                    }
-                } catch (e) {
-                    console.log('Opener refresh error:', e);
-                }
-            }
-
-            if (isComplete) {
-                window.close();
-            }
+            // Opener'ı bilgilendir (filtreleri bozmadan)
+            self.notifyOpener();
+            window.close();
         })
         .catch(function(error) {
             console.error('Save error:', error);
@@ -752,6 +739,27 @@ var EvaluationPopupViewModel = function() {
         .finally(function() {
             self.isSaving(false);
         });
+    };
+
+    // Opener pencereyi bilgilendir (filtreleri bozmadan)
+    self.notifyOpener = function() {
+        if (!window.opener || window.opener.closed) return;
+        try {
+            // /Evaluations sayfası
+            var evalEl = window.opener.document.getElementById('evaluations-app');
+            if (evalEl && ko.dataFor(evalEl) && ko.dataFor(evalEl).loadEvaluations) {
+                ko.dataFor(evalEl).loadEvaluations();
+            }
+            // /GolgeMusteri/Aramalarim sayfası
+            var aramaEl = window.opener.document.getElementById('aramalarim-app');
+            if (aramaEl && ko.dataFor(aramaEl)) {
+                var vm = ko.dataFor(aramaEl);
+                if (vm.loadAtamalar) vm.loadAtamalar();
+                if (vm.loadTamamlananAramalar) vm.loadTamamlananAramalar();
+            }
+        } catch (e) {
+            console.log('Opener refresh error:', e);
+        }
     };
 
     // Başlat
