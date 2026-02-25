@@ -1249,14 +1249,15 @@ public class GmService : IGmService
         return gunler;
     }
 
-    public async Task<object> GetTamamlananAramalarAsync(List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<object> GetTamamlananAramalarAsync(int userId, List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.GmAtamalar
             .Include(a => a.GmDonem)
             .Include(a => a.GmDonemSoru)
                 .ThenInclude(ds => ds.GmHedefFirma)
             .Include(a => a.User)
-            .Where(a => a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi);
+            .Where(a => a.DurumId == GmAtamaDurumlari.Ids.Tamamlandi)
+            .Where(a => a.UserId == userId);
 
         if (donemIds?.Any() == true)
         {
@@ -1309,7 +1310,7 @@ public class GmService : IGmService
             GerceklesmeTarihi = x.GerceklesmeTarihi,
             AramaSaati = x.AramaSaati,
             Not = x.Not,
-            KuponKodu = x.KuponKodu,
+            KuponKodu = x.KuponKodu ?? donemSoru?.KuponKodu,
             DurumId = x.DurumId,
             DurumText = GmAtamaDurumlari.GetById(x.DurumId)?.Description ?? "Bilinmiyor",
             DurumCss = GmAtamaDurumlari.GetById(x.DurumId)?.CssClass ?? "bg-secondary"

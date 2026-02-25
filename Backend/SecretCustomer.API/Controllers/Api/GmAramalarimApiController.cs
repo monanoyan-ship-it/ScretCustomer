@@ -75,7 +75,9 @@ public class GmAramalarimApiController : BaseApiController
     {
         try
         {
-            var result = await _gmService.GetTamamlananAramalarAsync(donemIds, startDate, endDate);
+            var userId = GetUserId();
+            if (userId == 0) return Unauthorized();
+            var result = await _gmService.GetTamamlananAramalarAsync(userId, donemIds, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)
