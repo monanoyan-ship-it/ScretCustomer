@@ -45,6 +45,9 @@ public class ProjectListDto
     public int TotalYellowCards { get; set; }
     public int TotalRedCards { get; set; }
     public int TeamMemberCount { get; set; }
+
+    // Checklist durumu
+    public bool IsChecklistDeleted { get; set; }
 }
 
 public class ProjectDto

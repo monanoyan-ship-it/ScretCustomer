@@ -208,7 +208,13 @@ public class ProjectService : IProjectService
             query = query.Where(p => p.StartDate <= end || p.EndDate <= end);
         }
 
-        return await query
+        // Silinmiş checklist'leri de dahil et (global query filter bypass)
+        var checklistLookup1 = await _context.Checklists
+            .IgnoreQueryFilters()
+            .Select(c => new { c.Id, c.Name, c.IsDeleted })
+            .ToDictionaryAsync(c => c.Id);
+
+        var list1 = await query
             .OrderByDescending(p => p.Id)
             .Select(p => new ProjectListDto
             {
@@ -217,7 +223,7 @@ public class ProjectService : IProjectService
                 Name = p.Name,
                 Description = p.Description,
                 ChecklistId = p.ChecklistId,
-                ChecklistName = p.Checklist != null ? p.Checklist.Name : null,
+                // ChecklistName ve IsChecklistDeleted → aşağıda checklistLookup1 ile set edilir
                 ProjectType = ProjectTypes.GetById(p.ProjectTypeId) != null ? ProjectTypes.GetById(p.ProjectTypeId)!.SystemName : "",
                 Status = ProjectStatuses.GetById(p.StatusId) != null ? ProjectStatuses.GetById(p.StatusId)!.SystemName : "",
                 AssignmentType = AssignmentTypes.GetById(p.AssignmentTypeId) != null ? AssignmentTypes.GetById(p.AssignmentTypeId)!.SystemName : "",
@@ -266,6 +272,22 @@ public class ProjectService : IProjectService
                 TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
             })
             .ToListAsync();
+
+        // Checklist bilgilerini dictionary'den patch et
+        foreach (var item in list1)
+        {
+            if (checklistLookup1.TryGetValue(item.ChecklistId, out var cl))
+            {
+                item.ChecklistName = cl.Name;
+                item.IsChecklistDeleted = cl.IsDeleted;
+            }
+            else
+            {
+                item.IsChecklistDeleted = true;
+            }
+        }
+
+        return list1;
     }
 
     /// <summary>
@@ -379,7 +401,13 @@ public class ProjectService : IProjectService
             }
         }
 
-        return await query
+        // Silinmiş checklist'leri de dahil et (global query filter bypass)
+        var checklistLookup2 = await _context.Checklists
+            .IgnoreQueryFilters()
+            .Select(c => new { c.Id, c.Name, c.IsDeleted })
+            .ToDictionaryAsync(c => c.Id);
+
+        var list2 = await query
             .OrderByDescending(p => p.Id)
             .Select(p => new ProjectListDto
             {
@@ -388,7 +416,7 @@ public class ProjectService : IProjectService
                 Name = p.Name,
                 Description = p.Description,
                 ChecklistId = p.ChecklistId,
-                ChecklistName = p.Checklist != null ? p.Checklist.Name : null,
+                // ChecklistName ve IsChecklistDeleted → aşağıda checklistLookup2 ile set edilir
                 ProjectType = ProjectTypes.GetById(p.ProjectTypeId) != null ? ProjectTypes.GetById(p.ProjectTypeId)!.SystemName : "",
                 Status = ProjectStatuses.GetById(p.StatusId) != null ? ProjectStatuses.GetById(p.StatusId)!.SystemName : "",
                 AssignmentType = AssignmentTypes.GetById(p.AssignmentTypeId) != null ? AssignmentTypes.GetById(p.AssignmentTypeId)!.SystemName : "",
@@ -434,6 +462,22 @@ public class ProjectService : IProjectService
                 TeamMemberCount = p.TeamMembers.Count(tm => !tm.IsDeleted)
             })
             .ToListAsync();
+
+        // Checklist bilgilerini dictionary'den patch et
+        foreach (var item in list2)
+        {
+            if (checklistLookup2.TryGetValue(item.ChecklistId, out var cl))
+            {
+                item.ChecklistName = cl.Name;
+                item.IsChecklistDeleted = cl.IsDeleted;
+            }
+            else
+            {
+                item.IsChecklistDeleted = true;
+            }
+        }
+
+        return list2;
     }
 
     public async Task<ProjectDto> CreateAsync(CreateProjectDto dto)
@@ -634,6 +678,11 @@ public class ProjectService : IProjectService
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
+        // Checklist silinmişse kapatma engelle
+        var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == project.ChecklistId);
+        if (!checklistExists)
+            throw new InvalidOperationException("Bu projenin kontrol listesi silinmiş. Durum değişikliği yapılamaz.");
+
         project.IsActive = false;
         project.StatusId = ProjectStatuses.Ids.Completed;
         project.UpdatedAt = TurkeyTime.Now;
@@ -647,6 +696,11 @@ public class ProjectService : IProjectService
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
+
+        // Checklist silinmişse status değişikliği engelle
+        var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == project.ChecklistId);
+        if (!checklistExists)
+            throw new InvalidOperationException("Bu projenin kontrol listesi silinmiş. Durum değişikliği yapılamaz.");
 
         var statusItem = ProjectStatuses.GetBySystemName(dto.Status);
         if (statusItem != null)
@@ -678,6 +732,11 @@ public class ProjectService : IProjectService
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
 
+        // Checklist silinmişse tamamlama engelle
+        var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == project.ChecklistId);
+        if (!checklistExists)
+            throw new InvalidOperationException("Bu projenin kontrol listesi silinmiş. Durum değişikliği yapılamaz.");
+
         project.StatusId = ProjectStatuses.Ids.Completed;
         project.IsActive = false;
         project.Notes = (project.Notes ?? "") + "\n" + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm") + ": Proje tamamlandi";
@@ -708,6 +767,11 @@ public class ProjectService : IProjectService
         var project = await _context.Projects.FindAsync(id);
         if (project == null)
             throw new KeyNotFoundException($"Project with ID {id} not found");
+
+        // Checklist silinmişse iptal engelle
+        var checklistExists = await _context.Checklists.AnyAsync(c => c.Id == project.ChecklistId);
+        if (!checklistExists)
+            throw new InvalidOperationException("Bu projenin kontrol listesi silinmiş. Durum değişikliği yapılamaz.");
 
         project.StatusId = ProjectStatuses.Ids.Cancelled;
         project.IsActive = false;

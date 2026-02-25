@@ -262,7 +262,12 @@
                                 </small>
                             </td>
                             <td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td>
-                            <td><small data-bind="text: checklistName || '-'"></small></td>
+                            <td>
+                                <small data-bind="text: checklistName || '-'"></small>
+                                <!-- ko if: isChecklistDeleted -->
+                                <span class="badge bg-danger ms-1">@Html.T("Project.ChecklistDeleted", "Silinmiş")</span>
+                                <!-- /ko -->
+                            </td>
                             <td><span class="badge" data-bind="text: $parent.getStatusText(status), css: $parent.getStatusBadge(status)"></span></td>
                             <td style="min-width: 150px;">
                                 <!-- ko if: completionPercentage >= 0 -->
@@ -288,19 +293,19 @@
                                     <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }, clickBubble: false" title="@Html.T("Common.Detail", "Detay")">
                                         <i class="bi bi-eye"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: status !== 'Completed' && status !== 'Cancelled'" title="@Html.T("Common.Edit", "Düzenle")">
+                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted" title="@Html.T("Common.Edit", "Düzenle")">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, clickBubble: false, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'" title="@Html.T("Common.Start", "Başlat")">
+                                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.startProject($data); }, clickBubble: false, visible: (status === 'Draft' || status === 'Planned' || status === 'Paused') && !isChecklistDeleted" title="@Html.T("Common.Start", "Başlat")">
                                         <i class="bi bi-play"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-warning" data-bind="click: function() { $parent.pauseProject($data); }, clickBubble: false, visible: status === 'Active'" title="@Html.T("Project.Pause", "Duraklat")">
+                                    <button type="button" class="btn btn-outline-warning" data-bind="click: function() { $parent.pauseProject($data); }, clickBubble: false, visible: status === 'Active' && !isChecklistDeleted" title="@Html.T("Project.Pause", "Duraklat")">
                                         <i class="bi bi-pause"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, clickBubble: false, visible: status === 'Active'" title="@Html.T("Common.Complete", "Tamamla")">
+                                    <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, clickBubble: false, visible: status === 'Active' && !isChecklistDeleted" title="@Html.T("Common.Complete", "Tamamla")">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, clickBubble: false, visible: status === 'Draft'" title="@Html.T("Common.Delete", "Sil")">
+                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, clickBubble: false, visible: status === 'Draft' || isChecklistDeleted" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -386,7 +391,7 @@
                                 </small>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }, clickBubble: false" title="@Html.T("Common.Detail", "Detay")"><i class="bi bi-eye"></i></button>
-                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false" title="@Html.T("Common.Edit", "Düzenle")"><i class="bi bi-pencil"></i></button>
+                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: !isChecklistDeleted" title="@Html.T("Common.Edit", "Düzenle")"><i class="bi bi-pencil"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -634,6 +639,12 @@
                     <button type="button" class="btn-close" data-bind="click: $parent.closeDetailModal"></button>
                 </div>
                 <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Checklist Silinmiş Uyarısı -->
+                    <!-- ko if: isChecklistDeleted -->
+                    <div class="alert alert-danger mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>@Html.T("Project.ChecklistDeletedWarning", "Bu projenin kontrol listesi silinmiş. Yalnızca silme işlemi yapılabilir.")
+                    </div>
+                    <!-- /ko -->
                     <!-- Summary Cards -->
                     <div class="row mb-4">
                         <div class="col-md-3">
@@ -688,7 +699,7 @@
                                             <table class="table table-sm table-borderless mb-0">
                                                 <tr><td class="text-muted" style="width:40%;">@Html.T("Project.ProjectCode", "Proje Kodu"):</td><td><code data-bind="text: code || '-'"></code></td></tr>
                                                 <tr><td class="text-muted">@Html.T("Project.ProjectType", "Proje Tipi"):</td><td><span class="badge" data-bind="text: $parent.getProjectTypeText(projectType), css: $parent.getProjectTypeBadge(projectType)"></span></td></tr>
-                                                <tr><td class="text-muted">Kontrol Listesi:</td><td data-bind="text: checklistName"></td></tr>
+                                                <tr><td class="text-muted">Kontrol Listesi:</td><td><span data-bind="text: checklistName"></span><!-- ko if: isChecklistDeleted --> <span class="badge bg-danger">@Html.T("Project.ChecklistDeleted", "Silinmiş")</span><!-- /ko --></td></tr>
                                                 <tr><td class="text-muted">@Html.T("Common.Customer", "Müşteri"):</td><td><!-- ko if: customerName --><span data-bind="text: customerName"></span><!-- ko if: customerCode --> (<code data-bind="text: customerCode"></code>)<!-- /ko --><!-- /ko --><!-- ko ifnot: customerName -->-<!-- /ko --></td></tr>
                                                 <tr><td class="text-muted">@Html.T("Project.ProjectManager", "Proje Yöneticisi"):</td><td data-bind="text: projectManagerName || '-'"></td></tr>
                                             </table>
@@ -780,7 +791,7 @@
                                 </div>
                             </div>
                             <!-- Status Actions -->
-                            <div class="card mb-3" data-bind="visible: status !== 'Completed' && status !== 'Cancelled'">
+                            <div class="card mb-3" data-bind="visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted">
                                 <div class="card-header py-2"><i class="bi bi-toggles"></i> @Html.T("Project.StatusActions", "Durum İşlemleri")</div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
@@ -818,7 +829,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled'">
+                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted">
                         <i class="bi bi-pencil"></i> @Html.T("Common.Edit", "Düzenle")
                     </button>
                     <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">

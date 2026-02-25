@@ -1232,6 +1232,12 @@
   <LocaleResource Name="Project.Pause">
     <Value>Pausieren</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.ChecklistDeleted">
+    <Value>Gelöscht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ChecklistDeletedWarning">
+    <Value>Die Checkliste dieses Projekts wurde gelöscht. Nur Löschung ist möglich.</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.Cancel">
     <Value>Abbrechen</Value>
   </LocaleResource>
@@ -10743,5 +10749,11 @@
   </LocaleResource>
   <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
     <Value>Unterkriterien-Auswahl und Verteilung der unbewerteten Fragen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
+    <Value>Kontaktierter Vertreter</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.GorusulenTemsilciAra">
+    <Value>Nach Name suchen...</Value>
   </LocaleResource>
 </Language>

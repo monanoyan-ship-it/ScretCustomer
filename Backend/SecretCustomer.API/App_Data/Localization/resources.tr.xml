@@ -1238,6 +1238,12 @@
   <LocaleResource Name="Project.Pause">
     <Value>Duraklat</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.ChecklistDeleted">
+    <Value>Silinmiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ChecklistDeletedWarning">
+    <Value>Bu projenin kontrol listesi silinmiş. Yalnızca silme işlemi yapılabilir.</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.Cancel">
     <Value>İptal Et</Value>
   </LocaleResource>
@@ -10740,6 +10746,12 @@
   </LocaleResource>
   <LocaleResource Name="GolgeMusteri.Aramalarim">
     <Value>Aramalarım</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
+    <Value>Görüşülen Temsilci</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.GorusulenTemsilciAra">
+    <Value>Ad soyad yazarak arayın...</Value>
   </LocaleResource>
   <LocaleResource Name="Report.UnscoredQuestions">
     <Value>Puansız Soru Raporu</Value>
