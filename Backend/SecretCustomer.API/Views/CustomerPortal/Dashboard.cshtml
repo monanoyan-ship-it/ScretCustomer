@@ -242,7 +242,7 @@
                                 <div class="col-12 col-md-4">
                                     <select class="form-select form-select-sm" data-bind="value: scoreDistProjectId, optionsCaption: '@Html.T("Common.AllProjects", "Tüm Projeler")'">
                                         <!-- ko foreach: scoreDistProjects -->
-                                        <option data-bind="value: id, text: name"></option>
+                                        <option data-bind="value: id, text: code ? code + ' - ' + name : name"></option>
                                         <!-- /ko -->
                                     </select>
                                 </div>
@@ -548,7 +548,7 @@
                             <select class="form-select form-select-sm" data-bind="value: allEvalsProjectId">
                                 <option value="">@Html.T("Common.AllProjects", "Tüm Projeler")</option>
                                 <!-- ko foreach: allEvalsProjects -->
-                                <option data-bind="value: id, text: name"></option>
+                                <option data-bind="value: id, text: code ? code + ' - ' + name : name"></option>
                                 <!-- /ko -->
                             </select>
                         </div>

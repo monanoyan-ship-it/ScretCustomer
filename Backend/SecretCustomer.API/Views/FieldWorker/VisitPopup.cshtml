@@ -183,36 +183,22 @@
                                                 <!-- /ko -->
                                             </td>
                                             <td class="text-center">
-                                                <!-- ko if: $data.isNotApplicable -->
-                                                <span class="badge bg-secondary">@Html.T("Evaluation.NotApplicable", "Gerekmedi")</span>
-                                                <!-- /ko -->
-                                                <!-- ko ifnot: $data.isNotApplicable -->
                                                 <!-- ko if: $data.answerNumeric !== null && $data.answerNumeric !== '' -->
                                                 <span class="badge bg-primary" data-bind="text: $data.answerNumeric + '/' + $data.maxPoints"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.answerNumeric === null || $data.answerNumeric === '' -->
                                                 <span class="text-muted">-</span>
                                                 <!-- /ko -->
-                                                <!-- /ko -->
                                             </td>
                                             <td class="text-center">
-                                                <!-- ko if: $data.isNotApplicable -->
-                                                <span class="text-muted">-</span>
-                                                <!-- /ko -->
-                                                <!-- ko ifnot: $data.isNotApplicable -->
                                                 <!-- ko if: $data.scoringType !== 'Unscored' -->
                                                 <span data-bind="text: $data.weightPoints"></span>
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.scoringType === 'Unscored' -->
                                                 <span class="text-muted">-</span>
                                                 <!-- /ko -->
-                                                <!-- /ko -->
                                             </td>
                                             <td class="text-center">
-                                                <!-- ko if: $data.isNotApplicable -->
-                                                <span class="text-muted">-</span>
-                                                <!-- /ko -->
-                                                <!-- ko ifnot: $data.isNotApplicable -->
                                                 <!-- ko if: $data.scoringType === 'Scored' -->
                                                 <span class="text-success" data-bind="text: $data.earnedPoints.toFixed(1)"></span>
                                                 <!-- /ko -->
@@ -224,7 +210,6 @@
                                                 <!-- /ko -->
                                                 <!-- ko if: $data.scoringType === 'Unscored' -->
                                                 <span class="text-muted">-</span>
-                                                <!-- /ko -->
                                                 <!-- /ko -->
                                             </td>
                                         </tr>

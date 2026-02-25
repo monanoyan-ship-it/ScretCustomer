@@ -357,7 +357,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Proje tipine göre ayrı aylık değerlendirme trendleri
     /// </summary>
     [HttpGet("dashboard/monthly-trend-by-type")]
-    public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] int? projectTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
+    public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] int? projectTypeId = null, [FromQuery] int? projectId = null, [FromQuery] int? checklistTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
         var customerId = GetCustomerId();
         if (customerId == null)
@@ -365,7 +365,7 @@ public class CustomerPortalApiController : ControllerBase
 
         var allowedPersonnelIds = await GetAllowedPersonnelIdsAsync();
 
-        var result = await _cpDataService.GetMonthlyTrendByTypeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectTypeId);
+        var result = await _cpDataService.GetMonthlyTrendByTypeAsync(customerId.Value, allowedPersonnelIds, startDate, endDate, projectTypeId, projectId, checklistTypeId);
         return Ok(result);
     }
 

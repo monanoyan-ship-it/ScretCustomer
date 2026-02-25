@@ -444,7 +444,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         return monthlyData;
     }
 
-    public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, int? projectTypeId = null)
+    public async Task<object> GetMonthlyTrendByTypeAsync(int customerId, List<int>? allowedPersonnelIds, DateTime? startDate, DateTime? endDate, int? projectTypeId = null, int? projectId = null, int? checklistTypeId = null)
     {
         var now = TurkeyTime.Now;
         var defaultStartDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(-11);
@@ -479,6 +479,18 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             evaluationsQuery = evaluationsQuery.Where(e => e.Project.ProjectTypeId == projectTypeId.Value);
         }
 
+        // Belirli projeye göre filtrele
+        if (projectId.HasValue)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e => e.ProjectId == projectId.Value);
+        }
+
+        // Belirli checklist tipine göre filtrele
+        if (checklistTypeId.HasValue)
+        {
+            evaluationsQuery = evaluationsQuery.Where(e => e.Project.Checklist != null && e.Project.Checklist.ChecklistTypeId == checklistTypeId.Value);
+        }
+
         var evaluations = await evaluationsQuery.ToListAsync();
 
         // ChecklistType'a göre grupla
@@ -490,10 +502,10 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         // Her ChecklistType için proje listesi
         var projectsByType = evaluations
             .Where(e => e.Project?.Checklist != null)
-            .Select(e => new { e.Project!.Checklist!.ChecklistTypeId, e.ProjectId, e.Project.Name })
+            .Select(e => new { e.Project!.Checklist!.ChecklistTypeId, e.ProjectId, e.Project.Name, e.Project.Code })
             .Distinct()
             .GroupBy(p => p.ChecklistTypeId)
-            .ToDictionary(g => g.Key, g => g.Select(p => new { id = p.ProjectId, name = p.Name }).DistinctBy(p => p.id).OrderBy(p => p.name).Select(p => (object)p).ToList());
+            .ToDictionary(g => g.Key, g => g.Select(p => new { id = p.ProjectId, name = p.Name, code = p.Code }).DistinctBy(p => p.id).OrderBy(p => p.name).Select(p => (object)p).ToList());
 
         var loopStart = new DateTime(effectiveStartDate.Year, effectiveStartDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var loopEnd = endDate.HasValue
@@ -835,7 +847,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
 
         var projects = await projectQuery
-            .Select(p => new { p.Id, p.Name })
+            .Select(p => new { p.Id, p.Name, p.Code })
             .OrderBy(p => p.Name)
             .ToListAsync();
 

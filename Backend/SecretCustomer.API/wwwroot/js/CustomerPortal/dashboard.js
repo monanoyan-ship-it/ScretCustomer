@@ -45,17 +45,26 @@ function CustomerDashboardViewModel() {
     self.scoreDistDateRange = ko.observable('');
 
     // Tarih aralığı hızlı seçim helper
+    // toISOString() UTC'ye çevirir ve UTC+ zaman dilimlerinde tarih kayar.
+    // Yerel tarih formatı kullan.
+    function formatLocalDate(d) {
+        var year = d.getFullYear();
+        var month = String(d.getMonth() + 1).padStart(2, '0');
+        var day = String(d.getDate()).padStart(2, '0');
+        return year + '-' + month + '-' + day;
+    }
+
     function applyDateRange(val, startObs, endObs) {
         if (!val) { startObs(''); endObs(''); return; }
         var now = new Date();
-        var end = now.toISOString().split('T')[0];
+        var end = formatLocalDate(now);
         var start;
         switch(val) {
             case 'thisWeek':
                 var day = now.getDay() || 7;
                 var monday = new Date(now);
                 monday.setDate(now.getDate() - day + 1);
-                start = monday.toISOString().split('T')[0];
+                start = formatLocalDate(monday);
                 break;
             case 'lastWeek':
                 var day2 = now.getDay() || 7;
@@ -63,30 +72,30 @@ function CustomerDashboardViewModel() {
                 lastMonday.setDate(now.getDate() - day2 - 6);
                 var lastSunday = new Date(lastMonday);
                 lastSunday.setDate(lastMonday.getDate() + 6);
-                start = lastMonday.toISOString().split('T')[0];
-                end = lastSunday.toISOString().split('T')[0];
+                start = formatLocalDate(lastMonday);
+                end = formatLocalDate(lastSunday);
                 break;
             case 'thisMonth':
-                start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+                start = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
                 break;
             case 'lastMonth':
-                start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
-                end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
+                start = formatLocalDate(new Date(now.getFullYear(), now.getMonth() - 1, 1));
+                end = formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 0));
                 break;
             case 'last3Months':
                 var d3 = new Date(now); d3.setMonth(d3.getMonth() - 3);
-                start = d3.toISOString().split('T')[0];
+                start = formatLocalDate(d3);
                 break;
             case 'last6Months':
                 var d6 = new Date(now); d6.setMonth(d6.getMonth() - 6);
-                start = d6.toISOString().split('T')[0];
+                start = formatLocalDate(d6);
                 break;
             case 'thisYear':
-                start = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
+                start = formatLocalDate(new Date(now.getFullYear(), 0, 1));
                 break;
             case 'lastYear':
-                start = new Date(now.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
-                end = new Date(now.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+                start = formatLocalDate(new Date(now.getFullYear() - 1, 0, 1));
+                end = formatLocalDate(new Date(now.getFullYear() - 1, 11, 31));
                 break;
         }
         startObs(start);
@@ -504,8 +513,9 @@ function CustomerDashboardViewModel() {
     };
 
     // Reload a single monthly trend panel (filter button click)
+    // Tüm paneller monthly-trend-by-type endpoint'ini kullanır (ChecklistTypeId ile gruplar)
     self.reloadMonthlyTrendPanel = function(projectTypeId) {
-        // Find the panel item
+        // Find the panel item (projectTypeId aslında ChecklistTypeId)
         var panels = self.monthlyTrendByType();
         var panel = null;
         for (var i = 0; i < panels.length; i++) {
@@ -516,61 +526,36 @@ function CustomerDashboardViewModel() {
         }
         if (!panel) return;
 
-        var panelType = panel.panelType || 'scoreTrend';
+        var url = '/api/customer/portal/dashboard/monthly-trend-by-type';
+        var params = [];
+        params.push('checklistTypeId=' + projectTypeId);
+        if (panel.selectedProjectId && panel.selectedProjectId()) params.push('projectId=' + panel.selectedProjectId());
+        if (panel.startDate()) params.push('startDate=' + panel.startDate());
+        if (panel.endDate()) params.push('endDate=' + panel.endDate());
+        if (params.length > 0) url += '?' + params.join('&');
 
-        // Enneagram ve survey panelleri özel veri yapısı gerektirir (typeTrend, averageScore)
-        // Bu yüzden by-type endpoint'ini kullanıyoruz
-        if (panelType === 'enneagram' || panelType === 'survey') {
-            var byTypeUrl = '/api/customer/portal/dashboard/monthly-trend-by-type';
-            var byTypeParams = [];
-            byTypeParams.push('projectTypeId=' + projectTypeId);
-            if (panel.startDate()) byTypeParams.push('startDate=' + panel.startDate());
-            if (panel.endDate()) byTypeParams.push('endDate=' + panel.endDate());
-            if (byTypeParams.length > 0) byTypeUrl += '?' + byTypeParams.join('&');
-
-            customerApiFetch(byTypeUrl)
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Monthly trend by-type API error: ' + r.status);
-                    return r.json();
-                })
-                .then(function(allPanels) {
-                    // İlgili panel verisini bul
-                    var found = null;
-                    (allPanels || []).forEach(function(p) {
-                        if (p.projectTypeId === projectTypeId) found = p;
-                    });
-                    if (found) {
-                        panel.trendData = found.trend;
-                        if (found.typeTrend) panel.typeTrend = found.typeTrend;
-                        if (found.distribution) panel.distribution = found.distribution;
-                        if (found.summary) panel.summary = found.summary;
-                    }
-                    self.renderMonthlyTrendChart(panel);
-                })
-                .catch(function(error) {
-                    console.error('Monthly trend panel reload error:', error);
+        customerApiFetch(url)
+            .then(function(r) {
+                if (!r.ok) throw new Error('Monthly trend by-type API error: ' + r.status);
+                return r.json();
+            })
+            .then(function(allPanels) {
+                // İlgili panel verisini bul
+                var found = null;
+                (allPanels || []).forEach(function(p) {
+                    if (p.projectTypeId === projectTypeId) found = p;
                 });
-        } else {
-            var url = '/api/customer/portal/dashboard/monthly-trend';
-            var params = ['projectTypeId=' + projectTypeId];
-            if (panel.selectedProjectId()) params.push('projectId=' + panel.selectedProjectId());
-            if (panel.startDate()) params.push('startDate=' + panel.startDate());
-            if (panel.endDate()) params.push('endDate=' + panel.endDate());
-            url += '?' + params.join('&');
-
-            customerApiFetch(url)
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Monthly trend API error: ' + r.status);
-                    return r.json();
-                })
-                .then(function(data) {
-                    panel.trendData = data;
-                    self.renderMonthlyTrendChart(panel);
-                })
-                .catch(function(error) {
-                    console.error('Monthly trend panel reload error:', error);
-                });
-        }
+                if (found) {
+                    panel.trendData = found.trend;
+                    if (found.typeTrend) panel.typeTrend = found.typeTrend;
+                    if (found.distribution) panel.distribution = found.distribution;
+                    if (found.summary) panel.summary = found.summary;
+                }
+                self.renderMonthlyTrendChart(panel);
+            })
+            .catch(function(error) {
+                console.error('Monthly trend panel reload error:', error);
+            });
     };
 
     // Export monthly trend panel to Excel
