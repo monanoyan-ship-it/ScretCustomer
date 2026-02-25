@@ -98,9 +98,6 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     base.maxTotalPoints = ko.observable(data.maxTotalPoints || 100);
     base.validFrom = ko.observable(data.validFrom ? data.validFrom.split('T')[0] : '');
     base.validUntil = ko.observable(data.validUntil ? data.validUntil.split('T')[0] : '');
-    base.customerId = ko.observable(data.customerId || null);
-    base.customerOrganizationId = ko.observable(data.customerOrganizationId || null);
-
     // Questions
     let questions = (data.questions || []).map(function (q) {
         return new QuestionModel(q, loadAttachmentsFn);

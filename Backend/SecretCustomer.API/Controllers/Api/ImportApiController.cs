@@ -142,7 +142,6 @@ public class ImportApiController : BaseApiController
     /// </summary>
     /// <param name="file">CSV dosyası</param>
     /// <param name="checklistName">Yeni checklist adı</param>
-    /// <param name="customerId">Müşteri ID (opsiyonel)</param>
     /// <param name="description">Açıklama (opsiyonel)</param>
     /// <returns>Import sonucu</returns>
     [HttpPost("checklist")]
@@ -150,7 +149,6 @@ public class ImportApiController : BaseApiController
     public async Task<ActionResult<ChecklistImportResultDto>> ImportChecklist(
         IFormFile file,
         [FromQuery] string checklistName,
-        [FromQuery] int? customerId = null,
         [FromQuery] string? description = null)
     {
         try
@@ -172,7 +170,7 @@ public class ImportApiController : BaseApiController
             }
 
             using var stream = file.OpenReadStream();
-            var result = await _importService.ImportChecklistFromCsvAsync(stream, checklistName, customerId, description);
+            var result = await _importService.ImportChecklistFromCsvAsync(stream, checklistName, description);
 
             if (result.Success)
             {

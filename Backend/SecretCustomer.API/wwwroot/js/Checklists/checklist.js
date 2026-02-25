@@ -98,10 +98,6 @@ var ChecklistModel = function (data, loadAttachmentsFn) {
     base.maxTotalPoints = ko.observable(data.maxTotalPoints || 100);
     base.validFrom = ko.observable(data.validFrom ? data.validFrom.split('T')[0] : '');
     base.validUntil = ko.observable(data.validUntil ? data.validUntil.split('T')[0] : '');
-    // Firma ve Organizasyon
-    base.customerId = ko.observable(data.customerId || null);
-    base.customerOrganizationId = ko.observable(data.customerOrganizationId || null);
-
     // Questions - Direkt checklist'e bağlı
     let questions = (data.questions || []).map(function (q) {
         return new QuestionModel(q, loadAttachmentsFn);
@@ -151,28 +147,18 @@ function ChecklistViewModel() {
         return TableSorting.clientSort(items, sortBy, sortDir);
     });
 
-    // Firma ve Organizasyon listesi
-    self.customers = ko.observableArray([]);
-    self.organizations = ko.observableArray([]);
-    self.selectedCustomerId = ko.observable(null);
-    self._isLoadingChecklist = false; // Düzenleme sırasında org sıfırlamayı engelle
-
     // ========== CHIP-BASED FILTER SYSTEM ==========
     self.selectedFilterType = ko.observable('');
     self.activeFilters = ko.observableArray([]);
 
     // Temp filter values
     self.tempFilter = {
-        customerId: ko.observable(null),
-        organizationId: ko.observable(null),
         searchText: ko.observable(''),
         isActive: ko.observable(null)
     };
 
     // Filter labels
     self.filterLabels = {
-        customer: 'Firma',
-        organization: 'Organizasyon',
         searchText: 'Arama',
         isActive: 'Durum'
     };
@@ -184,9 +170,6 @@ function ChecklistViewModel() {
 
     // Legacy filter references
     self.searchText = ko.observable('');
-    self.filterCustomerId = ko.observable(null);
-    self.filterOrganizationId = ko.observable(null);
-    self.filterOrganizations = ko.observableArray([]);
 
     // Can add filter
     self.canAddFilter = ko.computed(function() {
@@ -194,8 +177,6 @@ function ChecklistViewModel() {
         if (!type) return false;
 
         switch (type) {
-            case 'customer': return self.tempFilter.customerId() !== null;
-            case 'organization': return self.tempFilter.organizationId() !== null;
             case 'searchText': return self.tempFilter.searchText().trim() !== '';
             case 'isActive': return self.tempFilter.isActive() !== null;
             default: return false;
@@ -215,24 +196,6 @@ function ChecklistViewModel() {
         };
 
         switch (type) {
-            case 'customer':
-                var customerId = self.tempFilter.customerId();
-                if (!customerId) return;
-                var customer = self.customers().find(function(c) { return c.id === customerId; });
-                filter.value = customerId;
-                filter.displayValue = customer ? customer.companyName : customerId;
-                self.tempFilter.customerId(null);
-                break;
-
-            case 'organization':
-                var orgId = self.tempFilter.organizationId();
-                if (!orgId) return;
-                var org = self.filterOrganizations().find(function(o) { return o.id === orgId; });
-                filter.value = orgId;
-                filter.displayValue = org ? org.name : orgId;
-                self.tempFilter.organizationId(null);
-                break;
-
             case 'searchText':
                 var searchText = self.tempFilter.searchText().trim();
                 if (!searchText) return;
@@ -268,8 +231,6 @@ function ChecklistViewModel() {
     self.clearFilters = function() {
         self.activeFilters([]);
         self.searchText('');
-        self.filterCustomerId(null);
-        self.filterOrganizationId(null);
         self.loadChecklists();
     };
 
@@ -279,12 +240,6 @@ function ChecklistViewModel() {
 
         self.activeFilters().forEach(function(filter) {
             switch (filter.type) {
-                case 'customer':
-                    params.push('customerId=' + filter.value);
-                    break;
-                case 'organization':
-                    params.push('customerOrganizationId=' + filter.value);
-                    break;
                 case 'searchText':
                     params.push('searchText=' + encodeURIComponent(filter.value));
                     break;
@@ -308,72 +263,6 @@ function ChecklistViewModel() {
     self.filteredGroups = ko.observableArray([]);
     self.showGroupDropdown = ko.observable(false);
     self._groupFilterTimeout = null;
-
-    // Filtre firma değiştiğinde organizasyonları yükle
-    self.filterCustomerId.subscribe(function (customerId) {
-        if (customerId) {
-            apiService.get('/customer-organizations/by-customer/' + customerId)
-                .then(function (data) {
-                    self.filterOrganizations(data);
-                })
-                .catch(function () {
-                    self.filterOrganizations([]);
-                });
-        } else {
-            self.filterOrganizations([]);
-            self.filterOrganizationId(null);
-        }
-    });
-
-    // Firma değiştiğinde organizasyonları yükle
-    self.selectedCustomerId.subscribe(function (customerId) {
-        if (customerId) {
-            self.loadOrganizations(customerId);
-            // Checklist'teki customerId'yi güncelle
-            if (self.editingChecklist()) {
-                self.editingChecklist().customerId(customerId);
-                // Sadece kullanıcı manuel değiştirdiyse organizasyonu sıfırla (düzenleme yüklemesinde değil)
-                if (!self._isLoadingChecklist) {
-                    self.editingChecklist().customerOrganizationId(null);
-                }
-            }
-        } else {
-            self.organizations([]);
-            if (self.editingChecklist()) {
-                self.editingChecklist().customerId(null);
-                if (!self._isLoadingChecklist) {
-                    self.editingChecklist().customerOrganizationId(null);
-                }
-            }
-        }
-    });
-
-    // Firma listesini yükle
-    self.loadCustomers = function () {
-        apiService.get('/customers')
-            .then(function (data) {
-                self.customers(data);
-            })
-            .catch(function (error) {
-                console.error('Load customers error:', error);
-            });
-    };
-
-    // Organizasyon listesini yükle
-    self.loadOrganizations = function (customerId) {
-        if (!customerId) {
-            self.organizations([]);
-            return;
-        }
-        apiService.get('/customer-organizations/by-customer/' + customerId)
-            .then(function (data) {
-                self.organizations(data);
-            })
-            .catch(function (error) {
-                console.error('Load organizations error:', error);
-                self.organizations([]);
-            });
-    };
 
     // Soru gruplarını yükle (belirli checklist için)
     self.loadQuestionGroups = function (checklistId) {
@@ -489,8 +378,6 @@ function ChecklistViewModel() {
     // Filtreleri temizle
     self.clearFilters = function () {
         self.searchText('');
-        self.filterCustomerId(null);
-        self.filterOrganizationId(null);
         self.loadChecklists();
     };
 
@@ -706,23 +593,6 @@ function ChecklistViewModel() {
         return total;
     };
 
-    // Seçili firma adını getir
-    self.getSelectedCustomerName = function () {
-        var customerId = self.selectedCustomerId();
-        if (!customerId) return null;
-        var customer = self.customers().find(function (c) { return c.id === customerId; });
-        return customer ? customer.companyName : null;
-    };
-
-    // Seçili organizasyon adını getir
-    self.getSelectedOrganizationName = function () {
-        if (!self.editingChecklist()) return null;
-        var orgId = self.editingChecklist().customerOrganizationId();
-        if (!orgId) return null;
-        var org = self.organizations().find(function (o) { return o.id === orgId; });
-        return org ? org.name : null;
-    };
-
     self.saveChecklist = function () {
         if (!self.editingChecklist()) return;
 
@@ -814,7 +684,6 @@ function ChecklistViewModel() {
         // Önce EnumsService'i yükle, sonra diğer verileri çek
         EnumsService.load().then(function() {
             self.loadChecklists();
-            self.loadCustomers();
         });
 
         // Popup'tan çağrılacak global fonksiyon - liste yenilemesi olmadan güncelleme

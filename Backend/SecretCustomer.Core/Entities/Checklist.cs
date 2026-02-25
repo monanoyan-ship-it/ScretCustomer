@@ -91,22 +91,6 @@ public class Checklist : BaseEntity
     /// </summary>
     public bool HideGroupNames { get; set; } = false;
 
-    // ===== FİRMA VE ORGANİZASYON =====
-
-    /// <summary>
-    /// Firma ID (null ise tüm firmalar için genel)
-    /// </summary>
-    public int? CustomerId { get; set; }
-
-    /// <summary>
-    /// Organizasyon/Şube ID (null ise tüm organizasyonlar için)
-    /// </summary>
-    public int? CustomerOrganizationId { get; set; }
-
-    // Navigation properties
-    public Customer? Customer { get; set; }
-    public CustomerOrganization? CustomerOrganization { get; set; }
-
     /// <summary>
     /// Sorular - Direkt checklist'e bağlı sorular
     /// </summary>

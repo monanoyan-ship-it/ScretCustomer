@@ -573,13 +573,13 @@ public class ImportService : IImportService
 
     #region Checklist Import
 
-    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, int? customerId = null, string? description = null)
+    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, string? description = null)
     {
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
-        return await ImportChecklistFromCsvAsync(stream, checklistName, customerId, description);
+        return await ImportChecklistFromCsvAsync(stream, checklistName, description);
     }
 
-    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, int? customerId = null, string? description = null)
+    public async Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, string? description = null)
     {
         var result = new ChecklistImportResultDto { Success = true };
 
@@ -590,7 +590,6 @@ public class ImportService : IImportService
             {
                 Name = checklistName,
                 Description = description ?? $"CSV Import ile oluşturuldu - {TurkeyTime.Now:dd.MM.yyyy HH:mm}",
-                CustomerId = customerId,
                 IsActive = true,
                 CreatedAt = TurkeyTime.Now
             };

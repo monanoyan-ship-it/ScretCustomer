@@ -17,8 +17,6 @@ public class ChecklistRepository : IChecklistRepository
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
-            .Include(c => c.Customer)
-            .Include(c => c.CustomerOrganization)
             .AsQueryable();
 
         if (includeDetails)
@@ -36,8 +34,6 @@ public class ChecklistRepository : IChecklistRepository
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
             .Include(c => c.Questions.Where(q => !q.IsDeleted))
-            .Include(c => c.Customer)
-            .Include(c => c.CustomerOrganization)
             .AsQueryable();
 
         if (!includeInactive)
@@ -48,13 +44,11 @@ public class ChecklistRepository : IChecklistRepository
         return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
     }
 
-    public async Task<IEnumerable<Checklist>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    public async Task<IEnumerable<Checklist>> GetFilteredAsync(string? searchText = null, bool includeInactive = false)
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
             .Include(c => c.Questions.Where(q => !q.IsDeleted))
-            .Include(c => c.Customer)
-            .Include(c => c.CustomerOrganization)
             .AsQueryable();
 
         if (!includeInactive)
@@ -70,18 +64,6 @@ public class ChecklistRepository : IChecklistRepository
                 c.Name.ToLower().Contains(search) ||
                 (c.Description != null && c.Description.ToLower().Contains(search)) ||
                 (c.Code != null && c.Code.ToLower().Contains(search)));
-        }
-
-        // Firma filtresi
-        if (customerId.HasValue)
-        {
-            query = query.Where(c => c.CustomerId == customerId.Value);
-        }
-
-        // Organizasyon filtresi
-        if (customerOrganizationId.HasValue)
-        {
-            query = query.Where(c => c.CustomerOrganizationId == customerOrganizationId.Value);
         }
 
         return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();

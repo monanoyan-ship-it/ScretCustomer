@@ -47,9 +47,9 @@ public class ChecklistService : IChecklistService
         return result;
     }
 
-    public async Task<IEnumerable<ChecklistDto>> GetFilteredAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    public async Task<IEnumerable<ChecklistDto>> GetFilteredAsync(string? searchText = null, bool includeInactive = false)
     {
-        var checklists = await _checklistRepository.GetFilteredAsync(searchText, customerId, customerOrganizationId, includeInactive);
+        var checklists = await _checklistRepository.GetFilteredAsync(searchText, includeInactive);
         var result = new List<ChecklistDto>();
         foreach (var checklist in checklists)
             result.Add(await MapToDtoAsync(checklist));
@@ -59,7 +59,7 @@ public class ChecklistService : IChecklistService
     /// <summary>
     /// Liste görünümü için optimize edilmiş method - Projection kullanır, Questions yüklemez
     /// </summary>
-    public async Task<IEnumerable<ChecklistListDto>> GetListAsync(string? searchText = null, int? customerId = null, int? customerOrganizationId = null, bool includeInactive = false)
+    public async Task<IEnumerable<ChecklistListDto>> GetListAsync(string? searchText = null, bool includeInactive = false)
     {
         var query = _context.Checklists
             .Where(c => !c.IsDeleted)
@@ -76,12 +76,6 @@ public class ChecklistService : IChecklistService
                 (c.Description != null && c.Description.ToLower().Contains(search)) ||
                 (c.Code != null && c.Code.ToLower().Contains(search)));
         }
-
-        if (customerId.HasValue)
-            query = query.Where(c => c.CustomerId == customerId.Value);
-
-        if (customerOrganizationId.HasValue)
-            query = query.Where(c => c.CustomerOrganizationId == customerOrganizationId.Value);
 
         return await query
             .OrderByDescending(c => c.Id)
@@ -100,10 +94,6 @@ public class ChecklistService : IChecklistService
                 MaxTotalPoints = c.MaxTotalPoints,
                 ValidFrom = c.ValidFrom,
                 ValidUntil = c.ValidUntil,
-                CustomerId = c.CustomerId,
-                CustomerName = c.Customer != null ? c.Customer.CompanyName : null,
-                CustomerOrganizationId = c.CustomerOrganizationId,
-                CustomerOrganizationName = c.CustomerOrganization != null ? c.CustomerOrganization.Name : null,
                 QuestionCount = c.Questions.Count(q => !q.IsDeleted)
             })
             .ToListAsync();
@@ -131,14 +121,6 @@ public class ChecklistService : IChecklistService
                 (c.Code != null && c.Code.ToLower().Contains(search)));
         }
 
-        // Çoklu CustomerIds filtresi
-        if (filter.CustomerIds?.Any() == true)
-            query = query.Where(c => c.CustomerId.HasValue && filter.CustomerIds.Contains(c.CustomerId.Value));
-
-        // Çoklu CustomerOrganizationIds filtresi
-        if (filter.CustomerOrganizationIds?.Any() == true)
-            query = query.Where(c => c.CustomerOrganizationId.HasValue && filter.CustomerOrganizationIds.Contains(c.CustomerOrganizationId.Value));
-
         return await query
             .OrderByDescending(c => c.Id)
             .Select(c => new ChecklistListDto
@@ -156,10 +138,6 @@ public class ChecklistService : IChecklistService
                 MaxTotalPoints = c.MaxTotalPoints,
                 ValidFrom = c.ValidFrom,
                 ValidUntil = c.ValidUntil,
-                CustomerId = c.CustomerId,
-                CustomerName = c.Customer != null ? c.Customer.CompanyName : null,
-                CustomerOrganizationId = c.CustomerOrganizationId,
-                CustomerOrganizationName = c.CustomerOrganization != null ? c.CustomerOrganization.Name : null,
                 QuestionCount = c.Questions.Count(q => !q.IsDeleted)
             })
             .ToListAsync();
@@ -200,9 +178,6 @@ public class ChecklistService : IChecklistService
             TemplateName = dto.TemplateName,
             ValidFrom = ToUtc(dto.ValidFrom),
             ValidUntil = ToUtc(dto.ValidUntil),
-            // Firma ve Organizasyon
-            CustomerId = dto.CustomerId,
-            CustomerOrganizationId = dto.CustomerOrganizationId,
             // Görünüm ayarları
             HideGroupNames = dto.HideGroupNames,
             // Sorular - Direkt checklist'e bağlı
@@ -272,9 +247,6 @@ public class ChecklistService : IChecklistService
         existing.TemplateName = dto.TemplateName;
         existing.ValidFrom = ToUtc(dto.ValidFrom);
         existing.ValidUntil = ToUtc(dto.ValidUntil);
-        // Firma ve Organizasyon
-        existing.CustomerId = dto.CustomerId;
-        existing.CustomerOrganizationId = dto.CustomerOrganizationId;
         // Görünüm ayarları
         existing.HideGroupNames = dto.HideGroupNames;
 
@@ -313,8 +285,6 @@ public class ChecklistService : IChecklistService
             TemplateName = original.TemplateName,
             ValidFrom = original.ValidFrom,
             ValidUntil = original.ValidUntil,
-            CustomerId = original.CustomerId,
-            CustomerOrganizationId = original.CustomerOrganizationId,
             HideGroupNames = original.HideGroupNames,
             // Soruları kopyala
             Questions = original.Questions.Select(q => new Question
@@ -523,10 +493,6 @@ public class ChecklistService : IChecklistService
             TemplateName = checklist.TemplateName,
             ValidFrom = checklist.ValidFrom,
             ValidUntil = checklist.ValidUntil,
-            CustomerId = checklist.CustomerId,
-            CustomerName = checklist.Customer?.CompanyName,
-            CustomerOrganizationId = checklist.CustomerOrganizationId,
-            CustomerOrganizationName = checklist.CustomerOrganization?.Name,
             HideGroupNames = checklist.HideGroupNames,
             Questions = questions,
             QuestionCount = checklist.Questions.Count
@@ -571,9 +537,6 @@ public class ChecklistService : IChecklistService
         var checklistInfoTitle = await _localizationService.GetResourceAsync("Excel.ChecklistInfo");
         var nameLabel = await _localizationService.GetResourceAsync("Excel.Name");
         var codeLabel = await _localizationService.GetResourceAsync("Common.Code");
-        var customerLabel = await _localizationService.GetResourceAsync("Common.Customer");
-        var generalLabel = await _localizationService.GetResourceAsync("Excel.General");
-        var organizationLabel = await _localizationService.GetResourceAsync("Common.Organization");
         var descriptionLabel = await _localizationService.GetResourceAsync("Excel.Description");
         var questionsTitle = await _localizationService.GetResourceAsync("Excel.Questions");
         var orderLabel = await _localizationService.GetResourceAsync("Excel.QuestionNumber");
@@ -604,14 +567,6 @@ public class ChecklistService : IChecklistService
         sheet.Cell(row, 4).Value = codeLabel + ":";
         sheet.Cell(row, 4).Style.Font.Bold = true;
         sheet.Cell(row, 5).Value = checklist.Code ?? "-";
-        row++;
-
-        sheet.Cell(row, 1).Value = customerLabel + ":";
-        sheet.Cell(row, 1).Style.Font.Bold = true;
-        sheet.Cell(row, 2).Value = checklist.Customer?.CompanyName ?? generalLabel;
-        sheet.Cell(row, 4).Value = organizationLabel + ":";
-        sheet.Cell(row, 4).Style.Font.Bold = true;
-        sheet.Cell(row, 5).Value = checklist.CustomerOrganization?.Name ?? "-";
         row++;
 
         sheet.Cell(row, 1).Value = descriptionLabel + ":";

@@ -18,10 +18,6 @@ public class ChecklistListDto
     public decimal MaxTotalPoints { get; set; }
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
-    public int? CustomerId { get; set; }
-    public string? CustomerName { get; set; }
-    public int? CustomerOrganizationId { get; set; }
-    public string? CustomerOrganizationName { get; set; }
     public int QuestionCount { get; set; }
 }
 
@@ -48,12 +44,6 @@ public class ChecklistDto
     public string? TemplateName { get; set; }
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
-
-    // Firma ve Organizasyon
-    public int? CustomerId { get; set; }
-    public string? CustomerName { get; set; }
-    public int? CustomerOrganizationId { get; set; }
-    public string? CustomerOrganizationName { get; set; }
 
     /// <summary>
     /// Soru gruplarını gizle (formda grup isimleri görünmez, raporlamada kullanılır)
@@ -144,11 +134,7 @@ public class SubCriteriaDto
 /// </summary>
 public class ChecklistFilterDto
 {
-    // Çoklu filtreler (OR mantığı)
-    public List<int>? CustomerIds { get; set; }
-    public List<int>? CustomerOrganizationIds { get; set; }
-
-    // Tekil filtreler (çoklu mantıklı değil)
+    // Filtreler
     public string? SearchText { get; set; }
     public bool IncludeInactive { get; set; }
 }

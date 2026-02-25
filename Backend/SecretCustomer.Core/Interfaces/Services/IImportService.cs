@@ -22,13 +22,12 @@ public interface IImportService
     /// </summary>
     /// <param name="csvStream">CSV dosya stream'i</param>
     /// <param name="checklistName">Yeni checklist adı</param>
-    /// <param name="customerId">Müşteri ID (opsiyonel - null ise tüm müşteriler için)</param>
     /// <param name="description">Açıklama (opsiyonel)</param>
     /// <returns>Import sonucu</returns>
-    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, int? customerId = null, string? description = null);
+    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(Stream csvStream, string checklistName, string? description = null);
 
     /// <summary>
     /// CSV içeriğinden yeni checklist oluşturur ve soruları import eder
     /// </summary>
-    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, int? customerId = null, string? description = null);
+    Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, string? description = null);
 }

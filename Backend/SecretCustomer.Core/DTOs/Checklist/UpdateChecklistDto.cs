@@ -35,10 +35,6 @@ public class UpdateChecklistDto
     public DateTime? ValidFrom { get; set; }
     public DateTime? ValidUntil { get; set; }
 
-    // Firma ve Organizasyon
-    public int? CustomerId { get; set; }
-    public int? CustomerOrganizationId { get; set; }
-
     /// <summary>
     /// Soru gruplarını gizle (formda grup isimleri görünmez, raporlamada kullanılır)
     /// </summary>
