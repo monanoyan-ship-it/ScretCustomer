@@ -1562,6 +1562,12 @@
   <LocaleResource Name="Checklist.Scoring">
     <Value>Bewertung</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.Group">
+    <Value>Gruppe</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType">
+    <Value>Strafe</Value>
+  </LocaleResource>
   <LocaleResource Name="Checklist.PenaltyType.None">
     <Value>Keine</Value>
   </LocaleResource>

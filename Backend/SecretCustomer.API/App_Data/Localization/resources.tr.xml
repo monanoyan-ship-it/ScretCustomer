@@ -1568,6 +1568,12 @@
   <LocaleResource Name="Checklist.Scoring">
     <Value>Puanlama</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.Group">
+    <Value>Grup</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.PenaltyType">
+    <Value>Ceza</Value>
+  </LocaleResource>
   <LocaleResource Name="Checklist.PenaltyType.None">
     <Value>Yok</Value>
   </LocaleResource>
