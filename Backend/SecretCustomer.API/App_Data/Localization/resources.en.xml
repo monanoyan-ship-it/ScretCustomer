@@ -10778,6 +10778,25 @@
   <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
     <Value>Sub-criteria selections and distribution of unscored questions</Value>
   </LocaleResource>
+  <!-- Shadow Customer -->
+  <LocaleResource Name="Menu.GolgeMusteri">
+    <Value>Shadow Customer</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.HedefFirmalar">
+    <Value>Target Companies</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Sorular">
+    <Value>Questions</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Donemler">
+    <Value>Periods</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Takip">
+    <Value>Follow-up</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Aramalarim">
+    <Value>My Calls</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Contacted Representative</Value>
   </LocaleResource>

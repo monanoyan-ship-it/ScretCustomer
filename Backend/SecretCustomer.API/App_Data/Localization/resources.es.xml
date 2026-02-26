@@ -10769,6 +10769,25 @@
   <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
     <Value>Selecciones de subcriterios y distribución de preguntas sin puntuación</Value>
   </LocaleResource>
+  <!-- Cliente Misterioso -->
+  <LocaleResource Name="Menu.GolgeMusteri">
+    <Value>Cliente Misterioso</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.HedefFirmalar">
+    <Value>Empresas Objetivo</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Sorular">
+    <Value>Preguntas</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Donemler">
+    <Value>Períodos</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Takip">
+    <Value>Seguimiento</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Aramalarim">
+    <Value>Mis Llamadas</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Representante Contactado</Value>
   </LocaleResource>
