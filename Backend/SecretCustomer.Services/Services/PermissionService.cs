@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.DTOs.Permission;
@@ -14,7 +15,6 @@ public class PermissionService : IPermissionService
 {
     private readonly ApplicationDbContext _context;
     private readonly IUserRepository _userRepository;
-    private readonly ILogger<PermissionService> _logger;
     private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
     private readonly IUserService _userService;
@@ -22,14 +22,12 @@ public class PermissionService : IPermissionService
     public PermissionService(
         ApplicationDbContext context,
         IUserRepository userRepository,
-        ILogger<PermissionService> logger,
         IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IUserService userService)
     {
         _context = context;
         _userRepository = userRepository;
-        _logger = logger;
         _auditLogService = auditLogService;
         _localizationService = localizationService;
         _userService = userService;
@@ -52,7 +50,7 @@ public class PermissionService : IPermissionService
 
             if (permission == null)
             {
-                _logger.LogWarning("Permission {PermissionCode} not found", permissionCode);
+                await _auditLogService.LogWarningAsync($"Permission {permissionCode} not found", "PermissionService");
                 return false;
             }
 
@@ -79,7 +77,7 @@ public class PermissionService : IPermissionService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking permission {PermissionCode} for user {UserId}", permissionCode, userId);
+            await _auditLogService.LogErrorAsync($"Error checking permission {permissionCode} for user {userId}", "PermissionService", ex);
             return false;
         }
     }
@@ -124,7 +122,7 @@ public class PermissionService : IPermissionService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking permission {PermissionCode} with scope for user {UserId}", permissionCode, userId);
+            await _auditLogService.LogErrorAsync($"Error checking permission {permissionCode} with scope for user {userId}", "PermissionService", ex);
             return false;
         }
     }
@@ -638,7 +636,7 @@ public class PermissionService : IPermissionService
 
     public async Task<int> SyncPermissionsAsync()
     {
-        return await SeedData.SyncPermissionsAsync(_context, _logger);
+        return await SeedData.SyncPermissionsAsync(_context, NullLogger.Instance);
     }
 
     private async Task<string> GetCategoryNameAsync(int categoryId)

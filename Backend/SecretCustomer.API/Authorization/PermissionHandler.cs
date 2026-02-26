@@ -10,12 +10,12 @@ namespace SecretCustomer.API.Authorization;
 public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 {
     private readonly IPermissionService _permissionService;
-    private readonly ILogger<PermissionHandler> _logger;
+    private readonly IAuditLogService _auditLogService;
 
-    public PermissionHandler(IPermissionService permissionService, ILogger<PermissionHandler> logger)
+    public PermissionHandler(IPermissionService permissionService, IAuditLogService auditLogService)
     {
         _permissionService = permissionService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     protected override async Task HandleRequirementAsync(
@@ -25,7 +25,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         // Kullanıcı giriş yapmış mı?
         if (!context.User.Identity?.IsAuthenticated ?? true)
         {
-            _logger.LogWarning("User is not authenticated");
+            await _auditLogService.LogWarningAsync("User is not authenticated", "Authorization");
             return;
         }
 
@@ -33,7 +33,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            _logger.LogWarning("User ID claim not found or invalid");
+            await _auditLogService.LogWarningAsync("User ID claim not found or invalid", "Authorization");
             return;
         }
 
@@ -42,12 +42,12 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 
         if (hasPermission)
         {
-            _logger.LogInformation("User {UserId} has permission {PermissionCode}", userId, requirement.PermissionCode);
+            await _auditLogService.LogInfoAsync($"User {userId} has permission {requirement.PermissionCode}", "Authorization");
             context.Succeed(requirement);
         }
         else
         {
-            _logger.LogWarning("User {UserId} does NOT have permission {PermissionCode}", userId, requirement.PermissionCode);
+            await _auditLogService.LogWarningAsync($"User {userId} does NOT have permission {requirement.PermissionCode}", "Authorization");
         }
     }
 }

@@ -7,6 +7,8 @@
         // Data
         self.logs = ko.observableArray([]);
         self.logTypes = ko.observableArray([]);
+        self.customers = ko.observableArray([]);
+        self.users = ko.observableArray([]);
         self.selectedLog = ko.observable(null);
         self.isLoading = ko.observable(false);
 
@@ -23,12 +25,29 @@
 
         // Filters
         self.filter = {
+            customerId: ko.observable(''),
             logType: ko.observable(''),
-            category: ko.observable(''),
             userId: ko.observable(''),
             fromDate: ko.observable(''),
             toDate: ko.observable('')
         };
+
+        // Müşteri seçilince personel listesini güncelle
+        self.filteredUsers = ko.observableArray([]);
+
+        self.filter.customerId.subscribe(function (custId) {
+            self.filter.userId('');
+            if (!custId) {
+                // Müşteri seçilmemişse tüm kullanıcıları göster
+                self.filteredUsers(self.users());
+                return;
+            }
+            // Müşterinin projelerindeki kullanıcıları çek
+            $.get('/api/users', { customerId: custId }, function (data) {
+                var list = Array.isArray(data) ? data : (data.items || []);
+                self.filteredUsers(list);
+            });
+        });
 
         // Computed: visible pages for pagination
         self.visiblePages = ko.computed(function () {
@@ -51,6 +70,22 @@
             });
         };
 
+        // Load customers
+        self.loadCustomers = function () {
+            $.get('/api/customers', function (data) {
+                var list = Array.isArray(data) ? data : (data.items || []);
+                self.customers(list);
+            });
+        };
+
+        // Load users with customer associations
+        self.loadUsers = function () {
+            $.get('/api/users', function (data) {
+                var list = Array.isArray(data) ? data : (data.items || []);
+                self.users(list);
+            });
+        };
+
         // Load logs
         self.loadLogs = function () {
             self.isLoading(true);
@@ -60,8 +95,8 @@
                 pageSize: self.pageSize()
             };
 
-            if (self.filter.logType()) params.logType = self.filter.logType();
-            if (self.filter.category()) params.category = self.filter.category();
+            if (self.filter.customerId()) params.customerId = self.filter.customerId();
+            if (self.filter.logType()) params.logTypeId = self.filter.logType();
             if (self.filter.userId()) params.userId = self.filter.userId();
             if (self.filter.fromDate()) params.fromDate = self.filter.fromDate();
             if (self.filter.toDate()) params.toDate = self.filter.toDate();
@@ -151,6 +186,17 @@
             self.loadLogs();
         };
 
+        // Clear filters
+        self.clearFilters = function () {
+            self.filter.customerId('');
+            self.filter.logType('');
+            self.filter.userId('');
+            self.filter.fromDate('');
+            self.filter.toDate('');
+            self.currentPage(1);
+            self.loadLogs();
+        };
+
         // Cleanup old logs
         self.cleanupLogs = function () {
             var days = prompt('Kaç günden eski loglar silinsin?', '90');
@@ -180,6 +226,8 @@
         // Initialize
         self.init = function () {
             self.loadLogTypes();
+            self.loadCustomers();
+            self.loadUsers();
             self.loadLogs();
         };
 

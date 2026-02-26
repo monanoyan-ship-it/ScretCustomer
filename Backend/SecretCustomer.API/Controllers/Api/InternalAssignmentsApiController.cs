@@ -20,20 +20,20 @@ public class InternalAssignmentsApiController : ControllerBase
     private readonly ICustomerService _customerService;
     private readonly IProjectService _projectService;
     private readonly ICustomerPersonnelService _customerPersonnelService;
-    private readonly ILogger<InternalAssignmentsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public InternalAssignmentsApiController(
         IAssignmentService assignmentService,
         ICustomerService customerService,
         IProjectService projectService,
         ICustomerPersonnelService customerPersonnelService,
-        ILogger<InternalAssignmentsApiController> logger)
+        IAuditLogService auditLogService)
     {
         _assignmentService = assignmentService;
         _customerService = customerService;
         _projectService = projectService;
         _customerPersonnelService = customerPersonnelService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -98,7 +98,7 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting internal assignments");
+            await _auditLogService.LogErrorAsync("Error getting internal assignments", "InternalAssignments", ex);
             return StatusCode(500, new { message = "İç değerlendirme atamaları alınırken hata oluştu" });
         }
     }
@@ -122,7 +122,7 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting internal assignment summary");
+            await _auditLogService.LogErrorAsync("Error getting internal assignment summary", "InternalAssignments", ex);
             return StatusCode(500, new { message = "Özet bilgisi alınırken hata oluştu" });
         }
     }
@@ -146,12 +146,12 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Resource not found while creating internal assignments");
+            await _auditLogService.LogWarningAsync($"Resource not found while creating internal assignments: {ex.Message}", "InternalAssignments");
             return NotFound(new { message = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating internal assignments");
+            await _auditLogService.LogErrorAsync("Error creating internal assignments", "InternalAssignments", ex);
             var innerMessage = ExceptionHelper.GetFullExceptionChain(ex);
             return StatusCode(500, new { message = "Atamalar oluşturulurken hata oluştu: " + innerMessage });
         }
@@ -191,7 +191,7 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting customers");
+            await _auditLogService.LogErrorAsync("Error getting customers", "InternalAssignments", ex);
             return StatusCode(500, new { message = "Müşteriler alınırken hata oluştu" });
         }
     }
@@ -238,7 +238,7 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting projects");
+            await _auditLogService.LogErrorAsync("Error getting projects", "InternalAssignments", ex);
             return StatusCode(500, new { message = "Projeler alınırken hata oluştu" });
         }
     }
@@ -294,7 +294,7 @@ public class InternalAssignmentsApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting personnel for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error getting personnel for customer {customerId}", "InternalAssignments", ex);
             return StatusCode(500, new { message = "Personeller alınırken hata oluştu" });
         }
     }

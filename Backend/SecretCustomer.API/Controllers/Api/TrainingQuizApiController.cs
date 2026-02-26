@@ -13,15 +13,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class TrainingQuizApiController : BaseApiController
 {
     private readonly ITrainingQuizService _trainingQuizService;
-    private readonly ILogger<TrainingQuizApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public TrainingQuizApiController(
         ITrainingQuizService trainingQuizService,
-        ILogger<TrainingQuizApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _trainingQuizService = trainingQuizService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetCurrentUserId()
@@ -46,7 +46,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading training quizzes");
+            await _auditLogService.LogErrorAsync($"Error loading training quizzes", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -68,7 +68,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading training quiz {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading training quiz {id}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket yüklenirken hata oluştu", ex));
         }
     }
@@ -90,7 +90,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz for video {VideoId}", videoId);
+            await _auditLogService.LogErrorAsync($"Error loading quiz for video {videoId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket yüklenirken hata oluştu", ex));
         }
     }
@@ -109,7 +109,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating training quiz");
+            await _auditLogService.LogErrorAsync($"Error creating training quiz", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket oluşturulurken hata oluştu", ex));
         }
     }
@@ -128,7 +128,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating training quiz {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating training quiz {id}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket güncellenirken hata oluştu", ex));
         }
     }
@@ -147,7 +147,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting training quiz {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting training quiz {id}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket silinirken hata oluştu", ex));
         }
     }
@@ -170,7 +170,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding question to quiz {QuizId}", quizId);
+            await _auditLogService.LogErrorAsync($"Error adding question to quiz {quizId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Soru eklenirken hata oluştu", ex));
         }
     }
@@ -189,7 +189,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error updating question {questionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Soru güncellenirken hata oluştu", ex));
         }
     }
@@ -208,7 +208,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error deleting question {questionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Soru silinirken hata oluştu", ex));
         }
     }
@@ -227,7 +227,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reordering questions for quiz {QuizId}", quizId);
+            await _auditLogService.LogErrorAsync($"Error reordering questions for quiz {quizId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Sıralama güncellenirken hata oluştu", ex));
         }
     }
@@ -250,7 +250,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding option to question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error adding option to question {questionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Seçenek eklenirken hata oluştu", ex));
         }
     }
@@ -269,7 +269,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating option {OptionId}", optionId);
+            await _auditLogService.LogErrorAsync($"Error updating option {optionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Seçenek güncellenirken hata oluştu", ex));
         }
     }
@@ -288,7 +288,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting option {OptionId}", optionId);
+            await _auditLogService.LogErrorAsync($"Error deleting option {optionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Seçenek silinirken hata oluştu", ex));
         }
     }
@@ -307,7 +307,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reordering options for question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error reordering options for question {questionId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Sıralama güncellenirken hata oluştu", ex));
         }
     }
@@ -330,7 +330,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz responses");
+            await _auditLogService.LogErrorAsync($"Error loading quiz responses", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Yanıtlar yüklenirken hata oluştu", ex));
         }
     }
@@ -352,7 +352,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz response {ResponseId}", responseId);
+            await _auditLogService.LogErrorAsync($"Error loading quiz response {responseId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Yanıt yüklenirken hata oluştu", ex));
         }
     }
@@ -371,7 +371,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting quiz responses");
+            await _auditLogService.LogErrorAsync($"Error exporting quiz responses", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Export sırasında hata oluştu", ex));
         }
     }
@@ -393,7 +393,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz status for video {VideoId}", videoId);
+            await _auditLogService.LogErrorAsync($"Error loading quiz status for video {videoId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Durum yüklenirken hata oluştu", ex));
         }
     }
@@ -416,7 +416,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading available quizzes for video {VideoId}", videoId);
+            await _auditLogService.LogErrorAsync($"Error loading available quizzes for video {videoId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anketler yüklenirken hata oluştu", ex));
         }
     }
@@ -435,7 +435,7 @@ public class TrainingQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error assigning quiz {QuizId} to video {VideoId}", dto.QuizId, videoId);
+            await _auditLogService.LogErrorAsync($"Error assigning quiz {dto.QuizId} to video {videoId}", "TrainingQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket atanırken hata oluştu", ex));
         }
     }
@@ -451,15 +451,15 @@ public class TrainingQuizApiController : BaseApiController
 public class TrainingVideoQuizApiController : BaseApiController
 {
     private readonly ITrainingQuizService _trainingQuizService;
-    private readonly ILogger<TrainingVideoQuizApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public TrainingVideoQuizApiController(
         ITrainingQuizService trainingQuizService,
-        ILogger<TrainingVideoQuizApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _trainingQuizService = trainingQuizService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     #region Katılımcı (Internal) Quiz Endpoint'leri
@@ -481,7 +481,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz for participant {ParticipantId}", participantId);
+            await _auditLogService.LogErrorAsync($"Error loading quiz for participant {participantId}", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket yüklenirken hata oluştu", ex));
         }
     }
@@ -503,7 +503,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error starting quiz for participant {ParticipantId}", participantId);
+            await _auditLogService.LogErrorAsync($"Error starting quiz for participant {participantId}", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket başlatılırken hata oluştu", ex));
         }
     }
@@ -525,7 +525,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting quiz for participant {ParticipantId}", participantId);
+            await _auditLogService.LogErrorAsync($"Error submitting quiz for participant {participantId}", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket gönderilirken hata oluştu", ex));
         }
     }
@@ -556,7 +556,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading quiz for external participant with token");
+            await _auditLogService.LogErrorAsync($"Error loading quiz for external participant with token", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket yüklenirken hata oluştu", ex));
         }
     }
@@ -582,7 +582,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error starting quiz for external participant with token");
+            await _auditLogService.LogErrorAsync($"Error starting quiz for external participant with token", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket başlatılırken hata oluştu", ex));
         }
     }
@@ -608,7 +608,7 @@ public class TrainingVideoQuizApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting quiz for external participant with token");
+            await _auditLogService.LogErrorAsync($"Error submitting quiz for external participant with token", "TrainingVideoQuiz", ex);
             return StatusCode(500, CreateErrorResponse("Anket gönderilirken hata oluştu", ex));
         }
     }

@@ -3,7 +3,6 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
@@ -16,7 +15,7 @@ public class LocalizationService : ILocalizationService
     private readonly ApplicationDbContext _context;
     private readonly IMemoryCache _cache;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<LocalizationService> _logger;
+    //private readonly IAuditLogService _auditLogService;
     private const string CACHE_KEY_PREFIX = "locale_";
     private const string LANGUAGES_CACHE_KEY = "all_languages";
 
@@ -26,13 +25,11 @@ public class LocalizationService : ILocalizationService
     public LocalizationService(
         ApplicationDbContext context,
         IMemoryCache cache,
-        IHttpContextAccessor httpContextAccessor,
-        ILogger<LocalizationService> logger)
+        IHttpContextAccessor httpContextAccessor)
     {
         _context = context;
         _cache = cache;
         _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
     }
 
     #region Language Operations
@@ -163,11 +160,6 @@ public class LocalizationService : ILocalizationService
             {
                 // Eksik key'i logla (sadece ilk seferde)
                 var missingKey = $"{langId}_{resourceName}";
-                if (_loggedMissingKeys.TryAdd(missingKey, 0))
-                {
-                    _logger.LogWarning("Missing translation key: {ResourceName} (LanguageId: {LanguageId}, DefaultValue: {DefaultValue})",
-                        resourceName, langId, defaultValue ?? resourceName);
-                }
             }
         }
 

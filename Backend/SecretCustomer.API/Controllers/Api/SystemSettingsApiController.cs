@@ -11,15 +11,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class SystemSettingsApiController : BaseApiController
 {
     private readonly ISystemSettingService _settingService;
-    private readonly ILogger<SystemSettingsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public SystemSettingsApiController(
         ISystemSettingService settingService,
-        ILogger<SystemSettingsApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _settingService = settingService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public class SystemSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading system settings");
+            await _auditLogService.LogErrorAsync($"Error loading system settings", "SystemSettings", ex);
             return StatusCode(500, CreateErrorResponse("Ayarlar yüklenirken hata oluştu", ex));
         }
     }
@@ -56,7 +56,7 @@ public class SystemSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading system setting {Key}", key);
+            await _auditLogService.LogErrorAsync($"Error loading system setting {key}", "SystemSettings", ex);
             return StatusCode(500, CreateErrorResponse("Ayar yüklenirken hata oluştu", ex));
         }
     }
@@ -78,7 +78,7 @@ public class SystemSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating system setting");
+            await _auditLogService.LogErrorAsync($"Error creating system setting", "SystemSettings", ex);
             return StatusCode(500, CreateErrorResponse("Ayar oluşturulurken hata oluştu", ex));
         }
     }
@@ -100,7 +100,7 @@ public class SystemSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating system setting {Key}", key);
+            await _auditLogService.LogErrorAsync($"Error updating system setting {key}", "SystemSettings", ex);
             return StatusCode(500, CreateErrorResponse("Ayar güncellenirken hata oluştu", ex));
         }
     }
@@ -121,7 +121,7 @@ public class SystemSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting system setting {Key}", key);
+            await _auditLogService.LogErrorAsync($"Error deleting system setting {key}", "SystemSettings", ex);
             return StatusCode(500, CreateErrorResponse("Ayar silinirken hata oluştu", ex));
         }
     }

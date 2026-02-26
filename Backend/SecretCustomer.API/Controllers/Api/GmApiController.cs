@@ -11,15 +11,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class GmApiController : BaseApiController
 {
     private readonly IGmService _gmService;
-    private readonly ILogger<GmApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public GmApiController(
         IGmService gmService,
-        ILogger<GmApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _gmService = gmService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetUserId()
@@ -44,7 +44,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Hedef firmalar yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Hedef firmalar yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Hedef firmalar yüklenirken hata oluştu", ex));
         }
     }
@@ -61,7 +61,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Hedef firma detayı yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Hedef firma detayı yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Hedef firma detayı yüklenirken hata oluştu", ex));
         }
     }
@@ -77,7 +77,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Hedef firma oluşturulurken hata");
+            await _auditLogService.LogErrorAsync("Hedef firma oluşturulurken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Hedef firma oluşturulurken hata oluştu", ex));
         }
     }
@@ -94,7 +94,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Hedef firma güncellenirken hata");
+            await _auditLogService.LogErrorAsync("Hedef firma güncellenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Hedef firma güncellenirken hata oluştu", ex));
         }
     }
@@ -111,7 +111,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Hedef firma silinirken hata");
+            await _auditLogService.LogErrorAsync("Hedef firma silinirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Hedef firma silinirken hata oluştu", ex));
         }
     }
@@ -131,7 +131,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soruları yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem soruları yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem soruları yüklenirken hata oluştu", ex));
         }
     }
@@ -151,7 +151,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soru eklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem soru eklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Soru eklenirken hata oluştu", ex));
         }
     }
@@ -172,7 +172,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soru güncellenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem soru güncellenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Soru güncellenirken hata oluştu", ex));
         }
     }
@@ -189,7 +189,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soru çıkarılırken hata");
+            await _auditLogService.LogErrorAsync("Dönem soru çıkarılırken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Soru çıkarılırken hata oluştu", ex));
         }
     }
@@ -219,7 +219,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soru Excel import hatası");
+            await _auditLogService.LogErrorAsync("Dönem soru Excel import hatası", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Excel import sırasında hata oluştu", ex));
         }
     }
@@ -249,7 +249,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem soru Excel import (eşleştirmeli) hatası");
+            await _auditLogService.LogErrorAsync("Dönem soru Excel import (eşleştirmeli) hatası", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Excel import sırasında hata oluştu", ex));
         }
     }
@@ -269,7 +269,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Eşleşmeyen sorular kaydedilirken hata");
+            await _auditLogService.LogErrorAsync("Eşleşmeyen sorular kaydedilirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Kaydetme sırasında hata oluştu", ex));
         }
     }
@@ -288,7 +288,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönemler yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönemler yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken hata oluştu", ex));
         }
     }
@@ -305,7 +305,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem detayı yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem detayı yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem detayı yüklenirken hata oluştu", ex));
         }
     }
@@ -322,7 +322,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem oluşturulurken hata");
+            await _auditLogService.LogErrorAsync("Dönem oluşturulurken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem oluşturulurken hata oluştu", ex));
         }
     }
@@ -343,7 +343,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem güncellenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem güncellenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem güncellenirken hata oluştu", ex));
         }
     }
@@ -364,7 +364,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem kopyalanırken hata");
+            await _auditLogService.LogErrorAsync("Dönem kopyalanırken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem kopyalanırken hata oluştu", ex));
         }
     }
@@ -385,7 +385,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem silinirken hata");
+            await _auditLogService.LogErrorAsync("Dönem silinirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem silinirken hata oluştu", ex));
         }
     }
@@ -406,7 +406,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem personel eklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönem personel eklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Personel eklenirken hata oluştu", ex));
         }
     }
@@ -423,7 +423,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem personel çıkarılırken hata");
+            await _auditLogService.LogErrorAsync("Dönem personel çıkarılırken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Personel çıkarılırken hata oluştu", ex));
         }
     }
@@ -447,7 +447,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem aktif edilirken hata");
+            await _auditLogService.LogErrorAsync("Dönem aktif edilirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem aktif edilirken hata oluştu", ex));
         }
     }
@@ -481,7 +481,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Kuponlu soru Excel import hatası");
+            await _auditLogService.LogErrorAsync("Kuponlu soru Excel import hatası", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Kuponlu Excel import sırasında hata oluştu", ex));
         }
     }
@@ -511,7 +511,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Kuponlu soru Excel import (eşleştirmeli) hatası");
+            await _auditLogService.LogErrorAsync("Kuponlu soru Excel import (eşleştirmeli) hatası", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Kuponlu Excel import sırasında hata oluştu", ex));
         }
     }
@@ -531,7 +531,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Kuponlu eşleşmeyen sorular kaydedilirken hata");
+            await _auditLogService.LogErrorAsync("Kuponlu eşleşmeyen sorular kaydedilirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Kaydetme sırasında hata oluştu", ex));
         }
     }
@@ -551,7 +551,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Kuponlu dağıtım yapılırken hata");
+            await _auditLogService.LogErrorAsync("Kuponlu dağıtım yapılırken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Kuponlu dağıtım yapılırken hata oluştu", ex));
         }
     }
@@ -568,7 +568,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönem tamamlanırken hata");
+            await _auditLogService.LogErrorAsync("Dönem tamamlanırken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dönem tamamlanırken hata oluştu", ex));
         }
     }
@@ -587,7 +587,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme takip yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme takip yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme takip yüklenirken hata oluştu", ex));
         }
     }
@@ -607,7 +607,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme ayarları yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme ayarları yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme ayarları yüklenirken hata oluştu", ex));
         }
     }
@@ -627,7 +627,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme ayarı oluşturulurken hata");
+            await _auditLogService.LogErrorAsync("Dinleme ayarı oluşturulurken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme ayarı oluşturulurken hata oluştu", ex));
         }
     }
@@ -644,7 +644,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme ayarı güncellenirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme ayarı güncellenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme ayarı güncellenirken hata oluştu", ex));
         }
     }
@@ -661,7 +661,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme ayarı silinirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme ayarı silinirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme ayarı silinirken hata oluştu", ex));
         }
     }
@@ -680,7 +680,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Atamalar yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Atamalar yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Atamalar yüklenirken hata oluştu", ex));
         }
     }
@@ -701,7 +701,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme formu yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme formu yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme formu yüklenirken hata oluştu", ex));
         }
     }
@@ -717,7 +717,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme düzenleme formu yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme düzenleme formu yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme düzenleme formu yüklenirken hata oluştu", ex));
         }
     }
@@ -745,7 +745,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme taslak kaydedilirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme taslak kaydedilirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme taslak kaydedilirken hata oluştu", ex));
         }
     }
@@ -773,7 +773,7 @@ public class GmApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinleme gönderilirken hata");
+            await _auditLogService.LogErrorAsync("Dinleme gönderilirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Dinleme gönderilirken hata oluştu", ex));
         }
     }

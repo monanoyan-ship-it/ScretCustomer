@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.Customer;
 using SecretCustomer.Core.Interfaces.Services;
@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class CustomerPersonnelApiController : BaseApiController
 {
     private readonly ICustomerPersonnelService _personnelService;
-    private readonly ILogger<CustomerPersonnelApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public CustomerPersonnelApiController(
         ICustomerPersonnelService personnelService,
-        ILogger<CustomerPersonnelApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _personnelService = personnelService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -38,7 +38,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading customer personnel");
+            await _auditLogService.LogErrorAsync($"Error loading customer personnel", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError"), ex));
         }
     }
@@ -53,7 +53,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading personnel for customer {customerId}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError"), ex));
         }
     }
@@ -68,7 +68,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel for organization {OrganizationId}", organizationId);
+            await _auditLogService.LogErrorAsync($"Error loading personnel for organization {organizationId}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadListError"), ex));
         }
     }
@@ -88,7 +88,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.LoadError"), ex));
         }
     }
@@ -114,17 +114,17 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Customer not found");
+            await _auditLogService.LogWarningAsync($"Customer not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while creating personnel");
+            await _auditLogService.LogWarningAsync($"Validation error while creating personnel", "CustomerPersonnel");
             return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating personnel");
+            await _auditLogService.LogErrorAsync($"Error creating personnel", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.CreateError"), ex));
         }
     }
@@ -150,17 +150,17 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Personnel {id} not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while updating personnel {Id}", id);
+            await _auditLogService.LogWarningAsync($"Validation error while updating personnel {id}", "CustomerPersonnel");
             return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.UpdateError"), ex));
         }
     }
@@ -175,12 +175,12 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Personnel {id} not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Personnel.DeleteError"), ex));
         }
     }
@@ -207,17 +207,17 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Personnel {id} not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Invalid password change attempt for personnel {Id}", id);
+            await _auditLogService.LogWarningAsync($"Invalid password change attempt for personnel {id}", "CustomerPersonnel");
             return BadRequest(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing password for personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error changing password for personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.CustomerPersonnel.PasswordChangeError"), ex));
         }
     }
@@ -232,7 +232,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking username {Username}", username);
+            await _auditLogService.LogErrorAsync($"Error checking username {username}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse("Kullanıcı adı kontrolü sırasında hata oluştu.", ex));
         }
     }
@@ -247,7 +247,7 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking email {Email}", email);
+            await _auditLogService.LogErrorAsync($"Error checking email {email}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse("E-posta kontrolü sırasında hata oluştu.", ex));
         }
     }
@@ -262,12 +262,12 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Personnel {id} not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing organization for personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error changing organization for personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon değiştirme sırasında hata oluştu.", ex));
         }
     }
@@ -297,12 +297,12 @@ public class CustomerPersonnelApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Personnel {id} not found", "CustomerPersonnel");
             return NotFound(CreateErrorResponse(ex.Message, ex));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error resetting password for personnel {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error resetting password for personnel {id}", "CustomerPersonnel", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Account.PasswordResetError"), ex));
         }
     }

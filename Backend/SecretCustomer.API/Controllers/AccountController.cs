@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +12,15 @@ namespace SecretCustomer.API.Controllers;
 public class AccountController : Controller
 {
     private readonly IAuthService _authService;
-    private readonly ILogger<AccountController> _logger;
     private readonly ILocalizationService _localizationService;
     private readonly IAuditLogService _auditLogService;
 
     public AccountController(
         IAuthService authService,
-        ILogger<AccountController> logger,
         ILocalizationService localizationService,
         IAuditLogService auditLogService)
     {
         _authService = authService;
-        _logger = logger;
         _localizationService = localizationService;
         _auditLogService = auditLogService;
     }
@@ -110,7 +107,7 @@ public class AccountController : Controller
             // Audit Log - Başarılı giriş
             await _auditLogService.LogLoginAsync(result.UserId, result.Username, success: true);
 
-            _logger.LogInformation("User {Username} logged in successfully", model.Username);
+            await _auditLogService.LogInfoAsync($"User {model.Username} logged in successfully", "Account");
 
             // Şifre değiştirmesi gereken kullanıcıyı Profile sayfasına yönlendir
             if (result.MustChangePassword)
@@ -132,7 +129,7 @@ public class AccountController : Controller
             // Audit Log - Başarısız giriş
             await _auditLogService.LogLoginAsync(0, model.Username, false, "Geçersiz kullanıcı adı veya şifre");
 
-            _logger.LogWarning("Failed login attempt for user {Username}", model.Username);
+            await _auditLogService.LogWarningAsync($"Failed login attempt for user {model.Username}", "Account");
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Auth.InvalidCredentials"));
             return View(model);
         }
@@ -141,7 +138,7 @@ public class AccountController : Controller
             // Audit Log - Hata
             await _auditLogService.LogErrorAsync($"Login hatası: {model.Username}", "Account", ex);
 
-            _logger.LogError(ex, "Error during login for user {Username}", model.Username);
+            await _auditLogService.LogErrorAsync($"Error during login for user {model.Username}", "Account", ex);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.LoginError"));
             return View(model);
         }
@@ -161,7 +158,7 @@ public class AccountController : Controller
         }
 
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        _logger.LogInformation("User logged out");
+        await _auditLogService.LogInfoAsync("User logged out", "Account");
         return RedirectToAction("Login", "Account");
     }
 
@@ -211,7 +208,7 @@ public class AccountController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during forgot password for email {Email}", model.Email);
+            await _auditLogService.LogErrorAsync($"Error during forgot password for email {model.Email}", "Account", ex);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.OperationError"));
             return View(model);
         }
@@ -268,7 +265,7 @@ public class AccountController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during password reset for email {Email}", model.Email);
+            await _auditLogService.LogErrorAsync($"Error during password reset for email {model.Email}", "Account", ex);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Mvc.Account.OperationError"));
             return View(model);
         }

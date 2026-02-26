@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Interfaces.Repositories;
 using SecretCustomer.Core.Interfaces.Services;
@@ -14,7 +13,7 @@ public class FileUploadService : IFileUploadService
     private readonly IAnswerRepository _answerRepository;
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<FileUploadService> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly string _answersUploadPath;
     private readonly string _evaluationsUploadPath;
     private readonly string[] _allowedExtensions = { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".png", ".jpg", ".jpeg", ".gif", ".mp3", ".wav", ".mp4" };
@@ -24,12 +23,12 @@ public class FileUploadService : IFileUploadService
         IAnswerRepository answerRepository,
         ApplicationDbContext context,
         IConfiguration configuration,
-        ILogger<FileUploadService> logger)
+        IAuditLogService auditLogService)
     {
         _answerRepository = answerRepository;
         _context = context;
         _configuration = configuration;
-        _logger = logger;
+        _auditLogService = auditLogService;
         var basePath = _configuration["FileUpload:Path"] ?? Path.Combine(Directory.GetCurrentDirectory(), "uploads");
         _answersUploadPath = Path.Combine(basePath, "answers");
         _evaluationsUploadPath = Path.Combine(basePath, "evaluations");
@@ -103,7 +102,7 @@ public class FileUploadService : IFileUploadService
             answer.AttachmentFileName = fileName;
             await _answerRepository.UpdateAsync(answer);
 
-            _logger.LogInformation("File uploaded for answer {AnswerId}: {FileName}", answerId, fileName);
+            await _auditLogService.LogInfoAsync($"File uploaded for answer {answerId}: {fileName}", "FileUpload");
 
             return new FileUploadResult
             {
@@ -115,7 +114,7 @@ public class FileUploadService : IFileUploadService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error uploading file for answer {answerId}", "FileUpload", ex);
             return new FileUploadResult
             {
                 Success = false,
@@ -143,12 +142,12 @@ public class FileUploadService : IFileUploadService
             answer.AttachmentFileName = null;
             await _answerRepository.UpdateAsync(answer);
 
-            _logger.LogInformation("File deleted for answer {AnswerId}", answerId);
+            await _auditLogService.LogInfoAsync($"File deleted for answer {answerId}", "FileUpload");
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting file for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error deleting file for answer {answerId}", "FileUpload", ex);
             return false;
         }
     }
@@ -176,7 +175,7 @@ public class FileUploadService : IFileUploadService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting file for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error getting file for answer {answerId}", "FileUpload", ex);
             return null;
         }
     }
@@ -266,8 +265,7 @@ public class FileUploadService : IFileUploadService
             _context.EvaluationAttachments.Add(attachment);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("File uploaded for evaluation {EvaluationId}: {FileName}, AttachmentId: {AttachmentId}",
-                evaluationId, fileName, attachment.Id);
+            await _auditLogService.LogInfoAsync($"File uploaded for evaluation {evaluationId}: {fileName}, AttachmentId: {attachment.Id}", "FileUpload");
 
             return new FileUploadResult
             {
@@ -280,7 +278,7 @@ public class FileUploadService : IFileUploadService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file for evaluation {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error uploading file for evaluation {evaluationId}", "FileUpload", ex);
             return new FileUploadResult
             {
                 Success = false,
@@ -309,13 +307,12 @@ public class FileUploadService : IFileUploadService
             _context.EvaluationAttachments.Remove(attachment);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("File deleted: AttachmentId {AttachmentId}, EvaluationId {EvaluationId}",
-                attachmentId, attachment.EvaluationId);
+            await _auditLogService.LogInfoAsync($"File deleted: AttachmentId {attachmentId}, EvaluationId {attachment.EvaluationId}", "FileUpload");
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting attachment {AttachmentId}", attachmentId);
+            await _auditLogService.LogErrorAsync($"Error deleting attachment {attachmentId}", "FileUpload", ex);
             return false;
         }
     }
@@ -340,7 +337,7 @@ public class FileUploadService : IFileUploadService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting attachment {AttachmentId}", attachmentId);
+            await _auditLogService.LogErrorAsync($"Error getting attachment {attachmentId}", "FileUpload", ex);
             return null;
         }
     }

@@ -18,7 +18,7 @@ public class ReportsApiController : BaseApiController
     private readonly ICustomerOrganizationService _organizationService;
     private readonly IProjectService _projectService;
     private readonly IUserService _userService;
-    private readonly ILogger<ReportsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
     private readonly IAIReportService _aiReportService;
     private readonly IPdfService _pdfService;
@@ -29,7 +29,7 @@ public class ReportsApiController : BaseApiController
         ICustomerOrganizationService organizationService,
         IProjectService projectService,
         IUserService userService,
-        ILogger<ReportsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IAIReportService aiReportService,
         IPdfService pdfService,
@@ -40,7 +40,7 @@ public class ReportsApiController : BaseApiController
         _organizationService = organizationService;
         _projectService = projectService;
         _userService = userService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
         _aiReportService = aiReportService;
         _pdfService = pdfService;
@@ -88,7 +88,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading report lookups");
+            await _auditLogService.LogErrorAsync("Error loading report lookups", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Lookup verileri yüklenirken hata oluştu.", ex));
         }
     }
@@ -106,7 +106,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organizations for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading organizations for customer {customerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken hata oluştu.", ex));
         }
     }
@@ -124,7 +124,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluations report");
+            await _auditLogService.LogErrorAsync("Error loading evaluations report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -142,7 +142,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting evaluations count");
+            await _auditLogService.LogErrorAsync("Error getting evaluations count", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -163,7 +163,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluation detail {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error loading evaluation detail {evaluationId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.EvaluationDetailLoadError"), ex));
         }
     }
@@ -184,7 +184,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting evaluation detail {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error exporting evaluation detail {evaluationId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Değerlendirme detayı export edilirken hata oluştu.", ex));
         }
     }
@@ -202,7 +202,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading summary report");
+            await _auditLogService.LogErrorAsync("Error loading summary report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SummaryLoadError"), ex));
         }
     }
@@ -220,7 +220,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting evaluations to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting evaluations to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ExcelExportError"), ex));
         }
     }
@@ -238,7 +238,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting detailed evaluations to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting detailed evaluations to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.DetailedExcelExportError"), ex));
         }
     }
@@ -256,7 +256,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting call audit report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting call audit report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Çağrı denetleme raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -274,7 +274,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting visit audit report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting visit audit report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaret denetleme raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -292,7 +292,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting visit customer evaluation report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting visit customer evaluation report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Müşteri ziyaret değerlendirme raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -313,7 +313,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting visit evaluation detail {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error exporting visit evaluation detail {evaluationId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaret değerlendirme detayı export edilirken hata oluştu.", ex));
         }
     }
@@ -331,7 +331,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting question group average report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting question group average report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Soru grubu ortalama raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -349,7 +349,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting customer evaluation report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting customer evaluation report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Müşteri değerlendirme raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -367,7 +367,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting project performance report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting project performance report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Proje performans raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -385,7 +385,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting MT report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting MT report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("MT raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -403,7 +403,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting unscored questions report to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting unscored questions report to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Puansız soru raporu oluşturulurken hata oluştu.", ex));
         }
     }
@@ -453,7 +453,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading penalties report");
+            await _auditLogService.LogErrorAsync("Error loading penalties report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.PenaltiesLoadError"), ex));
         }
     }
@@ -499,7 +499,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting penalties to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting penalties to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.PenaltiesExportError"), ex));
         }
     }
@@ -519,7 +519,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading customers for report card");
+            await _auditLogService.LogErrorAsync("Error loading customers for report card", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Müşteri listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -538,7 +538,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organizations for report card");
+            await _auditLogService.LogErrorAsync("Error loading organizations for report card", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -560,7 +560,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel list for report card");
+            await _auditLogService.LogErrorAsync("Error loading personnel list for report card", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Personnel.LoadListError"), ex));
         }
     }
@@ -578,7 +578,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading projects for personnel {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error loading projects for personnel {personnelId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -618,7 +618,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel report card for {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error loading personnel report card for {personnelId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardLoadError"), ex));
         }
     }
@@ -655,7 +655,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting personnel report card for {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error exporting personnel report card for {personnelId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError"), ex));
         }
     }
@@ -698,7 +698,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting personnel report card PDF for {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error exporting personnel report card PDF for {personnelId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Temsilci karnesi PDF oluşturulurken hata oluştu.", ex));
         }
     }
@@ -734,7 +734,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting personnel report card to Word for {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error exporting personnel report card to Word for {personnelId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.ReportCardExportError"), ex));
         }
     }
@@ -786,7 +786,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading suggestions report");
+            await _auditLogService.LogErrorAsync("Error loading suggestions report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SuggestionsLoadError"), ex));
         }
     }
@@ -825,7 +825,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading top suggested questions");
+            await _auditLogService.LogErrorAsync("Error loading top suggested questions", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.TopSuggestionsLoadError"), ex));
         }
     }
@@ -851,7 +851,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading survey results for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading survey results for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Anket sonuçları yüklenirken hata oluştu.", ex));
         }
     }
@@ -869,7 +869,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading survey projects");
+            await _auditLogService.LogErrorAsync("Error loading survey projects", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Anket projeleri yüklenirken hata oluştu.", ex));
         }
     }
@@ -894,7 +894,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading recent survey responses");
+            await _auditLogService.LogErrorAsync("Error loading recent survey responses", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Son anket yanıtları yüklenirken hata oluştu.", ex));
         }
     }
@@ -915,7 +915,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting survey responses for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting survey responses for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Anket yanıtları export edilirken hata oluştu.", ex));
         }
     }
@@ -936,7 +936,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading survey project detail for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading survey project detail for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Proje detayı yüklenirken hata oluştu.", ex));
         }
     }
@@ -960,7 +960,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading survey question score distribution");
+            await _auditLogService.LogErrorAsync("Error loading survey question score distribution", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Soru puan dağılımı yüklenirken hata oluştu.", ex));
         }
     }
@@ -984,7 +984,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting survey question distribution for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting survey question distribution for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Soru puan dağılımı export edilirken hata oluştu.", ex));
         }
     }
@@ -1008,7 +1008,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting survey results for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting survey results for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Anket sonuçları export edilirken hata oluştu.", ex));
         }
     }
@@ -1029,7 +1029,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting group scores for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting group scores for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Grup puanları export edilirken hata oluştu.", ex));
         }
     }
@@ -1050,7 +1050,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting question stats for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting question stats for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Soru istatistikleri export edilirken hata oluştu.", ex));
         }
     }
@@ -1071,7 +1071,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting detail report for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting detail report for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Detay raporu export edilirken hata oluştu.", ex));
         }
     }
@@ -1092,7 +1092,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting full detail report for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting full detail report for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Tam detay raporu export edilirken hata oluştu.", ex));
         }
     }
@@ -1113,7 +1113,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading score detail for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading score detail for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Puan detayı yüklenirken hata oluştu.", ex));
         }
     }
@@ -1134,7 +1134,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting score detail for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error exporting score detail for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Puan detayı export edilirken hata oluştu.", ex));
         }
     }
@@ -1180,7 +1180,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting suggestions to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting suggestions to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.SuggestionsExportError"), ex));
         }
     }
@@ -1205,7 +1205,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting performance tracking report");
+            await _auditLogService.LogErrorAsync("Error getting performance tracking report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Performans takibi raporu yüklenirken hata oluştu", ex));
         }
     }
@@ -1248,7 +1248,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting personnel question performance report");
+            await _auditLogService.LogErrorAsync("Error getting personnel question performance report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Personel soru performans raporu yüklenirken hata oluştu.", ex));
         }
     }
@@ -1291,7 +1291,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting personnel question performance report");
+            await _auditLogService.LogErrorAsync("Error exporting personnel question performance report", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Personel soru performans raporu export edilirken hata oluştu.", ex));
         }
     }
@@ -1311,7 +1311,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "AI rapor oluşturma hatası: CustomerId={CustomerId}", request.CustomerId);
+            await _auditLogService.LogErrorAsync($"AI rapor oluşturma hatası: CustomerId={request.CustomerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("AI rapor oluşturulurken hata oluştu.", ex));
         }
     }
@@ -1329,7 +1329,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "AI rapor verisi toplama hatası: CustomerId={CustomerId}", request.CustomerId);
+            await _auditLogService.LogErrorAsync($"AI rapor verisi toplama hatası: CustomerId={request.CustomerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Rapor verisi toplanırken hata oluştu.", ex));
         }
     }
@@ -1349,7 +1349,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading Enneagram projects");
+            await _auditLogService.LogErrorAsync("Error loading Enneagram projects", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Enneagram projeleri yüklenirken hata oluştu.", ex));
         }
     }
@@ -1398,7 +1398,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading Enneagram results");
+            await _auditLogService.LogErrorAsync("Error loading Enneagram results", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Enneagram sonuçları yüklenirken hata oluştu.", ex));
         }
     }
@@ -1419,7 +1419,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading Enneagram result detail for {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error loading Enneagram result detail for {evaluationId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Enneagram sonuç detayı yüklenirken hata oluştu.", ex));
         }
     }
@@ -1455,7 +1455,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting Enneagram results to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting Enneagram results to Excel", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Enneagram sonuçları export edilirken hata oluştu.", ex));
         }
     }
@@ -1476,7 +1476,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading Enneagram distribution for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading Enneagram distribution for project {projectId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Enneagram dağılımı yüklenirken hata oluştu.", ex));
         }
     }
@@ -1493,7 +1493,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading customers with dealers");
+            await _auditLogService.LogErrorAsync("Error loading customers with dealers", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -1509,7 +1509,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading dealer list for report card");
+            await _auditLogService.LogErrorAsync("Error loading dealer list for report card", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -1524,7 +1524,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading projects for dealer {DealerId}", dealerId);
+            await _auditLogService.LogErrorAsync($"Error loading projects for dealer {dealerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Report.LoadError"), ex));
         }
     }
@@ -1560,7 +1560,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading dealer report card for {DealerId}", dealerId);
+            await _auditLogService.LogErrorAsync($"Error loading dealer report card for {dealerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Şube karnesi yüklenirken hata oluştu.", ex));
         }
     }
@@ -1593,7 +1593,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting dealer report card for {DealerId}", dealerId);
+            await _auditLogService.LogErrorAsync($"Error exporting dealer report card for {dealerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Şube karnesi export edilirken hata oluştu.", ex));
         }
     }
@@ -1636,7 +1636,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting dealer report card PDF for {DealerId}", dealerId);
+            await _auditLogService.LogErrorAsync($"Error exporting dealer report card PDF for {dealerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Şube karnesi PDF oluşturulurken hata oluştu.", ex));
         }
     }
@@ -1669,7 +1669,7 @@ public class ReportsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting dealer report card to Word for {DealerId}", dealerId);
+            await _auditLogService.LogErrorAsync($"Error exporting dealer report card to Word for {dealerId}", "Reports", ex);
             return StatusCode(500, CreateErrorResponse("Şube karnesi Word export edilirken hata oluştu.", ex));
         }
     }

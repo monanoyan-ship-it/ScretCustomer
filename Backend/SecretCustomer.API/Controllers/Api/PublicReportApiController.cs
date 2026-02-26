@@ -15,16 +15,16 @@ public class PublicReportApiController : ControllerBase
 {
     private readonly INotificationTokenService _tokenService;
     private readonly IReportService _reportService;
-    private readonly ILogger<PublicReportApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public PublicReportApiController(
         INotificationTokenService tokenService,
         IReportService reportService,
-        ILogger<PublicReportApiController> logger)
+        IAuditLogService auditLogService)
     {
         _tokenService = tokenService;
         _reportService = reportService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class PublicReportApiController : ControllerBase
     [HttpGet("{token}")]
     public async Task<IActionResult> GetReport(string token)
     {
-        var payload = _tokenService.DecryptToken(token);
+        var payload = await _tokenService.DecryptToken(token);
         if (payload == null)
             return Unauthorized(new { message = "Geçersiz veya süresi dolmuş link." });
 
@@ -59,7 +59,7 @@ public class PublicReportApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting public report for token type {Type}", payload.Type);
+            await _auditLogService.LogErrorAsync($"Error getting public report for token type {payload.Type}", "PublicReport", ex);
             return StatusCode(500, new { message = "Rapor yüklenirken hata oluştu." });
         }
     }
@@ -71,7 +71,7 @@ public class PublicReportApiController : ControllerBase
     [HttpGet("{token}/evaluation/{evaluationId}")]
     public async Task<IActionResult> GetEvaluationDetail(string token, int evaluationId)
     {
-        var payload = _tokenService.DecryptToken(token);
+        var payload = await _tokenService.DecryptToken(token);
         if (payload == null)
             return Unauthorized(new { message = "Geçersiz veya süresi dolmuş link." });
 
@@ -109,7 +109,7 @@ public class PublicReportApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting public evaluation detail {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error getting public evaluation detail {evaluationId}", "PublicReport", ex);
             return StatusCode(500, new { message = "Değerlendirme detayı yüklenirken hata oluştu." });
         }
     }

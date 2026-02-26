@@ -13,19 +13,19 @@ public class PermissionsApiController : BaseApiController
 {
     private readonly IPermissionService _permissionService;
     private readonly IUserService _userService;
-    private readonly ILogger<PermissionsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public PermissionsApiController(
         IPermissionService permissionService,
         IUserService userService,
-        ILogger<PermissionsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _permissionService = permissionService;
         _userService = userService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -42,7 +42,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading permissions");
+            await _auditLogService.LogErrorAsync($"Error loading permissions", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.LoadError"), ex));
         }
     }
@@ -60,7 +60,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading permissions by category {CategoryId}", categoryId);
+            await _auditLogService.LogErrorAsync($"Error loading permissions by category {categoryId}", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.LoadError"), ex));
         }
     }
@@ -78,7 +78,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading role permissions");
+            await _auditLogService.LogErrorAsync($"Error loading role permissions", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError"), ex));
         }
     }
@@ -96,7 +96,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading permissions for role {RoleId}", roleId);
+            await _auditLogService.LogErrorAsync($"Error loading permissions for role {roleId}", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RoleLoadError"), ex));
         }
     }
@@ -114,7 +114,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error granting role permission");
+            await _auditLogService.LogErrorAsync($"Error granting role permission", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RolePermissionUpdateError"), ex));
         }
     }
@@ -132,7 +132,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error bulk granting role permissions");
+            await _auditLogService.LogErrorAsync($"Error bulk granting role permissions", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.BulkAssignError"), ex));
         }
     }
@@ -150,7 +150,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error revoking role permission");
+            await _auditLogService.LogErrorAsync($"Error revoking role permission", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.RolePermissionRevokeError"), ex));
         }
     }
@@ -172,7 +172,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user permissions for {UserId}", userId);
+            await _auditLogService.LogErrorAsync($"Error loading user permissions for {userId}", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionLoadError"), ex));
         }
     }
@@ -190,7 +190,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error granting user permission");
+            await _auditLogService.LogErrorAsync($"Error granting user permission", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionUpdateError"), ex));
         }
     }
@@ -208,7 +208,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error revoking user permission");
+            await _auditLogService.LogErrorAsync($"Error revoking user permission", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Permission.UserPermissionRevokeError"), ex));
         }
     }
@@ -285,7 +285,7 @@ public class PermissionsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error syncing permissions");
+            await _auditLogService.LogErrorAsync($"Error syncing permissions", "Permissions", ex);
             return StatusCode(500, CreateErrorResponse("Yetkiler senkronize edilirken hata oluştu", ex));
         }
     }

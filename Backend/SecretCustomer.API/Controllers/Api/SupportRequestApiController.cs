@@ -16,15 +16,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class SupportRequestApiController : BaseApiController
 {
     private readonly ISupportRequestService _supportRequestService;
-    private readonly ILogger<SupportRequestApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public SupportRequestApiController(
         ISupportRequestService supportRequestService,
-        ILogger<SupportRequestApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _supportRequestService = supportRequestService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int? GetCurrentUserId()
@@ -60,7 +60,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting support requests");
+            await _auditLogService.LogErrorAsync($"Error getting support requests", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talepleri yüklenirken hata oluştu.", ex));
         }
     }
@@ -82,7 +82,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting support request {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting support request {id}", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi yüklenirken hata oluştu.", ex));
         }
     }
@@ -110,7 +110,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error responding to support request {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error responding to support request {id}", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi cevaplanırken hata oluştu.", ex));
         }
     }
@@ -134,7 +134,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating support request status {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating support request status {id}", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi durumu güncellenirken hata oluştu.", ex));
         }
     }
@@ -157,7 +157,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting support request {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting support request {id}", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi silinirken hata oluştu.", ex));
         }
     }
@@ -176,7 +176,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting support request status counts");
+            await _auditLogService.LogErrorAsync($"Error getting support request status counts", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Durum sayıları yüklenirken hata oluştu.", ex));
         }
     }
@@ -209,7 +209,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating support request");
+            await _auditLogService.LogErrorAsync($"Error creating support request", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi oluşturulurken hata oluştu.", ex));
         }
     }
@@ -230,7 +230,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting my support requests");
+            await _auditLogService.LogErrorAsync($"Error getting my support requests", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talepleri yüklenirken hata oluştu.", ex));
         }
     }
@@ -251,7 +251,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting my support request summary");
+            await _auditLogService.LogErrorAsync($"Error getting my support request summary", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Talep özeti yüklenirken hata oluştu.", ex));
         }
     }
@@ -284,7 +284,7 @@ public class SupportRequestApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting my support request {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting my support request {id}", "SupportRequest", ex);
             return StatusCode(500, CreateErrorResponse("Destek talebi yüklenirken hata oluştu.", ex));
         }
     }

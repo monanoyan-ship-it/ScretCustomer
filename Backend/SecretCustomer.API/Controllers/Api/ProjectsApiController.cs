@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ProjectsApiController : BaseApiController
 {
     private readonly IProjectService _projectService;
-    private readonly ILogger<ProjectsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public ProjectsApiController(
         IProjectService projectService,
-        ILogger<ProjectsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _projectService = projectService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -41,7 +41,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading projects");
+            await _auditLogService.LogErrorAsync("Error loading projects", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.LoadListError"), ex));
         }
     }
@@ -60,7 +60,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project summaries");
+            await _auditLogService.LogErrorAsync("Error loading project summaries", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.SummaryLoadError"), ex));
         }
     }
@@ -83,7 +83,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.LoadError"), ex));
         }
     }
@@ -106,7 +106,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project detail {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading project detail {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.DetailLoadError"), ex));
         }
     }
@@ -130,7 +130,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating project");
+            await _auditLogService.LogErrorAsync("Error creating project", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CreateError"), ex));
         }
     }
@@ -158,7 +158,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.UpdateError"), ex));
         }
     }
@@ -181,7 +181,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.DeleteError"), ex));
         }
     }
@@ -217,7 +217,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating project status {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating project status {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StatusUpdateError"), ex));
         }
     }
@@ -244,7 +244,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error starting project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error starting project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StartError"), ex));
         }
     }
@@ -271,7 +271,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error pausing project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error pausing project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.PauseError"), ex));
         }
     }
@@ -298,7 +298,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error completing project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error completing project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CompleteError"), ex));
         }
     }
@@ -325,7 +325,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error canceling project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error canceling project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CancelError"), ex));
         }
     }
@@ -348,7 +348,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error closing project {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error closing project {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CloseError"), ex));
         }
     }
@@ -380,7 +380,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error managing project team {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error managing project team {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.TeamUpdateError"), ex));
         }
     }
@@ -407,7 +407,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project statistics {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading project statistics {id}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.StatisticsLoadError"), ex));
         }
     }
@@ -426,7 +426,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading projects by customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading projects by customer {customerId}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CustomerProjectsLoadError"), ex));
         }
     }
@@ -445,7 +445,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading projects by manager {ManagerId}", managerId);
+            await _auditLogService.LogErrorAsync($"Error loading projects by manager {managerId}", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.ManagerProjectsLoadError"), ex));
         }
     }
@@ -464,7 +464,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading active projects");
+            await _auditLogService.LogErrorAsync("Error loading active projects", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.ActiveProjectsLoadError"), ex));
         }
     }
@@ -483,7 +483,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading upcoming deadline projects");
+            await _auditLogService.LogErrorAsync("Error loading upcoming deadline projects", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.UpcomingDeadlinesLoadError"), ex));
         }
     }
@@ -502,7 +502,7 @@ public class ProjectsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating project code");
+            await _auditLogService.LogErrorAsync("Error generating project code", "Projects", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.CodeGenerationError"), ex));
         }
     }

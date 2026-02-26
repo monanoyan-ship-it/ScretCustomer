@@ -15,17 +15,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class CustomerPortalProfileController : BaseApiController
 {
     private readonly ICustomerPortalProfileService _profileService;
-    private readonly ILogger<CustomerPortalProfileController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public CustomerPortalProfileController(
         ICustomerPortalProfileService profileService,
-        ILogger<CustomerPortalProfileController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _profileService = profileService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -69,7 +69,7 @@ public class CustomerPortalProfileController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting customer personnel profile");
+            await _auditLogService.LogErrorAsync($"Error getting customer personnel profile", "CustomerPortalProfile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.LoadError"), ex));
         }
     }
@@ -98,13 +98,13 @@ public class CustomerPortalProfileController : BaseApiController
                 return NotFound(CreateErrorResponse(errorMessage!));
             }
 
-            _logger.LogInformation("CustomerPersonnel {Id} updated their profile", userId);
+            await _auditLogService.LogInfoAsync($"CustomerPersonnel {userId} updated their profile", "CustomerPortalProfile");
 
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating customer personnel profile");
+            await _auditLogService.LogErrorAsync($"Error updating customer personnel profile", "CustomerPortalProfile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.UpdateError"), ex));
         }
     }
@@ -130,13 +130,13 @@ public class CustomerPortalProfileController : BaseApiController
                 return BadRequest(CreateErrorResponse(message));
             }
 
-            _logger.LogInformation("CustomerPersonnel {Id} changed their password", userId);
+            await _auditLogService.LogInfoAsync($"CustomerPersonnel {userId} changed their password", "CustomerPortalProfile");
 
             return Ok(new { message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing customer personnel password");
+            await _auditLogService.LogErrorAsync($"Error changing customer personnel password", "CustomerPortalProfile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError"), ex));
         }
     }
@@ -184,7 +184,7 @@ public class CustomerPortalProfileController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting company settings");
+            await _auditLogService.LogErrorAsync($"Error getting company settings", "CustomerPortalProfile", ex);
             return StatusCode(500, CreateErrorResponse("Firma ayarları yüklenirken bir hata oluştu", ex));
         }
     }
@@ -217,13 +217,13 @@ public class CustomerPortalProfileController : BaseApiController
                 return NotFound(CreateErrorResponse(errorMessage!));
             }
 
-            _logger.LogInformation("Company settings updated by PersonnelId {PersonnelId}", userId);
+            await _auditLogService.LogInfoAsync($"Company settings updated by PersonnelId {userId}", "CustomerPortalProfile");
 
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating company settings");
+            await _auditLogService.LogErrorAsync($"Error updating company settings", "CustomerPortalProfile", ex);
             return StatusCode(500, CreateErrorResponse("Firma ayarları güncellenirken bir hata oluştu", ex));
         }
     }

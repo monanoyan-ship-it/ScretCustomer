@@ -10,17 +10,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AnswersApiController : BaseApiController
 {
     private readonly IFileUploadService _fileUploadService;
-    private readonly ILogger<AnswersApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public AnswersApiController(
         IFileUploadService fileUploadService,
-        ILogger<AnswersApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _fileUploadService = fileUploadService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -59,7 +59,7 @@ public class AnswersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading attachment for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error uploading attachment for answer {answerId}", "Answers", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
@@ -82,7 +82,7 @@ public class AnswersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting attachment for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error deleting attachment for answer {answerId}", "Answers", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
@@ -107,7 +107,7 @@ public class AnswersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error downloading attachment for answer {AnswerId}", answerId);
+            await _auditLogService.LogErrorAsync($"Error downloading attachment for answer {answerId}", "Answers", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }

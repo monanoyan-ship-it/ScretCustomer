@@ -12,17 +12,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ProfileApiController : BaseApiController
 {
     private readonly IAuthService _authService;
-    private readonly ILogger<ProfileApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public ProfileApiController(
         IAuthService authService,
-        ILogger<ProfileApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _authService = authService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -50,7 +50,7 @@ public class ProfileApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting profile");
+            await _auditLogService.LogErrorAsync("Error getting profile", "Profile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.LoadError"), ex));
         }
     }
@@ -80,7 +80,7 @@ public class ProfileApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating profile");
+            await _auditLogService.LogErrorAsync("Error updating profile", "Profile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.UpdateError"), ex));
         }
     }
@@ -106,7 +106,7 @@ public class ProfileApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing password");
+            await _auditLogService.LogErrorAsync("Error changing password", "Profile", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Profile.PasswordChangeError"), ex));
         }
     }

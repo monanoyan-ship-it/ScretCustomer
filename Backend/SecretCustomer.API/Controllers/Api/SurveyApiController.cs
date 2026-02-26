@@ -18,18 +18,18 @@ public class SurveyApiController : ControllerBase
     private readonly ISurveyService _surveyService;
     private readonly IEmailService _emailService;
     private readonly IQRCodeService _qrCodeService;
-    private readonly ILogger<SurveyApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public SurveyApiController(
         ISurveyService surveyService,
         IEmailService emailService,
         IQRCodeService qrCodeService,
-        ILogger<SurveyApiController> logger)
+        IAuditLogService auditLogService)
     {
         _surveyService = surveyService;
         _emailService = emailService;
         _qrCodeService = qrCodeService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     /// <summary>
@@ -116,8 +116,8 @@ public class SurveyApiController : ControllerBase
                 var surveyUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={token}";
 
                 // Placeholder değişimleri
-                var subject = ReplacePlaceholders(emailTemplate.Subject, project, person, surveyUrl);
-                var body = ReplacePlaceholders(emailTemplate.Body, project, person, surveyUrl);
+                var subject = await ReplacePlaceholders(emailTemplate.Subject, project, person, surveyUrl);
+                var body = await ReplacePlaceholders(emailTemplate.Body, project, person, surveyUrl);
 
                 // SurveyInvitation kaydı oluştur
                 var invitation = await _surveyService.CreateSurveyInvitationAsync(projectId, person.Id, person.Email!, dto.SendReminders);
@@ -128,22 +128,21 @@ public class SurveyApiController : ControllerBase
                 {
                     await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
-                    _logger.LogInformation("Survey invitation sent to {Email} for project {ProjectId}",
-                        person.Email, projectId);
+                    await _auditLogService.LogInfoAsync($"Survey invitation sent to {person.Email} for project {projectId}", "Survey");
                 }
                 else
                 {
                     await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{person.Email}: {result.ErrorMessage}");
-                    _logger.LogWarning("Failed to send survey invitation to {Email}: {Error}", person.Email, result.ErrorMessage);
+                    await _auditLogService.LogWarningAsync($"Failed to send survey invitation to {person.Email}: {result.ErrorMessage}", "Survey");
                 }
             }
             catch (Exception ex)
             {
                 failCount++;
                 errors.Add($"{person.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error sending survey invitation to {Email}", person.Email);
+                await _auditLogService.LogErrorAsync($"Error sending survey invitation to {person.Email}", "Survey", ex);
             }
         }
 
@@ -221,8 +220,7 @@ public class SurveyApiController : ControllerBase
         catch (Exception ex)
         {
             // Davet kaydı bulunamasa veya tablo yoksa devam et - anket yine de çalışmalı
-            _logger.LogWarning(ex, "SurveyInvitation update failed for project {ProjectId}, personnel {PersonnelId}",
-                tokenData.ProjectId, tokenData.PersonnelId);
+            await _auditLogService.LogWarningAsync($"SurveyInvitation update failed for project {tokenData.ProjectId}, personnel {tokenData.PersonnelId}", "Survey");
         }
 
         var isAnonymous = project.SurveyIdentityTypeId == SurveyIdentityTypes.Ids.Anonymous;
@@ -405,14 +403,12 @@ public class SurveyApiController : ControllerBase
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "SurveyInvitation completion update failed for project {ProjectId}, personnel {PersonnelId}",
-                    project.Id, personnel.Id);
+                await _auditLogService.LogWarningAsync($"SurveyInvitation completion update failed for project {project.Id}, personnel {personnel.Id}", "Survey");
             }
 
             await _surveyService.SaveChangesAsync();
 
-            _logger.LogInformation("Survey submitted for project {ProjectId}, personnel {PersonnelId}, EvaluationId: {EvaluationId}, Score: {Score}",
-                project.Id, personnel.Id, evaluation.Id, evaluation.TotalScore);
+            await _auditLogService.LogInfoAsync($"Survey submitted for project {project.Id}, personnel {personnel.Id}, EvaluationId: {evaluation.Id}, Score: {evaluation.TotalScore}", "Survey");
 
             return Ok(new
             {
@@ -424,7 +420,7 @@ public class SurveyApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting survey for project {ProjectId}, personnel {PersonnelId}", project.Id, personnel.Id);
+            await _auditLogService.LogErrorAsync($"Error submitting survey for project {project.Id}, personnel {personnel.Id}", "Survey", ex);
             return StatusCode(500, new { message = "Anket gönderilirken bir hata oluştu." });
         }
     }
@@ -479,8 +475,7 @@ public class SurveyApiController : ControllerBase
             // External invitation'ı tamamlandı olarak işaretle
             await _surveyService.MarkExternalInvitationCompletedAsync(invitation, evaluation.Id);
 
-            _logger.LogInformation("External survey submitted for project {ProjectId}, email {Email}, EvaluationId: {EvaluationId}, Score: {Score}",
-                project.Id, invitation.Email, evaluation.Id, evaluation.TotalScore);
+            await _auditLogService.LogInfoAsync($"External survey submitted for project {project.Id}, email {invitation.Email}, EvaluationId: {evaluation.Id}, Score: {evaluation.TotalScore}", "Survey");
 
             return Ok(new
             {
@@ -492,8 +487,7 @@ public class SurveyApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting external survey for project {ProjectId}, email {Email}",
-                project.Id, invitation.Email);
+            await _auditLogService.LogErrorAsync($"Error submitting external survey for project {project.Id}, email {invitation.Email}", "Survey", ex);
             return StatusCode(500, new { message = "Anket gönderilirken bir hata oluştu." });
         }
     }
@@ -691,8 +685,8 @@ public class SurveyApiController : ControllerBase
                 var surveyUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={token}";
 
                 // Placeholder değişimleri
-                var subject = ReplacePlaceholders(emailTemplate.Subject, project, person, surveyUrl);
-                var body = ReplacePlaceholders(emailTemplate.Body, project, person, surveyUrl);
+                var subject = await ReplacePlaceholders(emailTemplate.Subject, project, person, surveyUrl);
+                var body = await ReplacePlaceholders(emailTemplate.Body, project, person, surveyUrl);
 
                 var result = await _emailService.SendEmailAsync(person.Email!, subject, body, true);
 
@@ -700,22 +694,21 @@ public class SurveyApiController : ControllerBase
                 {
                     await _surveyService.UpdateInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
-                    _logger.LogInformation("Retry: Survey invitation sent to {Email} for project {ProjectId}",
-                        person.Email, projectId);
+                    await _auditLogService.LogInfoAsync($"Retry: Survey invitation sent to {person.Email} for project {projectId}", "Survey");
                 }
                 else
                 {
                     await _surveyService.UpdateInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{person.Email}: {result.ErrorMessage}");
-                    _logger.LogWarning("Retry failed for {Email}: {Error}", person.Email, result.ErrorMessage);
+                    await _auditLogService.LogWarningAsync($"Retry failed for {person.Email}: {result.ErrorMessage}", "Survey");
                 }
             }
             catch (Exception ex)
             {
                 failCount++;
                 errors.Add($"{invitation.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error retrying invitation to {Email}", invitation.Email);
+                await _auditLogService.LogErrorAsync($"Error retrying invitation to {invitation.Email}", "Survey", ex);
             }
         }
 
@@ -734,14 +727,14 @@ public class SurveyApiController : ControllerBase
     /// <summary>
     /// Placeholder'ları gerçek değerlerle değiştir
     /// </summary>
-    private string ReplacePlaceholders(string text, Project project, CustomerPersonnel person, string surveyUrl)
+    private async Task<string> ReplacePlaceholders(string text, Project project, CustomerPersonnel person, string surveyUrl)
     {
         if (string.IsNullOrEmpty(text)) return text;
 
         // Anket Linkleri
         text = text.Replace(EmailPlaceholders.SurveyUrl, surveyUrl); // Düz URL
         text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl)); // HTML link olarak (<a href="url">url</a>)
-        text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
+        text = text.Replace(EmailPlaceholders.SurveyQRCode, await GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon
         text = text.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
@@ -782,7 +775,7 @@ public class SurveyApiController : ControllerBase
     /// QR kod HTML'i oluştur (placeholder için)
     /// Base64 embedded image kullanır - email istemcileri için daha güvenilir
     /// </summary>
-    private string GenerateQRCodeHtml(string url)
+    private async Task<string> GenerateQRCodeHtml(string url)
     {
         try
         {
@@ -792,7 +785,7 @@ public class SurveyApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "QR kod oluşturulamadı: {Url}", url);
+            await _auditLogService.LogWarningAsync($"QR kod oluşturulamadı: {url}", "Survey");
             // Fallback: link olarak göster
             return $"<a href='{url}'>Ankete Git</a>";
         }
@@ -880,8 +873,8 @@ public class SurveyApiController : ControllerBase
                 var surveyUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={token}";
 
                 // Placeholder değişimleri
-                var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
-                var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+                var subject = await ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                var body = await ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
 
                 var result = await _emailService.SendEmailAsync(recipient.Email, subject, body, true);
 
@@ -889,23 +882,21 @@ public class SurveyApiController : ControllerBase
                 {
                     await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
-                    _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId}",
-                        recipient.Email, projectId);
+                    await _auditLogService.LogInfoAsync($"External survey invitation sent to {recipient.Email} for project {projectId}", "Survey");
                 }
                 else
                 {
                     await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{recipient.Email}: {result.ErrorMessage}");
-                    _logger.LogWarning("Failed to send external survey invitation to {Email}: {Error}",
-                        recipient.Email, result.ErrorMessage);
+                    await _auditLogService.LogWarningAsync($"Failed to send external survey invitation to {recipient.Email}: {result.ErrorMessage}", "Survey");
                 }
             }
             catch (Exception ex)
             {
                 failCount++;
                 errors.Add($"{recipient.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error sending external survey invitation to {Email}", recipient.Email);
+                await _auditLogService.LogErrorAsync($"Error sending external survey invitation to {recipient.Email}", "Survey", ex);
             }
         }
 
@@ -1030,8 +1021,8 @@ public class SurveyApiController : ControllerBase
                 };
 
                 // Placeholder değişimleri
-                var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
-                var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+                var subject = await ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                var body = await ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
 
                 var result = await _emailService.SendEmailAsync(invitation.Email, subject, body, true);
 
@@ -1039,23 +1030,21 @@ public class SurveyApiController : ControllerBase
                 {
                     await _surveyService.UpdateExternalInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                     successCount++;
-                    _logger.LogInformation("Retry: External survey invitation sent to {Email} for project {ProjectId}",
-                        invitation.Email, projectId);
+                    await _auditLogService.LogInfoAsync($"Retry: External survey invitation sent to {invitation.Email} for project {projectId}", "Survey");
                 }
                 else
                 {
                     await _surveyService.UpdateExternalInvitationRetryAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                     failCount++;
                     errors.Add($"{invitation.Email}: {result.ErrorMessage}");
-                    _logger.LogWarning("Retry failed for external {Email}: {Error}",
-                        invitation.Email, result.ErrorMessage);
+                    await _auditLogService.LogWarningAsync($"Retry failed for external {invitation.Email}: {result.ErrorMessage}", "Survey");
                 }
             }
             catch (Exception ex)
             {
                 failCount++;
                 errors.Add($"{invitation.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error retrying external invitation to {Email}", invitation.Email);
+                await _auditLogService.LogErrorAsync($"Error retrying external invitation to {invitation.Email}", "Survey", ex);
             }
         }
 
@@ -1136,8 +1125,8 @@ public class SurveyApiController : ControllerBase
                 };
 
                 // Placeholder değişimleri
-                var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
-                var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+                var subject = await ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                var body = await ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
 
                 var result = await _emailService.SendEmailAsync(invitation.Email, subject, body, true);
 
@@ -1145,23 +1134,21 @@ public class SurveyApiController : ControllerBase
                 {
                     await _surveyService.UpdateExternalInvitationReminderAsync(invitation, true);
                     successCount++;
-                    _logger.LogInformation("Reminder sent to external {Email} for project {ProjectId}",
-                        invitation.Email, projectId);
+                    await _auditLogService.LogInfoAsync($"Reminder sent to external {invitation.Email} for project {projectId}", "Survey");
                 }
                 else
                 {
                     await _surveyService.UpdateExternalInvitationReminderAsync(invitation, false);
                     failCount++;
                     errors.Add($"{invitation.Email}: {result.ErrorMessage}");
-                    _logger.LogWarning("Reminder failed for external {Email}: {Error}",
-                        invitation.Email, result.ErrorMessage);
+                    await _auditLogService.LogWarningAsync($"Reminder failed for external {invitation.Email}: {result.ErrorMessage}", "Survey");
                 }
             }
             catch (Exception ex)
             {
                 failCount++;
                 errors.Add($"{invitation.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error sending reminder to external {Email}", invitation.Email);
+                await _auditLogService.LogErrorAsync($"Error sending reminder to external {invitation.Email}", "Survey", ex);
             }
         }
 
@@ -1247,7 +1234,7 @@ public class SurveyApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error parsing file {FileName}", file.FileName);
+            await _auditLogService.LogErrorAsync($"Error parsing file {file.FileName}", "Survey", ex);
             return BadRequest(new { message = $"Dosya okunamadı: {ex.Message}" });
         }
 
@@ -1289,8 +1276,8 @@ public class SurveyApiController : ControllerBase
                 {
                     var surveyUrl = $"{baseUrl}?token={token}";
 
-                    var subject = ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
-                    var body = ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
+                    var subject = await ReplaceExternalPlaceholders(emailTemplate.Subject, project, recipient, surveyUrl);
+                    var body = await ReplaceExternalPlaceholders(emailTemplate.Body, project, recipient, surveyUrl);
 
                     var result = await _emailService.SendEmailAsync(recipient.Email, subject, body, true);
 
@@ -1298,16 +1285,14 @@ public class SurveyApiController : ControllerBase
                     {
                         await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
                         successCount++;
-                        _logger.LogInformation("External survey invitation sent to {Email} for project {ProjectId} (file upload)",
-                            recipient.Email, projectId);
+                        await _auditLogService.LogInfoAsync($"External survey invitation sent to {recipient.Email} for project {projectId} (file upload)", "Survey");
                     }
                     else
                     {
                         await _surveyService.UpdateExternalInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
                         failCount++;
                         errors.Add($"{recipient.Email}: {result.ErrorMessage}");
-                        _logger.LogWarning("Failed to send external survey invitation to {Email}: {Error}",
-                            recipient.Email, result.ErrorMessage);
+                        await _auditLogService.LogWarningAsync($"Failed to send external survey invitation to {recipient.Email}: {result.ErrorMessage}", "Survey");
                     }
                 }
             }
@@ -1315,7 +1300,7 @@ public class SurveyApiController : ControllerBase
             {
                 failCount++;
                 errors.Add($"{recipient.Email}: {ex.Message}");
-                _logger.LogError(ex, "Error processing external invitation for {Email}", recipient.Email);
+                await _auditLogService.LogErrorAsync($"Error processing external invitation for {recipient.Email}", "Survey", ex);
             }
         }
 
@@ -1757,14 +1742,14 @@ public class SurveyApiController : ControllerBase
     /// <summary>
     /// Dış alıcı için placeholder'ları değiştir
     /// </summary>
-    private string ReplaceExternalPlaceholders(string text, Project project, ExternalRecipient recipient, string surveyUrl)
+    private async Task<string> ReplaceExternalPlaceholders(string text, Project project, ExternalRecipient recipient, string surveyUrl)
     {
         if (string.IsNullOrEmpty(text)) return text;
 
         // Anket Linkleri
         text = text.Replace(EmailPlaceholders.SurveyUrl, surveyUrl); // Düz URL
         text = text.Replace(EmailPlaceholders.SurveyLink, GenerateHtmlLink(surveyUrl)); // HTML link olarak (<a href="url">url</a>)
-        text = text.Replace(EmailPlaceholders.SurveyQRCode, GenerateQRCodeHtml(surveyUrl));
+        text = text.Replace(EmailPlaceholders.SurveyQRCode, await GenerateQRCodeHtml(surveyUrl));
 
         // Firma/Organizasyon
         text = text.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");

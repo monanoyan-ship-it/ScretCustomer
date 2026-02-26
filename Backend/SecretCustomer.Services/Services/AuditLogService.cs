@@ -206,24 +206,10 @@ public class AuditLogService : IAuditLogService
         DateTime? fromDate = null,
         DateTime? toDate = null,
         int page = 1,
-        int pageSize = 50)
+        int pageSize = 50,
+        int? customerId = null)
     {
-        var query = _context.AuditLogs.AsQueryable();
-
-        if (logTypeId.HasValue)
-            query = query.Where(l => l.LogTypeId == logTypeId.Value);
-
-        if (!string.IsNullOrEmpty(category))
-            query = query.Where(l => l.Category == category);
-
-        if (userId.HasValue)
-            query = query.Where(l => l.UserId == userId.Value);
-
-        if (fromDate.HasValue)
-            query = query.Where(l => l.CreatedAt >= fromDate.Value);
-
-        if (toDate.HasValue)
-            query = query.Where(l => l.CreatedAt <= toDate.Value);
+        var query = BuildLogsQuery(logTypeId, category, userId, fromDate, toDate, customerId);
 
         return await query
             .OrderByDescending(l => l.CreatedAt)
@@ -237,7 +223,16 @@ public class AuditLogService : IAuditLogService
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,
-        DateTime? toDate = null)
+        DateTime? toDate = null,
+        int? customerId = null)
+    {
+        var query = BuildLogsQuery(logTypeId, category, userId, fromDate, toDate, customerId);
+        return await query.CountAsync();
+    }
+
+    private IQueryable<AuditLog> BuildLogsQuery(
+        int? logTypeId, string? category, int? userId,
+        DateTime? fromDate, DateTime? toDate, int? customerId)
     {
         var query = _context.AuditLogs.AsQueryable();
 
@@ -250,13 +245,24 @@ public class AuditLogService : IAuditLogService
         if (userId.HasValue)
             query = query.Where(l => l.UserId == userId.Value);
 
+        if (customerId.HasValue)
+        {
+            // Müşterinin projelerinde atanmış kullanıcıların logları
+            var customerUserIds = _context.Assignments
+                .Where(a => a.Project != null && a.Project.CustomerId == customerId.Value && a.AssignedUserId.HasValue)
+                .Select(a => a.AssignedUserId!.Value)
+                .Distinct();
+
+            query = query.Where(l => l.UserId.HasValue && customerUserIds.Contains(l.UserId.Value));
+        }
+
         if (fromDate.HasValue)
             query = query.Where(l => l.CreatedAt >= fromDate.Value);
 
         if (toDate.HasValue)
             query = query.Where(l => l.CreatedAt <= toDate.Value);
 
-        return await query.CountAsync();
+        return query;
     }
 
     public async Task<AuditLog?> GetByIdAsync(int id)

@@ -10,21 +10,22 @@ namespace SecretCustomer.API.BackgroundServices;
 public class EvaluationNotificationJob : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<EvaluationNotificationJob> _logger;
     private readonly int _targetHour = 19; // 19:00
     private readonly int _targetMinute = 0;
 
     public EvaluationNotificationJob(
-        IServiceProvider serviceProvider,
-        ILogger<EvaluationNotificationJob> logger)
+        IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _logger = logger;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("EvaluationNotificationJob started (target: 19:00 Turkey Time)");
+        using (var scope = _serviceProvider.CreateScope())
+        {
+            var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+            await auditLogService.LogInfoAsync("EvaluationNotificationJob started (target: 19:00 Turkey Time)", "BackgroundJob");
+        }
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -37,25 +38,44 @@ public class EvaluationNotificationJob : BackgroundService
                 // Hedef saate (19:00) ulaşıldı mı?
                 if (turkeyTime.Hour == _targetHour && turkeyTime.Minute == _targetMinute)
                 {
-                    _logger.LogInformation("Running scheduled evaluation notifications at {Time}", turkeyTime);
-
                     using var scope = _serviceProvider.CreateScope();
+                    var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                    await auditLogService.LogInfoAsync($"Running scheduled evaluation notifications at {turkeyTime}", "BackgroundJob");
+
                     var notificationService = scope.ServiceProvider.GetRequiredService<IEvaluationNotificationService>();
 
                     await notificationService.ProcessScheduledNotificationsAsync();
 
-                    _logger.LogInformation("Scheduled evaluation notifications completed");
+                    await auditLogService.LogInfoAsync("Scheduled evaluation notifications completed", "BackgroundJob");
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error in EvaluationNotificationJob");
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                    await auditLogService.LogErrorAsync("Error in EvaluationNotificationJob", "BackgroundJob", ex);
+                }
+                catch
+                {
+                    // Loglama başarısız olursa sessizce devam et
+                }
             }
 
             // Her dakika kontrol et
             await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
         }
 
-        _logger.LogInformation("EvaluationNotificationJob stopped");
+        try
+        {
+            using var scope = _serviceProvider.CreateScope();
+            var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+            await auditLogService.LogInfoAsync("EvaluationNotificationJob stopped", "BackgroundJob");
+        }
+        catch
+        {
+            // Loglama başarısız olursa sessizce devam et
+        }
     }
 }

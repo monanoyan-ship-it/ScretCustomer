@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.PersonnelRequest;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -12,18 +11,18 @@ namespace SecretCustomer.Services.Services;
 public class PersonnelRequestService : IPersonnelRequestService
 {
     private readonly ApplicationDbContext _context;
-    private readonly ILogger<PersonnelRequestService> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly INotificationCreatorService _notificationCreator;
     private readonly ILocalizationService _localizationService;
 
     public PersonnelRequestService(
         ApplicationDbContext context,
-        ILogger<PersonnelRequestService> logger,
+        IAuditLogService auditLogService,
         INotificationCreatorService notificationCreator,
         ILocalizationService localizationService)
     {
         _context = context;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _notificationCreator = notificationCreator;
         _localizationService = localizationService;
     }
@@ -122,7 +121,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 senderUserId: requestedByUserId);
         }
 
-        _logger.LogInformation("Personnel request created: {Id} - {FullName}", request.Id, request.FullName);
+        await _auditLogService.LogInfoAsync($"Personnel request created: {request.Id} - {request.FullName}", "PersonnelRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after creation");
     }
@@ -198,8 +197,7 @@ public class PersonnelRequestService : IPersonnelRequestService
         {
             request.Evaluation.EvaluatedCustomerPersonnelId = personnel.Id;
             request.Evaluation.EvaluatedUnknownPersonnel = null; // Artık tanımlı personel
-            _logger.LogInformation("Evaluation {EvaluationId} assigned to new personnel {PersonnelId}",
-                request.EvaluationId, personnel.Id);
+            await _auditLogService.LogInfoAsync($"Evaluation {request.EvaluationId} assigned to new personnel {personnel.Id}", "PersonnelRequestService");
         }
 
         // 4. Aynı müşteride aynı ad-soyad ile "Listede Yok" olarak kaydedilmiş DİĞER evaluation'ları da güncelle
@@ -220,8 +218,7 @@ public class PersonnelRequestService : IPersonnelRequestService
             evaluation.EvaluatedUnknownPersonnel = null;
         }
 
-        _logger.LogInformation("Updated {Count} additional evaluations with new personnel ID {PersonnelId}",
-            evaluationsToUpdate.Count, personnel.Id);
+        await _auditLogService.LogInfoAsync($"Updated {evaluationsToUpdate.Count} additional evaluations with new personnel ID {personnel.Id}", "PersonnelRequestService");
 
         // 5. Aynı ad-soyad + aynı firma altındaki DİĞER bekleyen personel taleplerini de onayla
         // Orijinal ad/soyadla eşleştir (diğer talepler de eski adla kaydedilmiş)
@@ -275,8 +272,7 @@ public class PersonnelRequestService : IPersonnelRequestService
 
         if (otherPendingRequests.Any())
         {
-            _logger.LogInformation("Auto-approved {Count} other pending requests for {FullName} (Customer: {CustomerId})",
-                otherPendingRequests.Count, originalFullName, request.CustomerId);
+            await _auditLogService.LogInfoAsync($"Auto-approved {otherPendingRequests.Count} other pending requests for {originalFullName} (Customer: {request.CustomerId})", "PersonnelRequestService");
         }
 
         await _context.SaveChangesAsync();
@@ -310,8 +306,7 @@ public class PersonnelRequestService : IPersonnelRequestService
             }
         }
 
-        _logger.LogInformation("Personnel request approved: {Id} - {FullName}, Created Personnel: {PersonnelId}",
-            request.Id, request.FullName, personnel.Id);
+        await _auditLogService.LogInfoAsync($"Personnel request approved: {request.Id} - {request.FullName}, Created Personnel: {personnel.Id}", "PersonnelRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after approval");
     }
@@ -349,8 +344,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 {
                     request.Evaluation.EvaluatedCustomerPersonnelId = dto.CorrectPersonnelId.Value;
                     // Değerlendirme tamamlanmış kalabilir, sadece personel değişir
-                    _logger.LogInformation("Evaluation {Id} reassigned to personnel {PersonnelId} due to rejected personnel request",
-                        request.EvaluationId, dto.CorrectPersonnelId.Value);
+                    await _auditLogService.LogInfoAsync($"Evaluation {request.EvaluationId} reassigned to personnel {dto.CorrectPersonnelId.Value} due to rejected personnel request", "PersonnelRequestService");
 
                     notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. Değerlendirme {correctPersonnel.FullName} adlı personele atandı.";
                 }
@@ -358,8 +352,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 {
                     // Personel bulunamazsa taslağa al
                     request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
-                    _logger.LogWarning("Correct personnel {PersonnelId} not found, evaluation {EvaluationId} reverted to draft",
-                        dto.CorrectPersonnelId.Value, request.EvaluationId);
+                    await _auditLogService.LogWarningAsync($"Correct personnel {dto.CorrectPersonnelId.Value} not found, evaluation {request.EvaluationId} reverted to draft", "PersonnelRequestService");
 
                     notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. İlgili değerlendirme taslağa alındı.";
                 }
@@ -370,7 +363,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 if (request.Evaluation.StatusId == EvaluationStatuses.Ids.Completed)
                 {
                     request.Evaluation.StatusId = EvaluationStatuses.Ids.Draft;
-                    _logger.LogInformation("Evaluation {Id} reverted to draft due to rejected personnel request", request.EvaluationId);
+                    await _auditLogService.LogInfoAsync($"Evaluation {request.EvaluationId} reverted to draft due to rejected personnel request", "PersonnelRequestService");
                 }
 
                 notificationMessage = $"Personel talebiniz reddedildi: {request.FullName}. Sebep: {dto.RejectReason}. İlgili değerlendirme taslağa alındı.";
@@ -394,8 +387,7 @@ public class PersonnelRequestService : IPersonnelRequestService
             relatedEntityType: "PersonnelRequest",
             senderUserId: reviewedByUserId);
 
-        _logger.LogInformation("Personnel request rejected: {Id} - {FullName}, Reason: {Reason}, CorrectPersonnelId: {PersonnelId}",
-            request.Id, request.FullName, dto.RejectReason, dto.CorrectPersonnelId);
+        await _auditLogService.LogInfoAsync($"Personnel request rejected: {request.Id} - {request.FullName}, Reason: {dto.RejectReason}, CorrectPersonnelId: {dto.CorrectPersonnelId}", "PersonnelRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after rejection");
     }

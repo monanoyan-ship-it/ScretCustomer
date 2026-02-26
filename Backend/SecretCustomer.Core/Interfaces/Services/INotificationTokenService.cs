@@ -23,7 +23,7 @@ public interface INotificationTokenService
     /// <summary>
     /// Token'ı decrypt edip payload'ı döndürür. Süresi dolmuşsa null döner.
     /// </summary>
-    NotificationTokenPayload? DecryptToken(string token);
+    Task<NotificationTokenPayload?> DecryptToken(string token);
 }
 
 /// <summary>

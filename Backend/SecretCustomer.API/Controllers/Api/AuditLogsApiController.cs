@@ -38,13 +38,14 @@ public class AuditLogsApiController : BaseApiController
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 50)
+        [FromQuery] int pageSize = 50,
+        [FromQuery] int? customerId = null)
     {
         var logs = await _auditLogService.GetLogsAsync(
-            logTypeId, category, userId, fromDate, toDate, page, pageSize);
+            logTypeId, category, userId, fromDate, toDate, page, pageSize, customerId);
 
         var totalCount = await _auditLogService.GetLogsCountAsync(
-            logTypeId, category, userId, fromDate, toDate);
+            logTypeId, category, userId, fromDate, toDate, customerId);
 
         var data = new List<object>();
         foreach (var l in logs)

@@ -12,15 +12,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class PersonnelRequestsApiController : BaseApiController
 {
     private readonly IPersonnelRequestService _personnelRequestService;
-    private readonly ILogger<PersonnelRequestsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public PersonnelRequestsApiController(
         IPersonnelRequestService personnelRequestService,
-        ILogger<PersonnelRequestsApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _personnelRequestService = personnelRequestService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetCurrentUserId()
@@ -49,7 +49,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting personnel requests");
+            await _auditLogService.LogErrorAsync("Error getting personnel requests", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Personel talepleri yüklenirken hata oluştu", ex));
         }
     }
@@ -70,7 +70,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting personnel request: {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting personnel request: {id}", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Talep yüklenirken hata oluştu", ex));
         }
     }
@@ -89,7 +89,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating personnel request");
+            await _auditLogService.LogErrorAsync("Error creating personnel request", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Personel talebi oluşturulurken hata oluştu", ex));
         }
     }
@@ -118,7 +118,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error approving personnel request: {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error approving personnel request: {id}", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Talep onaylanırken hata oluştu", ex));
         }
     }
@@ -147,7 +147,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error rejecting personnel request: {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error rejecting personnel request: {id}", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Talep reddedilirken hata oluştu", ex));
         }
     }
@@ -166,7 +166,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting supervisors for organization: {Id}", organizationId);
+            await _auditLogService.LogErrorAsync($"Error getting supervisors for organization: {organizationId}", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Süpervizörler yüklenirken hata oluştu", ex));
         }
     }
@@ -190,7 +190,7 @@ public class PersonnelRequestsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting personnel request counts");
+            await _auditLogService.LogErrorAsync("Error getting personnel request counts", "PersonnelRequests", ex);
             return StatusCode(500, CreateErrorResponse("Sayılar yüklenirken hata oluştu", ex));
         }
     }

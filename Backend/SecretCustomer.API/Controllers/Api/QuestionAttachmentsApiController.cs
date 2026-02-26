@@ -13,7 +13,7 @@ public class QuestionAttachmentsApiController : BaseApiController
 {
     private readonly IQuestionAttachmentService _questionAttachmentService;
     private readonly IWebHostEnvironment _environment;
-    private readonly ILogger<QuestionAttachmentsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt" };
@@ -22,13 +22,13 @@ public class QuestionAttachmentsApiController : BaseApiController
     public QuestionAttachmentsApiController(
         IQuestionAttachmentService questionAttachmentService,
         IWebHostEnvironment environment,
-        ILogger<QuestionAttachmentsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _questionAttachmentService = questionAttachmentService;
         _environment = environment;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -45,7 +45,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting attachments for question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error getting attachments for question {questionId}", "QuestionAttachments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FilesLoadError"), ex));
         }
     }
@@ -115,7 +115,7 @@ public class QuestionAttachmentsApiController : BaseApiController
             var attachmentDto = await _questionAttachmentService.UploadAsync(
                 questionId, file.FileName, storedFileName, dbFilePath, file.Length, file.ContentType, description, userId);
 
-            _logger.LogInformation("File {FileName} uploaded for question {QuestionId}", file.FileName, questionId);
+            await _auditLogService.LogInfoAsync($"File {file.FileName} uploaded for question {questionId}", "QuestionAttachments");
 
             return Ok(new UploadAttachmentResultDto
             {
@@ -126,7 +126,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file for question {QuestionId}", questionId);
+            await _auditLogService.LogErrorAsync($"Error uploading file for question {questionId}", "QuestionAttachments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
@@ -158,7 +158,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error downloading attachment {AttachmentId}", id);
+            await _auditLogService.LogErrorAsync($"Error downloading attachment {id}", "QuestionAttachments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
@@ -188,13 +188,13 @@ public class QuestionAttachmentsApiController : BaseApiController
                 }
             }
 
-            _logger.LogInformation("Attachment {AttachmentId} deleted", id);
+            await _auditLogService.LogInfoAsync($"Attachment {id} deleted", "QuestionAttachments");
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting attachment {AttachmentId}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting attachment {id}", "QuestionAttachments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
@@ -218,7 +218,7 @@ public class QuestionAttachmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating attachment order {AttachmentId}", id);
+            await _auditLogService.LogErrorAsync($"Error updating attachment order {id}", "QuestionAttachments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.QuestionAttachment.OrderUpdateError"), ex));
         }
     }

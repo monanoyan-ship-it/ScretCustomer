@@ -16,15 +16,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class PerformanceSettingsApiController : BaseApiController
 {
     private readonly IPerformanceSettingsService _performanceSettingsService;
-    private readonly ILogger<PerformanceSettingsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public PerformanceSettingsApiController(
         IPerformanceSettingsService performanceSettingsService,
-        ILogger<PerformanceSettingsApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _performanceSettingsService = performanceSettingsService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private string? GetCurrentUserId()
@@ -45,7 +45,7 @@ public class PerformanceSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting performance settings");
+            await _auditLogService.LogErrorAsync("Error getting performance settings", "PerformanceSettings", ex);
             return StatusCode(500, CreateErrorResponse("Performans ayarları yüklenirken hata oluştu.", ex));
         }
     }
@@ -66,7 +66,7 @@ public class PerformanceSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting performance settings for project type {ProjectTypeId}", projectTypeId);
+            await _auditLogService.LogErrorAsync($"Error getting performance settings for project type {projectTypeId}", "PerformanceSettings", ex);
             return StatusCode(500, CreateErrorResponse("Performans ayarı yüklenirken hata oluştu.", ex));
         }
     }
@@ -89,7 +89,7 @@ public class PerformanceSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving performance settings for project type {ProjectTypeId}", dto.ProjectTypeId);
+            await _auditLogService.LogErrorAsync($"Error saving performance settings for project type {dto.ProjectTypeId}", "PerformanceSettings", ex);
             return StatusCode(500, CreateErrorResponse("Performans ayarı kaydedilirken hata oluştu.", ex));
         }
     }
@@ -112,7 +112,7 @@ public class PerformanceSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error bulk saving performance settings");
+            await _auditLogService.LogErrorAsync("Error bulk saving performance settings", "PerformanceSettings", ex);
             return StatusCode(500, CreateErrorResponse("Performans ayarları kaydedilirken hata oluştu.", ex));
         }
     }
@@ -134,7 +134,7 @@ public class PerformanceSettingsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting performance settings for project type {ProjectTypeId}", projectTypeId);
+            await _auditLogService.LogErrorAsync($"Error deleting performance settings for project type {projectTypeId}", "PerformanceSettings", ex);
             return StatusCode(500, CreateErrorResponse("Performans ayarı silinirken hata oluştu.", ex));
         }
     }

@@ -13,7 +13,7 @@ public class ProjectFilesApiController : BaseApiController
 {
     private readonly IProjectFileService _projectFileService;
     private readonly IWebHostEnvironment _environment;
-    private readonly ILogger<ProjectFilesApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt", ".zip", ".rar", ".ppt", ".pptx" };
@@ -22,13 +22,13 @@ public class ProjectFilesApiController : BaseApiController
     public ProjectFilesApiController(
         IProjectFileService projectFileService,
         IWebHostEnvironment environment,
-        ILogger<ProjectFilesApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _projectFileService = projectFileService;
         _environment = environment;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -45,7 +45,7 @@ public class ProjectFilesApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting files for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error getting files for project {projectId}", "ProjectFiles", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Common.FilesLoadError"), ex));
         }
     }
@@ -114,13 +114,13 @@ public class ProjectFilesApiController : BaseApiController
             var dbFilePath = $"/uploads/projects/{projectId}/{storedFileName}";
             var result = await _projectFileService.SaveFileRecordAsync(projectId, storedFileName, file.FileName, dbFilePath, file.Length, file.ContentType, description, userId);
 
-            _logger.LogInformation("File {FileName} uploaded for project {ProjectId}", file.FileName, projectId);
+            await _auditLogService.LogInfoAsync($"File {file.FileName} uploaded for project {projectId}", "ProjectFiles");
 
             return Ok(result);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading file for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error uploading file for project {projectId}", "ProjectFiles", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
@@ -174,7 +174,7 @@ public class ProjectFilesApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error downloading project file {FileId}", id);
+            await _auditLogService.LogErrorAsync($"Error downloading project file {id}", "ProjectFiles", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
@@ -204,13 +204,13 @@ public class ProjectFilesApiController : BaseApiController
                 }
             }
 
-            _logger.LogInformation("Project file {FileId} deleted", id);
+            await _auditLogService.LogInfoAsync($"Project file {id} deleted", "ProjectFiles");
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Common.FileDeleteSuccess") });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting project file {FileId}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting project file {id}", "ProjectFiles", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
@@ -234,7 +234,7 @@ public class ProjectFilesApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating project file description {FileId}", id);
+            await _auditLogService.LogErrorAsync($"Error updating project file description {id}", "ProjectFiles", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.ProjectFile.DescriptionUpdateError"), ex));
         }
     }

@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class DealersApiController : BaseApiController
 {
     private readonly IDealerService _dealerService;
-    private readonly ILogger<DealersApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public DealersApiController(
         IDealerService dealerService,
-        ILogger<DealersApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _dealerService = dealerService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -38,7 +38,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting dealer list");
+            await _auditLogService.LogErrorAsync($"Error getting dealer list", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -59,7 +59,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting dealer {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting dealer {id}", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi bilgisi yüklenirken hata oluştu", ex));
         }
     }
@@ -84,7 +84,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating dealer");
+            await _auditLogService.LogErrorAsync($"Error creating dealer", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi oluşturulurken hata oluştu", ex));
         }
     }
@@ -112,7 +112,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating dealer {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating dealer {id}", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi güncellenirken hata oluştu", ex));
         }
     }
@@ -133,7 +133,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting dealer {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting dealer {id}", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi silinirken hata oluştu", ex));
         }
     }
@@ -151,7 +151,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting dealers by customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error getting dealers by customer {customerId}", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -169,7 +169,7 @@ public class DealersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating dealer code for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error generating dealer code for customer {customerId}", "Dealers", ex);
             return StatusCode(500, CreateErrorResponse("Bayi kodu üretilirken hata oluştu", ex));
         }
     }

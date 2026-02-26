@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class CustomerOrganizationsApiController : BaseApiController
 {
     private readonly ICustomerOrganizationService _organizationService;
-    private readonly ILogger<CustomerOrganizationsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public CustomerOrganizationsApiController(
         ICustomerOrganizationService organizationService,
-        ILogger<CustomerOrganizationsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _organizationService = organizationService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -38,7 +38,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organizations with filters");
+            await _auditLogService.LogErrorAsync("Error loading organizations with filters", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken bir hata oluştu", ex));
         }
     }
@@ -73,7 +73,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organizations for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading organizations for customer {customerId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyonlar yüklenirken bir hata oluştu", ex));
         }
     }
@@ -91,7 +91,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organization tree for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading organization tree for customer {customerId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon ağacı yüklenirken bir hata oluştu", ex));
         }
     }
@@ -113,7 +113,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organization {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading organization {id}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon yüklenirken bir hata oluştu", ex));
         }
     }
@@ -136,17 +136,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Customer or parent organization not found");
+            await _auditLogService.LogWarningAsync($"Customer or parent organization not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while creating organization");
+            await _auditLogService.LogWarningAsync($"Validation error while creating organization: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating organization");
+            await _auditLogService.LogErrorAsync("Error creating organization", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon oluşturulurken bir hata oluştu", ex));
         }
     }
@@ -169,17 +169,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Organization {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Organization {id} not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while updating organization {Id}", id);
+            await _auditLogService.LogWarningAsync($"Validation error while updating organization {id}: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating organization {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating organization {id}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon güncellenirken bir hata oluştu", ex));
         }
     }
@@ -197,17 +197,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Organization {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Organization {id} not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Cannot move organization {Id} to parent {ParentId}", id, dto.NewParentId);
+            await _auditLogService.LogWarningAsync($"Cannot move organization {id} to parent {dto.NewParentId}: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error moving organization {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error moving organization {id}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon taşınırken bir hata oluştu", ex));
         }
     }
@@ -225,17 +225,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Organization {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Organization {id} not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Cannot delete organization {Id}", id);
+            await _auditLogService.LogWarningAsync($"Cannot delete organization {id}: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting organization {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting organization {id}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyon silinirken bir hata oluştu", ex));
         }
     }
@@ -255,12 +255,12 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Organization {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"Organization {id} not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel for organization {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading personnel for organization {id}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personeller yüklenirken bir hata oluştu", ex));
         }
     }
@@ -278,7 +278,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel pool for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"Error loading personnel pool for customer {customerId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel havuzu yüklenirken bir hata oluştu", ex));
         }
     }
@@ -301,17 +301,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel or organization not found");
+            await _auditLogService.LogWarningAsync($"Personnel or organization not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while assigning personnel");
+            await _auditLogService.LogWarningAsync($"Validation error while assigning personnel: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error assigning personnel to organization");
+            await _auditLogService.LogErrorAsync("Error assigning personnel to organization", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel atanırken bir hata oluştu", ex));
         }
     }
@@ -329,17 +329,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel {PersonnelId} not found", personnelId);
+            await _auditLogService.LogWarningAsync($"Personnel {personnelId} not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while removing personnel");
+            await _auditLogService.LogWarningAsync($"Validation error while removing personnel: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing personnel {PersonnelId} from organization {OrganizationId}", personnelId, organizationId);
+            await _auditLogService.LogErrorAsync($"Error removing personnel {personnelId} from organization {organizationId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel çıkarılırken bir hata oluştu", ex));
         }
     }
@@ -357,17 +357,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel or supervisor not found");
+            await _auditLogService.LogWarningAsync($"Personnel or supervisor not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while setting supervisor");
+            await _auditLogService.LogWarningAsync($"Validation error while setting supervisor: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting supervisor for personnel {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error setting supervisor for personnel {personnelId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Süpervizör atanırken bir hata oluştu", ex));
         }
     }
@@ -390,17 +390,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel or organization not found");
+            await _auditLogService.LogWarningAsync($"Personnel or organization not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while transferring team");
+            await _auditLogService.LogWarningAsync($"Validation error while transferring team: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error transferring team and removing personnel");
+            await _auditLogService.LogErrorAsync("Error transferring team and removing personnel", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Transfer işlemi sırasında bir hata oluştu", ex));
         }
     }
@@ -420,7 +420,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading organizations for personnel {PersonnelId}", personnelId);
+            await _auditLogService.LogErrorAsync($"Error loading organizations for personnel {personnelId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Organizasyonlar yuklenirken bir hata olustu", ex));
         }
     }
@@ -438,7 +438,7 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments for organization {OrganizationId}", organizationId);
+            await _auditLogService.LogErrorAsync($"Error loading assignments for organization {organizationId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Atamalar yuklenirken bir hata olustu", ex));
         }
     }
@@ -463,17 +463,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Personnel or organization not found");
+            await _auditLogService.LogWarningAsync($"Personnel or organization not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while adding personnel to organization");
+            await _auditLogService.LogWarningAsync($"Validation error while adding personnel to organization: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding personnel {PersonnelId} to organization {OrganizationId}", personnelId, organizationId);
+            await _auditLogService.LogErrorAsync($"Error adding personnel {personnelId} to organization {organizationId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel atanirken bir hata olustu", ex));
         }
     }
@@ -497,17 +497,17 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Assignment not found");
+            await _auditLogService.LogWarningAsync($"Assignment not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while updating assignment");
+            await _auditLogService.LogWarningAsync($"Validation error while updating assignment: {ex.Message}", "CustomerOrganizations");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating assignment for personnel {PersonnelId} in organization {OrganizationId}", personnelId, organizationId);
+            await _auditLogService.LogErrorAsync($"Error updating assignment for personnel {personnelId} in organization {organizationId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Atama guncellenirken bir hata olustu", ex));
         }
     }
@@ -525,12 +525,12 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Assignment not found");
+            await _auditLogService.LogWarningAsync($"Assignment not found: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing personnel {PersonnelId} from organization {OrganizationId}", personnelId, organizationId);
+            await _auditLogService.LogErrorAsync($"Error removing personnel {personnelId} from organization {organizationId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel cikarilirken bir hata olustu", ex));
         }
     }
@@ -548,12 +548,12 @@ public class CustomerOrganizationsApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "Assignment not found for personnel {PersonnelId} under supervisor {SupervisorId}", personnelId, supervisorId);
+            await _auditLogService.LogWarningAsync($"Assignment not found for personnel {personnelId} under supervisor {supervisorId}: {ex.Message}", "CustomerOrganizations");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing personnel {PersonnelId} from team of supervisor {SupervisorId}", personnelId, supervisorId);
+            await _auditLogService.LogErrorAsync($"Error removing personnel {personnelId} from team of supervisor {supervisorId}", "CustomerOrganizations", ex);
             return StatusCode(500, CreateErrorResponse("Personel ekipten cikarilirken bir hata olustu", ex));
         }
     }

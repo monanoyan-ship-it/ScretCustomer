@@ -3,7 +3,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.Evaluation;
 using SecretCustomer.Core.DTOs.Report;
 using SecretCustomer.Core.Entities;
@@ -23,7 +22,7 @@ public class EvaluationService : IEvaluationService
     private readonly ILocalizationService _localizationService;
     private readonly IServiceProvider _serviceProvider;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger<EvaluationService> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public EvaluationService(
         IEvaluationRepository evaluationRepository,
@@ -32,7 +31,7 @@ public class EvaluationService : IEvaluationService
         ILocalizationService localizationService,
         IServiceProvider serviceProvider,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<EvaluationService> logger)
+        IAuditLogService auditLogService)
     {
         _evaluationRepository = evaluationRepository;
         _assignmentRepository = assignmentRepository;
@@ -40,7 +39,7 @@ public class EvaluationService : IEvaluationService
         _localizationService = localizationService;
         _serviceProvider = serviceProvider;
         _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     // Helper: DateTime'ı UTC'ye çevir (PostgreSQL için gerekli)
@@ -983,7 +982,7 @@ public class EvaluationService : IEvaluationService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "PersonnelRequest oluşturulurken hata (EvaluationId: {EvaluationId})", evaluation.Id);
+                await _auditLogService.LogErrorAsync($"PersonnelRequest oluşturulurken hata (EvaluationId: {evaluation.Id})", "EvaluationService", ex);
                 // Evaluation zaten kaydedildi, personel talebi hatası evaluation'ı etkilemesin
             }
         }
@@ -1726,9 +1725,9 @@ public class EvaluationService : IEvaluationService
         // FK'ler geçerli değilse oluşturma (0 = geçersiz FK)
         if (organizationId <= 0 || requestedByUserId <= 0)
         {
-            _logger.LogWarning(
-                "PersonnelRequest oluşturulamadı: geçersiz FK değerleri (OrganizationId: {OrgId}, RequestedByUserId: {UserId}, EvaluationId: {EvalId})",
-                organizationId, requestedByUserId, evaluation.Id);
+            await _auditLogService.LogWarningAsync(
+                $"PersonnelRequest oluşturulamadı: geçersiz FK değerleri (OrganizationId: {organizationId}, RequestedByUserId: {requestedByUserId}, EvaluationId: {evaluation.Id})",
+                "EvaluationService");
             return null;
         }
 
@@ -2075,8 +2074,9 @@ public class EvaluationService : IEvaluationService
         _context.Approvals.Add(approval);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Taslağa alma talebi oluşturuldu: EvaluationId={EvaluationId}, ApprovalId={ApprovalId}, UserId={UserId}",
-            evaluationId, approval.Id, userId);
+        await _auditLogService.LogInfoAsync(
+            $"Taslağa alma talebi oluşturuldu: EvaluationId={evaluationId}, ApprovalId={approval.Id}, UserId={userId}",
+            "EvaluationService");
 
         return new RevertRequestResultDto
         {
@@ -2167,8 +2167,9 @@ public class EvaluationService : IEvaluationService
         evaluation.UpdatedAt = TurkeyTime.Now;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Taslak değerlendirme silindi: EvaluationId={EvaluationId}, UserId={UserId}, IsAdmin={IsAdmin}",
-            evaluationId, userId, isAdmin);
+        await _auditLogService.LogInfoAsync(
+            $"Taslak değerlendirme silindi: EvaluationId={evaluationId}, UserId={userId}, IsAdmin={isAdmin}",
+            "EvaluationService");
 
         return new DeleteDraftResultDto { Success = true };
     }

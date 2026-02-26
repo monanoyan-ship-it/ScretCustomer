@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class DashboardApiController : BaseApiController
 {
     private readonly IDashboardService _dashboardService;
-    private readonly ILogger<DashboardApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public DashboardApiController(
         IDashboardService dashboardService,
-        ILogger<DashboardApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _dashboardService = dashboardService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -36,7 +36,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading admin dashboard");
+            await _auditLogService.LogErrorAsync($"Error loading admin dashboard", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Dashboard.LoadError"), ex));
         }
     }
@@ -55,7 +55,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading team leader dashboard for branch {BranchId}", branchId);
+            await _auditLogService.LogErrorAsync($"Error loading team leader dashboard for branch {branchId}", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Dashboard.LoadError"), ex));
         }
     }
@@ -77,7 +77,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading representative dashboard");
+            await _auditLogService.LogErrorAsync($"Error loading representative dashboard", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Dashboard.LoadError"), ex));
         }
     }
@@ -101,7 +101,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading scorecard");
+            await _auditLogService.LogErrorAsync($"Error loading scorecard", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Dashboard.ScorecardLoadError"), ex));
         }
     }
@@ -130,7 +130,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading daily metrics");
+            await _auditLogService.LogErrorAsync($"Error loading daily metrics", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Günlük metrikler yüklenirken hata oluştu", ex));
         }
     }
@@ -155,7 +155,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user performance");
+            await _auditLogService.LogErrorAsync($"Error loading user performance", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Kullanıcı performansı yüklenirken hata oluştu", ex));
         }
     }
@@ -184,7 +184,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading target progress");
+            await _auditLogService.LogErrorAsync($"Error loading target progress", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Hedef bilgileri yüklenirken hata oluştu", ex));
         }
     }
@@ -213,7 +213,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading my evaluations");
+            await _auditLogService.LogErrorAsync($"Error loading my evaluations", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Değerlendirmeler yüklenirken hata oluştu", ex));
         }
     }
@@ -252,7 +252,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user project breakdown for user {UserId}", userId);
+            await _auditLogService.LogErrorAsync($"Error loading user project breakdown for user {userId}", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Kullanıcı proje detayı yüklenirken hata oluştu", ex));
         }
     }
@@ -270,7 +270,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user project breakdown (today) for user {UserId}", userId);
+            await _auditLogService.LogErrorAsync($"Error loading user project breakdown (today) for user {userId}", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Kullanıcı bugünkü proje detayı yüklenirken hata oluştu", ex));
         }
     }
@@ -288,7 +288,7 @@ public class DashboardApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading customer monthly trend");
+            await _auditLogService.LogErrorAsync($"Error loading customer monthly trend", "Dashboard", ex);
             return StatusCode(500, CreateErrorResponse("Firma trend verileri yüklenirken hata oluştu", ex));
         }
     }

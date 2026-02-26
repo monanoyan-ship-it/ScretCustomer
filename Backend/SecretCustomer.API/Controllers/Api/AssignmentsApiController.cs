@@ -14,19 +14,19 @@ public class AssignmentsApiController : BaseApiController
 {
     private readonly IAssignmentService _assignmentService;
     private readonly IProjectService _projectService;
-    private readonly ILogger<AssignmentsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public AssignmentsApiController(
         IAssignmentService assignmentService,
         IProjectService projectService,
-        ILogger<AssignmentsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _assignmentService = assignmentService;
         _projectService = projectService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -47,7 +47,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments");
+            await _auditLogService.LogErrorAsync($"Error loading assignments", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
@@ -75,7 +75,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
@@ -103,7 +103,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignment detail {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading assignment detail {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.DetailLoadError"), ex));
         }
     }
@@ -127,7 +127,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignment by link {UniqueLink}", uniqueLink);
+            await _auditLogService.LogErrorAsync($"Error loading assignment by link {uniqueLink}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
@@ -168,7 +168,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating assignment");
+            await _auditLogService.LogErrorAsync($"Error creating assignment", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.CreateError"), ex));
         }
     }
@@ -184,7 +184,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.UpdateError"), ex));
         }
     }
@@ -205,7 +205,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.DeleteError"), ex));
         }
     }
@@ -228,7 +228,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error filtering assignments");
+            await _auditLogService.LogErrorAsync($"Error filtering assignments", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.FilterError"), ex));
         }
     }
@@ -244,7 +244,7 @@ public class AssignmentsApiController : BaseApiController
             var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(idClaim) || !int.TryParse(idClaim, out var id))
             {
-                _logger.LogWarning("GetMyAssignments: ID claim not found or invalid. Claim value: {Claim}", idClaim);
+                await _auditLogService.LogWarningAsync($"GetMyAssignments: ID claim not found or invalid. Claim value: {idClaim}", "Assignments");
                 return Unauthorized(CreateErrorResponse(await _localizationService.GetResourceAsync("Auth.UserNotFound")));
             }
 
@@ -255,24 +255,23 @@ public class AssignmentsApiController : BaseApiController
             if (userType == "CustomerPersonnel")
             {
                 // CustomerPersonnel için: NameIdentifier = CustomerPersonnelId
-                _logger.LogInformation("GetMyAssignments: Fetching assignments for customerPersonnelId={Id}", id);
+                await _auditLogService.LogInfoAsync($"GetMyAssignments: Fetching assignments for customerPersonnelId={id}", "Assignments");
                 assignments = await _assignmentService.GetByCustomerPersonnelIdAsync(id);
             }
             else
             {
                 // Normal kullanıcılar için: NameIdentifier = UserId
-                _logger.LogInformation("GetMyAssignments: Fetching assignments for userId={Id}", id);
+                await _auditLogService.LogInfoAsync($"GetMyAssignments: Fetching assignments for userId={id}", "Assignments");
                 assignments = await _assignmentService.GetByUserIdAsync(id);
             }
 
-            _logger.LogInformation("GetMyAssignments: Found {Count} assignments for id={Id}, userType={UserType}",
-                assignments?.Count() ?? 0, id, userType);
+            await _auditLogService.LogInfoAsync($"GetMyAssignments: Found {assignments?.Count() ?? 0} assignments for id={id}, userType={userType}", "Assignments");
 
             return Ok(assignments);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user assignments");
+            await _auditLogService.LogErrorAsync($"Error loading user assignments", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Assignment.LoadError"), ex));
         }
     }
@@ -291,7 +290,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading assignments for project {projectId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectLoadError"), ex));
         }
     }
@@ -310,7 +309,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments for user {UserId}", userId);
+            await _auditLogService.LogErrorAsync($"Error loading assignments for user {userId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.UserLoadError"), ex));
         }
     }
@@ -343,7 +342,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error completing assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error completing assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.CompleteError"), ex));
         }
     }
@@ -362,7 +361,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error cancelling assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error cancelling assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.CancelError"), ex));
         }
     }
@@ -389,7 +388,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reopening assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error reopening assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Atama yeniden açılırken bir hata oluştu.", ex));
         }
     }
@@ -408,7 +407,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reassigning assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error reassigning assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ReassignError"), ex));
         }
     }
@@ -435,7 +434,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating due date for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating due date for assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Tarih güncellenirken bir hata oluştu.", ex));
         }
     }
@@ -459,7 +458,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting assignments for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error deleting assignments for project {projectId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ProjectDeleteError"), ex));
         }
     }
@@ -482,7 +481,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignment summary");
+            await _auditLogService.LogErrorAsync($"Error loading assignment summary", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.SummaryLoadError"), ex));
         }
     }
@@ -501,7 +500,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading project summaries");
+            await _auditLogService.LogErrorAsync($"Error loading project summaries", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.SummaryLoadError"), ex));
         }
     }
@@ -524,7 +523,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading expired assignments");
+            await _auditLogService.LogErrorAsync($"Error loading expired assignments", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.ExpiredLoadError"), ex));
         }
     }
@@ -543,7 +542,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading upcoming due assignments");
+            await _auditLogService.LogErrorAsync($"Error loading upcoming due assignments", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Assignment.UpcomingLoadError"), ex));
         }
     }
@@ -570,7 +569,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading periods for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading periods for assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken bir hata oluştu.", ex));
         }
     }
@@ -598,7 +597,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating period for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error creating period for assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönem oluşturulurken bir hata oluştu.", ex));
         }
     }
@@ -622,7 +621,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating period {PeriodId}", periodId);
+            await _auditLogService.LogErrorAsync($"Error updating period {periodId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönem güncellenirken bir hata oluştu.", ex));
         }
     }
@@ -645,7 +644,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error closing period {PeriodId}", periodId);
+            await _auditLogService.LogErrorAsync($"Error closing period {periodId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönem kapatılırken bir hata oluştu.", ex));
         }
     }
@@ -668,7 +667,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reopening period {PeriodId}", periodId);
+            await _auditLogService.LogErrorAsync($"Error reopening period {periodId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönem yeniden açılırken bir hata oluştu.", ex));
         }
     }
@@ -695,7 +694,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting period {PeriodId}", periodId);
+            await _auditLogService.LogErrorAsync($"Error deleting period {periodId}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Dönem silinirken bir hata oluştu.", ex));
         }
     }
@@ -722,7 +721,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading dealers for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading dealers for assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Şubeler yüklenirken bir hata oluştu.", ex));
         }
     }
@@ -749,7 +748,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding dealer to assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error adding dealer to assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Şube eklenirken bir hata oluştu.", ex));
         }
     }
@@ -776,7 +775,7 @@ public class AssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error removing dealer {DealerId} from assignment {Id}", customerDealerId, id);
+            await _auditLogService.LogErrorAsync($"Error removing dealer {customerDealerId} from assignment {id}", "Assignments", ex);
             return StatusCode(500, CreateErrorResponse("Şube çıkarılırken bir hata oluştu.", ex));
         }
     }
@@ -788,30 +787,30 @@ public class AssignmentsApiController : BaseApiController
     /// <summary>
     /// Check if current user is authorized to access the assignment
     /// </summary>
-    private Task<bool> IsAuthorizedForAssignment(AssignmentDto assignment)
+    private async Task<bool> IsAuthorizedForAssignment(AssignmentDto assignment)
     {
         var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
-            return Task.FromResult(false);
+            return false;
         }
 
         // Admin ve QualitySpecialist her şeyi görebilir
         if (userRole == "Admin" || userRole == "QualitySpecialist")
         {
-            return Task.FromResult(true);
+            return true;
         }
 
         // Kullanıcı sadece kendine atanmış assignment'ları görebilir
         if (assignment.AssignedUserId != userId)
         {
-            _logger.LogWarning("User {UserId} attempted to access unauthorized assignment {AssignmentId}", userId, assignment.Id);
-            return Task.FromResult(false);
+            await _auditLogService.LogWarningAsync($"User {userId} attempted to access unauthorized assignment {assignment.Id}", "Assignments");
+            return false;
         }
 
-        return Task.FromResult(true);
+        return true;
     }
 
     #endregion

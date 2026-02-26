@@ -11,12 +11,10 @@ namespace SecretCustomer.API.Middleware;
 public class ExceptionLoggingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionLoggingMiddleware> _logger;
 
-    public ExceptionLoggingMiddleware(RequestDelegate next, ILogger<ExceptionLoggingMiddleware> logger)
+    public ExceptionLoggingMiddleware(RequestDelegate next)
     {
         _next = next;
-        _logger = logger;
     }
 
     public async Task InvokeAsync(HttpContext context, IAuditLogService auditLogService)
@@ -27,7 +25,6 @@ public class ExceptionLoggingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unhandled exception occurred");
             await HandleExceptionAsync(context, ex, auditLogService);
         }
     }
@@ -43,10 +40,9 @@ public class ExceptionLoggingMiddleware
                 exception
             );
         }
-        catch (Exception logEx)
+        catch
         {
-            // Loglama başarısız olursa sadece console'a yaz
-            _logger.LogError(logEx, "Failed to log exception to database");
+            // Loglama başarısız olursa sessizce devam et
         }
 
         // Response hazırla

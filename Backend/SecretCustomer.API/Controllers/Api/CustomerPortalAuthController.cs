@@ -13,21 +13,21 @@ public class CustomerPortalAuthController : ControllerBase
     private readonly ICustomerPersonnelService _personnelService;
     private readonly IAppSettingsService _appSettingsService;
     private readonly JwtHelper _jwtHelper;
-    private readonly ILogger<CustomerPortalAuthController> _logger;
     private readonly ILocalizationService _localizationService;
+    private readonly IAuditLogService _auditLogService;
 
     public CustomerPortalAuthController(
         ICustomerPersonnelService personnelService,
         IAppSettingsService appSettingsService,
         JwtHelper jwtHelper,
-        ILogger<CustomerPortalAuthController> logger,
-        ILocalizationService localizationService)
+        ILocalizationService localizationService,
+        IAuditLogService auditLogService)
     {
         _personnelService = personnelService;
         _appSettingsService = appSettingsService;
         _jwtHelper = jwtHelper;
-        _logger = logger;
         _localizationService = localizationService;
+        _auditLogService = auditLogService;
     }
 
     public class CustomerLoginDto
@@ -49,13 +49,11 @@ public class CustomerPortalAuthController : ControllerBase
 
         try
         {
-            _logger.LogInformation("[CustomerPortal] Login attempt for: {Username}", loginDto.Username);
-
             var personnel = await _personnelService.AuthenticateAsync(loginDto.Username, loginDto.Password);
 
             if (personnel == null)
             {
-                _logger.LogWarning("[CustomerPortal] Failed login for: {Username} - User not found or password incorrect", loginDto.Username);
+                await _auditLogService.LogLoginAsync(0, $"[Müşteri] {loginDto.Username}", false, "Geçersiz kullanıcı adı veya şifre");
 
                 if (isDemoMode)
                 {
@@ -71,16 +69,13 @@ public class CustomerPortalAuthController : ControllerBase
                 return Unauthorized(new { message = await _localizationService.GetResourceAsync("Auth.InvalidCredentials") });
             }
 
-            _logger.LogInformation("[CustomerPortal] User found: {Username}, CustomerId: {CustomerId}",
-                personnel.Username, personnel.CustomerId);
-
             // Generate JWT token for customer personnel
             var token = _jwtHelper.GenerateCustomerPersonnelToken(personnel);
 
             // Kullanıcının kayıtlı dil tercihini uygula
             _localizationService.ApplyUserLanguagePreference(personnel.Id);
 
-            _logger.LogInformation("[CustomerPortal] Login successful for: {Username}", loginDto.Username);
+            await _auditLogService.LogLoginAsync(personnel.Id, $"[Müşteri] {personnel.Username}", true);
 
             return Ok(new
             {
@@ -99,8 +94,7 @@ public class CustomerPortalAuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error during login for {Username}: {Message}",
-                loginDto.Username, ex.Message);
+            await _auditLogService.LogErrorAsync($"[Müşteri] Login hatası: {loginDto.Username}", "Auth", ex);
 
             if (isDemoMode)
             {
@@ -151,7 +145,12 @@ public class CustomerPortalAuthController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Logout()
     {
-        _logger.LogInformation("Customer personnel logged out");
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ?? "Unknown";
+        int.TryParse(userIdClaim, out var userId);
+
+        await _auditLogService.LogLogoutAsync(userId, $"[Müşteri] {username}");
+
         return Ok(new { message = await _localizationService.GetResourceAsync("Auth.LogoutSuccess") });
     }
 }

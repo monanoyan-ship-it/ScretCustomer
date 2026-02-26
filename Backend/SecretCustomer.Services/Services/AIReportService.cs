@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.AI;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
@@ -19,7 +18,7 @@ public class AIReportService : IAIReportService
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<AIReportService> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     private const string GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
@@ -27,12 +26,12 @@ public class AIReportService : IAIReportService
         ApplicationDbContext context,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
-        ILogger<AIReportService> logger)
+        IAuditLogService auditLogService)
     {
         _context = context;
         _configuration = configuration;
         _httpClientFactory = httpClientFactory;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     public async Task<AIReportResponseDto> GenerateReportAsync(AIReportRequestDto request)
@@ -68,7 +67,7 @@ public class AIReportService : IAIReportService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "AI rapor oluşturma hatası: CustomerId={CustomerId}", request.CustomerId);
+            await _auditLogService.LogErrorAsync($"AI rapor oluşturma hatası: CustomerId={request.CustomerId}", "AIReportService", ex);
             stopwatch.Stop();
 
             return new AIReportResponseDto
@@ -412,7 +411,7 @@ public class AIReportService : IAIReportService
         if (!response.IsSuccessStatusCode)
         {
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError("Gemini API hatası: {StatusCode} - {Error}", response.StatusCode, errorContent);
+            await _auditLogService.LogErrorAsync($"Gemini API hatası: {response.StatusCode} - {errorContent}", "AIReportService");
 
             return new AIReportResponseDto
             {

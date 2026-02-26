@@ -19,7 +19,7 @@ namespace SecretCustomer.API.Controllers.Api;
 [AllowAnonymous] // JWT middleware sorunlu, token'ı kendimiz parse ediyoruz
 public class CustomerPortalApiController : ControllerBase
 {
-    private readonly ILogger<CustomerPortalApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
     private readonly IReportService _reportService;
     private readonly IEvaluationService _evaluationService;
@@ -29,7 +29,7 @@ public class CustomerPortalApiController : ControllerBase
     private readonly ICustomerPortalDataService _cpDataService;
 
     public CustomerPortalApiController(
-        ILogger<CustomerPortalApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IReportService reportService,
         IEvaluationService evaluationService,
@@ -38,7 +38,7 @@ public class CustomerPortalApiController : ControllerBase
         ICustomerPortalReportService cpReportService,
         ICustomerPortalDataService cpDataService)
     {
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
         _reportService = reportService;
         _evaluationService = evaluationService;
@@ -48,13 +48,13 @@ public class CustomerPortalApiController : ControllerBase
         _cpDataService = cpDataService;
     }
 
-    private int? GetCustomerIdFromToken()
+    private async Task<int?> GetCustomerIdFromToken()
     {
         // Authorization header'dan token'ı al
         var authHeader = Request.Headers["Authorization"].FirstOrDefault();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
         {
-            _logger.LogWarning("[CustomerPortal] No Authorization header or invalid format");
+            await _auditLogService.LogWarningAsync("[CustomerPortal] No Authorization header or invalid format", "CustomerPortal");
             return null;
         }
 
@@ -66,20 +66,20 @@ public class CustomerPortalApiController : ControllerBase
             var jwtToken = handler.ReadJwtToken(token);
             var customerIdClaim = jwtToken.Claims.FirstOrDefault(c => c.Type == "CustomerId")?.Value;
 
-            _logger.LogInformation("[CustomerPortal] Token parsed. CustomerId: {CustomerId}", customerIdClaim);
+            await _auditLogService.LogInfoAsync($"[CustomerPortal] Token parsed. CustomerId: {customerIdClaim}", "CustomerPortal");
 
             if (int.TryParse(customerIdClaim, out var customerId))
                 return customerId;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error parsing token");
+            await _auditLogService.LogErrorAsync("[CustomerPortal] Error parsing token", "CustomerPortal", ex);
         }
 
         return null;
     }
 
-    private int? GetCustomerId()
+    private async Task<int?> GetCustomerId()
     {
         // Önce User claims'den dene
         var customerIdClaim = User.FindFirst("CustomerId")?.Value;
@@ -95,7 +95,7 @@ public class CustomerPortalApiController : ControllerBase
         }
 
         // Yoksa token'dan manuel parse et
-        return GetCustomerIdFromToken();
+        return await GetCustomerIdFromToken();
     }
 
     /// <summary>
@@ -327,7 +327,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/stats")]
     public async Task<IActionResult> GetDashboardStats()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -343,7 +343,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/monthly-trend")]
     public async Task<IActionResult> GetMonthlyTrend([FromQuery] int? projectId = null, [FromQuery] int? projectTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -359,7 +359,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/monthly-trend-by-type")]
     public async Task<IActionResult> GetMonthlyTrendByType([FromQuery] int? projectTypeId = null, [FromQuery] int? projectId = null, [FromQuery] int? checklistTypeId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -375,7 +375,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/question-group-trend")]
     public async Task<IActionResult> GetQuestionGroupTrend([FromQuery] List<int>? projectIds = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -395,7 +395,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -411,7 +411,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("dashboard/score-distribution")]
     public async Task<IActionResult> GetScoreDistribution([FromQuery] int? projectId, [FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -433,7 +433,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -456,7 +456,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -473,7 +473,7 @@ public class CustomerPortalApiController : ControllerBase
     /// Dashboard chart'larini Excel'e export et (chart gorseli + veri tablosu)
     /// </summary>
     [HttpPost("dashboard/charts/export")]
-    public IActionResult ExportChartToExcel([FromBody] ChartExportRequestDto dto)
+    public async Task<IActionResult> ExportChartToExcel([FromBody] ChartExportRequestDto dto)
     {
         if (string.IsNullOrEmpty(dto.ChartImage) || string.IsNullOrEmpty(dto.DataJson))
             return BadRequest(new { message = "Chart image ve data gereklidir." });
@@ -513,7 +513,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Chart image embed failed");
+            await _auditLogService.LogWarningAsync("Chart image embed failed", "CustomerPortal");
             worksheet.Cell(imageStartRow, 1).Value = "(Grafik goruntusu yuklenemedi)";
         }
 
@@ -540,7 +540,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Chart data table build failed for type {ChartType}", dto.ChartType);
+            await _auditLogService.LogWarningAsync($"Chart data table build failed for type {dto.ChartType}", "CustomerPortal");
             worksheet.Cell(dataStartRow, 1).Value = "(Veri tablosu olusturulamadi)";
         }
 
@@ -689,7 +689,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("projects")]
     public async Task<IActionResult> GetProjects([FromQuery] int? projectTypeId = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -704,7 +704,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations/recent")]
     public async Task<IActionResult> GetRecentEvaluations([FromQuery] int count = 10)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -720,7 +720,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations")]
     public async Task<IActionResult> GetEvaluations([FromQuery] int page = 1, [FromQuery] int pageSize = 20, [FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -738,7 +738,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations/export")]
     public async Task<IActionResult> ExportAllEvaluations([FromQuery] int? projectId = null, [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -774,7 +774,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? organizationIds,
         [FromQuery] bool? isInternal = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -795,7 +795,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? organizationIds,
         [FromQuery] bool? isInternal = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -818,7 +818,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] decimal maxScore,
         [FromQuery] bool? isInternal = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -839,7 +839,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? organizationIds,
         [FromQuery] bool? isInternal = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -855,7 +855,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("organizations")]
     public async Task<IActionResult> GetOrganizations()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -874,7 +874,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -893,7 +893,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? organizationIds = null,
         [FromQuery] string? searchText = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -908,7 +908,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("supervisors/{supervisorId}/monthly-trend")]
     public async Task<IActionResult> GetSupervisorMonthlyTrend(int supervisorId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFound") });
 
@@ -935,7 +935,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? organizationIds = null,
         [FromQuery] List<string>? callIds = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -954,7 +954,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("saved-filters")]
     public async Task<IActionResult> GetSavedFilters([FromQuery] string page)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
 
@@ -968,7 +968,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("saved-filters")]
     public async Task<IActionResult> SaveFilter([FromBody] CustomerSaveFilterRequest request)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
 
@@ -986,7 +986,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpDelete("saved-filters/{id}")]
     public async Task<IActionResult> DeleteSavedFilter(int id)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi alınamadı" });
 
@@ -1023,7 +1023,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] decimal? minScore = null,
         [FromQuery] decimal? maxScore = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1040,7 +1040,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations/{evaluationId}")]
     public async Task<IActionResult> GetEvaluationDetail(int evaluationId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1063,7 +1063,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error getting evaluation detail {EvaluationId} for customer {CustomerId}", evaluationId, customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error getting evaluation detail {evaluationId} for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Değerlendirme detayı yüklenirken hata oluştu." });
         }
     }
@@ -1074,7 +1074,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations/{evaluationId}/attachments")]
     public async Task<IActionResult> GetEvaluationAttachments(int evaluationId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1095,7 +1095,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error getting evaluation attachments {EvaluationId} for customer {CustomerId}", evaluationId, customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error getting evaluation attachments {evaluationId} for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Dosyalar yüklenirken hata oluştu." });
         }
     }
@@ -1106,7 +1106,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("evaluations/{evaluationId}/export")]
     public async Task<IActionResult> ExportEvaluationDetail(int evaluationId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1130,7 +1130,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting evaluation detail {EvaluationId} for customer {CustomerId}", evaluationId, customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting evaluation detail {evaluationId} for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Değerlendirme export edilirken hata oluştu." });
         }
     }
@@ -1141,7 +1141,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("reports/export/question-group-average")]
     public async Task<IActionResult> ExportQuestionGroupAverageReport([FromBody] ReportFilterDto filter)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1155,7 +1155,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting question group average report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting question group average report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
         }
     }
@@ -1166,7 +1166,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("reports/export/customer-evaluation")]
     public async Task<IActionResult> ExportCustomerEvaluationReport([FromBody] ReportFilterDto filter)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1185,7 +1185,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting customer evaluation report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting customer evaluation report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
         }
     }
@@ -1196,7 +1196,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("reports/export/internal-evaluation")]
     public async Task<IActionResult> ExportInternalEvaluationReport([FromBody] ReportFilterDto filter)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1215,7 +1215,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting internal evaluation report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting internal evaluation report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
         }
     }
@@ -1226,7 +1226,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("reports/export/unscored-questions")]
     public async Task<IActionResult> ExportUnscoredQuestionsReport([FromBody] ReportFilterDto filter)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1245,7 +1245,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting unscored questions report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting unscored questions report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
         }
     }
@@ -1264,7 +1264,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1316,7 +1316,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading penalties report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading penalties report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Cezalı KL raporu yüklenirken hata oluştu." });
         }
     }
@@ -1333,7 +1333,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1378,7 +1378,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting penalties report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting penalties report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Cezalı KL raporu export edilirken hata oluştu." });
         }
     }
@@ -1397,7 +1397,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1452,7 +1452,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading suggestions report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading suggestions report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Öneriler raporu yüklenirken hata oluştu." });
         }
     }
@@ -1468,7 +1468,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 10)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1498,7 +1498,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading top suggested questions for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading top suggested questions for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "En çok öneri yazılan sorular yüklenirken hata oluştu." });
         }
     }
@@ -1514,7 +1514,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 10)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1544,7 +1544,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading top subcriteria for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading top subcriteria for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "En çok seçilen alt kriterler yüklenirken hata oluştu." });
         }
     }
@@ -1559,7 +1559,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1628,7 +1628,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting top subcriteria for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting top subcriteria for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "En çok seçilen alt kriterler export edilirken hata oluştu." });
         }
     }
@@ -1644,7 +1644,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? endDate,
         [FromQuery] int top = 100)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1712,7 +1712,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting top suggested questions for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting top suggested questions for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "En çok önerilen sorular export edilirken hata oluştu." });
         }
     }
@@ -1728,7 +1728,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1761,7 +1761,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting suggestions report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting suggestions report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Öneriler raporu export edilirken hata oluştu." });
         }
     }
@@ -1772,7 +1772,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/personnel-list")]
     public async Task<IActionResult> GetPersonnelList([FromQuery] List<int>? organizationIds = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1802,7 +1802,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading personnel list for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading personnel list for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Personel listesi yüklenirken hata oluştu." });
         }
     }
@@ -1817,7 +1817,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1855,7 +1855,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading personnel report card for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading personnel report card for customer {customerId}, personnel {personnelId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Temsilci karnesi yüklenirken hata oluştu.", error = ex.Message, stackTrace = ex.StackTrace });
         }
     }
@@ -1870,7 +1870,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1912,7 +1912,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading my report card for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading my report card for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Karne yüklenirken hata oluştu." });
         }
     }
@@ -1926,7 +1926,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -1958,7 +1958,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting my report card for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Karne export edilirken hata oluştu." });
         }
     }
@@ -1972,7 +1972,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2004,7 +2004,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card to Word for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting my report card to Word for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Karne Word olarak export edilirken hata oluştu." });
         }
     }
@@ -2019,7 +2019,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2047,7 +2047,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting personnel report card for customer {customerId}, personnel {personnelId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Temsilci karnesi export edilirken hata oluştu." });
         }
     }
@@ -2062,7 +2062,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2090,7 +2090,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card to Word for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting personnel report card to Word for customer {customerId}, personnel {personnelId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Temsilci karnesi Word export edilirken hata oluştu." });
         }
     }
@@ -2104,7 +2104,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2142,7 +2142,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting my report card to PDF for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting my report card to PDF for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Karne PDF olarak export edilirken hata oluştu." });
         }
     }
@@ -2157,7 +2157,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? evaluationType = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2191,7 +2191,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting personnel report card to PDF for customer {CustomerId}, personnel {PersonnelId}", customerId, personnelId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting personnel report card to PDF for customer {customerId}, personnel {personnelId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Temsilci karnesi PDF export edilirken hata oluştu." });
         }
     }
@@ -2313,7 +2313,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpPost("reports/export/project-performance")]
     public async Task<IActionResult> ExportProjectPerformanceReport([FromBody] ReportFilterDto filter)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2327,7 +2327,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting project performance report for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting project performance report for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor oluşturulurken hata oluştu." });
         }
     }
@@ -2342,7 +2342,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2357,7 +2357,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading performance by period for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading performance by period for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Rapor yüklenirken hata oluştu." });
         }
     }
@@ -2372,7 +2372,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2390,7 +2390,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting performance by period for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting performance by period for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Excel oluşturulurken hata oluştu." });
         }
     }
@@ -2459,7 +2459,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("staff-trainings")]
     public async Task<IActionResult> GetStaffTrainings()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2485,7 +2485,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-projects")]
     public async Task<IActionResult> GetSurveyProjects()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2503,7 +2503,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2517,7 +2517,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-projects/{projectId}/detail")]
     public async Task<IActionResult> GetSurveyProjectDetail(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2535,7 +2535,7 @@ public class CustomerPortalApiController : ControllerBase
     public async Task<IActionResult> GetSurveyQuestionScoreDistribution(
         [FromQuery] int? projectId = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2549,7 +2549,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-projects/{projectId}/score-detail")]
     public async Task<IActionResult> GetSurveyQuestionScoreDetail(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2566,7 +2566,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-results/{projectId}/export/group-scores")]
     public async Task<IActionResult> ExportSurveyGroupScores(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2587,7 +2587,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-results/{projectId}/export/question-stats")]
     public async Task<IActionResult> ExportSurveyQuestionStats(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2607,7 +2607,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-results/{projectId}/export/detail")]
     public async Task<IActionResult> ExportSurveyDetailReport(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2627,7 +2627,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-results/{projectId}/export/full-detail")]
     public async Task<IActionResult> ExportSurveyFullDetailReport(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2647,7 +2647,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-results/{projectId}/export/score-detail")]
     public async Task<IActionResult> ExportSurveyScoreDetail(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2670,7 +2670,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpDelete("evaluations/{id:int}")]
     public async Task<IActionResult> DeleteDraft(int id)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2690,8 +2690,7 @@ public class CustomerPortalApiController : ControllerBase
                 return BadRequest(new { message = result.Value.ErrorMessage });
             }
 
-            _logger.LogInformation("Taslak değerlendirme silindi (CustomerPortal): EvaluationId={EvaluationId}, PersonnelId={PersonnelId}, IsManager={IsManager}",
-                id, personnelId, isManager);
+            await _auditLogService.LogInfoAsync($"Taslak değerlendirme silindi (CustomerPortal): EvaluationId={id}, PersonnelId={personnelId}, IsManager={isManager}", "CustomerPortal");
 
             return Ok(new { message = "Taslak başarıyla silindi." });
     }
@@ -2702,7 +2701,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpDelete("evaluations/internal/{id:int}")]
     public async Task<IActionResult> DeleteInternalDraft(int id)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return BadRequest(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2727,8 +2726,7 @@ public class CustomerPortalApiController : ControllerBase
                 return BadRequest(new { message = result.Value.ErrorMessage });
             }
 
-            _logger.LogInformation("İç dinleme taslağı silindi (CustomerPortal): EvaluationId={EvaluationId}, Role={Role}",
-                id, role);
+            await _auditLogService.LogInfoAsync($"İç dinleme taslağı silindi (CustomerPortal): EvaluationId={id}, Role={role}", "CustomerPortal");
 
             return Ok(new { message = "Taslak başarıyla silindi." });
     }
@@ -2741,7 +2739,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/enneagram-projects")]
     public async Task<IActionResult> GetEnneagramProjects()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2759,7 +2757,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2773,7 +2771,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/enneagram-results/{evaluationId}")]
     public async Task<IActionResult> GetEnneagramResultDetail(int evaluationId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2790,7 +2788,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/enneagram-distribution/{projectId}")]
     public async Task<IActionResult> GetEnneagramDistribution(int projectId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2809,7 +2807,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-responses/export")]
     public async Task<IActionResult> ExportSurveyResponses([FromQuery] int? projectId = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2832,7 +2830,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/survey-question-distribution/export")]
     public async Task<IActionResult> ExportSurveyQuestionDistribution([FromQuery] int? projectId = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2857,7 +2855,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] int? projectId = null,
         [FromQuery] string? searchTerm = null)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (!customerId.HasValue)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2887,7 +2885,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         try
         {
-            var customerId = GetCustomerId();
+            var customerId = await GetCustomerId();
             if (!customerId.HasValue)
                 return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2896,7 +2894,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error getting score thresholds");
+            await _auditLogService.LogErrorAsync("[CustomerPortal] Error getting score thresholds", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Puan eşikleri yüklenirken hata oluştu." });
         }
     }
@@ -2909,7 +2907,7 @@ public class CustomerPortalApiController : ControllerBase
     {
         try
         {
-            var customerId = GetCustomerId();
+            var customerId = await GetCustomerId();
             if (!customerId.HasValue)
                 return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -2919,7 +2917,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error saving score thresholds");
+            await _auditLogService.LogErrorAsync("[CustomerPortal] Error saving score thresholds", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Puan eşikleri kaydedilirken hata oluştu." });
         }
     }
@@ -2929,7 +2927,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("reports/dealer-list")]
     public async Task<IActionResult> GetDealerList()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2940,7 +2938,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading dealer list for customer {CustomerId}", customerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading dealer list for customer {customerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Şube listesi yüklenirken hata oluştu." });
         }
     }
@@ -2951,7 +2949,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<DateRangeFilter>? dateRanges)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -2983,7 +2981,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error loading dealer report card for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error loading dealer report card for customer {customerId}, dealer {dealerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Şube karnesi yüklenirken hata oluştu.", error = ex.Message, stackTrace = ex.StackTrace });
         }
     }
@@ -2994,7 +2992,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<DateRangeFilter>? dateRanges)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -3015,7 +3013,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting dealer report card for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting dealer report card for customer {customerId}, dealer {dealerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Şube karnesi export edilirken hata oluştu." });
         }
     }
@@ -3026,7 +3024,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<DateRangeFilter>? dateRanges)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -3047,7 +3045,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting dealer report card to Word for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting dealer report card to Word for customer {customerId}, dealer {dealerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Şube karnesi Word export edilirken hata oluştu." });
         }
     }
@@ -3061,7 +3059,7 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<DateRangeFilter>? dateRanges)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = await _localizationService.GetResourceAsync("Api.CustomerPortal.CustomerNotFoundTokenInvalid") });
 
@@ -3089,7 +3087,7 @@ public class CustomerPortalApiController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "[CustomerPortal] Error exporting dealer report card PDF for customer {CustomerId}, dealer {DealerId}", customerId, dealerId);
+            await _auditLogService.LogErrorAsync($"[CustomerPortal] Error exporting dealer report card PDF for customer {customerId}, dealer {dealerId}", "CustomerPortal", ex);
             return StatusCode(500, new { message = "Şube karnesi PDF oluşturulurken hata oluştu." });
         }
     }
@@ -3197,7 +3195,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("gm-aramalar")]
     public async Task<IActionResult> GetGmAramalar([FromQuery] int? donemId)
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 
@@ -3208,7 +3206,7 @@ public class CustomerPortalApiController : ControllerBase
     [HttpGet("gm-donemler")]
     public async Task<IActionResult> GetGmDonemler()
     {
-        var customerId = GetCustomerId();
+        var customerId = await GetCustomerId();
         if (customerId == null)
             return Unauthorized(new { message = "Müşteri bilgisi bulunamadı." });
 

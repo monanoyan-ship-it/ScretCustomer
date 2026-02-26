@@ -1,6 +1,5 @@
 using MailKit.Net.Smtp;
 using MailKit.Security;
-using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using MimeKit;
 using SecretCustomer.Core.Entities;
@@ -19,13 +18,13 @@ namespace SecretCustomer.Services.Services;
 public class SmtpEmailService : IEmailService
 {
     private readonly ApplicationDbContext _context;
-    private readonly ILogger<SmtpEmailService> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly IHttpClientFactory _httpClientFactory;
 
-    public SmtpEmailService(ApplicationDbContext context, ILogger<SmtpEmailService> logger, IHttpClientFactory httpClientFactory)
+    public SmtpEmailService(ApplicationDbContext context, IAuditLogService auditLogService, IHttpClientFactory httpClientFactory)
     {
         _context = context;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _httpClientFactory = httpClientFactory;
     }
 
@@ -75,7 +74,7 @@ public class SmtpEmailService : IEmailService
 
             if (!profile.Enabled)
             {
-                _logger.LogWarning("SMTP devre dışı, mail gönderilmedi: {Subject}", message.Subject);
+                await _auditLogService.LogWarningAsync($"SMTP devre dışı, mail gönderilmedi: {message.Subject}", "Email");
                 return EmailResult.Fail("SMTP servisi devre dışı.");
             }
 
@@ -83,7 +82,7 @@ public class SmtpEmailService : IEmailService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Email gönderilirken hata oluştu: {To}", string.Join(",", message.To));
+            await _auditLogService.LogErrorAsync($"Email gönderilirken hata oluştu: {string.Join(",", message.To)}", "Email", ex);
             return EmailResult.Fail($"Email gönderilemedi: {ex.Message}");
         }
     }
@@ -178,20 +177,17 @@ public class SmtpEmailService : IEmailService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Email gönderildi (Graph API - {ProfileName}): {To}, Subject: {Subject}",
-                    profile.Name, string.Join(",", message.To), message.Subject);
+                await _auditLogService.LogInfoAsync($"Email gönderildi (Graph API - {profile.Name}): {string.Join(",", message.To)}, Subject: {message.Subject}", "Email");
                 return EmailResult.Ok();
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogError("Graph API hatası ({ProfileName}): {StatusCode} - {Error}",
-                profile.Name, response.StatusCode, errorContent);
+            await _auditLogService.LogErrorAsync($"Graph API hatası ({profile.Name}): {response.StatusCode} - {errorContent}", "Email");
             return EmailResult.Fail($"Graph API hatası: {response.StatusCode} - {errorContent}");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Graph API ile email gönderilirken hata oluştu ({ProfileName}): {To}",
-                profile.Name, string.Join(",", message.To));
+            await _auditLogService.LogErrorAsync($"Graph API ile email gönderilirken hata oluştu ({profile.Name}): {string.Join(",", message.To)}", "Email", ex);
             return EmailResult.Fail($"Graph API hatası: {ex.Message}");
         }
     }
@@ -269,7 +265,6 @@ public class SmtpEmailService : IEmailService
                 var accessToken = await GetSmtpOAuthTokenAsync(profile);
                 var oauth2 = new SaslMechanismOAuth2(profile.Username, accessToken);
                 await client.AuthenticateAsync(oauth2);
-                _logger.LogDebug("OAuth 2.0 ile kimlik doğrulama yapıldı");
             }
             else if (!string.IsNullOrEmpty(profile.Username))
             {
@@ -279,15 +274,13 @@ public class SmtpEmailService : IEmailService
             var messageId = await client.SendAsync(mimeMessage);
             await client.DisconnectAsync(true);
 
-            _logger.LogInformation("Email gönderildi (SMTP - {ProfileName}): {To}, Subject: {Subject}",
-                profile.Name, string.Join(",", message.To), message.Subject);
+            await _auditLogService.LogInfoAsync($"Email gönderildi (SMTP - {profile.Name}): {string.Join(",", message.To)}, Subject: {message.Subject}", "Email");
 
             return EmailResult.Ok(messageId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "SMTP ile email gönderilirken hata oluştu ({ProfileName}): {To}",
-                profile.Name, string.Join(",", message.To));
+            await _auditLogService.LogErrorAsync($"SMTP ile email gönderilirken hata oluştu ({profile.Name}): {string.Join(",", message.To)}", "Email", ex);
             return EmailResult.Fail($"Email gönderilemedi: {ex.Message}");
         }
     }
@@ -336,20 +329,19 @@ public class SmtpEmailService : IEmailService
 
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Graph API bağlantı testi başarılı ({ProfileName}): {FromEmail}",
-                    profile.Name, profile.FromEmail);
+                await _auditLogService.LogInfoAsync($"Graph API bağlantı testi başarılı ({profile.Name}): {profile.FromEmail}", "Email");
                 return EmailResult.Ok();
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning("Graph API kullanıcı doğrulama hatası ({ProfileName}): {Error}", profile.Name, errorContent);
+            await _auditLogService.LogWarningAsync($"Graph API kullanıcı doğrulama hatası ({profile.Name}): {errorContent}", "Email");
 
             // Token alındıysa bağlantı başarılı sayılabilir, kullanıcı erişimi ayrı bir konu
             return EmailResult.Ok();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Graph API bağlantı testi başarısız ({ProfileName})", profile.Name);
+            await _auditLogService.LogErrorAsync($"Graph API bağlantı testi başarısız ({profile.Name})", "Email", ex);
             return EmailResult.Fail($"Graph API bağlantı hatası: {ex.Message}");
         }
     }
@@ -375,7 +367,6 @@ public class SmtpEmailService : IEmailService
                 var accessToken = await GetSmtpOAuthTokenAsync(profile);
                 var oauth2 = new SaslMechanismOAuth2(profile.Username, accessToken);
                 await client.AuthenticateAsync(oauth2);
-                _logger.LogDebug("OAuth 2.0 ile bağlantı testi yapıldı");
             }
             else if (!string.IsNullOrEmpty(profile.Username))
             {
@@ -385,14 +376,13 @@ public class SmtpEmailService : IEmailService
             await client.DisconnectAsync(true);
 
             var authMethod = profile.UseOAuth ? "OAuth 2.0 SMTP" : "Basic Auth";
-            _logger.LogInformation("SMTP bağlantı testi başarılı ({ProfileName}): {Host}:{Port} ({AuthMethod})",
-                profile.Name, profile.Host, profile.Port, authMethod);
+            await _auditLogService.LogInfoAsync($"SMTP bağlantı testi başarılı ({profile.Name}): {profile.Host}:{profile.Port} ({authMethod})", "Email");
 
             return EmailResult.Ok();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "SMTP bağlantı testi başarısız ({ProfileName})", profile.Name);
+            await _auditLogService.LogErrorAsync($"SMTP bağlantı testi başarısız ({profile.Name})", "Email", ex);
             return EmailResult.Fail($"Bağlantı hatası: {ex.Message}");
         }
     }
@@ -438,8 +428,6 @@ public class SmtpEmailService : IEmailService
 
         var result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
 
-        _logger.LogDebug("Graph API token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
-
         return result.AccessToken;
     }
 
@@ -458,8 +446,6 @@ public class SmtpEmailService : IEmailService
         var scopes = new[] { "https://outlook.office365.com/.default" };
 
         var result = await app.AcquireTokenForClient(scopes).ExecuteAsync();
-
-        _logger.LogDebug("SMTP OAuth token alındı, geçerlilik: {ExpiresOn}", result.ExpiresOn);
 
         return result.AccessToken;
     }

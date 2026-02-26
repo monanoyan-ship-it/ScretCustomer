@@ -16,19 +16,19 @@ public class EvaluationsApiController : BaseApiController
 {
     private readonly IEvaluationService _evaluationService;
     private readonly IFileUploadService _fileUploadService;
-    private readonly ILogger<EvaluationsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public EvaluationsApiController(
         IEvaluationService evaluationService,
         IFileUploadService fileUploadService,
-        ILogger<EvaluationsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _evaluationService = evaluationService;
         _fileUploadService = fileUploadService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -68,7 +68,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading all evaluations");
+            await _auditLogService.LogErrorAsync("Error loading all evaluations", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
@@ -90,7 +90,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error loading evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
@@ -109,7 +109,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading attachments for evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error loading attachments for evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
@@ -159,7 +159,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error uploading attachment for evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error uploading attachment for evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.UploadError"), ex));
         }
     }
@@ -183,7 +183,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting attachment {AttachmentId}", attachmentId);
+            await _auditLogService.LogErrorAsync($"Error deleting attachment {attachmentId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DeleteError"), ex));
         }
     }
@@ -208,7 +208,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error downloading attachment {AttachmentId}", attachmentId);
+            await _auditLogService.LogErrorAsync($"Error downloading attachment {attachmentId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Answer.DownloadError"), ex));
         }
     }
@@ -227,7 +227,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluation for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading evaluation for project {projectId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.LoadError"), ex));
         }
     }
@@ -246,7 +246,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluations for project {ProjectId}", projectId);
+            await _auditLogService.LogErrorAsync($"Error loading evaluations for project {projectId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
@@ -286,7 +286,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluations for current user");
+            await _auditLogService.LogErrorAsync("Error loading evaluations for current user", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
@@ -323,7 +323,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading my evaluations for current user");
+            await _auditLogService.LogErrorAsync("Error loading my evaluations for current user", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.LoadError"), ex));
         }
     }
@@ -345,7 +345,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking CallId existence");
+            await _auditLogService.LogErrorAsync("Error checking CallId existence", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("CallId kontrol hatası", ex));
         }
     }
@@ -367,7 +367,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading evaluation form for assignment {AssignmentId}", assignmentId);
+            await _auditLogService.LogErrorAsync($"Error loading evaluation form for assignment {assignmentId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError"), ex));
         }
     }
@@ -389,7 +389,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading existing evaluation form {EvaluationId}", evaluationId);
+            await _auditLogService.LogErrorAsync($"Error loading existing evaluation form {evaluationId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.FormLoadError"), ex));
         }
     }
@@ -408,7 +408,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading personnel for organization {OrganizationId}", organizationId);
+            await _auditLogService.LogErrorAsync($"Error loading personnel for organization {organizationId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Personel listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -458,7 +458,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error starting evaluation for project {ProjectId}", dto.ProjectId);
+            await _auditLogService.LogErrorAsync($"Error starting evaluation for project {dto.ProjectId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.StartError"), ex));
         }
     }
@@ -479,7 +479,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating score for checklist {ChecklistId}", request.ChecklistId);
+            await _auditLogService.LogErrorAsync($"Error calculating score for checklist {request.ChecklistId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Puan hesaplanırken hata oluştu", ex));
         }
     }
@@ -535,7 +535,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error submitting evaluation for project {ProjectId}", dto.ProjectId);
+            await _auditLogService.LogErrorAsync($"Error submitting evaluation for project {dto.ProjectId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.SubmitError"), ex));
         }
     }
@@ -591,7 +591,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving draft for project {ProjectId}", dto.ProjectId);
+            await _auditLogService.LogErrorAsync($"Error saving draft for project {dto.ProjectId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Evaluation.DraftSaveError"), ex));
         }
     }
@@ -622,7 +622,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating draft {EvaluationId}", dto.EvaluationId);
+            await _auditLogService.LogErrorAsync($"Error updating draft {dto.EvaluationId}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.DraftUpdateError"), ex));
         }
     }
@@ -660,7 +660,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reverting evaluation {EvaluationId} to draft", id);
+            await _auditLogService.LogErrorAsync($"Error reverting evaluation {id} to draft", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.RevertToDraftError"), ex));
         }
     }
@@ -697,7 +697,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error cancelling evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error cancelling evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Evaluation.CancelError"), ex));
         }
     }
@@ -737,7 +737,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating revert request for evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error creating revert request for evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Talep oluşturulurken bir hata oluştu.", ex));
         }
     }
@@ -764,7 +764,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending notification for evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error sending notification for evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Bildirim gönderilirken hata oluştu.", ex));
         }
     }
@@ -818,7 +818,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error recalculating scores");
+            await _auditLogService.LogErrorAsync("Error recalculating scores", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Puanlar yeniden hesaplanırken hata oluştu.", ex));
         }
     }
@@ -912,7 +912,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting evaluations to Excel");
+            await _auditLogService.LogErrorAsync("Error exporting evaluations to Excel", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Excel dışa aktarma hatası", ex));
         }
     }
@@ -953,7 +953,7 @@ public class EvaluationsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting draft evaluation {EvaluationId}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting draft evaluation {id}", "Evaluations", ex);
             return StatusCode(500, CreateErrorResponse("Taslak silinirken hata oluştu.", ex));
         }
     }

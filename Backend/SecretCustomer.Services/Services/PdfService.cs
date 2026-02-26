@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.Services.Services;
@@ -9,14 +8,14 @@ namespace SecretCustomer.Services.Services;
 public class PdfService : IPdfService
 {
     private readonly HttpClient _httpClient;
-    private readonly ILogger<PdfService> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly string _pdfServiceUrl;
     private readonly string _scheduledTaskName;
 
-    public PdfService(HttpClient httpClient, IConfiguration configuration, ILogger<PdfService> logger)
+    public PdfService(HttpClient httpClient, IConfiguration configuration, IAuditLogService auditLogService)
     {
         _httpClient = httpClient;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _pdfServiceUrl = configuration["PdfService:Url"] ?? "http://localhost:5060";
         _scheduledTaskName = configuration["PdfService:TaskName"] ?? "PdfService";
     }
@@ -41,12 +40,12 @@ public class PdfService : IPdfService
             {
                 if (attempt == maxRetries)
                 {
-                    _logger.LogError(ex, "PDF servisi {MaxRetries} deneme sonrası erişilemedi: {Url}", maxRetries, _pdfServiceUrl);
+                    await _auditLogService.LogErrorAsync($"PDF servisi {maxRetries} deneme sonrası erişilemedi: {_pdfServiceUrl}", "PdfService", ex);
                     throw new Exception("PDF servisi başlatılamadı. Lütfen daha sonra tekrar deneyin.", ex);
                 }
 
-                _logger.LogWarning("PDF servisi erişilemedi (deneme {Attempt}/{MaxRetries}), scheduled task ile yeniden başlatılıyor...", attempt, maxRetries);
-                StartScheduledTask();
+                await _auditLogService.LogWarningAsync($"PDF servisi erişilemedi (deneme {attempt}/{maxRetries}), scheduled task ile yeniden başlatılıyor...", "PdfService");
+                await StartScheduledTaskAsync();
                 await Task.Delay(5000);
             }
         }
@@ -61,14 +60,14 @@ public class PdfService : IPdfService
         if (!response.IsSuccessStatusCode)
         {
             var error = await response.Content.ReadAsStringAsync();
-            _logger.LogError("PDF generation failed: {StatusCode} - {Error}", response.StatusCode, error);
+            await _auditLogService.LogErrorAsync($"PDF generation failed: {response.StatusCode} - {error}", "PdfService");
             throw new Exception($"PDF generation failed: {error}");
         }
 
         return await response.Content.ReadAsByteArrayAsync();
     }
 
-    private void StartScheduledTask()
+    private async Task StartScheduledTaskAsync()
     {
         try
         {
@@ -80,11 +79,11 @@ public class PdfService : IPdfService
                 UseShellExecute = false
             });
             process?.WaitForExit(5000);
-            _logger.LogInformation("PdfService scheduled task '{TaskName}' çalıştırıldı", _scheduledTaskName);
+            await _auditLogService.LogInfoAsync($"PdfService scheduled task '{_scheduledTaskName}' çalıştırıldı", "PdfService");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Scheduled task '{TaskName}' çalıştırılamadı", _scheduledTaskName);
+            await _auditLogService.LogErrorAsync($"Scheduled task '{_scheduledTaskName}' çalıştırılamadı", "PdfService", ex);
         }
     }
 }

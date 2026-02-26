@@ -12,17 +12,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AppSettingsApiController : BaseApiController
 {
     private readonly IAppSettingsService _settingsService;
-    private readonly ILogger<AppSettingsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public AppSettingsApiController(
         IAppSettingsService settingsService,
-        ILogger<AppSettingsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _settingsService = settingsService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -76,7 +76,7 @@ public class AppSettingsApiController : BaseApiController
             dto.Description
         );
 
-        _logger.LogInformation("AppSetting created: {Key} by {User}", dto.Key, User.Identity?.Name);
+        await _auditLogService.LogInfoAsync($"AppSetting created: {dto.Key} by {User.Identity?.Name}", "AppSettings");
 
         return Ok(setting);
     }
@@ -96,7 +96,7 @@ public class AppSettingsApiController : BaseApiController
             dto.Description ?? existing.Description
         );
 
-        _logger.LogInformation("AppSetting updated: {Key} by {User}", key, User.Identity?.Name);
+        await _auditLogService.LogInfoAsync($"AppSetting updated: {key} by {User.Identity?.Name}", "AppSettings");
 
         return Ok(setting);
     }
@@ -113,7 +113,7 @@ public class AppSettingsApiController : BaseApiController
 
         await _settingsService.DeleteAsync(key);
 
-        _logger.LogInformation("AppSetting deleted: {Key} by {User}", key, User.Identity?.Name);
+        await _auditLogService.LogInfoAsync($"AppSetting deleted: {key} by {User.Identity?.Name}", "AppSettings");
 
         return Ok(new { message = await _localizationService.GetResourceAsync("Api.AppSettings.DeleteSuccess") });
     }

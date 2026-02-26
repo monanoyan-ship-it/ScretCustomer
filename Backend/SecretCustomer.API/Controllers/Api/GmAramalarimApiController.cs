@@ -11,15 +11,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class GmAramalarimApiController : BaseApiController
 {
     private readonly IGmService _gmService;
-    private readonly ILogger<GmAramalarimApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public GmAramalarimApiController(
         IGmService gmService,
-        ILogger<GmAramalarimApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _gmService = gmService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetUserId()
@@ -47,7 +47,7 @@ public class GmAramalarimApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Aramalarım yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Aramalarım yüklenirken hata", "GmAramalarim", ex);
             return StatusCode(500, CreateErrorResponse("Aramalarım yüklenirken hata oluştu", ex));
         }
     }
@@ -62,7 +62,7 @@ public class GmAramalarimApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dönemler yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dönemler yüklenirken hata", "GmAramalarim", ex);
             return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken hata oluştu", ex));
         }
     }
@@ -82,7 +82,7 @@ public class GmAramalarimApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Tamamlanan aramalar yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Tamamlanan aramalar yüklenirken hata", "GmAramalarim", ex);
             return StatusCode(500, CreateErrorResponse("Tamamlanan aramalar yüklenirken hata oluştu", ex));
         }
     }
@@ -100,7 +100,7 @@ public class GmAramalarimApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Dinlemelerim yüklenirken hata");
+            await _auditLogService.LogErrorAsync("Dinlemelerim yüklenirken hata", "GmAramalarim", ex);
             return StatusCode(500, CreateErrorResponse("Dinlemelerim yüklenirken hata oluştu", ex));
         }
     }
@@ -123,7 +123,7 @@ public class GmAramalarimApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Atama tamamlanırken hata");
+            await _auditLogService.LogErrorAsync("Atama tamamlanırken hata", "GmAramalarim", ex);
             return StatusCode(500, CreateErrorResponse("Atama tamamlanırken hata oluştu", ex));
         }
     }

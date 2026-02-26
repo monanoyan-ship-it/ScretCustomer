@@ -16,6 +16,15 @@
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-2">
+                    <label class="form-label">@Html.T("Common.Customer", "Müşteri")</label>
+                    <select class="form-select" data-bind="value: filter.customerId">
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <!-- ko foreach: customers -->
+                        <option data-bind="value: id, text: companyName"></option>
+                        <!-- /ko -->
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">@Html.T("AuditLog.LogType", "Log Türü")</label>
                     <select class="form-select" data-bind="value: filter.logType">
                         <option value="">@Html.T("Common.All", "Tümü")</option>
@@ -25,14 +34,13 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">@Html.T("Setting.Category", "Kategori")</label>
-                    <input type="text" class="form-control" placeholder="@Html.T("Setting.Category", "Kategori")"
-                           data-bind="value: filter.category, valueUpdate: 'afterkeydown'" />
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">@Html.T("AuditLog.UserId", "Kullanıcı ID")</label>
-                    <input type="number" class="form-control" placeholder="@Html.T("AuditLog.UserId", "Kullanıcı ID")"
-                           data-bind="value: filter.userId" />
+                    <label class="form-label">@Html.T("AuditLog.Personnel", "Personel")</label>
+                    <select class="form-select" data-bind="value: filter.userId">
+                        <option value="">@Html.T("Common.All", "Tümü")</option>
+                        <!-- ko foreach: filteredUsers -->
+                        <option data-bind="value: id, text: firstName + ' ' + lastName"></option>
+                        <!-- /ko -->
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">@Html.T("Common.StartDate", "Başlangıç Tarihi")</label>
@@ -42,9 +50,12 @@
                     <label class="form-label">@Html.T("Common.EndDate", "Bitiş Tarihi")</label>
                     <input type="date" class="form-control" data-bind="value: filter.toDate" />
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button class="btn btn-primary w-100" data-bind="click: loadLogs">
+                <div class="col-md-2 d-flex align-items-end gap-1">
+                    <button class="btn btn-primary flex-grow-1" data-bind="click: loadLogs">
                         <i class="bi bi-search me-1"></i> @Html.T("Common.Filter", "Filtrele")
+                    </button>
+                    <button class="btn btn-outline-secondary" data-bind="click: clearFilters" title="@Html.T("Common.ClearFilters", "Temizle")">
+                        <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
             </div>

@@ -33,14 +33,16 @@ public interface IAuditLogService
         DateTime? fromDate = null,
         DateTime? toDate = null,
         int page = 1,
-        int pageSize = 50);
+        int pageSize = 50,
+        int? customerId = null);
 
     Task<int> GetLogsCountAsync(
         int? logTypeId = null,
         string? category = null,
         int? userId = null,
         DateTime? fromDate = null,
-        DateTime? toDate = null);
+        DateTime? toDate = null,
+        int? customerId = null);
 
     Task<AuditLog?> GetByIdAsync(int id);
 

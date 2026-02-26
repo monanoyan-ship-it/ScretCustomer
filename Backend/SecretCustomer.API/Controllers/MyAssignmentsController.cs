@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Interfaces.Services;
 using System.Security.Claims;
@@ -9,16 +9,16 @@ namespace SecretCustomer.API.Controllers;
 public class MyAssignmentsController : Controller
 {
     private readonly IAssignmentService _assignmentService;
-    private readonly ILogger<MyAssignmentsController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public MyAssignmentsController(
         IAssignmentService assignmentService,
-        ILogger<MyAssignmentsController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService)
     {
         _assignmentService = assignmentService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -38,7 +38,7 @@ public class MyAssignmentsController : Controller
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading my assignments");
+            await _auditLogService.LogErrorAsync("Error loading my assignments", "MyAssignments", ex);
             TempData["ErrorMessage"] = await _localizationService.GetResourceAsync("Assignment.LoadError");
             return View(new List<Core.DTOs.Assignment.AssignmentDto>());
         }

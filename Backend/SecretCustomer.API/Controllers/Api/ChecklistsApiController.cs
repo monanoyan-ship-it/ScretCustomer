@@ -11,17 +11,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class ChecklistsApiController : BaseApiController
 {
     private readonly IChecklistService _checklistService;
-    private readonly ILogger<ChecklistsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public ChecklistsApiController(
         IChecklistService checklistService,
-        ILogger<ChecklistsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _checklistService = checklistService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -40,7 +40,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading checklists");
+            await _auditLogService.LogErrorAsync($"Error loading checklists", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.LoadListError"), ex));
         }
     }
@@ -54,24 +54,22 @@ public class ChecklistsApiController : BaseApiController
     {
         try
         {
-            _logger.LogInformation("Loading checklist {Id}", id);
+            await _auditLogService.LogInfoAsync($"Loading checklist {id}", "Checklists");
             var checklist = await _checklistService.GetByIdAsync(id);
 
             if (checklist == null)
             {
-                _logger.LogWarning("Checklist {Id} not found", id);
+                await _auditLogService.LogWarningAsync($"Checklist {id} not found", "Checklists");
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.NotFound")));
             }
 
-            _logger.LogInformation("Successfully loaded checklist {Id} with {QuestionCount} questions",
-                id, checklist.Questions?.Count ?? 0);
+            await _auditLogService.LogInfoAsync($"Successfully loaded checklist {id} with {checklist.Questions?.Count ?? 0} questions", "Checklists");
 
             return Ok(checklist);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading checklist {Id}. Exception: {Message}, StackTrace: {StackTrace}",
-                id, ex.Message, ex.StackTrace);
+            await _auditLogService.LogErrorAsync($"Error loading checklist {id}. Exception: {ex.Message}, StackTrace: {ex.StackTrace}", "Checklists", ex);
 
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.LoadError"), ex));
         }
@@ -93,7 +91,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating checklist");
+            await _auditLogService.LogErrorAsync($"Error creating checklist", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.CreateError"), ex));
         }
     }
@@ -110,11 +108,10 @@ public class ChecklistsApiController : BaseApiController
         try
         {
             // Debug: Gelen veriyi logla
-            _logger.LogInformation("UPDATE Checklist {Id} - Questions: {QuestionCount}", id, dto.Questions?.Count ?? 0);
+            await _auditLogService.LogInfoAsync($"UPDATE Checklist {id} - Questions: {dto.Questions?.Count ?? 0}", "Checklists");
             foreach (var q in dto.Questions ?? new List<UpdateQuestionDto>())
             {
-                _logger.LogInformation("  Question: Id={QuestionId}, Text={Text}, ShowScoreInput={ShowScoreInput}, SelectionTypeId={SelectionTypeId}",
-                    q.Id, q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0)), q.ShowScoreInput, q.SelectionTypeId);
+                await _auditLogService.LogInfoAsync($"  Question: Id={q.Id}, Text={q.Text?.Substring(0, Math.Min(50, q.Text?.Length ?? 0))}, ShowScoreInput={q.ShowScoreInput}, SelectionTypeId={q.SelectionTypeId}", "Checklists");
             }
 
             dto.Id = id;
@@ -135,7 +132,7 @@ public class ChecklistsApiController : BaseApiController
                 Id = e.Property("Id")?.CurrentValue?.ToString() ?? "null"
             }).ToList();
 
-            _logger.LogError(ex, "Concurrency error updating checklist {Id}. Affected entities: {@Entries}", id, entries);
+            await _auditLogService.LogErrorAsync($"Concurrency error updating checklist {id}. Affected entities: {string.Join(", ", entries.Select(e => $"{e.Entity}({e.Id})"))} ", "Checklists", ex);
 
             return StatusCode(500, new {
                 message = "Veritabanı güncelleme hatası",
@@ -146,7 +143,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating checklist {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating checklist {id}", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.UpdateError"), ex));
         }
     }
@@ -167,7 +164,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting checklist {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting checklist {id}", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.DeleteError"), ex));
         }
     }
@@ -188,7 +185,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error cloning checklist {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error cloning checklist {id}", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Checklist.CloneError"), ex));
         }
     }
@@ -207,7 +204,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading question groups for checklist {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading question groups for checklist {id}", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse("Soru grupları yüklenirken hata oluştu", ex));
         }
     }
@@ -231,7 +228,7 @@ public class ChecklistsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error exporting checklist {Id} to Excel", id);
+            await _auditLogService.LogErrorAsync($"Error exporting checklist {id} to Excel", "Checklists", ex);
             return StatusCode(500, CreateErrorResponse("Kontrol listesi dışa aktarılırken hata oluştu", ex));
         }
     }

@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using SecretCustomer.Core.DTOs.SupportRequest;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -12,16 +11,16 @@ namespace SecretCustomer.Services.Services;
 public class SupportRequestService : ISupportRequestService
 {
     private readonly ApplicationDbContext _context;
-    private readonly ILogger<SupportRequestService> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly INotificationCreatorService _notificationCreator;
 
     public SupportRequestService(
         ApplicationDbContext context,
-        ILogger<SupportRequestService> logger,
+        IAuditLogService auditLogService,
         INotificationCreatorService notificationCreator)
     {
         _context = context;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _notificationCreator = notificationCreator;
     }
 
@@ -190,8 +189,7 @@ public class SupportRequestService : ISupportRequestService
                 senderUserId: userId);
         }
 
-        _logger.LogInformation("Support request created: {Id} by User: {UserId} / CustomerPersonnel: {CustomerPersonnelId}",
-            request.Id, userId, customerPersonnelId);
+        await _auditLogService.LogInfoAsync($"Support request created: {request.Id} by User: {userId} / CustomerPersonnel: {customerPersonnelId}", "SupportRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after creation");
     }
@@ -227,11 +225,10 @@ public class SupportRequestService : ISupportRequestService
         else if (request.CustomerPersonnelId.HasValue)
         {
             // CustomerPersonnel için bildirim - Notification tablosu sadece User destekler
-            _logger.LogInformation("Support request {Id} responded. CustomerPersonnel {PersonnelId} should be notified.",
-                request.Id, request.CustomerPersonnelId);
+            await _auditLogService.LogInfoAsync($"Support request {request.Id} responded. CustomerPersonnel {request.CustomerPersonnelId} should be notified.", "SupportRequestService");
         }
 
-        _logger.LogInformation("Support request responded: {Id} by Admin: {AdminUserId}", request.Id, adminUserId);
+        await _auditLogService.LogInfoAsync($"Support request responded: {request.Id} by Admin: {adminUserId}", "SupportRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after response");
     }
@@ -246,7 +243,7 @@ public class SupportRequestService : ISupportRequestService
         request.StatusId = dto.StatusId;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Support request status updated: {Id} to {StatusId}", request.Id, dto.StatusId);
+        await _auditLogService.LogInfoAsync($"Support request status updated: {request.Id} to {dto.StatusId}", "SupportRequestService");
 
         return await GetByIdAsync(request.Id) ?? throw new Exception("Request not found after status update");
     }
@@ -277,7 +274,7 @@ public class SupportRequestService : ISupportRequestService
         request.IsDeleted = true;
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Support request deleted: {Id}", id);
+        await _auditLogService.LogInfoAsync($"Support request deleted: {id}", "SupportRequestService");
     }
 
     public async Task<(int Pending, int InProgress, int Resolved, int Closed)> GetStatusCountsAsync()

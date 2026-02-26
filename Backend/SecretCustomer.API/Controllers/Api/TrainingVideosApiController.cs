@@ -12,17 +12,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class TrainingVideosApiController : BaseApiController
 {
     private readonly ITrainingVideoService _trainingVideoService;
-    private readonly ILogger<TrainingVideosApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public TrainingVideosApiController(
         ITrainingVideoService trainingVideoService,
-        ILogger<TrainingVideosApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _trainingVideoService = trainingVideoService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -48,7 +48,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading training videos");
+            await _auditLogService.LogErrorAsync($"Error loading training videos", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -70,7 +70,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading training video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading training video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video yüklenirken hata oluştu", ex));
         }
     }
@@ -98,7 +98,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating training video");
+            await _auditLogService.LogErrorAsync($"Error creating training video", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video oluşturulurken hata oluştu", ex));
         }
     }
@@ -117,7 +117,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating training video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating training video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video güncellenirken hata oluştu", ex));
         }
     }
@@ -139,7 +139,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting training video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting training video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video silinirken hata oluştu", ex));
         }
     }
@@ -162,7 +162,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading scope options");
+            await _auditLogService.LogErrorAsync($"Error loading scope options", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Kapsam seçenekleri yüklenirken hata oluştu", ex));
         }
     }
@@ -181,7 +181,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading scope customers for video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading scope customers for video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Müşteri listesi yüklenirken hata oluştu", ex));
         }
     }
@@ -200,7 +200,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error searching scope personnel for video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error searching scope personnel for video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Personel aranırken hata oluştu", ex));
         }
     }
@@ -226,7 +226,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error streaming video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error streaming video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("Video oynatılırken hata oluştu", ex));
         }
     }
@@ -256,7 +256,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading thumbnail for video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading thumbnail for video {id}", "TrainingVideos", ex);
             return NotFound();
         }
     }
@@ -312,7 +312,7 @@ public class TrainingVideosApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading related projects for video {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading related projects for video {id}", "TrainingVideos", ex);
             return StatusCode(500, CreateErrorResponse("İlişkili projeler yüklenirken hata oluştu", ex));
         }
     }
@@ -326,15 +326,15 @@ public class TrainingVideosApiController : BaseApiController
 public class TrainingVideoAssignmentsApiController : BaseApiController
 {
     private readonly ITrainingVideoService _trainingVideoService;
-    private readonly ILogger<TrainingVideoAssignmentsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public TrainingVideoAssignmentsApiController(
         ITrainingVideoService trainingVideoService,
-        ILogger<TrainingVideoAssignmentsApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _trainingVideoService = trainingVideoService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetCurrentUserId()
@@ -359,7 +359,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignments");
+            await _auditLogService.LogErrorAsync($"Error loading assignments", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Atamalar yüklenirken hata oluştu", ex));
         }
     }
@@ -381,7 +381,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Atama yüklenirken hata oluştu", ex));
         }
     }
@@ -400,7 +400,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating assignment");
+            await _auditLogService.LogErrorAsync($"Error creating assignment", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Atama oluşturulurken hata oluştu", ex));
         }
     }
@@ -419,7 +419,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error previewing auto assignment");
+            await _auditLogService.LogErrorAsync($"Error previewing auto assignment", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Önizleme oluşturulurken hata oluştu", ex));
         }
     }
@@ -442,7 +442,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Atama güncellenirken hata oluştu", ex));
         }
     }
@@ -464,7 +464,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Atama silinirken hata oluştu", ex));
         }
     }
@@ -500,7 +500,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading email templates");
+            await _auditLogService.LogErrorAsync($"Error loading email templates", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Email şablonları yüklenirken hata oluştu", ex));
         }
     }
@@ -523,7 +523,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading all participants");
+            await _auditLogService.LogErrorAsync($"Error loading all participants", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Katılımcılar yüklenirken hata oluştu", ex));
         }
     }
@@ -542,7 +542,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading participants for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading participants for assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Katılımcılar yüklenirken hata oluştu", ex));
         }
     }
@@ -561,7 +561,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending reminders for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error sending reminders for assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Hatırlatmalar gönderilirken hata oluştu", ex));
         }
     }
@@ -581,7 +581,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending emails for assignment {AssignmentId}", dto.AssignmentId);
+            await _auditLogService.LogErrorAsync($"Error sending emails for assignment {dto.AssignmentId}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Email gönderilirken hata oluştu", ex));
         }
     }
@@ -604,7 +604,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading external participants for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading external participants for assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Dış katılımcılar yüklenirken hata oluştu", ex));
         }
     }
@@ -625,7 +625,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error adding external participants for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error adding external participants for assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Dış katılımcılar eklenirken hata oluştu", ex));
         }
     }
@@ -647,7 +647,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting external participant {ParticipantId}", participantId);
+            await _auditLogService.LogErrorAsync($"Error deleting external participant {participantId}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Katılımcı silinirken hata oluştu", ex));
         }
     }
@@ -668,7 +668,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error sending emails to external participants for assignment {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error sending emails to external participants for assignment {id}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Email gönderilirken hata oluştu", ex));
         }
     }
@@ -690,7 +690,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting external video for token {Token}", token);
+            await _auditLogService.LogErrorAsync($"Error getting external video for token {token}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Video bilgisi alınırken hata oluştu", ex));
         }
     }
@@ -717,7 +717,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error streaming external video for token {Token}", token);
+            await _auditLogService.LogErrorAsync($"Error streaming external video for token {token}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("Video yüklenirken hata oluştu", ex));
         }
     }
@@ -739,7 +739,7 @@ public class TrainingVideoAssignmentsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating external watch progress for token {Token}", token);
+            await _auditLogService.LogErrorAsync($"Error updating external watch progress for token {token}", "TrainingVideoAssignments", ex);
             return StatusCode(500, CreateErrorResponse("İlerleme kaydedilirken hata oluştu", ex));
         }
     }

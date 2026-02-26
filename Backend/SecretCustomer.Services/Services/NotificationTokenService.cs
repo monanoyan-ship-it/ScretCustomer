@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Core.Helpers;
 
@@ -11,11 +11,11 @@ namespace SecretCustomer.Services.Services;
 public class NotificationTokenService : INotificationTokenService
 {
     private readonly byte[] _key;
-    private readonly ILogger<NotificationTokenService> _logger;
+    private readonly IServiceProvider _serviceProvider;
 
-    public NotificationTokenService(IConfiguration configuration, ILogger<NotificationTokenService> logger)
+    public NotificationTokenService(IConfiguration configuration, IServiceProvider serviceProvider)
     {
-        _logger = logger;
+        _serviceProvider = serviceProvider;
         var keyString = configuration["NotificationToken:EncryptionKey"]
             ?? throw new InvalidOperationException("NotificationToken:EncryptionKey is not configured");
 
@@ -60,7 +60,7 @@ public class NotificationTokenService : INotificationTokenService
         return Encrypt(payload);
     }
 
-    public NotificationTokenPayload? DecryptToken(string token)
+    public async Task<NotificationTokenPayload?> DecryptToken(string token)
     {
         try
         {
@@ -69,7 +69,9 @@ public class NotificationTokenService : INotificationTokenService
 
             if (payload.ExpiresAt < TurkeyTime.Now)
             {
-                _logger.LogWarning("Notification token expired. ExpiresAt: {ExpiresAt}", payload.ExpiresAt);
+                using var scope = _serviceProvider.CreateScope();
+                var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                await auditLogService.LogWarningAsync($"Notification token expired. ExpiresAt: {payload.ExpiresAt}", "NotificationTokenService");
                 return null;
             }
 
@@ -77,7 +79,13 @@ public class NotificationTokenService : INotificationTokenService
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to decrypt notification token");
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var auditLogService = scope.ServiceProvider.GetRequiredService<IAuditLogService>();
+                await auditLogService.LogWarningAsync("Failed to decrypt notification token", "NotificationTokenService", ex.Message);
+            }
+            catch { /* loglama hatası yutulur */ }
             return null;
         }
     }

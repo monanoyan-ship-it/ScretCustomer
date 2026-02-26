@@ -13,19 +13,19 @@ namespace SecretCustomer.API.Controllers.Api;
 public class AnnouncementsApiController : BaseApiController
 {
     private readonly IAnnouncementService _announcementService;
-    private readonly ILogger<AnnouncementsApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
     private readonly INotificationCreatorService _notificationCreator;
 
     public AnnouncementsApiController(
         IAnnouncementService announcementService,
-        ILogger<AnnouncementsApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         INotificationCreatorService notificationCreator,
         IConfiguration configuration) : base(configuration)
     {
         _announcementService = announcementService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
         _notificationCreator = notificationCreator;
     }
@@ -44,7 +44,7 @@ public class AnnouncementsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting announcements");
+            await _auditLogService.LogErrorAsync($"Error getting announcements", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
@@ -63,7 +63,7 @@ public class AnnouncementsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting dashboard announcements");
+            await _auditLogService.LogErrorAsync($"Error getting dashboard announcements", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
@@ -87,7 +87,7 @@ public class AnnouncementsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting announcement {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting announcement {id}", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadSingleError"), ex));
         }
     }
@@ -106,7 +106,7 @@ public class AnnouncementsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting all announcements for admin");
+            await _auditLogService.LogErrorAsync($"Error getting all announcements for admin", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.LoadError"), ex));
         }
     }
@@ -129,7 +129,7 @@ public class AnnouncementsApiController : BaseApiController
 
             var (announcement, notifyUserIds) = await _announcementService.CreateAsync(dto, userId);
 
-            _logger.LogInformation("Announcement {Id} created by user {UserId}", announcement.Id, userId);
+            await _auditLogService.LogInfoAsync($"Announcement {announcement.Id} created by user {userId}", "Announcements");
 
             if (notifyUserIds.Any())
             {
@@ -148,7 +148,7 @@ public class AnnouncementsApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating announcement");
+            await _auditLogService.LogErrorAsync($"Error creating announcement", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.CreateError"), ex));
         }
     }
@@ -169,13 +169,13 @@ public class AnnouncementsApiController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.NotFound")));
             }
 
-            _logger.LogInformation("Announcement {Id} updated", id);
+            await _auditLogService.LogInfoAsync($"Announcement {id} updated", "Announcements");
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Announcement.UpdateSuccess") });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating announcement {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating announcement {id}", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.UpdateError"), ex));
         }
     }
@@ -196,13 +196,13 @@ public class AnnouncementsApiController : BaseApiController
                 return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.NotFound")));
             }
 
-            _logger.LogInformation("Announcement {Id} deleted", id);
+            await _auditLogService.LogInfoAsync($"Announcement {id} deleted", "Announcements");
 
             return Ok(new { message = await _localizationService.GetResourceAsync("Api.Announcement.DeleteSuccess") });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting announcement {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting announcement {id}", "Announcements", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Announcement.DeleteError"), ex));
         }
     }

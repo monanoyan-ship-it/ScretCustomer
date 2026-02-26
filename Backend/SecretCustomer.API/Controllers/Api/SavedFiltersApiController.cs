@@ -12,15 +12,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class SavedFiltersApiController : BaseApiController
 {
     private readonly ISavedFilterService _savedFilterService;
-    private readonly ILogger<SavedFiltersApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public SavedFiltersApiController(
         ISavedFilterService savedFilterService,
-        ILogger<SavedFiltersApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _savedFilterService = savedFilterService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetCurrentUserId()
@@ -52,7 +52,7 @@ public class SavedFiltersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading saved filters for page {PageName}", pageName);
+            await _auditLogService.LogErrorAsync($"Error loading saved filters for page {pageName}", "SavedFilters", ex);
             return StatusCode(500, CreateErrorResponse("Filtreler yüklenirken hata oluştu", ex));
         }
     }
@@ -81,7 +81,7 @@ public class SavedFiltersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating saved filter");
+            await _auditLogService.LogErrorAsync($"Error creating saved filter", "SavedFilters", ex);
             return StatusCode(500, CreateErrorResponse("Filtre kaydedilirken hata oluştu", ex));
         }
     }
@@ -108,7 +108,7 @@ public class SavedFiltersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting saved filter {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting saved filter {id}", "SavedFilters", ex);
             return StatusCode(500, CreateErrorResponse("Filtre silinirken hata oluştu", ex));
         }
     }
@@ -134,7 +134,7 @@ public class SavedFiltersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error setting default filter {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error setting default filter {id}", "SavedFilters", ex);
             return StatusCode(500, CreateErrorResponse("Varsayılan filtre ayarlanırken hata oluştu", ex));
         }
     }
@@ -161,7 +161,7 @@ public class SavedFiltersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error clearing default filter for page {PageName}", pageName);
+            await _auditLogService.LogErrorAsync($"Error clearing default filter for page {pageName}", "SavedFilters", ex);
             return StatusCode(500, CreateErrorResponse("Varsayılan filtre kaldırılırken hata oluştu", ex));
         }
     }

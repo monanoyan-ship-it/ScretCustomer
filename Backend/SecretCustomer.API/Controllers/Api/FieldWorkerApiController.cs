@@ -12,15 +12,15 @@ namespace SecretCustomer.API.Controllers.Api;
 public class FieldWorkerApiController : BaseApiController
 {
     private readonly IFieldWorkerService _fieldWorkerService;
-    private readonly ILogger<FieldWorkerApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
 
     public FieldWorkerApiController(
         IFieldWorkerService fieldWorkerService,
-        ILogger<FieldWorkerApiController> logger,
+        IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _fieldWorkerService = fieldWorkerService;
-        _logger = logger;
+        _auditLogService = auditLogService;
     }
 
     private int GetCurrentUserId()
@@ -46,7 +46,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting fieldworker dashboard");
+            await _auditLogService.LogErrorAsync("Error getting fieldworker dashboard", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Dashboard yüklenirken hata oluştu", ex));
         }
     }
@@ -68,7 +68,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting assigned projects");
+            await _auditLogService.LogErrorAsync("Error getting assigned projects", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Projeler yüklenirken hata oluştu", ex));
         }
     }
@@ -90,7 +90,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting accessible dealers");
+            await _auditLogService.LogErrorAsync("Error getting accessible dealers", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Bayiler yüklenirken hata oluştu", ex));
         }
     }
@@ -112,7 +112,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting pending dealers");
+            await _auditLogService.LogErrorAsync("Error getting pending dealers", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Bekleyen şubeler yüklenirken hata oluştu", ex));
         }
     }
@@ -134,7 +134,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting dealers for assignment {AssignmentId}", assignmentId);
+            await _auditLogService.LogErrorAsync($"Error getting dealers for assignment {assignmentId}", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Bayiler yüklenirken hata oluştu", ex));
         }
     }
@@ -156,7 +156,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting visits");
+            await _auditLogService.LogErrorAsync("Error getting visits", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaretler yüklenirken hata oluştu", ex));
         }
     }
@@ -181,7 +181,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting visit {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error getting visit {id}", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaret yüklenirken hata oluştu", ex));
         }
     }
@@ -210,7 +210,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating visit");
+            await _auditLogService.LogErrorAsync("Error creating visit", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaret oluşturulurken hata oluştu", ex));
         }
     }
@@ -242,7 +242,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating visit {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating visit {id}", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("Ziyaret güncellenirken hata oluştu", ex));
         }
     }
@@ -260,7 +260,7 @@ public class FieldWorkerApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating visit id");
+            await _auditLogService.LogErrorAsync("Error generating visit id", "FieldWorker", ex);
             return StatusCode(500, CreateErrorResponse("VisitId üretilirken hata oluştu", ex));
         }
     }

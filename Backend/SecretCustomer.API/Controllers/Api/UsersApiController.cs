@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.User;
 using SecretCustomer.Core.Enums;
@@ -12,17 +12,17 @@ namespace SecretCustomer.API.Controllers.Api;
 public class UsersApiController : BaseApiController
 {
     private readonly IUserService _userService;
-    private readonly ILogger<UsersApiController> _logger;
+    private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
 
     public UsersApiController(
         IUserService userService,
-        ILogger<UsersApiController> logger,
+        IAuditLogService auditLogService,
         ILocalizationService localizationService,
         IConfiguration configuration) : base(configuration)
     {
         _userService = userService;
-        _logger = logger;
+        _auditLogService = auditLogService;
         _localizationService = localizationService;
     }
 
@@ -36,7 +36,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading users");
+            await _auditLogService.LogErrorAsync($"Error loading users", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.LoadError"), ex));
         }
     }
@@ -51,7 +51,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading active users");
+            await _auditLogService.LogErrorAsync($"Error loading active users", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.ActiveLoadError"), ex));
         }
     }
@@ -66,7 +66,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading users by role");
+            await _auditLogService.LogErrorAsync($"Error loading users by role", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.LoadError"), ex));
         }
     }
@@ -86,7 +86,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading user {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error loading user {id}", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.LoadError"), ex));
         }
     }
@@ -106,12 +106,12 @@ public class UsersApiController : BaseApiController
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while creating user");
+            await _auditLogService.LogWarningAsync($"Validation error while creating user", "Users");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating user");
+            await _auditLogService.LogErrorAsync($"Error creating user", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.CreateError"), ex));
         }
     }
@@ -131,17 +131,17 @@ public class UsersApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "User {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"User {id} not found", "Users");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Validation error while updating user {Id}", id);
+            await _auditLogService.LogWarningAsync($"Validation error while updating user {id}", "Users");
             return BadRequest(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating user {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error updating user {id}", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.UpdateError"), ex));
         }
     }
@@ -156,12 +156,12 @@ public class UsersApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "User {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"User {id} not found", "Users");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting user {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error deleting user {id}", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("User.DeleteError"), ex));
         }
     }
@@ -176,7 +176,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking username {Username}", username);
+            await _auditLogService.LogErrorAsync($"Error checking username {username}", "Users", ex);
             return StatusCode(500, CreateErrorResponse("Kullanıcı adı kontrolü sırasında hata oluştu.", ex));
         }
     }
@@ -191,7 +191,7 @@ public class UsersApiController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking email {Email}", email);
+            await _auditLogService.LogErrorAsync($"Error checking email {email}", "Users", ex);
             return StatusCode(500, CreateErrorResponse("E-posta kontrolü sırasında hata oluştu.", ex));
         }
     }
@@ -221,12 +221,12 @@ public class UsersApiController : BaseApiController
         }
         catch (KeyNotFoundException ex)
         {
-            _logger.LogWarning(ex, "User {Id} not found", id);
+            await _auditLogService.LogWarningAsync($"User {id} not found", "Users");
             return NotFound(CreateErrorResponse(ex.Message));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error changing password for user {Id}", id);
+            await _auditLogService.LogErrorAsync($"Error changing password for user {id}", "Users", ex);
             return StatusCode(500, CreateErrorResponse(await _localizationService.GetResourceAsync("Api.User.PasswordChangeError"), ex));
         }
     }
