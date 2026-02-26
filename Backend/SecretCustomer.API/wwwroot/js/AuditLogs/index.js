@@ -38,12 +38,12 @@
         self.filter.customerId.subscribe(function (custId) {
             self.filter.userId('');
             if (!custId) {
-                // Müşteri seçilmemişse tüm kullanıcıları göster
+                // Müşteri seçilmemişse sistem kullanıcılarını göster
                 self.filteredUsers(self.users());
                 return;
             }
-            // Müşterinin projelerindeki kullanıcıları çek
-            $.get('/api/users', { customerId: custId }, function (data) {
+            // Müşterinin personellerini çek
+            $.get('/api/customer-personnel/by-customer/' + custId, function (data) {
                 var list = Array.isArray(data) ? data : (data.items || []);
                 self.filteredUsers(list);
             });
@@ -78,11 +78,15 @@
             });
         };
 
-        // Load users with customer associations
+        // Load users (sistem kullanıcıları)
         self.loadUsers = function () {
             $.get('/api/users', function (data) {
                 var list = Array.isArray(data) ? data : (data.items || []);
                 self.users(list);
+                // Müşteri seçili değilse filteredUsers'ı da set et
+                if (!self.filter.customerId()) {
+                    self.filteredUsers(list);
+                }
             });
         };
 
@@ -97,7 +101,20 @@
 
             if (self.filter.customerId()) params.customerId = self.filter.customerId();
             if (self.filter.logType()) params.logTypeId = self.filter.logType();
-            if (self.filter.userId()) params.userId = self.filter.userId();
+            if (self.filter.userId()) {
+                if (self.filter.customerId()) {
+                    // Müşteri seçiliyse userName ile filtrele (CustomerPersonnel username'i)
+                    var selectedPerson = self.filteredUsers().find(function (u) {
+                        return u.id == self.filter.userId();
+                    });
+                    if (selectedPerson) {
+                        params.userName = '[Müşteri] ' + selectedPerson.username;
+                    }
+                } else {
+                    // Müşteri seçili değilse userId ile filtrele (sistem kullanıcısı)
+                    params.userId = self.filter.userId();
+                }
+            }
             if (self.filter.fromDate()) params.fromDate = self.filter.fromDate();
             if (self.filter.toDate()) params.toDate = self.filter.toDate();
 
@@ -195,6 +212,34 @@
             self.filter.toDate('');
             self.currentPage(1);
             self.loadLogs();
+        };
+
+        // Export to Excel
+        self.exportToExcel = function () {
+            var params = new URLSearchParams();
+
+            if (self.filter.customerId()) params.append('customerId', self.filter.customerId());
+            if (self.filter.logType()) params.append('logTypeId', self.filter.logType());
+            if (self.filter.userId()) {
+                if (self.filter.customerId()) {
+                    var selectedPerson = self.filteredUsers().find(function (u) {
+                        return u.id == self.filter.userId();
+                    });
+                    if (selectedPerson) {
+                        params.append('userName', '[Müşteri] ' + selectedPerson.username);
+                    }
+                } else {
+                    params.append('userId', self.filter.userId());
+                }
+            }
+            if (self.filter.fromDate()) params.append('fromDate', self.filter.fromDate());
+            if (self.filter.toDate()) params.append('toDate', self.filter.toDate());
+
+            var url = '/api/auditlogs/export';
+            var qs = params.toString();
+            if (qs) url += '?' + qs;
+
+            window.location.href = url;
         };
 
         // Cleanup old logs

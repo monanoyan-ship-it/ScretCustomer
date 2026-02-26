@@ -202,8 +202,12 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             throw new KeyNotFoundException($"Müşteri bulunamadı (ID: {createDto.CustomerId})");
         }
 
-        // Check if username already exists
+        // Check if username already exists (CustomerPersonnel + User)
         if (await _personnelRepository.ExistsByUsernameAsync(createDto.Username))
+        {
+            throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
+        }
+        if (await _context.Users.AnyAsync(u => u.Username.ToLower() == createDto.Username.ToLower()))
         {
             throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
         }
@@ -251,11 +255,17 @@ public class CustomerPersonnelService : ICustomerPersonnelService
             throw new KeyNotFoundException($"Personel bulunamadı (ID: {id})");
         }
 
-        // Check if username is being changed and if it's already in use
-        if (personnel.Username != updateDto.Username &&
-            await _personnelRepository.ExistsByUsernameAsync(updateDto.Username, id))
+        // Check if username is being changed and if it's already in use (CustomerPersonnel + User)
+        if (personnel.Username != updateDto.Username)
         {
-            throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
+            if (await _personnelRepository.ExistsByUsernameAsync(updateDto.Username, id))
+            {
+                throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
+            }
+            if (await _context.Users.AnyAsync(u => u.Username.ToLower() == updateDto.Username.ToLower()))
+            {
+                throw new InvalidOperationException("Bu kullanıcı adı ile kayıtlı bir personel zaten mevcut");
+            }
         }
 
         // Check if email is being changed and if it's already in use
@@ -396,10 +406,12 @@ public class CustomerPersonnelService : ICustomerPersonnelService
         };
     }
 
-    // Uniqueness checks
+    // Uniqueness checks (CustomerPersonnel + User cross-check)
     public async Task<bool> ExistsByUsernameAsync(string username, int? excludeId = null)
     {
-        return await _personnelRepository.ExistsByUsernameAsync(username, excludeId);
+        if (await _personnelRepository.ExistsByUsernameAsync(username, excludeId))
+            return true;
+        return await _context.Users.AnyAsync(u => u.Username.ToLower() == username.ToLower());
     }
 
     public async Task<bool> ExistsByEmailAsync(string email, int? excludeId = null)

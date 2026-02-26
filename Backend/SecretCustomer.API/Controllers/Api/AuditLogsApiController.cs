@@ -1,7 +1,9 @@
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -35,6 +37,7 @@ public class AuditLogsApiController : BaseApiController
         [FromQuery] int? logTypeId = null,
         [FromQuery] string? category = null,
         [FromQuery] int? userId = null,
+        [FromQuery] string? userName = null,
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] int page = 1,
@@ -42,10 +45,10 @@ public class AuditLogsApiController : BaseApiController
         [FromQuery] int? customerId = null)
     {
         var logs = await _auditLogService.GetLogsAsync(
-            logTypeId, category, userId, fromDate, toDate, page, pageSize, customerId);
+            logTypeId, category, userId, fromDate, toDate, page, pageSize, customerId, userName);
 
         var totalCount = await _auditLogService.GetLogsCountAsync(
-            logTypeId, category, userId, fromDate, toDate, customerId);
+            logTypeId, category, userId, fromDate, toDate, customerId, userName);
 
         var data = new List<object>();
         foreach (var l in logs)
@@ -125,6 +128,74 @@ public class AuditLogsApiController : BaseApiController
         }
 
         return Ok(types);
+    }
+
+    [HttpGet("export")]
+    public async Task<IActionResult> ExportToExcel(
+        [FromQuery] int? logTypeId = null,
+        [FromQuery] string? category = null,
+        [FromQuery] int? userId = null,
+        [FromQuery] string? userName = null,
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] int? customerId = null)
+    {
+        try
+        {
+            var logs = await _auditLogService.GetLogsForExportAsync(
+                logTypeId, category, userId, fromDate, toDate, customerId, userName);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Sistem Logları");
+
+            // Başlık satırı
+            var headers = new[] { "Tarih", "Log Tipi", "Kategori", "Mesaj", "Kullanıcı", "IP Adresi", "URL", "HTTP Method" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cell(1, i + 1).Value = headers[i];
+            }
+
+            // Başlık stili
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            // Veri satırları
+            for (int row = 0; row < logs.Count; row++)
+            {
+                var l = logs[row];
+                var currentRow = row + 2;
+
+                worksheet.Cell(currentRow, 1).Value = l.CreatedAt.ToString("dd.MM.yyyy HH:mm:ss");
+                worksheet.Cell(currentRow, 2).Value = await GetLogTypeNameAsync(l.LogTypeId);
+                worksheet.Cell(currentRow, 3).Value = l.Category ?? "-";
+                worksheet.Cell(currentRow, 4).Value = l.Message ?? "-";
+                worksheet.Cell(currentRow, 5).Value = l.UserName ?? "-";
+                worksheet.Cell(currentRow, 6).Value = l.IpAddress ?? "-";
+                worksheet.Cell(currentRow, 7).Value = l.RequestUrl ?? "-";
+                worksheet.Cell(currentRow, 8).Value = l.HttpMethod ?? "-";
+            }
+
+            // Sütun genişliklerini ayarla
+            worksheet.Columns().AdjustToContents();
+
+            // Minimum genişlikler
+            if (worksheet.Column(1).Width < 18) worksheet.Column(1).Width = 18;
+            if (worksheet.Column(4).Width > 60) worksheet.Column(4).Width = 60;
+            if (worksheet.Column(7).Width > 50) worksheet.Column(7).Width = 50;
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"SistemLoglari_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Error exporting audit logs to Excel", "AuditLogs", ex);
+            return StatusCode(500, new { error = "Excel dışa aktarma hatası" });
+        }
     }
 
     [HttpDelete("cleanup")]

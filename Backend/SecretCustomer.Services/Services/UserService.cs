@@ -115,8 +115,12 @@ public class UserService : IUserService
 
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
     {
-        // Check if username already exists
+        // Check if username already exists (User + CustomerPersonnel)
         if (await _userRepository.ExistsByUsernameAsync(createUserDto.Username))
+        {
+            throw new InvalidOperationException("Username already exists");
+        }
+        if (await _context.CustomerPersonnel.AnyAsync(cp => cp.Username.ToLower() == createUserDto.Username.ToLower() && !cp.IsDeleted))
         {
             throw new InvalidOperationException("Username already exists");
         }
@@ -244,10 +248,12 @@ public class UserService : IUserService
         return result;
     }
 
-    // Uniqueness checks
+    // Uniqueness checks (User + CustomerPersonnel cross-check)
     public async Task<bool> ExistsByUsernameAsync(string username)
     {
-        return await _userRepository.ExistsByUsernameAsync(username);
+        if (await _userRepository.ExistsByUsernameAsync(username))
+            return true;
+        return await _context.CustomerPersonnel.AnyAsync(cp => cp.Username.ToLower() == username.ToLower() && !cp.IsDeleted);
     }
 
     public async Task<bool> ExistsByEmailAsync(string email)
