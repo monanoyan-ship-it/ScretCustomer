@@ -10768,6 +10768,81 @@
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilciAra">
     <Value>Ad soyad yazarak arayın...</Value>
   </LocaleResource>
+  <LocaleResource Name="GmDinleme.Title">
+    <Value>GM Dinleme Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.ListeBaslik">
+    <Value>Dinlemelerim</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.DinlemeyeBasla">
+    <Value>Dinlemeye Başla</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Beklemede">
+    <Value>Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Taslak">
+    <Value>Taslak</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Tamamlandi">
+    <Value>Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarlarBaslik">
+    <Value>Dinleme Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarYok">
+    <Value>Henüz dinleme ayarı eklenmemiş.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TakipBaslik">
+    <Value>Dinleme Atamaları</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Dinleyen">
+    <Value>Dinleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.PopupTitle">
+    <Value>Dinleme Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Summary">
+    <Value>Dinleme Özeti</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaBilgileri">
+    <Value>Arama Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.HedefFirma">
+    <Value>Hedef Firma</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Arayan">
+    <Value>Arayan</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaTarihi">
+    <Value>Arama Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Soru">
+    <Value>Soru</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.BeklenenCevap">
+    <Value>Beklenen Cevap</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Temsilci">
+    <Value>Görüşülen Temsilci</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Donem">
+    <Value>Dönem</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Comment">
+    <Value>Dinleme Yorumu</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.CommentPlaceholder">
+    <Value>Genel dinleme yorumunuzu yazın...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.SubmitSuccess">
+    <Value>Dinleme değerlendirmesi başarıyla tamamlandı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TabBaslik">
+    <Value>GM Dinlemeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.NoRecords">
+    <Value>GM dinleme kaydı bulunmamaktadır.</Value>
+  </LocaleResource>
   <LocaleResource Name="Report.UnscoredQuestions">
     <Value>Puansız Soru Raporu</Value>
   </LocaleResource>

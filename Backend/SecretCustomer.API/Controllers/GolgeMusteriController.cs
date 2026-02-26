@@ -34,4 +34,11 @@ public class GolgeMusteriController : Controller
     {
         return View();
     }
+
+    public IActionResult PopupGmDinleme(int? gmAtamaId, int? dinlemeId)
+    {
+        ViewBag.GmAtamaId = gmAtamaId;
+        ViewBag.DinlemeId = dinlemeId;
+        return View();
+    }
 }

@@ -574,6 +574,99 @@ public class GmApiController : BaseApiController
     }
 
     // =============================================
+    // DİNLEME TAKİP
+    // =============================================
+
+    [HttpGet("dinleme-takip")]
+    public async Task<IActionResult> GetDinlemeTakip([FromQuery] int donemId, [FromQuery] int? dinleyenUserId, [FromQuery] int? durumId)
+    {
+        try
+        {
+            var result = await _gmService.GetDinlemeTakipAsync(donemId, dinleyenUserId, durumId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme takip yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme takip yüklenirken hata oluştu", ex));
+        }
+    }
+
+    // =============================================
+    // DİNLEME AYAR
+    // =============================================
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("donemler/{donemId}/dinleme-ayarlar")]
+    public async Task<IActionResult> GetDinlemeAyarlar(int donemId)
+    {
+        try
+        {
+            var result = await _gmService.GetDinlemeAyarlarAsync(donemId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme ayarları yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme ayarları yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("donemler/{donemId}/dinleme-ayarlar")]
+    public async Task<IActionResult> CreateDinlemeAyar(int donemId, [FromBody] SecretCustomer.Core.DTOs.GolgeMusteri.CreateGmDinlemeAyarDto dto)
+    {
+        try
+        {
+            var result = await _gmService.CreateDinlemeAyarAsync(donemId, dto);
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme ayarı oluşturulurken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme ayarı oluşturulurken hata oluştu", ex));
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("dinleme-ayar/{id}")]
+    public async Task<IActionResult> UpdateDinlemeAyar(int id, [FromBody] SecretCustomer.Core.DTOs.GolgeMusteri.UpdateGmDinlemeAyarDto dto)
+    {
+        try
+        {
+            var result = await _gmService.UpdateDinlemeAyarAsync(id, dto);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme ayarı güncellenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme ayarı güncellenirken hata oluştu", ex));
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("dinleme-ayar/{id}")]
+    public async Task<IActionResult> DeleteDinlemeAyar(int id)
+    {
+        try
+        {
+            var result = await _gmService.DeleteDinlemeAyarAsync(id);
+            if (!result) return NotFound();
+            return Ok(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme ayarı silinirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme ayarı silinirken hata oluştu", ex));
+        }
+    }
+
+    // =============================================
     // TAKİP
     // =============================================
 
@@ -589,6 +682,99 @@ public class GmApiController : BaseApiController
         {
             _logger.LogError(ex, "Atamalar yüklenirken hata");
             return StatusCode(500, CreateErrorResponse("Atamalar yüklenirken hata oluştu", ex));
+        }
+    }
+
+    // =============================================
+    // DINLEME POPUP
+    // =============================================
+
+    [HttpGet("dinleme/form/{gmAtamaId}")]
+    public async Task<IActionResult> GetDinlemeForm(int gmAtamaId)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var result = await _gmService.GetDinlemeFormAsync(gmAtamaId, userId);
+            if (result == null) return NotFound(new { message = "Dinleme formu bulunamadı." });
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme formu yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme formu yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpGet("dinleme/form/edit/{dinlemeId}")]
+    public async Task<IActionResult> GetDinlemeEditForm(int dinlemeId)
+    {
+        try
+        {
+            var result = await _gmService.GetDinlemeEditFormAsync(dinlemeId);
+            if (result == null) return NotFound(new { message = "Dinleme bulunamadı." });
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme düzenleme formu yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme düzenleme formu yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("dinleme/draft")]
+    public async Task<IActionResult> SaveDinlemeDraft([FromBody] GmDinlemeSubmitDto dto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var result = await _gmService.SaveDinlemeDraftAsync(dto, userId);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme taslak kaydedilirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme taslak kaydedilirken hata oluştu", ex));
+        }
+    }
+
+    [HttpPost("dinleme/submit")]
+    public async Task<IActionResult> SubmitDinleme([FromBody] GmDinlemeSubmitDto dto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var result = await _gmService.SubmitDinlemeAsync(dto, userId);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinleme gönderilirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinleme gönderilirken hata oluştu", ex));
         }
     }
 }

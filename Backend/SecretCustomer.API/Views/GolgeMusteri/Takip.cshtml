@@ -13,6 +13,22 @@
         </div>
     </div>
 
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'aramalar' }, click: function() { activeTab('aramalar'); }" href="#">
+                <i class="bi bi-telephone-outbound me-1"></i> @Html.T("GolgeMusteri.Aramalar", "Aramalar")
+                <span class="badge bg-primary ms-1" data-bind="text: atamalar().length, visible: selectedDonemId()"></span>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bind="css: { active: activeTab() === 'dinlemeler' }, click: function() { activeTab('dinlemeler'); }" href="#">
+                <i class="bi bi-headphones me-1"></i> @Html.T("GmDinleme.TakipBaslik", "Dinleme Atamaları")
+                <span class="badge bg-info ms-1" data-bind="text: dinlemeler().length, visible: selectedDonemId()"></span>
+            </a>
+        </li>
+    </ul>
+
     <!-- Filtre -->
     <div class="card mb-3">
         <div class="card-body py-2">
@@ -23,106 +39,212 @@
                 <div class="col-md-3">
                     <select class="form-select form-select-sm" data-bind="options: users, optionsText: function(u) { return u.firstName + ' ' + u.lastName; }, optionsValue: 'id', value: selectedUserId, optionsCaption: '-- Personel --'"></select>
                 </div>
-                <div class="col-md-2">
-                    <select class="form-select form-select-sm" data-bind="value: selectedDurumId">
+                <!-- Arama durumları -->
+                <div class="col-md-2" data-bind="visible: activeTab() === 'aramalar'">
+                    <select class="form-select form-select-sm" data-bind="value: selectedAramaDurumId">
                         <option value="">-- Durum --</option>
                         <option value="1">Beklemede</option>
                         <option value="2">Tamamlandı</option>
+                    </select>
+                </div>
+                <!-- Dinleme durumları -->
+                <div class="col-md-2" data-bind="visible: activeTab() === 'dinlemeler'">
+                    <select class="form-select form-select-sm" data-bind="value: selectedDinlemeDurumId">
+                        <option value="">-- Durum --</option>
+                        <option value="1">Beklemede</option>
+                        <option value="2">Taslak</option>
+                        <option value="3">Tamamlandı</option>
                     </select>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Özet -->
-    <div class="row g-3 mb-3" data-bind="visible: selectedDonemId()">
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body py-2">
-                    <div class="fs-4 fw-bold text-primary" data-bind="text: atamalar().length"></div>
-                    <small class="text-muted">Toplam Atama</small>
+    <!-- ==================== ARAMALAR TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'aramalar'">
+
+        <!-- Özet -->
+        <div class="row g-3 mb-3" data-bind="visible: selectedDonemId()">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-primary" data-bind="text: atamalar().length"></div>
+                        <small class="text-muted">Toplam Atama</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-success" data-bind="text: tamamlananSayisi()"></div>
+                        <small class="text-muted">Tamamlanan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-warning" data-bind="text: bekleyenSayisi()"></div>
+                        <small class="text-muted">Bekleyen</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold" data-bind="text: tamamlanmaOrani() + '%'"></div>
+                        <small class="text-muted">Tamamlanma</small>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body py-2">
-                    <div class="fs-4 fw-bold text-success" data-bind="text: tamamlananSayisi()"></div>
-                    <small class="text-muted">Tamamlanan</small>
+
+        <!-- Loading -->
+        <div data-bind="visible: isAramalarLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Tablo -->
+        <div class="card" data-bind="visible: !isAramalarLoading() && selectedDonemId()">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Personel</th>
+                                <th>Firma</th>
+                                <th>Soru</th>
+                                <th>Plan Tarihi</th>
+                                <th>Gerçekleşme</th>
+                                <th>Saat</th>
+                                <th>Temsilci</th>
+                                <th>Durum</th>
+                                <th style="width: 70px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: atamalar">
+                            <tr>
+                                <td data-bind="text: userName || '-'"></td>
+                                <td data-bind="text: hedefFirmaAdi || '-'"></td>
+                                <td><small data-bind="text: soruMetni ? (soruMetni.length > 40 ? soruMetni.substring(0,40)+'...' : soruMetni) : '-'"></small></td>
+                                <td data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></td>
+                                <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
+                                <td data-bind="text: aramaSaati || '-'"></td>
+                                <td data-bind="text: gorusulenTemsilci || '-'"></td>
+                                <td>
+                                    <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showAtamaDetail" title="Detay">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-bind="visible: !isAramalarLoading() && atamalar().length === 0" class="text-center text-muted py-4">
+                    Atama bulunamadı.
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body py-2">
-                    <div class="fs-4 fw-bold text-warning" data-bind="text: bekleyenSayisi()"></div>
-                    <small class="text-muted">Bekleyen</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body py-2">
-                    <div class="fs-4 fw-bold" data-bind="text: tamamlanmaOrani() + '%'"></div>
-                    <small class="text-muted">Tamamlanma</small>
-                </div>
-            </div>
+
+        <div data-bind="visible: !selectedDonemId()" class="text-center text-muted py-5">
+            <i class="bi bi-arrow-up fs-1 d-block mb-2"></i>
+            Takip için bir dönem seçin.
         </div>
     </div>
 
-    <!-- Loading -->
-    <div data-bind="visible: isLoading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status"></div>
-    </div>
+    <!-- ==================== DİNLEMELER TAB ==================== -->
+    <div data-bind="visible: activeTab() === 'dinlemeler'">
 
-    <!-- Tablo -->
-    <div class="card" data-bind="visible: !isLoading() && selectedDonemId()">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover table-sm align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Personel</th>
-                            <th>Firma</th>
-                            <th>Soru</th>
-                            <th>Plan Tarihi</th>
-                            <th>Gerçekleşme</th>
-                            <th>Saat</th>
-                            <th>Temsilci</th>
-                            <th>Durum</th>
-                            <th style="width: 70px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody data-bind="foreach: atamalar">
-                        <tr>
-                            <td data-bind="text: userName || '-'"></td>
-                            <td data-bind="text: hedefFirmaAdi || '-'"></td>
-                            <td><small data-bind="text: soruMetni ? (soruMetni.length > 40 ? soruMetni.substring(0,40)+'...' : soruMetni) : '-'"></small></td>
-                            <td data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></td>
-                            <td data-bind="text: gerceklesmeTarihi ? new Date(gerceklesmeTarihi).toLocaleDateString('tr-TR') : '-'"></td>
-                            <td data-bind="text: aramaSaati || '-'"></td>
-                            <td data-bind="text: gorusulenTemsilci || '-'"></td>
-                            <td>
-                                <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showAtamaDetail" title="Detay">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+        <!-- Özet -->
+        <div class="row g-3 mb-3" data-bind="visible: selectedDonemId()">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-primary" data-bind="text: dinlemeler().length"></div>
+                        <small class="text-muted">Toplam Dinleme</small>
+                    </div>
+                </div>
             </div>
-            <div data-bind="visible: !isLoading() && atamalar().length === 0" class="text-center text-muted py-4">
-                Atama bulunamadı.
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-success" data-bind="text: dinlemeTamamlananSayisi()"></div>
+                        <small class="text-muted">Tamamlanan</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-warning" data-bind="text: dinlemeBekleyenSayisi()"></div>
+                        <small class="text-muted">Bekleyen</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold" data-bind="text: dinlemeTamamlanmaOrani() + '%'"></div>
+                        <small class="text-muted">Tamamlanma</small>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div data-bind="visible: !selectedDonemId()" class="text-center text-muted py-5">
-        <i class="bi bi-arrow-up fs-1 d-block mb-2"></i>
-        Takip için bir dönem seçin.
+        <!-- Loading -->
+        <div data-bind="visible: isDinlemelerLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
+        <!-- Tablo -->
+        <div class="card" data-bind="visible: !isDinlemelerLoading() && selectedDonemId()">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Html.T("GmDinleme.Dinleyen", "Dinleyen")</th>
+                                <th>@Html.T("GolgeMusteri.HedefFirma", "Firma")</th>
+                                <th>@Html.T("Common.Question", "Soru")</th>
+                                <th>@Html.T("GolgeMusteri.Arayan", "Arayan")</th>
+                                <th>@Html.T("Common.Date", "Arama Tarihi")</th>
+                                <th>@Html.T("Common.Status", "Durum")</th>
+                                <th>@Html.T("Common.Score", "Puan %")</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: dinlemeler">
+                            <tr>
+                                <td data-bind="text: dinleyenAdi || '-'"></td>
+                                <td data-bind="text: hedefFirmaAdi || '-'"></td>
+                                <td><small data-bind="text: soruMetni ? (soruMetni.length > 30 ? soruMetni.substring(0,30)+'...' : soruMetni) : '-'"></small></td>
+                                <td data-bind="text: arayanAdi || '-'"></td>
+                                <td data-bind="text: aramaTarihi ? new Date(aramaTarihi).toLocaleDateString('tr-TR') : '-'"></td>
+                                <td><span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span></td>
+                                <td>
+                                    <!-- ko if: durumId === 3 -->
+                                    <span data-bind="text: '% ' + percentage.toFixed(2)"></span>
+                                    <!-- /ko -->
+                                    <!-- ko if: durumId !== 3 -->
+                                    <span class="text-muted">-</span>
+                                    <!-- /ko -->
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-bind="visible: !isDinlemelerLoading() && dinlemeler().length === 0" class="text-center text-muted py-4">
+                    Dinleme ataması bulunamadı.
+                </div>
+            </div>
+        </div>
+
+        <div data-bind="visible: !selectedDonemId()" class="text-center text-muted py-5">
+            <i class="bi bi-arrow-up fs-1 d-block mb-2"></i>
+            Takip için bir dönem seçin.
+        </div>
     </div>
 
     <!-- Atama Detay Modal -->

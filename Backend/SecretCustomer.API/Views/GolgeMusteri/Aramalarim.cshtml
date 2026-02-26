@@ -214,9 +214,62 @@
             </div>
         </div>
 
-        <div data-bind="visible: !isLoading() && atamalar().length === 0" class="text-center text-muted py-5">
+        <div data-bind="visible: !isLoading() && atamalar().length === 0 && dinlemelerim().length === 0" class="text-center text-muted py-5">
             <i class="bi bi-inbox fs-1 d-block mb-2"></i>
             Atanmış aramanız bulunmuyor.
+        </div>
+
+        <!-- ==================== DINLEMELERIM ==================== -->
+        <div data-bind="visible: !isDinlemelerLoading() && dinlemelerim().length > 0" class="mt-4">
+            <h6 class="mb-3"><i class="bi bi-headphones me-1 text-info"></i> @Html.T("GmDinleme.ListeBaslik", "Dinlemelerim")</h6>
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>@Html.T("GolgeMusteri.Donem", "Dönem")</th>
+                                    <th>@Html.T("GolgeMusteri.HedefFirma", "Firma")</th>
+                                    <th>@Html.T("Common.Question", "Soru")</th>
+                                    <th>@Html.T("Common.Date", "Arama Tarihi")</th>
+                                    <th>@Html.T("Common.Status", "Durum")</th>
+                                    <th>@Html.T("Common.Score", "Puan %")</th>
+                                    <th>@Html.T("Common.Actions", "Aksiyon")</th>
+                                </tr>
+                            </thead>
+                            <tbody data-bind="foreach: dinlemelerim">
+                                <tr>
+                                    <td data-bind="text: donemAdi || '-'"></td>
+                                    <td data-bind="text: hedefFirmaAdi || '-'"></td>
+                                    <td><small data-bind="text: soruMetni ? (soruMetni.length > 30 ? soruMetni.substring(0,30)+'...' : soruMetni) : '-'"></small></td>
+                                    <td data-bind="text: aramaTarihi ? new Date(aramaTarihi).toLocaleDateString('tr-TR') : '-'"></td>
+                                    <td><span class="badge" data-bind="text: durumText, css: durumCss"></span></td>
+                                    <td>
+                                        <!-- ko if: durumId === 3 -->
+                                        <span data-bind="text: '% ' + percentage.toFixed(2)"></span>
+                                        <!-- /ko -->
+                                        <!-- ko if: durumId !== 3 -->
+                                        <span class="text-muted">-</span>
+                                        <!-- /ko -->
+                                    </td>
+                                    <td>
+                                        <!-- ko if: durumId !== 3 -->
+                                        <button class="btn btn-sm btn-outline-info" data-bind="click: $root.openDinlemePopup">
+                                            <i class="bi bi-headphones me-1"></i> @Html.T("GmDinleme.DinlemeyeBasla", "Dinlemeye Başla")
+                                        </button>
+                                        <!-- /ko -->
+                                        <!-- ko if: durumId === 3 -->
+                                        <button class="btn btn-sm btn-outline-secondary" data-bind="click: $root.openDinlemePopupEdit">
+                                            <i class="bi bi-eye me-1"></i> @Html.T("Common.View", "Görüntüle")
+                                        </button>
+                                        <!-- /ko -->
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

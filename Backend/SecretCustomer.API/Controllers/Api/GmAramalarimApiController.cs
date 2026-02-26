@@ -87,6 +87,24 @@ public class GmAramalarimApiController : BaseApiController
         }
     }
 
+    [HttpGet("dinlemelerim")]
+    public async Task<IActionResult> GetDinlemelerim()
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _gmService.GetDinlemelerimAsync(userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Dinlemelerim yüklenirken hata");
+            return StatusCode(500, CreateErrorResponse("Dinlemelerim yüklenirken hata oluştu", ex));
+        }
+    }
+
     [HttpPost("{atamaId}/tamamla")]
     public async Task<IActionResult> CompleteAtama(int atamaId, [FromBody] CompleteGmAtamaDto dto)
     {

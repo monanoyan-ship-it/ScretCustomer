@@ -1232,7 +1232,64 @@ public class GmService : IGmService
         await _context.SaveChangesAsync();
         await _auditLog.LogInfoAsync($"GM Atama tamamlandı (UserId: {userId})", "GolgeMusteri");
 
+        // Otomatik dinleme oluştur
+        await CreateDinlemeForAtamaAsync(entity);
+
         return true;
+    }
+
+    /// <summary>
+    /// Tamamlanan arama için otomatik dinleme değerlendirmesi oluşturur.
+    /// Kurallar: arayan kendi aramasını dinleyemez, aynı aramaya 2 dinleme oluşturulmaz, round-robin dağıtım.
+    /// </summary>
+    private async Task CreateDinlemeForAtamaAsync(GmAtama atama)
+    {
+        // Aynı atamaya zaten dinleme var mı?
+        var existingDinleme = await _context.GmDinlemeEvaluations
+            .AnyAsync(d => d.GmAtamaId == atama.Id);
+        if (existingDinleme) return;
+
+        // DonemSoru'dan CustomerId'yi al
+        var donemSoru = await _context.GmDonemSorular
+            .FirstOrDefaultAsync(ds => ds.Id == atama.GmDonemSoruId);
+        if (donemSoru == null) return;
+
+        // Bu dönem + müşteri için dinleme ayarı var mı? (checklist eşleştirmesi)
+        var ayar = await _context.GmDinlemeAyarlar
+            .FirstOrDefaultAsync(a => a.GmDonemId == atama.GmDonemId && a.CustomerId == donemSoru.CustomerId);
+        if (ayar == null) return; // Ayar yoksa dinleme oluşturma
+
+        // Dinleyici adayları: aktif QualitySpecialist + Inspector, arayan hariç
+        var dinleyiciRolleri = new[] { UserRoles.Ids.QualitySpecialist, UserRoles.Ids.Inspector };
+        var dinleyiciler = await _context.Users
+            .Where(u => dinleyiciRolleri.Contains(u.RoleId) && u.Id != atama.UserId && u.IsActive)
+            .Select(u => u.Id)
+            .ToListAsync();
+
+        if (!dinleyiciler.Any()) return;
+
+        // Round-robin: en az dinleme atanan kişiyi seç
+        var dinlemeSayilari = await _context.GmDinlemeEvaluations
+            .Where(d => dinleyiciler.Contains(d.DinleyenUserId) && d.GmAtama!.GmDonemId == atama.GmDonemId)
+            .GroupBy(d => d.DinleyenUserId)
+            .Select(g => new { UserId = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var secilenDinleyici = dinleyiciler
+            .OrderBy(id => dinlemeSayilari.FirstOrDefault(d => d.UserId == id)?.Count ?? 0)
+            .ThenBy(_ => Guid.NewGuid()) // Eşit sayıda ise rastgele
+            .First();
+
+        var dinleme = new GmDinlemeEvaluation
+        {
+            GmAtamaId = atama.Id,
+            ChecklistId = ayar.ChecklistId,
+            DinleyenUserId = secilenDinleyici,
+            DurumId = GmDinlemeDurumlari.Ids.Beklemede
+        };
+
+        _context.GmDinlemeEvaluations.Add(dinleme);
+        await _context.SaveChangesAsync();
     }
 
     // =============================================
@@ -1285,6 +1342,596 @@ public class GmService : IGmService
             .OrderByDescending(a => a.GerceklesmeTarihi ?? a.PlanTarihi)
             .Select(a => MapToAtamaDto(a))
             .ToListAsync();
+
+        return result;
+    }
+
+    // =============================================
+    // DINLEMELERIM
+    // =============================================
+
+    public async Task<List<GmDinlemeListDto>> GetDinlemelerimAsync(int userId)
+    {
+        return await _context.GmDinlemeEvaluations
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonemSoru)
+                    .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonem)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.User)
+            .Include(d => d.Checklist)
+            .Where(d => d.DinleyenUserId == userId)
+            .OrderByDescending(d => d.CreatedAt)
+            .Select(d => new GmDinlemeListDto
+            {
+                Id = d.Id,
+                GmAtamaId = d.GmAtamaId,
+                ChecklistName = d.Checklist != null ? d.Checklist.Name : null,
+                DurumId = d.DurumId,
+                DurumText = GmDinlemeDurumlari.GetById(d.DurumId) != null ? GmDinlemeDurumlari.GetById(d.DurumId)!.Description : "Bilinmiyor",
+                DurumCss = GmDinlemeDurumlari.GetById(d.DurumId) != null ? GmDinlemeDurumlari.GetById(d.DurumId)!.CssClass : "bg-secondary",
+                Percentage = d.Percentage,
+                DinlemeTarihi = d.DinlemeTarihi,
+                HedefFirmaAdi = d.GmAtama != null && d.GmAtama.GmDonemSoru != null && d.GmAtama.GmDonemSoru.GmHedefFirma != null
+                    ? d.GmAtama.GmDonemSoru.GmHedefFirma.FirmaAdi : null,
+                SoruMetni = d.GmAtama != null && d.GmAtama.GmDonemSoru != null
+                    ? d.GmAtama.GmDonemSoru.SoruMetni : null,
+                AramaTarihi = d.GmAtama != null ? d.GmAtama.GerceklesmeTarihi : null,
+                ArayanAdi = d.GmAtama != null && d.GmAtama.User != null
+                    ? d.GmAtama.User.FirstName + " " + d.GmAtama.User.LastName : null,
+                DonemAdi = d.GmAtama != null && d.GmAtama.GmDonem != null
+                    ? d.GmAtama.GmDonem.Ad : null
+            })
+            .ToListAsync();
+    }
+
+    // =============================================
+    // DINLEME TAKIP (ADMIN)
+    // =============================================
+
+    public async Task<List<GmDinlemeListDto>> GetDinlemeTakipAsync(int donemId, int? dinleyenUserId = null, int? durumId = null)
+    {
+        var query = _context.GmDinlemeEvaluations
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonemSoru)
+                    .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonem)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.User)
+            .Include(d => d.Checklist)
+            .Include(d => d.DinleyenUser)
+            .Where(d => d.GmAtama!.GmDonemId == donemId)
+            .AsQueryable();
+
+        if (dinleyenUserId.HasValue)
+            query = query.Where(d => d.DinleyenUserId == dinleyenUserId.Value);
+        if (durumId.HasValue)
+            query = query.Where(d => d.DurumId == durumId.Value);
+
+        return await query
+            .OrderByDescending(d => d.CreatedAt)
+            .Select(d => new GmDinlemeListDto
+            {
+                Id = d.Id,
+                GmAtamaId = d.GmAtamaId,
+                ChecklistName = d.Checklist != null ? d.Checklist.Name : null,
+                DurumId = d.DurumId,
+                DurumText = GmDinlemeDurumlari.GetById(d.DurumId) != null ? GmDinlemeDurumlari.GetById(d.DurumId)!.Description : "Bilinmiyor",
+                DurumCss = GmDinlemeDurumlari.GetById(d.DurumId) != null ? GmDinlemeDurumlari.GetById(d.DurumId)!.CssClass : "bg-secondary",
+                Percentage = d.Percentage,
+                DinlemeTarihi = d.DinlemeTarihi,
+                HedefFirmaAdi = d.GmAtama != null && d.GmAtama.GmDonemSoru != null && d.GmAtama.GmDonemSoru.GmHedefFirma != null
+                    ? d.GmAtama.GmDonemSoru.GmHedefFirma.FirmaAdi : null,
+                SoruMetni = d.GmAtama != null && d.GmAtama.GmDonemSoru != null
+                    ? d.GmAtama.GmDonemSoru.SoruMetni : null,
+                AramaTarihi = d.GmAtama != null ? d.GmAtama.GerceklesmeTarihi : null,
+                ArayanAdi = d.GmAtama != null && d.GmAtama.User != null
+                    ? d.GmAtama.User.FirstName + " " + d.GmAtama.User.LastName : null,
+                DonemAdi = d.GmAtama != null && d.GmAtama.GmDonem != null
+                    ? d.GmAtama.GmDonem.Ad : null,
+                DinleyenAdi = d.DinleyenUser != null
+                    ? d.DinleyenUser.FirstName + " " + d.DinleyenUser.LastName : null
+            })
+            .ToListAsync();
+    }
+
+    // =============================================
+    // DINLEME AYAR
+    // =============================================
+
+    public async Task<List<GmDinlemeAyarDto>> GetDinlemeAyarlarAsync(int donemId)
+    {
+        return await _context.GmDinlemeAyarlar
+            .Include(x => x.Customer)
+            .Include(x => x.Checklist)
+            .Where(x => x.GmDonemId == donemId)
+            .OrderBy(x => x.Customer != null ? x.Customer.CompanyName : "")
+            .Select(x => new GmDinlemeAyarDto
+            {
+                Id = x.Id,
+                GmDonemId = x.GmDonemId,
+                CustomerId = x.CustomerId,
+                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
+                ChecklistId = x.ChecklistId,
+                ChecklistName = x.Checklist != null ? x.Checklist.Name : null
+            })
+            .ToListAsync();
+    }
+
+    public async Task<GmDinlemeAyarDto> CreateDinlemeAyarAsync(int donemId, CreateGmDinlemeAyarDto dto)
+    {
+        // Aynı dönem + müşteri için zaten varsa hata
+        var exists = await _context.GmDinlemeAyarlar
+            .AnyAsync(x => x.GmDonemId == donemId && x.CustomerId == dto.CustomerId);
+        if (exists)
+            throw new InvalidOperationException("Bu müşteri için zaten bir dinleme ayarı mevcut.");
+
+        var entity = new GmDinlemeAyar
+        {
+            GmDonemId = donemId,
+            CustomerId = dto.CustomerId,
+            ChecklistId = dto.ChecklistId
+        };
+
+        _context.GmDinlemeAyarlar.Add(entity);
+        await _context.SaveChangesAsync();
+
+        await _auditLog.LogInfoAsync("Dinleme ayarı oluşturuldu.", "GmDinlemeAyar", entity.Id.ToString());
+
+        // DTO dön
+        var created = await _context.GmDinlemeAyarlar
+            .Include(x => x.Customer)
+            .Include(x => x.Checklist)
+            .Where(x => x.Id == entity.Id)
+            .Select(x => new GmDinlemeAyarDto
+            {
+                Id = x.Id,
+                GmDonemId = x.GmDonemId,
+                CustomerId = x.CustomerId,
+                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
+                ChecklistId = x.ChecklistId,
+                ChecklistName = x.Checklist != null ? x.Checklist.Name : null
+            })
+            .FirstAsync();
+
+        return created;
+    }
+
+    public async Task<GmDinlemeAyarDto?> UpdateDinlemeAyarAsync(int id, UpdateGmDinlemeAyarDto dto)
+    {
+        var entity = await _context.GmDinlemeAyarlar.FindAsync(id);
+        if (entity == null) return null;
+
+        entity.ChecklistId = dto.ChecklistId;
+        await _context.SaveChangesAsync();
+
+        return await _context.GmDinlemeAyarlar
+            .Include(x => x.Customer)
+            .Include(x => x.Checklist)
+            .Where(x => x.Id == id)
+            .Select(x => new GmDinlemeAyarDto
+            {
+                Id = x.Id,
+                GmDonemId = x.GmDonemId,
+                CustomerId = x.CustomerId,
+                CustomerName = x.Customer != null ? x.Customer.CompanyName : null,
+                ChecklistId = x.ChecklistId,
+                ChecklistName = x.Checklist != null ? x.Checklist.Name : null
+            })
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task<bool> DeleteDinlemeAyarAsync(int id)
+    {
+        var entity = await _context.GmDinlemeAyarlar.FindAsync(id);
+        if (entity == null) return false;
+
+        entity.IsDeleted = true;
+        await _context.SaveChangesAsync();
+
+        await _auditLog.LogInfoAsync("Dinleme ayarı silindi.", "GmDinlemeAyar", entity.Id.ToString());
+        return true;
+    }
+
+    // =============================================
+    // DINLEME POPUP (FORM / DRAFT / SUBMIT)
+    // =============================================
+
+    public async Task<GmDinlemeFormDto?> GetDinlemeFormAsync(int gmAtamaId, int userId)
+    {
+        // Atamayı bul (tamamlanmış olmalı)
+        var atama = await _context.GmAtamalar
+            .Include(a => a.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(a => a.GmDonem)
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(a => a.Id == gmAtamaId && !a.IsDeleted);
+
+        if (atama == null) return null;
+
+        // Bu atama için kullanıcıya atanmış dinleme var mı?
+        var dinleme = await _context.GmDinlemeEvaluations
+            .FirstOrDefaultAsync(d => d.GmAtamaId == gmAtamaId && d.DinleyenUserId == userId && !d.IsDeleted);
+
+        if (dinleme == null) return null;
+
+        // Checklist'i yükle
+        var checklist = await _context.Checklists
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+                .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
+            .FirstOrDefaultAsync(c => c.Id == dinleme.ChecklistId && !c.IsDeleted);
+
+        if (checklist == null) return null;
+
+        return new GmDinlemeFormDto
+        {
+            DinlemeId = dinleme.Id,
+            GmAtamaId = gmAtamaId,
+            ChecklistId = checklist.Id,
+            ChecklistName = checklist.Name ?? "",
+            AtamaInfo = BuildAtamaInfo(atama),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(checklist.Questions.Where(q => !q.IsDeleted).ToList()),
+            ExistingAnswers = new List<GmDinlemeExistingAnswerDto>(),
+            Comment = null
+        };
+    }
+
+    public async Task<GmDinlemeFormDto?> GetDinlemeEditFormAsync(int dinlemeId)
+    {
+        var dinleme = await _context.GmDinlemeEvaluations
+            .Include(d => d.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonemSoru)
+                    .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.GmDonem)
+            .Include(d => d.GmAtama)
+                .ThenInclude(a => a!.User)
+            .FirstOrDefaultAsync(d => d.Id == dinlemeId && !d.IsDeleted);
+
+        if (dinleme == null) return null;
+
+        var checklist = await _context.Checklists
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+                .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted && sc.IsActive))
+            .FirstOrDefaultAsync(c => c.Id == dinleme.ChecklistId && !c.IsDeleted);
+
+        if (checklist == null) return null;
+
+        return new GmDinlemeFormDto
+        {
+            DinlemeId = dinleme.Id,
+            GmAtamaId = dinleme.GmAtamaId,
+            ChecklistId = checklist.Id,
+            ChecklistName = checklist.Name ?? "",
+            AtamaInfo = BuildAtamaInfo(dinleme.GmAtama!),
+            PenaltyGroups = BuildPenaltyGroupsFromQuestions(checklist.Questions.Where(q => !q.IsDeleted).ToList()),
+            ExistingAnswers = dinleme.Answers.Select(a => new GmDinlemeExistingAnswerDto
+            {
+                Id = a.Id,
+                QuestionId = a.QuestionId,
+                AnswerNumeric = a.AnswerNumeric,
+                AnswerText = a.AnswerText,
+                GivenPoints = a.GivenPoints > 0 ? a.GivenPoints : null,
+                Notes = null, // GmDinlemeAnswer'da Notes alanı yok
+                IsPenaltyApplied = a.ApplyPenalty,
+                AppliedPenaltyType = a.ApplyPenalty ? "Penalty" : null,
+                SelectedSubCriteriaIds = a.SubCriteriaSelections.Select(s => s.SubCriteriaId).ToList()
+            }).ToList(),
+            Comment = dinleme.Comment
+        };
+    }
+
+    public async Task<object> SaveDinlemeDraftAsync(GmDinlemeSubmitDto dto, int userId)
+    {
+        return await ProcessDinlemeAsync(dto, userId, GmDinlemeDurumlari.Ids.Taslak);
+    }
+
+    public async Task<object> SubmitDinlemeAsync(GmDinlemeSubmitDto dto, int userId)
+    {
+        return await ProcessDinlemeAsync(dto, userId, GmDinlemeDurumlari.Ids.Tamamlandi);
+    }
+
+    private async Task<object> ProcessDinlemeAsync(GmDinlemeSubmitDto dto, int userId, int targetDurumId)
+    {
+        // Dinleme kaydını bul veya kontrol et
+        GmDinlemeEvaluation? dinleme = null;
+
+        if (dto.DinlemeId.HasValue && dto.DinlemeId.Value > 0)
+        {
+            dinleme = await _context.GmDinlemeEvaluations
+                .Include(d => d.Answers)
+                    .ThenInclude(a => a.SubCriteriaSelections)
+                .FirstOrDefaultAsync(d => d.Id == dto.DinlemeId.Value && !d.IsDeleted);
+        }
+
+        if (dinleme == null)
+            throw new KeyNotFoundException("Dinleme kaydı bulunamadı.");
+
+        // Yetki kontrolü
+        if (dinleme.DinleyenUserId != userId)
+            throw new UnauthorizedAccessException("Bu dinleme size atanmamış.");
+
+        // Zaten tamamlandıysa tekrar gönderilemez
+        if (dinleme.DurumId == GmDinlemeDurumlari.Ids.Tamamlandi && targetDurumId == GmDinlemeDurumlari.Ids.Tamamlandi)
+            throw new InvalidOperationException("Bu dinleme zaten tamamlanmış.");
+
+        // Checklist sorularını yükle (puan hesaplama için)
+        var checklist = await _context.Checklists
+            .Include(c => c.Questions.Where(q => !q.IsDeleted))
+            .FirstOrDefaultAsync(c => c.Id == dinleme.ChecklistId && !c.IsDeleted);
+
+        if (checklist == null)
+            throw new KeyNotFoundException("Checklist bulunamadı.");
+
+        var allQuestions = checklist.Questions.Where(q => !q.IsDeleted).ToList();
+
+        // Puan hesapla (Maximum modu)
+        var scoreResult = CalculateDinlemeScore(allQuestions, dto.Answers);
+
+        // Mevcut cevapları temizle
+        if (dinleme.Answers.Any())
+        {
+            _context.GmDinlemeAnswers.RemoveRange(dinleme.Answers);
+        }
+
+        // Yeni cevapları ekle
+        foreach (var answerDto in dto.Answers)
+        {
+            var question = allQuestions.FirstOrDefault(q => q.Id == answerDto.QuestionId);
+            if (question == null) continue;
+
+            var answer = new GmDinlemeAnswer
+            {
+                GmDinlemeEvaluationId = dinleme.Id,
+                QuestionId = answerDto.QuestionId,
+                AnswerNumeric = answerDto.AnswerNumeric,
+                AnswerText = answerDto.AnswerText,
+                GivenPoints = answerDto.GivenPoints ?? (answerDto.AnswerNumeric.HasValue ? answerDto.AnswerNumeric.Value : 0),
+                EarnedPoints = CalculateDinlemeEarnedPoints(question, answerDto),
+                ApplyPenalty = answerDto.ApplyPenalty
+            };
+
+            // Alt kriter seçimleri
+            if (answerDto.SelectedSubCriteriaIds?.Any() == true)
+            {
+                foreach (var scId in answerDto.SelectedSubCriteriaIds)
+                {
+                    answer.SubCriteriaSelections.Add(new GmDinlemeAnswerSubCriteria
+                    {
+                        SubCriteriaId = scId
+                    });
+                }
+            }
+
+            dinleme.Answers.Add(answer);
+        }
+
+        // Dinleme alanlarını güncelle
+        dinleme.DurumId = targetDurumId;
+        dinleme.TotalScore = scoreResult.TotalEarned;
+        dinleme.MaxScore = scoreResult.MaxPossible;
+        dinleme.Percentage = scoreResult.Percentage;
+        dinleme.YellowCardCount = scoreResult.YellowCardCount;
+        dinleme.RedCardCount = scoreResult.RedCardCount;
+        dinleme.Comment = dto.Comment;
+        dinleme.UpdatedAt = DateTime.UtcNow;
+
+        if (targetDurumId == GmDinlemeDurumlari.Ids.Tamamlandi)
+        {
+            dinleme.DinlemeTarihi = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+
+        var statusText = targetDurumId == GmDinlemeDurumlari.Ids.Tamamlandi ? "tamamlandı" : "taslak kaydedildi";
+        await _auditLog.LogInfoAsync($"Dinleme değerlendirmesi {statusText}.", "GmDinleme", dinleme.Id.ToString());
+
+        return new
+        {
+            message = targetDurumId == GmDinlemeDurumlari.Ids.Tamamlandi
+                ? "Dinleme değerlendirmesi başarıyla tamamlandı."
+                : "Taslak başarıyla kaydedildi.",
+            dinlemeId = dinleme.Id,
+            answers = dinleme.Answers.Select(a => new { a.Id, a.QuestionId }).ToList()
+        };
+    }
+
+    /// <summary>
+    /// Maximum modu puan hesaplama (GmDinleme için)
+    /// EvaluationService.CalculateScoreCore mantığının basitleştirilmiş versiyonu
+    /// </summary>
+    private static (decimal TotalEarned, decimal MaxPossible, decimal Percentage, int YellowCardCount, int RedCardCount)
+        CalculateDinlemeScore(List<Question> questions, List<GmDinlemeSubmitAnswerDto> answers)
+    {
+        decimal totalEarned = 0;
+        decimal totalMaxPoints = 0;
+        int yellowCardCount = 0;
+        int redCardCount = 0;
+
+        var answerDict = answers.ToDictionary(a => a.QuestionId, a => a);
+
+        foreach (var question in questions)
+        {
+            var answer = answerDict.GetValueOrDefault(question.Id);
+
+            // Puansız soruları atla
+            if (question.ScoringTypeId == ScoringTypes.Ids.Unscored)
+                continue;
+
+            // Cezalı sorular
+            if (question.ScoringTypeId == ScoringTypes.Ids.Penalty)
+            {
+                if (answer != null && answer.ApplyPenalty)
+                {
+                    var givenPoints = answer.GivenPoints ?? (answer.AnswerNumeric.HasValue ? answer.AnswerNumeric.Value : 0);
+                    if (givenPoints > 0)
+                    {
+                        if (answer.SelectedPenaltyType == "YellowCard")
+                            yellowCardCount++;
+                        else if (answer.SelectedPenaltyType == "RedCard")
+                            redCardCount++;
+
+                        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 2m;
+                        var penaltyAmount = (givenPoints / maxPoints) * question.WeightPoints;
+                        totalEarned -= penaltyAmount;
+                    }
+                }
+                continue;
+            }
+
+            // Normal puanlı sorular (Scored)
+            var hasAnswer = answer != null && answer.IsIncluded &&
+                (answer.GivenPoints.HasValue || answer.AnswerNumeric.HasValue);
+
+            // Zorunlu olmayan ve cevap verilmemiş → atla
+            if (!question.IsRequired && !hasAnswer)
+                continue;
+
+            totalMaxPoints += question.WeightPoints;
+
+            if (hasAnswer && answer != null)
+            {
+                var givenPoints = answer.GivenPoints ?? (answer.AnswerNumeric.HasValue ? (decimal)answer.AnswerNumeric.Value : 0);
+                var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5m;
+                totalEarned += (givenPoints / maxPoints) * question.WeightPoints;
+            }
+        }
+
+        var percentage = totalMaxPoints > 0 ? Math.Max(0, (totalEarned / totalMaxPoints) * 100) : 0;
+        percentage = Math.Round(percentage, 2);
+
+        return (Math.Round(totalEarned, 2), Math.Round(totalMaxPoints, 2), percentage, yellowCardCount, redCardCount);
+    }
+
+    private static decimal CalculateDinlemeEarnedPoints(Question question, GmDinlemeSubmitAnswerDto answer)
+    {
+        if (question.ScoringTypeId == ScoringTypes.Ids.Unscored) return 0;
+
+        var givenPoints = answer.GivenPoints ?? (answer.AnswerNumeric.HasValue ? (decimal)answer.AnswerNumeric.Value : 0);
+        if (givenPoints == 0) return 0;
+
+        var maxPoints = question.MaxPoints > 0 ? question.MaxPoints : 5m;
+
+        if (question.ScoringTypeId == ScoringTypes.Ids.Penalty && answer.ApplyPenalty)
+        {
+            return -((givenPoints / maxPoints) * question.WeightPoints);
+        }
+
+        return (givenPoints / maxPoints) * question.WeightPoints;
+    }
+
+    private static GmDinlemeAtamaInfoDto BuildAtamaInfo(GmAtama atama)
+    {
+        return new GmDinlemeAtamaInfoDto
+        {
+            HedefFirmaAdi = atama.GmDonemSoru?.GmHedefFirma?.FirmaAdi,
+            SoruMetni = atama.GmDonemSoru?.SoruMetni,
+            BeklenenCevap = atama.GmDonemSoru?.BeklenenCevap,
+            ArayanAdi = atama.User != null ? atama.User.FirstName + " " + atama.User.LastName : null,
+            AramaTarihi = atama.GerceklesmeTarihi,
+            AramaSaati = atama.AramaSaati,
+            GorusulenTemsilci = atama.GorusulenTemsilci,
+            Not = atama.Not,
+            DonemAdi = atama.GmDonem?.Ad
+        };
+    }
+
+    /// <summary>
+    /// Soruları PenaltyType'a göre grupla (EvaluationService.BuildPenaltyGroupsFromQuestions kopyası)
+    /// </summary>
+    private static List<PenaltyGroupDto> BuildPenaltyGroupsFromQuestions(List<Question> questions)
+    {
+        if (questions == null || !questions.Any())
+            return new List<PenaltyGroupDto>();
+
+        var allGroups = new List<(string Name, string PenaltyType, int MinOrder, List<Question> Questions)>();
+
+        // GroupName'i dolu olanları GroupName'e göre grupla
+        var groupedByName = questions
+            .Where(q => !string.IsNullOrWhiteSpace(q.GroupName))
+            .GroupBy(q => q.GroupName!)
+            .ToList();
+
+        foreach (var group in groupedByName)
+        {
+            var groupQuestions = group.OrderBy(q => q.Order).ToList();
+            var dominantPenaltyType = group
+                .GroupBy(q => q.PenaltyTypeId)
+                .OrderByDescending(g => g.Count())
+                .First().Key;
+            var penaltyTypeName = PenaltyTypes.GetById(dominantPenaltyType)?.SystemName ?? "None";
+
+            allGroups.Add((group.Key, penaltyTypeName, groupQuestions.Min(q => q.Order), groupQuestions));
+        }
+
+        // GroupName'i BOŞ olan normal sorular → "Genel"
+        var normalWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.None)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (normalWithoutGroup.Any())
+            allGroups.Add(("Genel", "None", normalWithoutGroup.Min(q => q.Order), normalWithoutGroup));
+
+        // Sarı Kartlar
+        var yellowWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.YellowCard)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (yellowWithoutGroup.Any())
+            allGroups.Add(("Sarı Kartlar", "YellowCard", yellowWithoutGroup.Min(q => q.Order), yellowWithoutGroup));
+
+        // Kırmızı Kartlar
+        var redWithoutGroup = questions
+            .Where(q => string.IsNullOrWhiteSpace(q.GroupName) && q.PenaltyTypeId == PenaltyTypes.Ids.RedCard)
+            .OrderBy(q => q.Order)
+            .ToList();
+        if (redWithoutGroup.Any())
+            allGroups.Add(("Kırmızı Kartlar", "RedCard", redWithoutGroup.Min(q => q.Order), redWithoutGroup));
+
+        var result = new List<PenaltyGroupDto>();
+        var order = 1;
+        foreach (var group in allGroups.OrderBy(g => g.MinOrder))
+        {
+            result.Add(new PenaltyGroupDto
+            {
+                Id = order,
+                Name = group.Name,
+                Order = order,
+                PenaltyType = group.PenaltyType,
+                WeightPoints = group.Questions.Sum(q => q.WeightPoints),
+                MaxPoints = group.Questions.Sum(q => q.MaxPoints),
+                Questions = group.Questions.Select(q => new EvaluationQuestionDto
+                {
+                    Id = q.Id,
+                    Text = q.Text,
+                    Order = q.Order,
+                    IsRequired = q.IsRequired,
+                    ScoringType = ScoringTypes.GetById(q.ScoringTypeId)?.SystemName ?? "Scored",
+                    WeightPoints = q.WeightPoints,
+                    MaxPoints = q.MaxPoints,
+                    PenaltyType = PenaltyTypes.GetById(q.PenaltyTypeId)?.SystemName ?? "None",
+                    RecommendedNote = q.RecommendedNote,
+                    HelpText = q.HelpText,
+                    AllowComment = q.AllowComment,
+                    SubCriteria = q.SubCriteria?
+                        .Where(sc => !sc.IsDeleted && sc.IsActive)
+                        .OrderBy(sc => sc.Order)
+                        .Select(sc => new EvaluationSubCriteriaDto
+                        {
+                            Id = sc.Id,
+                            Description = sc.Description,
+                            Order = sc.Order,
+                            WeightPoints = sc.WeightPoints,
+                            IsActive = sc.IsActive
+                        }).ToList()
+                }).ToList()
+            });
+            order++;
+        }
 
         return result;
     }

@@ -10778,4 +10778,79 @@
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilciAra">
     <Value>Search by name...</Value>
   </LocaleResource>
+  <LocaleResource Name="GmDinleme.Title">
+    <Value>GM Listening Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.ListeBaslik">
+    <Value>My Listenings</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.DinlemeyeBasla">
+    <Value>Start Listening</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Beklemede">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Taslak">
+    <Value>Draft</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Tamamlandi">
+    <Value>Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarlarBaslik">
+    <Value>Listening Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarYok">
+    <Value>No listening settings added yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TakipBaslik">
+    <Value>Listening Assignments</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Dinleyen">
+    <Value>Listener</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.PopupTitle">
+    <Value>Listening Evaluation</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Summary">
+    <Value>Listening Summary</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaBilgileri">
+    <Value>Call Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.HedefFirma">
+    <Value>Target Company</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Arayan">
+    <Value>Caller</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaTarihi">
+    <Value>Call Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Soru">
+    <Value>Question</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.BeklenenCevap">
+    <Value>Expected Answer</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Temsilci">
+    <Value>Representative</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Donem">
+    <Value>Period</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Comment">
+    <Value>Listening Comment</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.CommentPlaceholder">
+    <Value>Write your general listening comment...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.SubmitSuccess">
+    <Value>Listening evaluation completed successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TabBaslik">
+    <Value>MC Listenings</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.NoRecords">
+    <Value>No mystery customer listening records found.</Value>
+  </LocaleResource>
 </Language>

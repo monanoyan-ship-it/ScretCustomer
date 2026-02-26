@@ -57,6 +57,24 @@ public interface IGmService
 
     // Tamamlanan aramalar (QualitySpecialist dinleme listesi)
     Task<object> GetTamamlananAramalarAsync(int userId, List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null);
+
+    // Dinlemelerim (kullanıcıya atanmış dinleme değerlendirmeleri)
+    Task<List<GmDinlemeListDto>> GetDinlemelerimAsync(int userId);
+
+    // Dinleme Takip (admin görünümü - dönem bazlı tüm dinleme atamaları)
+    Task<List<GmDinlemeListDto>> GetDinlemeTakipAsync(int donemId, int? dinleyenUserId = null, int? durumId = null);
+
+    // Dinleme Ayar (dönem + müşteri → checklist eşleştirmesi)
+    Task<List<GmDinlemeAyarDto>> GetDinlemeAyarlarAsync(int donemId);
+    Task<GmDinlemeAyarDto> CreateDinlemeAyarAsync(int donemId, CreateGmDinlemeAyarDto dto);
+    Task<GmDinlemeAyarDto?> UpdateDinlemeAyarAsync(int id, UpdateGmDinlemeAyarDto dto);
+    Task<bool> DeleteDinlemeAyarAsync(int id);
+
+    // Dinleme Popup (form yükleme, taslak kaydetme, gönderme)
+    Task<GmDinlemeFormDto?> GetDinlemeFormAsync(int gmAtamaId, int userId);
+    Task<GmDinlemeFormDto?> GetDinlemeEditFormAsync(int dinlemeId);
+    Task<object> SaveDinlemeDraftAsync(GmDinlemeSubmitDto dto, int userId);
+    Task<object> SubmitDinlemeAsync(GmDinlemeSubmitDto dto, int userId);
 }
 
 // Request DTOs (interface ile birlikte tanımlanıyor)

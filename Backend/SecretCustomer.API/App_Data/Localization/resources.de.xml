@@ -10771,4 +10771,79 @@
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilciAra">
     <Value>Nach Name suchen...</Value>
   </LocaleResource>
+  <LocaleResource Name="GmDinleme.Title">
+    <Value>GM Abhörbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.ListeBaslik">
+    <Value>Meine Abhörungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.DinlemeyeBasla">
+    <Value>Abhören starten</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Beklemede">
+    <Value>Ausstehend</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Taslak">
+    <Value>Entwurf</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinlemeDurum.Tamamlandi">
+    <Value>Abgeschlossen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarlarBaslik">
+    <Value>Abhöreinstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AyarYok">
+    <Value>Noch keine Abhöreinstellungen hinzugefügt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TakipBaslik">
+    <Value>Abhörzuweisungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Dinleyen">
+    <Value>Zuhörer</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.PopupTitle">
+    <Value>Abhörbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Summary">
+    <Value>Abhörzusammenfassung</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaBilgileri">
+    <Value>Anrufinformationen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.HedefFirma">
+    <Value>Zielfirma</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Arayan">
+    <Value>Anrufer</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.AramaTarihi">
+    <Value>Anrufdatum</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Soru">
+    <Value>Frage</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.BeklenenCevap">
+    <Value>Erwartete Antwort</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Temsilci">
+    <Value>Vertreter</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Donem">
+    <Value>Zeitraum</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.Comment">
+    <Value>Abhörkommentar</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.CommentPlaceholder">
+    <Value>Schreiben Sie Ihren allgemeinen Abhörkommentar...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.SubmitSuccess">
+    <Value>Abhörbewertung erfolgreich abgeschlossen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.TabBaslik">
+    <Value>GM Abhörungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmDinleme.NoRecords">
+    <Value>Keine GM-Abhöraufzeichnungen gefunden.</Value>
+  </LocaleResource>
 </Language>

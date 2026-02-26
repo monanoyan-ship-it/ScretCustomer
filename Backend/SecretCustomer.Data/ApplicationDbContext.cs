@@ -132,6 +132,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<GmDonemPersonel> GmDonemPersoneller { get; set; }
     public DbSet<GmDonemSoru> GmDonemSorular { get; set; }
     public DbSet<GmAtama> GmAtamalar { get; set; }
+    public DbSet<GmDinlemeAyar> GmDinlemeAyarlar { get; set; }
+    public DbSet<GmDinlemeEvaluation> GmDinlemeEvaluations { get; set; }
+    public DbSet<GmDinlemeAnswer> GmDinlemeAnswers { get; set; }
+    public DbSet<GmDinlemeAnswerSubCriteria> GmDinlemeAnswerSubCriteria { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -226,6 +230,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<GmDonemPersonel>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<GmDonemSoru>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<GmAtama>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDinlemeAyar>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDinlemeEvaluation>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<GmDinlemeAnswer>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 

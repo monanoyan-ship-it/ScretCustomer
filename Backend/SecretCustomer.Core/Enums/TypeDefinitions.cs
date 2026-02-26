@@ -1831,3 +1831,25 @@ public static class GmAtamaDurumlari
         public const int Tamamlandi = 2;
     }
 }
+
+// ============================================================
+// GOLGE MUSTERI - DINLEME DURUMLARI
+// ============================================================
+public static class GmDinlemeDurumlari
+{
+    public static readonly TypeItem Beklemede = new(1, "Beklemede", "GmDinlemeDurum.Beklemede", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Taslak = new(2, "Taslak", "GmDinlemeDurum.Taslak", "Taslak", "bi-file-earmark", "bg-secondary", 2);
+    public static readonly TypeItem Tamamlandi = new(3, "Tamamlandi", "GmDinlemeDurum.Tamamlandi", "Tamamlandı", "bi-check-circle", "bg-success", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Beklemede, Taslak, Tamamlandi };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Beklemede = 1;
+        public const int Taslak = 2;
+        public const int Tamamlandi = 3;
+    }
+}

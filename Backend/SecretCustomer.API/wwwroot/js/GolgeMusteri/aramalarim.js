@@ -17,6 +17,10 @@ function AramalarimViewModel() {
     self.aramalarLoaded = false;
     self.selectedAtama = ko.observable(null);
 
+    // Dinlemelerim
+    self.dinlemelerim = ko.observableArray([]);
+    self.isDinlemelerLoading = ko.observable(false);
+
     // Tab change handler
     self.activeTab.subscribe(function (tab) {
         if (tab === 'aramalar' && !self.aramalarLoaded) {
@@ -330,6 +334,27 @@ function AramalarimViewModel() {
             .always(function () { self.isAramalarLoading(false); });
     };
 
+    // Dinlemelerim
+    self.loadDinlemelerim = function () {
+        self.isDinlemelerLoading(true);
+        $.get('/api/gm/aramalarim/dinlemelerim')
+            .done(function (data) { self.dinlemelerim(data); })
+            .fail(function () { toastr.error('Dinlemeler yüklenirken hata oluştu.'); })
+            .always(function () { self.isDinlemelerLoading(false); });
+    };
+
+    // Dinleme popup aç (yeni veya taslak)
+    self.openDinlemePopup = function (dinleme) {
+        var url = '/GolgeMusteri/PopupGmDinleme?gmAtamaId=' + dinleme.gmAtamaId;
+        window.open(url, 'gmDinleme_' + dinleme.id, 'width=1200,height=900,scrollbars=yes,resizable=yes');
+    };
+
+    // Dinleme popup aç (tamamlanmış - edit/görüntüleme)
+    self.openDinlemePopupEdit = function (dinleme) {
+        var url = '/GolgeMusteri/PopupGmDinleme?dinlemeId=' + dinleme.id;
+        window.open(url, 'gmDinleme_' + dinleme.id, 'width=1200,height=900,scrollbars=yes,resizable=yes');
+    };
+
     self.showAtamaDetailModal = function (atama) {
         self.selectedAtama(atama);
         $('#atamaDetailModal').modal('show');
@@ -388,6 +413,7 @@ function AramalarimViewModel() {
     // Init
     self.loadDonemler();
     self.loadAtamalar();
+    self.loadDinlemelerim();
 }
 
 $(function () {

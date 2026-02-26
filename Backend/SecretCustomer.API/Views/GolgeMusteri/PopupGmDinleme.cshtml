@@ -1,0 +1,524 @@
+@{
+    Layout = "_LayoutPopup";
+    var gmAtamaId = ViewBag.GmAtamaId;
+    var dinlemeId = ViewBag.DinlemeId;
+    var isNew = gmAtamaId != null;
+    ViewData["Title"] = Html.T("GmDinleme.PopupTitle", "Dinleme Değerlendirmesi");
+}
+
+<div id="gm-dinleme-popup" style="height: 100vh; display: flex; flex-direction: column;">
+    <!-- Header -->
+    <div class="bg-primary text-white p-3" style="flex-shrink: 0;">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-headphones"></i>
+                <!-- ko if: formData() -->
+                <span data-bind="text: formData().checklistName"></span>
+                <!-- /ko -->
+            </h5>
+            <button type="button" class="btn btn-outline-light btn-sm" onclick="window.close();">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Body -->
+    <div style="flex: 1; overflow-y: auto;">
+        <!-- Loading -->
+        <div data-bind="visible: isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary"></div>
+            <p class="mt-2">@Html.T("Form.Loading", "Form yükleniyor...")</p>
+        </div>
+
+        <!-- Summary View -->
+        <!-- ko if: isShowingSummary() && summaryData() -->
+        <!-- ko with: summaryData -->
+        <div class="container-fluid py-4">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 col-xl-8">
+                    <div class="card shadow-lg border-success">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <i class="bi bi-headphones display-5 mb-2"></i>
+                            <h4 class="mb-0">@Html.T("GmDinleme.Summary", "Dinleme Özeti")</h4>
+                            <small class="opacity-75">@Html.T("Evaluation.ReviewBeforeSave", "Kaydetmeden önce kontrol edin")</small>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Puan Özeti -->
+                            <div class="text-center mb-4">
+                                <div class="display-4 fw-bold text-primary" data-bind="text: scorePercentage.toFixed(2)"></div>
+                                <div class="progress mt-3" style="height: 25px;">
+                                    <div class="progress-bar" role="progressbar"
+                                         data-bind="style: { width: scorePercentage.toFixed(2) + '%' },
+                                                    css: { 'bg-success': scorePercentage >= 70, 'bg-warning': scorePercentage >= 50 && scorePercentage < 70, 'bg-danger': scorePercentage < 50 }">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Agirlik Gruplari -->
+                            <div class="row text-center mb-4">
+                                <div class="col-4">
+                                    <div class="p-2 bg-primary bg-opacity-10 rounded">
+                                        <div class="fw-bold text-primary" data-bind="text: scoredWeight"></div>
+                                        <small class="text-muted">@Html.T("Evaluation.ScoredWeight", "Soru Ağırlığı")</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 bg-warning bg-opacity-25 rounded">
+                                        <div class="fw-bold text-warning" data-bind="text: yellowCardWeight"></div>
+                                        <small class="text-muted">@Html.T("Evaluation.YellowCardWeight", "Sarı Kart Ağırlığı")</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 bg-danger bg-opacity-25 rounded">
+                                        <div class="fw-bold text-danger" data-bind="text: redCardWeight"></div>
+                                        <small class="text-muted">@Html.T("Evaluation.RedCardWeight", "Kırmızı Kart Ağırlığı")</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kart Ozeti -->
+                            <div class="row text-center mb-4" data-bind="visible: yellowCardCount > 0 || redCardCount > 0">
+                                <div class="col-6" data-bind="visible: yellowCardCount > 0">
+                                    <div class="p-3 bg-warning bg-opacity-25 rounded">
+                                        <i class="bi bi-card-heading fs-3 text-warning"></i>
+                                        <div class="fw-bold" data-bind="text: yellowCardCount"></div>
+                                        <small class="text-muted">@Html.T("Evaluation.YellowCards", "Sarı Kart")</small>
+                                    </div>
+                                </div>
+                                <div class="col-6" data-bind="visible: redCardCount > 0">
+                                    <div class="p-3 bg-danger bg-opacity-25 rounded">
+                                        <i class="bi bi-card-heading fs-3 text-danger"></i>
+                                        <div class="fw-bold" data-bind="text: redCardCount"></div>
+                                        <small class="text-muted">@Html.T("Evaluation.RedCards", "Kırmızı Kart")</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Arama Bilgileri -->
+                            <hr>
+                            <div class="row g-3 mb-4">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">@Html.T("GmDinleme.HedefFirma", "Hedef Firma")</small>
+                                    <span class="fw-bold" data-bind="text: hedefFirmaAdi || '-'"></span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">@Html.T("GmDinleme.Arayan", "Arayan")</small>
+                                    <span class="fw-bold" data-bind="text: arayanAdi || '-'"></span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">@Html.T("GmDinleme.AramaTarihi", "Arama Tarihi")</small>
+                                    <span class="fw-bold" data-bind="text: aramaTarihi || '-'"></span>
+                                </div>
+                            </div>
+
+                            <!-- Dinleme Yorumu -->
+                            <!-- ko if: comment -->
+                            <div class="mb-4">
+                                <small class="text-muted d-block mb-1">@Html.T("GmDinleme.Comment", "Dinleme Yorumu")</small>
+                                <p class="mb-0 bg-light p-2 rounded" data-bind="text: comment"></p>
+                            </div>
+                            <!-- /ko -->
+
+                            <!-- Cevaplar Tablosu -->
+                            <hr>
+                            <h6 class="mb-3"><i class="bi bi-list-check"></i> @Html.T("Evaluation.Answers", "Verilen Cevaplar")</h6>
+                            <div class="table-responsive table-responsive-scrollable" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th style="width: 18%;">@Html.T("Evaluation.Group", "Grup")</th>
+                                            <th style="width: 37%;">@Html.T("Report.Question", "Soru")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Common.Answer", "Cevap")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Excel.Weight", "Ağırlık")</th>
+                                            <th class="text-center" style="width: 15%;">@Html.T("Evaluation.Earned", "Kazanılan")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: answers">
+                                        <tr data-bind="css: { 'table-warning': $data.penaltyType === 'YellowCard', 'table-danger': $data.penaltyType === 'RedCard' }">
+                                            <td class="text-wrap">
+                                                <small class="text-muted" data-bind="text: $data.groupName || '-'"></small>
+                                            </td>
+                                            <td>
+                                                <span data-bind="text: $data.questionText"></span>
+                                                <!-- ko if: $data.selectedSubCriteria && $data.selectedSubCriteria.length > 0 -->
+                                                <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> <span data-bind="text: $data.selectedSubCriteria.join(', ')"></span></small>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.notes -->
+                                                <br><small class="text-muted"><i class="bi bi-chat-dots"></i> <span data-bind="text: $data.notes"></span></small>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- ko if: $data.answerNumeric !== null && $data.answerNumeric !== '' -->
+                                                <span class="badge bg-primary" data-bind="text: $data.answerNumeric + '/' + $data.maxPoints"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.answerNumeric === null || $data.answerNumeric === '' -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- ko if: $data.scoringType !== 'Unscored' -->
+                                                <span data-bind="text: $data.weightPoints"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.scoringType === 'Unscored' -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- ko if: $data.scoringType === 'Scored' -->
+                                                <span class="text-success" data-bind="text: $data.earnedPoints.toFixed(2)"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.scoringType === 'Penalty' && $data.earnedPoints < 0 -->
+                                                <span class="text-danger" data-bind="text: $data.earnedPoints.toFixed(2)"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.scoringType === 'Penalty' && $data.earnedPoints >= 0 -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: $data.scoringType === 'Unscored' -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer text-center py-3">
+                            <button type="button" class="btn btn-outline-secondary me-2" data-bind="click: $parent.backToForm">
+                                <i class="bi bi-arrow-left me-2"></i>@Html.T("Evaluation.BackToForm", "Geri Dön")
+                            </button>
+                            <button type="button" class="btn btn-lg btn-success" data-bind="click: $parent.confirmSubmit, disable: $parent.isSavingForm">
+                                <!-- ko if: $parent.isSavingForm() -->
+                                <span class="spinner-border spinner-border-sm me-2"></span>
+                                <!-- /ko -->
+                                <i class="bi bi-check-circle me-2"></i>@Html.T("Evaluation.ConfirmAndSave", "Onayla ve Kaydet")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /ko -->
+        <!-- /ko -->
+
+        <!-- Form Content -->
+        <div data-bind="visible: !isLoading() && formData() && !isShowingSummary()">
+            <div class="container-fluid">
+                <!-- Arama Bilgileri (Readonly) -->
+                <!-- ko if: formData() && formData().atamaInfo -->
+                <!-- ko with: formData().atamaInfo -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0"><i class="bi bi-telephone"></i> @Html.T("GmDinleme.AramaBilgileri", "Arama Bilgileri")</h6>
+                            </div>
+                            <div class="card-body py-2">
+                                <div class="row g-2">
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.HedefFirma", "Hedef Firma")</small>
+                                        <strong data-bind="text: hedefFirmaAdi || '-'"></strong>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.Arayan", "Arayan")</small>
+                                        <strong data-bind="text: arayanAdi || '-'"></strong>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.AramaTarihi", "Arama Tarihi")</small>
+                                        <strong data-bind="text: aramaTarihi ? new Date(aramaTarihi).toLocaleDateString('tr-TR') : '-'"></strong>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.Donem", "Dönem")</small>
+                                        <strong data-bind="text: donemAdi || '-'"></strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.Soru", "Soru")</small>
+                                        <strong data-bind="text: soruMetni || '-'"></strong>
+                                    </div>
+                                    <!-- ko if: beklenenCevap -->
+                                    <div class="col-md-6">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.BeklenenCevap", "Beklenen Cevap")</small>
+                                        <strong data-bind="text: beklenenCevap"></strong>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: gorusulenTemsilci -->
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("GmDinleme.Temsilci", "Görüşülen Temsilci")</small>
+                                        <strong data-bind="text: gorusulenTemsilci"></strong>
+                                    </div>
+                                    <!-- /ko -->
+                                    <!-- ko if: not -->
+                                    <div class="col-md-3">
+                                        <small class="text-muted d-block">@Html.T("Common.Note", "Not")</small>
+                                        <strong data-bind="text: not"></strong>
+                                    </div>
+                                    <!-- /ko -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+                <!-- /ko -->
+
+                <!-- Score Summary (Sticky) -->
+                <div class="sticky-top bg-white py-2 mb-3" style="top: 0; z-index: 1020;">
+                    <div class="card border-primary">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <h4 class="mb-0 fw-bold text-primary" data-bind="text: scorePercentageCalc().toFixed(2)"></h4>
+                                </div>
+                                <div class="col">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar"
+                                             data-bind="style: { width: scorePercentageCalc() + '%' },
+                                                        css: scorePercentageCalc() >= 70 ? 'bg-success' : (scorePercentageCalc() >= 50 ? 'bg-warning' : 'bg-danger')">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <span class="badge bg-warning text-dark me-1" data-bind="visible: yellowCardCountCalc() > 0">
+                                        <i class="bi bi-exclamation-triangle"></i> <span data-bind="text: yellowCardCountCalc()"></span> @Html.T("Report.Yellow", "Sarı")
+                                    </span>
+                                    <span class="badge bg-danger" data-bind="visible: redCardCountCalc() > 0">
+                                        <i class="bi bi-x-circle"></i> <span data-bind="text: redCardCountCalc()"></span> @Html.T("Report.Red", "Kırmızı")
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Soru Gruplari -->
+                <!-- ko if: formData() -->
+                <div data-bind="foreach: formData().penaltyGroups">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header" data-bind="css: penaltyType === 'RedCard' ? 'bg-danger text-white' : (penaltyType === 'YellowCard' ? 'bg-warning text-dark' : 'bg-primary text-white')">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <!-- ko if: penaltyType === 'YellowCard' -->
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    <!-- /ko -->
+                                    <!-- ko if: penaltyType === 'RedCard' -->
+                                    <i class="bi bi-x-circle-fill me-2"></i>
+                                    <!-- /ko -->
+                                    <!-- ko if: penaltyType === 'None' -->
+                                    <i class="bi bi-list-check me-2"></i>
+                                    <!-- /ko -->
+                                    <span data-bind="text: name"></span>
+                                    <span class="badge bg-white text-dark ms-2" data-bind="text: questions.length + ' soru'"></span>
+                                </h5>
+                                <div>
+                                    <span class="badge bg-white text-dark">
+                                        @Html.T("Checklist.TotalWeight", "Toplam Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Questions -->
+                            <div data-bind="foreach: questions">
+                                <div class="border rounded p-3 mb-3" data-bind="css: { 'border-danger': penaltyType === 'RedCard', 'border-warning': penaltyType === 'YellowCard' }">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <!-- Question Header -->
+                                            <div class="d-flex align-items-start mb-2">
+                                                <span class="badge bg-secondary me-2" data-bind="text: order"></span>
+                                                <div class="flex-grow-1">
+                                                    <strong data-bind="text: text"></strong>
+                                                    <!-- ko if: helpText -->
+                                                    <button type="button" class="btn btn-sm btn-link p-0 ms-1" data-bs-toggle="tooltip" data-bind="attr: { title: helpText }">
+                                                        <i class="bi bi-question-circle"></i>
+                                                    </button>
+                                                    <!-- /ko -->
+                                                    <div class="mt-1">
+                                                        <!-- ko if: scoringType === 'Scored' && penaltyType === 'None' -->
+                                                        <span class="badge bg-primary">
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span> |
+                                                            @Html.T("Evaluation.Max", "Maks"): <span data-bind="text: maxPoints"></span>
+                                                        </span>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: scoringType === 'Unscored' -->
+                                                        <span class="badge bg-secondary">@Html.T("Evaluation.Unscored", "Puansız")</span>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: penaltyType === 'YellowCard' -->
+                                                        <span class="badge bg-warning text-dark">
+                                                            @Html.T("Report.Yellow", "Sarı Kart") |
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                        </span>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: penaltyType === 'RedCard' -->
+                                                        <span class="badge bg-danger">
+                                                            @Html.T("Report.Red", "Kırmızı Kart") |
+                                                            @Html.T("Excel.Weight", "Ağırlık"): <span data-bind="text: weightPoints"></span>
+                                                        </span>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: isRequired && scoringType !== 'Penalty' -->
+                                                        <span class="badge bg-info">@Html.T("Common.Required", "Zorunlu")</span>
+                                                        <!-- /ko -->
+                                                        <!-- ko if: !isRequired && scoringType === 'Scored' -->
+                                                        <span class="ms-2">
+                                                            <div class="form-check form-switch d-inline-block">
+                                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                                       data-bind="checked: $root.getAnswer(id, isRequired).isIncluded,
+                                                                                  attr: { id: 'include_' + id }">
+                                                                <label class="form-check-label small"
+                                                                       data-bind="attr: { for: 'include_' + id },
+                                                                                  css: { 'text-success': $root.getAnswer(id, isRequired).isIncluded(), 'text-muted': !$root.getAnswer(id, isRequired).isIncluded() }">
+                                                                    <!-- ko if: $root.getAnswer(id, isRequired).isIncluded() -->
+                                                                    @Html.T("Evaluation.IncludedInScore", "Dahil")
+                                                                    <!-- /ko -->
+                                                                    <!-- ko ifnot: $root.getAnswer(id, isRequired).isIncluded() -->
+                                                                    @Html.T("Evaluation.ExcludedFromScore", "Hariç")
+                                                                    <!-- /ko -->
+                                                                </label>
+                                                            </div>
+                                                        </span>
+                                                        <!-- /ko -->
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Answer Input -->
+                                            <div class="mt-2" data-bind="with: $root.getAnswer(id, isRequired)">
+                                                <!-- Likert butonlari -->
+                                                <!-- ko if: ($parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty') && $parent.maxPoints !== 1 -->
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <!-- ko foreach: $root.getScoreOptions($parent.maxPoints) -->
+                                                    <button type="button" class="btn"
+                                                            data-bind="click: function() { $parent.answerNumeric($parent.answerNumeric() === $data ? null : $data); },
+                                                                       css: $parent.answerNumeric() === $data ? 'btn-primary' : 'btn-outline-primary',
+                                                                       text: $data">
+                                                    </button>
+                                                    <!-- /ko -->
+                                                </div>
+                                                <!-- /ko -->
+
+                                                <!-- Evet/Hayir butonlari -->
+                                                <!-- ko if: ($parent.scoringType === 'Scored' || $parent.scoringType === 'Penalty') && $parent.maxPoints === 1 -->
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn"
+                                                            data-bind="click: function() { answerNumeric(1); },
+                                                                       css: answerNumeric() === 1 ? 'btn-success' : 'btn-outline-success'">
+                                                        @Html.T("Common.Yes", "Evet")
+                                                    </button>
+                                                    <button type="button" class="btn"
+                                                            data-bind="click: function() { answerNumeric(0); },
+                                                                       css: answerNumeric() === 0 ? 'btn-danger' : 'btn-outline-danger'">
+                                                        @Html.T("Common.No", "Hayır")
+                                                    </button>
+                                                </div>
+                                                <!-- /ko -->
+
+                                                <!-- ko if: $parent.type === 'YesNo' -->
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn"
+                                                            data-bind="click: function() { answerText('@Html.T("Common.Yes", "Evet")'); },
+                                                                       css: answerText() === '@Html.T("Common.Yes", "Evet")' ? 'btn-success' : 'btn-outline-success'">
+                                                        @Html.T("Common.Yes", "Evet")
+                                                    </button>
+                                                    <button type="button" class="btn"
+                                                            data-bind="click: function() { answerText('@Html.T("Common.No", "Hayır")'); },
+                                                                       css: answerText() === '@Html.T("Common.No", "Hayır")' ? 'btn-danger' : 'btn-outline-danger'">
+                                                        @Html.T("Common.No", "Hayır")
+                                                    </button>
+                                                </div>
+                                                <!-- /ko -->
+
+                                                <!-- ko if: $parent.type === 'MultipleChoice' && $parent.optionsJson -->
+                                                <select class="form-select" data-bind="value: answerText">
+                                                    <option value="">@Html.T("Common.Select", "Seçin...")</option>
+                                                    <!-- ko foreach: JSON.parse($parent.optionsJson || '[]') -->
+                                                    <option data-bind="text: $data, value: $data"></option>
+                                                    <!-- /ko -->
+                                                </select>
+                                                <!-- /ko -->
+
+                                                <!-- ko if: $parent.type === 'Text' -->
+                                                <textarea class="form-control" rows="2" data-bind="value: answerText" placeholder="@Html.T("Evaluation.WriteYourAnswer", "Cevabınızı yazın...")"></textarea>
+                                                <!-- /ko -->
+                                            </div>
+
+                                            <!-- Alt Kriterler -->
+                                            <!-- ko if: subCriteria && subCriteria.length > 0 -->
+                                            <div class="mt-2 ps-3 border-start border-2 border-warning">
+                                                <small class="text-muted d-block mb-1">@Html.T("Evaluation.SubCriteria", "Alt Kriterler"):</small>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    <!-- ko foreach: subCriteria -->
+                                                    <button type="button" class="btn btn-sm"
+                                                            data-bind="click: function() { $root.toggleSubCriteria($parent.id, id); },
+                                                                       css: $root.isSubCriteriaSelected($parent.id, id) ? 'btn-warning' : 'btn-outline-secondary'">
+                                                        <i class="bi" data-bind="css: $root.isSubCriteriaSelected($parent.id, id) ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                                                        <span data-bind="text: description"></span>
+                                                    </button>
+                                                    <!-- /ko -->
+                                                </div>
+                                            </div>
+                                            <!-- /ko -->
+                                        </div>
+
+                                        <div class="col-md-4">
+                                            <div data-bind="with: $root.getAnswer(id, isRequired)">
+                                                <!-- Notes -->
+                                                <div class="mb-2">
+                                                    <label class="form-label small">@Html.T("Common.Note", "Not")</label>
+                                                    <textarea class="form-control form-control-sm" rows="2" data-bind="value: notes" placeholder="@Html.T("Evaluation.EvaluatorNote", "Değerlendirici notu...")" style="resize: vertical;"></textarea>
+                                                </div>
+
+                                                <!-- ko if: $parent.recommendedNote -->
+                                                <div class="alert alert-info py-1 px-2 small mb-0">
+                                                    <i class="bi bi-lightbulb"></i> <span data-bind="text: $parent.recommendedNote"></span>
+                                                </div>
+                                                <!-- /ko -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+
+                <!-- Dinleme Yorumu -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0"><i class="bi bi-chat-quote"></i> @Html.T("GmDinleme.Comment", "Dinleme Yorumu")</h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control" rows="4" data-bind="value: evaluationComment" placeholder="@Html.T("GmDinleme.CommentPlaceholder", "Genel dinleme yorumunuzu yazın...")"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-light p-3 border-top" style="flex-shrink: 0;" data-bind="visible: !isShowingSummary()">
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" onclick="window.close();">
+                <i class="bi bi-x"></i> @Html.T("Common.Cancel", "İptal")
+            </button>
+            <button type="button" class="btn btn-outline-primary" data-bind="click: saveDraft, disable: isSavingForm">
+                <i class="bi bi-save"></i> @Html.T("Evaluation.SaveDraft", "Taslak Kaydet")
+            </button>
+            <button type="button" class="btn btn-success" data-bind="click: showSummary">
+                <i class="bi bi-eye"></i> @Html.T("Evaluation.ShowSummary", "Özet ve Kaydet")
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.popupConfig = {
+        gmAtamaId: @(gmAtamaId != null ? gmAtamaId.ToString() : "null"),
+        dinlemeId: @(dinlemeId != null ? dinlemeId.ToString() : "null"),
+        isNew: @(isNew ? "true" : "false")
+    };
+</script>
+
+@section Scripts {
+    <script src="~/js/Shared/app.config.js" asp-append-version="true"></script>
+    <script src="~/js/Shared/api.service.js" asp-append-version="true"></script>
+    <script src="~/js/GolgeMusteri/popup-gm-dinleme.js" asp-append-version="true"></script>
+}

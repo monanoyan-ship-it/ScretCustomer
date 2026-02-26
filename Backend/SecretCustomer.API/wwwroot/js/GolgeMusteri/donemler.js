@@ -22,6 +22,79 @@ function DonemlerViewModel() {
     };
 
     // =============================================
+    // DİNLEME AYAR
+    // =============================================
+    self.dinlemeAyarlar = ko.observableArray([]);
+    self.dinlemeAyarCustomers = ko.observableArray([]);
+    self.dinlemeAyarChecklists = ko.observableArray([]);
+    self.dinlemeAyarForm = {
+        customerId: ko.observable(null),
+        checklistId: ko.observable(null)
+    };
+
+    // Müşteri değişince checklist'leri yükle (müşterinin projeleri üzerinden)
+    self.dinlemeAyarForm.customerId.subscribe(function (customerId) {
+        self.dinlemeAyarForm.checklistId(null);
+        self.dinlemeAyarChecklists([]);
+        if (customerId) {
+            $.get('/api/checklists')
+                .done(function (data) {
+                    var list = Array.isArray(data) ? data : (data.items || []);
+                    // Sadece Çağrı Performans (CallPerformance) tipinde ve Maximum puanlama yöntemli checklist'ler
+                    var filtered = list.filter(function (c) {
+                        return c.checklistType === 'CallPerformance' && c.scoringMethod === 'Maximum';
+                    });
+                    self.dinlemeAyarChecklists(filtered);
+                });
+        }
+    });
+
+    self.loadDinlemeAyarlar = function () {
+        if (!self.selectedDonem()) return;
+        $.get('/api/gm/donemler/' + self.selectedDonem().id + '/dinleme-ayarlar')
+            .done(function (data) { self.dinlemeAyarlar(data); })
+            .fail(function () { toastr.error('Dinleme ayarları yüklenirken hata oluştu.'); });
+
+        // Müşterileri yükle
+        if (!self.dinlemeAyarCustomers().length) {
+            $.get('/api/customers')
+                .done(function (data) {
+                    var list = Array.isArray(data) ? data : (data.items || []);
+                    self.dinlemeAyarCustomers(list);
+                });
+        }
+    };
+
+    self.addDinlemeAyar = function () {
+        if (!self.dinlemeAyarForm.customerId() || !self.dinlemeAyarForm.checklistId() || !self.selectedDonem()) return;
+        $.ajax({
+            url: '/api/gm/donemler/' + self.selectedDonem().id + '/dinleme-ayarlar',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                customerId: self.dinlemeAyarForm.customerId(),
+                checklistId: self.dinlemeAyarForm.checklistId()
+            })
+        })
+        .done(function (data) {
+            toastr.success('Dinleme ayarı eklendi.');
+            self.dinlemeAyarlar.push(data);
+            self.dinlemeAyarForm.customerId(null);
+            self.dinlemeAyarForm.checklistId(null);
+        })
+        .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Ekleme başarısız.'); });
+    };
+
+    self.removeDinlemeAyar = function (ayar) {
+        $.ajax({ url: '/api/gm/dinleme-ayar/' + ayar.id, type: 'DELETE' })
+            .done(function () {
+                toastr.success('Dinleme ayarı silindi.');
+                self.dinlemeAyarlar.remove(ayar);
+            })
+            .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Silme başarısız.'); });
+    };
+
+    // =============================================
     // SORU EKLEME/DÜZENLEME
     // =============================================
     self.soruIsEditing = ko.observable(false);

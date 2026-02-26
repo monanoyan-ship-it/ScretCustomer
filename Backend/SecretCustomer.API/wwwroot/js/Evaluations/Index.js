@@ -11,6 +11,9 @@ function EvaluationsViewModel() {
     self.activeTab = ko.observable('assignments');
     self.currentUserRole = ko.observable(''); // Kullanıcı rolü (Admin kontrolü için)
 
+    // GM Dinlemelerim
+    self.gmDinlemelerim = ko.observableArray([]);
+
     // Tab değiştirme fonksiyonu - Dinlemeler/Ziyaretler tabına geçince listeyi yenile
     self.setActiveTab = function(tab) {
         self.activeTab(tab);
@@ -757,6 +760,31 @@ function EvaluationsViewModel() {
             .finally(function() {
                 self.isAssignmentsLoading(false);
             });
+
+        // GM Dinlemelerim yükle
+        self.loadGmDinlemelerim();
+    };
+
+    self.loadGmDinlemelerim = function() {
+        fetch('/api/gm/aramalarim/dinlemelerim', { credentials: 'include' })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                self.gmDinlemelerim(data || []);
+            })
+            .catch(function() {
+                // GM modülü yoksa veya hata varsa sessizce devam et
+                self.gmDinlemelerim([]);
+            });
+    };
+
+    self.openGmDinlemePopup = function(dinleme) {
+        var url = '/GolgeMusteri/PopupGmDinleme?gmAtamaId=' + dinleme.gmAtamaId;
+        window.open(url, 'GmDinlemePopup', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+    };
+
+    self.openGmDinlemePopupEdit = function(dinleme) {
+        var url = '/GolgeMusteri/PopupGmDinleme?dinlemeId=' + dinleme.id;
+        window.open(url, 'GmDinlemePopup', 'width=1200,height=800,scrollbars=yes,resizable=yes');
     };
 
     // ========================

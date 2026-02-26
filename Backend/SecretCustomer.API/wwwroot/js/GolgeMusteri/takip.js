@@ -4,11 +4,16 @@ function TakipViewModel() {
     self.donemler = ko.observableArray([]);
     self.users = ko.observableArray([]);
     self.atamalar = ko.observableArray([]);
-    self.isLoading = ko.observable(false);
+    self.dinlemeler = ko.observableArray([]);
+    self.isAramalarLoading = ko.observable(false);
+    self.isDinlemelerLoading = ko.observable(false);
     self.selectedDonemId = ko.observable(null);
     self.selectedUserId = ko.observable(null);
-    self.selectedDurumId = ko.observable('');
+    self.selectedAramaDurumId = ko.observable('');
+    self.selectedDinlemeDurumId = ko.observable('');
+    self.activeTab = ko.observable('aramalar');
 
+    // Arama özet
     self.tamamlananSayisi = ko.computed(function () {
         return self.atamalar().filter(function (a) { return a.durumId === 2; }).length;
     });
@@ -21,9 +26,24 @@ function TakipViewModel() {
         return Math.round(self.tamamlananSayisi() / total * 100);
     });
 
-    self.selectedDonemId.subscribe(function () { self.loadAtamalar(); });
-    self.selectedUserId.subscribe(function () { self.loadAtamalar(); });
-    self.selectedDurumId.subscribe(function () { self.loadAtamalar(); });
+    // Dinleme özet
+    self.dinlemeTamamlananSayisi = ko.computed(function () {
+        return self.dinlemeler().filter(function (d) { return d.durumId === 3; }).length;
+    });
+    self.dinlemeBekleyenSayisi = ko.computed(function () {
+        return self.dinlemeler().filter(function (d) { return d.durumId === 1; }).length;
+    });
+    self.dinlemeTamamlanmaOrani = ko.computed(function () {
+        var total = self.dinlemeler().length;
+        if (!total) return 0;
+        return Math.round(self.dinlemeTamamlananSayisi() / total * 100);
+    });
+
+    // Dönem veya personel değişince her ikisini de yükle
+    self.selectedDonemId.subscribe(function () { self.loadAtamalar(); self.loadDinlemeler(); });
+    self.selectedUserId.subscribe(function () { self.loadAtamalar(); self.loadDinlemeler(); });
+    self.selectedAramaDurumId.subscribe(function () { self.loadAtamalar(); });
+    self.selectedDinlemeDurumId.subscribe(function () { self.loadDinlemeler(); });
 
     self.loadDonemler = function () {
         $.get('/api/gm/donemler')
@@ -43,15 +63,31 @@ function TakipViewModel() {
             self.atamalar([]);
             return;
         }
-        self.isLoading(true);
+        self.isAramalarLoading(true);
         var params = ['donemId=' + self.selectedDonemId()];
         if (self.selectedUserId()) params.push('userId=' + self.selectedUserId());
-        if (self.selectedDurumId()) params.push('durumId=' + self.selectedDurumId());
+        if (self.selectedAramaDurumId()) params.push('durumId=' + self.selectedAramaDurumId());
 
         $.get('/api/gm/atamalar?' + params.join('&'))
             .done(function (data) { self.atamalar(data); })
             .fail(function () { toastr.error('Atamalar yüklenirken hata oluştu.'); })
-            .always(function () { self.isLoading(false); });
+            .always(function () { self.isAramalarLoading(false); });
+    };
+
+    self.loadDinlemeler = function () {
+        if (!self.selectedDonemId()) {
+            self.dinlemeler([]);
+            return;
+        }
+        self.isDinlemelerLoading(true);
+        var params = ['donemId=' + self.selectedDonemId()];
+        if (self.selectedUserId()) params.push('dinleyenUserId=' + self.selectedUserId());
+        if (self.selectedDinlemeDurumId()) params.push('durumId=' + self.selectedDinlemeDurumId());
+
+        $.get('/api/gm/dinleme-takip?' + params.join('&'))
+            .done(function (data) { self.dinlemeler(data); })
+            .fail(function () { toastr.error('Dinlemeler yüklenirken hata oluştu.'); })
+            .always(function () { self.isDinlemelerLoading(false); });
     };
 
     // Detay modal
