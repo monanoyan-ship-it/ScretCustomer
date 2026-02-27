@@ -1156,6 +1156,35 @@ public class GmService : IGmService
             .ToListAsync();
     }
 
+    public async Task<GmAtamaDto?> UpdateAtamaAsync(int atamaId, UpdateGmAtamaDto dto)
+    {
+        var entity = await _context.GmAtamalar
+            .Include(x => x.GmDonem)
+            .Include(x => x.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == atamaId);
+
+        if (entity == null) return null;
+
+        if (dto.UserId.HasValue && dto.UserId.Value != entity.UserId)
+        {
+            entity.UserId = dto.UserId.Value;
+        }
+
+        if (dto.PlanTarihi.HasValue)
+        {
+            entity.PlanTarihi = DateTime.SpecifyKind(dto.PlanTarihi.Value.Date, DateTimeKind.Utc);
+        }
+
+        await _context.SaveChangesAsync();
+
+        // User değiştiyse yeniden yükle
+        await _context.Entry(entity).Reference(x => x.User).LoadAsync();
+
+        return MapToAtamaDto(entity);
+    }
+
     // =============================================
     // ARAMALARIM (KULLANICI)
     // =============================================

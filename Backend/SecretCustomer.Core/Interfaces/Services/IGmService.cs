@@ -50,6 +50,7 @@ public interface IGmService
 
     // Takip (atama listesi)
     Task<List<GmAtamaDto>> GetAtamalarAsync(int donemId, int? userId = null, int? durumId = null);
+    Task<GmAtamaDto?> UpdateAtamaAsync(int atamaId, UpdateGmAtamaDto dto);
 
     // Aramalarım (kullanıcı)
     Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, List<int>? donemIds = null, List<int>? durumIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null);

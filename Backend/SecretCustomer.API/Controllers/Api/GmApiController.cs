@@ -685,6 +685,25 @@ public class GmApiController : BaseApiController
         }
     }
 
+    [HttpPut("atamalar/{id}")]
+    public async Task<IActionResult> UpdateAtama(int id, [FromBody] UpdateGmAtamaDto dto)
+    {
+        try
+        {
+            var result = await _gmService.UpdateAtamaAsync(id, dto);
+            if (result == null)
+                return NotFound(CreateErrorResponse("Atama bulunamadı"));
+
+            await _auditLogService.LogInfoAsync($"GM Atama {id} güncellendi", "Gm");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Atama güncellenirken hata", "Gm", ex);
+            return StatusCode(500, CreateErrorResponse("Atama güncellenirken hata oluştu", ex));
+        }
+    }
+
     // =============================================
     // DINLEME POPUP
     // =============================================

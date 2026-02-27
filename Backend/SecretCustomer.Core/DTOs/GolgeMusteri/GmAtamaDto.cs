@@ -27,6 +27,12 @@ public class GmAtamaDto
     public string? DurumCss { get; set; }
 }
 
+public class UpdateGmAtamaDto
+{
+    public int? UserId { get; set; }
+    public DateTime? PlanTarihi { get; set; }
+}
+
 public class CompleteGmAtamaDto
 {
     [Required(ErrorMessage = "Gerçekleşme tarihi zorunludur")]

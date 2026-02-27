@@ -98,6 +98,56 @@ function TakipViewModel() {
         $('#atamaDetailModal').modal('show');
     };
 
+    // Düzenleme modal
+    self.editingAtama = ko.observable(null);
+    self.isEditSaving = ko.observable(false);
+    self.editForm = {
+        userId: ko.observable(null),
+        planTarihi: ko.observable('')
+    };
+
+    self.showEditModal = function (atama) {
+        self.editingAtama(atama);
+        self.editForm.userId(atama.userId);
+        self.editForm.planTarihi(atama.planTarihi ? atama.planTarihi.substring(0, 10) : '');
+        $('#editAtamaModal').modal('show');
+    };
+
+    self.saveAtamaEdit = function () {
+        var atama = self.editingAtama();
+        if (!atama) return;
+
+        self.isEditSaving(true);
+        $.ajax({
+            url: '/api/gm/atamalar/' + atama.id,
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                userId: self.editForm.userId() ? parseInt(self.editForm.userId()) : null,
+                planTarihi: self.editForm.planTarihi() || null
+            })
+        })
+        .done(function (result) {
+            // Listedeki öğeyi güncelle
+            var items = self.atamalar();
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].id === atama.id) {
+                    items[i] = result;
+                    break;
+                }
+            }
+            self.atamalar(items);
+            toastr.success('Atama güncellendi.');
+            $('#editAtamaModal').modal('hide');
+        })
+        .fail(function (xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Güncelleme başarısız.');
+        })
+        .always(function () {
+            self.isEditSaving(false);
+        });
+    };
+
     // Init
     self.loadDonemler();
     self.loadUsers();

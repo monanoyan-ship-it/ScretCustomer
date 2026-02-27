@@ -135,9 +135,14 @@
                                     <span class="badge" data-bind="text: durumText, attr: { class: 'badge ' + durumCss }"></span>
                                 </td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showAtamaDetail" title="Detay">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-primary" data-bind="click: $parent.showAtamaDetail" title="Detay">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-warning" data-bind="click: $parent.showEditModal" title="Düzenle">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
@@ -277,6 +282,38 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Atama Düzenleme Modal -->
+    <div class="modal fade" id="editAtamaModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil me-2"></i>Atama Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3" data-bind="visible: editingAtama()">
+                        <strong data-bind="text: editingAtama() ? editingAtama().hedefFirmaAdi : ''"></strong>
+                        <span class="text-muted ms-1" data-bind="text: editingAtama() ? '- ' + (editingAtama().soruMetni || '') : ''"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Personel</label>
+                        <select class="form-select" data-bind="options: users, optionsText: function(u) { return u.firstName + ' ' + u.lastName; }, optionsValue: 'id', value: editForm.userId, optionsCaption: '-- Personel Seçin --'"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Plan Tarihi</label>
+                        <input type="date" class="form-control" data-bind="value: editForm.planTarihi">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" data-bind="click: saveAtamaEdit, disable: isEditSaving">
+                        <span data-bind="visible: isEditSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        Kaydet
+                    </button>
                 </div>
             </div>
         </div>
