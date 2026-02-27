@@ -20,6 +20,9 @@ public class GmAtamaConfiguration : IEntityTypeConfiguration<GmAtama>
         builder.Property(x => x.KuponKodu)
             .HasMaxLength(100);
 
+        builder.Property(x => x.KuponBilgisi)
+            .HasMaxLength(500);
+
         builder.HasOne(x => x.GmDonemSoru)
             .WithMany()
             .HasForeignKey(x => x.GmDonemSoruId)

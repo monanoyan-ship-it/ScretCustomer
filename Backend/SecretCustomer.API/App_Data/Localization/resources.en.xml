@@ -10806,6 +10806,30 @@
   <LocaleResource Name="GolgeMusteri.NoTamamlananAramalar">
     <Value>No completed calls found.</Value>
   </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Kuponlarim">
+    <Value>My Coupons</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduBekliyor">
+    <Value>Waiting for Coupon Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduGir">
+    <Value>Enter Coupon Code</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.NoKuponBekleyen">
+    <Value>No assignments waiting for coupon code.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponBilgisi">
+    <Value>Coupon Info</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponBilgisiPlaceholder">
+    <Value>Write the coupon details...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduPlaceholder">
+    <Value>Enter the coupon code...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmAtamaDurum.KuponKoduBekliyor">
+    <Value>Waiting for Coupon Code</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Contacted Representative</Value>
   </LocaleResource>

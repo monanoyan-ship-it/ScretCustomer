@@ -47,9 +47,14 @@ public class GmAtama : BaseEntity
     public string? Not { get; set; }
 
     /// <summary>
-    /// Kupon kodu (kuponlu sorular için)
+    /// Kupon kodu (kullanıcı tarafından girilir)
     /// </summary>
     public string? KuponKodu { get; set; }
+
+    /// <summary>
+    /// Kupon bilgisi (kuponlu sorular için - kullanıcının yazacağı bahis detayı)
+    /// </summary>
+    public string? KuponBilgisi { get; set; }
 
     /// <summary>
     /// Görüşülen temsilci ad soyad

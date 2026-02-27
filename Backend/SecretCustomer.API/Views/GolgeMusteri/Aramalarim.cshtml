@@ -21,6 +21,14 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'kuponlarim' }, click: function() { activeTab('kuponlarim'); }">
+                <i class="bi bi-ticket-perforated me-1"></i> @Html.T("GolgeMusteri.Kuponlarim", "Kuponlarım")
+                <!-- ko if: kuponBekleyenler().length > 0 -->
+                <span class="badge bg-info ms-1" data-bind="text: kuponBekleyenler().length"></span>
+                <!-- /ko -->
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link" href="#" data-bind="css: { active: activeTab() === 'aramalar' }, click: function() { activeTab('aramalar'); }">
                 <i class="bi bi-telephone-inbound me-1"></i> @Html.T("GolgeMusteri.TamamlananAramalar", "Tamamlanan Aramalar")
                 <!-- ko if: tamamlananAramalar().length > 0 -->
@@ -213,6 +221,58 @@
         </div>
     </div>
 
+    <!-- ==================== TAB: KUPONLARIM ==================== -->
+    <div data-bind="visible: activeTab() === 'kuponlarim'">
+        <!-- Özet -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="card text-center border-info">
+                    <div class="card-body py-2">
+                        <div class="fs-4 fw-bold text-info" data-bind="text: kuponBekleyenler().length"></div>
+                        <small class="text-muted">@Html.T("GolgeMusteri.KuponKoduBekliyor", "Kupon Kodu Bekliyor")</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div data-bind="visible: isKuponlarLoading" class="text-center py-5">
+            <div class="spinner-border text-info" role="status"></div>
+        </div>
+
+        <!-- Kupon Bekleyen Atamalar -->
+        <div data-bind="visible: !isKuponlarLoading() && kuponBekleyenler().length > 0">
+            <h6 class="mb-3"><i class="bi bi-ticket-perforated me-1 text-info"></i> @Html.T("GolgeMusteri.KuponKoduBekliyor", "Kupon Kodu Bekliyor")</h6>
+            <div class="row g-3" data-bind="foreach: kuponBekleyenler">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="card-title mb-0" data-bind="text: hedefFirmaAdi"></h6>
+                                <span class="badge bg-info text-dark">@Html.T("GolgeMusteri.KuponKoduBekliyor", "Kupon Bekliyor")</span>
+                            </div>
+                            <p class="small mb-1"><strong>@Html.T("Common.Question", "Soru"):</strong> <span data-bind="text: soruMetni"></span></p>
+                            <!-- ko if: beklenenCevap -->
+                            <p class="small mb-1 text-info"><strong>@Html.T("GolgeMusteri.BeklenenCevap", "Beklenen"):</strong> <span data-bind="text: beklenenCevap"></span></p>
+                            <!-- /ko -->
+                            <p class="small text-muted mb-0"><i class="bi bi-calendar me-1"></i> Plan: <span data-bind="text: planTarihi ? new Date(planTarihi).toLocaleDateString('tr-TR') : '-'"></span></p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <button class="btn btn-sm btn-info w-100" data-bind="click: $parent.showKuponKoduModal">
+                                <i class="bi bi-ticket-perforated me-1"></i> @Html.T("GolgeMusteri.KuponKoduGir", "Kupon Kodu Gir")
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div data-bind="visible: !isKuponlarLoading() && kuponBekleyenler().length === 0" class="text-center text-muted py-5">
+            <i class="bi bi-ticket-perforated fs-1 d-block mb-2"></i>
+            @Html.T("GolgeMusteri.NoKuponBekleyen", "Kupon kodu bekleyen atamanız bulunmuyor.")
+        </div>
+    </div>
+
     <!-- ==================== TAB 2: ARAMALAR (Tamamlanan) ==================== -->
     <div data-bind="visible: activeTab() === 'aramalar'">
         <!-- Filtreler -->
@@ -390,6 +450,12 @@
                                 <th class="text-muted">@Html.T("Common.Note", "Not")</th>
                                 <td data-bind="text: not || '-'"></td>
                             </tr>
+                            <!-- ko if: kuponBilgisi -->
+                            <tr>
+                                <th class="text-muted">@Html.T("GolgeMusteri.KuponBilgisi", "Kupon Bilgisi")</th>
+                                <td data-bind="text: kuponBilgisi"></td>
+                            </tr>
+                            <!-- /ko -->
                             <!-- ko if: kuponKodu -->
                             <tr>
                                 <th class="text-muted">@Html.T("GolgeMusteri.KuponKodu", "Kupon Kodu")</th>
@@ -459,10 +525,16 @@
                         <label class="form-label">Not</label>
                         <textarea class="form-control" rows="3" data-bind="value: completeForm.not" maxlength="2000"></textarea>
                     </div>
-                    <!-- ko if: completingAtama() && completingAtama().isKuponlu -->
+                    <!-- ko if: completingAtama() && completingAtama().isKuponlu && completingAtama().kuponKodu -->
                     <div class="mb-3">
-                        <label class="form-label">Kupon Kodu</label>
-                        <div class="form-control bg-light" data-bind="text: completingAtama().kuponKodu || '-'"></div>
+                        <label class="form-label">@Html.T("GolgeMusteri.KuponKodu", "Kupon Kodu")</label>
+                        <div class="form-control bg-light" data-bind="text: completingAtama().kuponKodu"></div>
+                    </div>
+                    <!-- /ko -->
+                    <!-- ko if: completingAtama() && completingAtama().kuponBilgisi -->
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.KuponBilgisi", "Kupon Bilgisi")</label>
+                        <div class="form-control bg-light" data-bind="text: completingAtama().kuponBilgisi"></div>
                     </div>
                     <!-- /ko -->
                 </div>
@@ -471,6 +543,46 @@
                     <button type="button" class="btn btn-success" data-bind="click: completeAtama, disable: isSaving">
                         <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
                         Tamamla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kupon Kodu Giriş Modal -->
+    <div class="modal fade" id="kuponKoduModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-ticket-perforated me-2"></i>@Html.T("GolgeMusteri.KuponKoduGir", "Kupon Kodu Gir")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3" data-bind="visible: kuponAtama()">
+                        <strong data-bind="text: kuponAtama() ? kuponAtama().hedefFirmaAdi : ''"></strong>
+                        <div class="mt-1 small" data-bind="text: kuponAtama() ? kuponAtama().soruMetni : ''"></div>
+                        <!-- ko if: kuponAtama() && kuponAtama().beklenenCevap -->
+                        <div class="mt-1 small text-primary"><strong>@Html.T("GolgeMusteri.BeklenenCevap", "Beklenen"):</strong> <span data-bind="text: kuponAtama().beklenenCevap"></span></div>
+                        <!-- /ko -->
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.KuponBilgisi", "Kupon Bilgisi")</label>
+                        <textarea class="form-control" rows="2" maxlength="500" autocomplete="off"
+                                  data-bind="value: kuponForm.kuponBilgisi"
+                                  placeholder="@Html.T("GolgeMusteri.KuponBilgisiPlaceholder", "Kupon detaylarını yazın...")"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.KuponKodu", "Kupon Kodu") <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" maxlength="100" autocomplete="off"
+                               data-bind="value: kuponForm.kuponKodu"
+                               placeholder="@Html.T("GolgeMusteri.KuponKoduPlaceholder", "Kupon kodunu girin...")">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-info" data-bind="click: saveKuponKodu, disable: isKuponSaving">
+                        <span data-bind="visible: isKuponSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        @Html.T("Common.Save", "Kaydet")
                     </button>
                 </div>
             </div>

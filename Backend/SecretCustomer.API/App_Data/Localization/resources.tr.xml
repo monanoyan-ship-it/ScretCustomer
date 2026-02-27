@@ -10777,6 +10777,30 @@
   <LocaleResource Name="GolgeMusteri.NoTamamlananAramalar">
     <Value>Tamamlanan arama bulunmuyor.</Value>
   </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.Kuponlarim">
+    <Value>Kuponlarım</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduBekliyor">
+    <Value>Kupon Kodu Bekliyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduGir">
+    <Value>Kupon Kodu Gir</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.NoKuponBekleyen">
+    <Value>Kupon kodu bekleyen atamanız bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponBilgisi">
+    <Value>Kupon Bilgisi</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponBilgisiPlaceholder">
+    <Value>Kupon detaylarını yazın...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.KuponKoduPlaceholder">
+    <Value>Kupon kodunu girin...</Value>
+  </LocaleResource>
+  <LocaleResource Name="GmAtamaDurum.KuponKoduBekliyor">
+    <Value>Kupon Kodu Bekliyor</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Görüşülen Temsilci</Value>
   </LocaleResource>

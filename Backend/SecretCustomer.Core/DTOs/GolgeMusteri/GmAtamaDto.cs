@@ -20,6 +20,7 @@ public class GmAtamaDto
     public string? AramaSaati { get; set; }
     public string? Not { get; set; }
     public string? KuponKodu { get; set; }
+    public string? KuponBilgisi { get; set; }
     public string? GorusulenTemsilci { get; set; }
     public int CustomerId { get; set; }
     public int DurumId { get; set; }
@@ -50,4 +51,14 @@ public class CompleteGmAtamaDto
 
     [StringLength(200, ErrorMessage = "Temsilci adı en fazla 200 karakter olabilir")]
     public string? GorusulenTemsilci { get; set; }
+}
+
+public class EnterKuponKoduDto
+{
+    [Required(ErrorMessage = "Kupon kodu zorunludur")]
+    [StringLength(100, ErrorMessage = "Kupon kodu en fazla 100 karakter olabilir")]
+    public string KuponKodu { get; set; } = string.Empty;
+
+    [StringLength(500, ErrorMessage = "Kupon bilgisi en fazla 500 karakter olabilir")]
+    public string? KuponBilgisi { get; set; }
 }

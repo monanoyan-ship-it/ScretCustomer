@@ -152,7 +152,6 @@ public class GmService : IGmService
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
                 SiraNo = x.SiraNo,
-                KuponKodu = x.KuponKodu,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
             })
@@ -179,7 +178,6 @@ public class GmService : IGmService
             BeklenenCevap = dto.BeklenenCevap,
             AranmaSayisi = dto.AranmaSayisi,
             IsKuponlu = dto.IsKuponlu,
-            KuponKodu = dto.KuponKodu,
             SiraNo = dto.SiraNo
         };
 
@@ -206,7 +204,6 @@ public class GmService : IGmService
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
                 SiraNo = x.SiraNo,
-                KuponKodu = x.KuponKodu,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
             })
@@ -232,7 +229,6 @@ public class GmService : IGmService
         entity.BeklenenCevap = dto.BeklenenCevap;
         entity.AranmaSayisi = dto.AranmaSayisi;
         entity.IsKuponlu = dto.IsKuponlu;
-        entity.KuponKodu = dto.KuponKodu;
         entity.SiraNo = dto.SiraNo;
 
         await _context.SaveChangesAsync();
@@ -256,7 +252,6 @@ public class GmService : IGmService
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
                 SiraNo = x.SiraNo,
-                KuponKodu = x.KuponKodu,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
             })
@@ -570,8 +565,7 @@ public class GmService : IGmService
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
-                SiraNo = x.SiraNo,
-                KuponKodu = x.KuponKodu
+                SiraNo = x.SiraNo
             })
             .ToListAsync();
 
@@ -762,24 +756,14 @@ public class GmService : IGmService
             throw new InvalidOperationException("Döneme en az bir soru eklenmeli.");
 
         var personeller = donem.Personeller.ToList();
-        // Kuponlu sorular aktif etten hariç - sonradan ayrıca dağıtılacak
-        var sorular = donem.Sorular.Where(s => !s.IsKuponlu).ToList();
+        var sorular = donem.Sorular.ToList();
 
         // İş günlerini hesapla
         var isGunleri = GetIsGunleri(donem.BaslangicTarihi, donem.BitisTarihi);
         if (!isGunleri.Any())
             throw new InvalidOperationException("Dönem aralığında iş günü bulunamadı.");
 
-        // Normal soru yoksa sadece kuponlu var, atamasız aktif et
-        if (!sorular.Any())
-        {
-            donem.DurumId = GmDonemDurumlari.Ids.Aktif;
-            await _context.SaveChangesAsync();
-            await _auditLog.LogInfoAsync($"GM Dönem aktif edildi: {donem.Ad}. Normal soru yok, kuponlu sorular sonradan dağıtılacak.", "GolgeMusteri");
-            return 0;
-        }
-
-        // Tüm atamaları üret
+        // Tüm atamaları üret (kuponlu sorular KuponKoduBekliyor durumunda)
         var atamalar = new List<GmAtama>();
         var personelIndex = 0;
         var gunIndex = 0;
@@ -798,8 +782,9 @@ public class GmService : IGmService
                     GmDonemSoruId = donemSoru.Id,
                     UserId = personel.UserId,
                     PlanTarihi = planTarihi,
-                    DurumId = GmAtamaDurumlari.Ids.Beklemede,
-                    KuponKodu = donemSoru.KuponKodu
+                    DurumId = donemSoru.IsKuponlu
+                        ? GmAtamaDurumlari.Ids.KuponKoduBekliyor
+                        : GmAtamaDurumlari.Ids.Beklemede
                 });
 
                 personelIndex++;
@@ -843,7 +828,6 @@ public class GmService : IGmService
             var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
             var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
             var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
-            var kuponKodu = ws.Cell(row, 4).GetString()?.Trim();
 
             if (string.IsNullOrWhiteSpace(soruMetni))
             {
@@ -877,7 +861,6 @@ public class GmService : IGmService
                 BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
                 AranmaSayisi = aranmaSayisi,
                 IsKuponlu = true,
-                KuponKodu = string.IsNullOrWhiteSpace(kuponKodu) ? null : kuponKodu,
                 SiraNo = 0
             };
 
@@ -930,7 +913,6 @@ public class GmService : IGmService
             var soruMetni = ws.Cell(row, 2).GetString()?.Trim();
             var beklenenCevap = ws.Cell(row, 3).GetString()?.Trim();
             var aranmaSayisiStr = ws.Cell(row, 4).GetString()?.Trim();
-            var kuponKodu = ws.Cell(row, 5).GetString()?.Trim();
 
             if (string.IsNullOrWhiteSpace(soruMetni))
             {
@@ -967,7 +949,6 @@ public class GmService : IGmService
                     BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
                     AranmaSayisi = aranmaSayisi,
                     IsKuponlu = true,
-                    KuponKodu = string.IsNullOrWhiteSpace(kuponKodu) ? null : kuponKodu,
                     SiraNo = 0
                 };
                 _context.GmDonemSorular.Add(entity);
@@ -1043,78 +1024,6 @@ public class GmService : IGmService
         }
 
         return saved;
-    }
-
-    public async Task<int> KuponluDagitAsync(int donemId)
-    {
-        var donem = await _context.GmDonemler
-            .Include(x => x.Personeller.Where(p => !p.IsDeleted))
-            .Include(x => x.Sorular.Where(s => !s.IsDeleted))
-            .FirstOrDefaultAsync(x => x.Id == donemId);
-
-        if (donem == null)
-            throw new InvalidOperationException("Dönem bulunamadı.");
-
-        if (donem.DurumId != GmDonemDurumlari.Ids.Aktif)
-            throw new InvalidOperationException("Kuponlu dağıtım sadece aktif dönemlerde yapılabilir.");
-
-        if (!donem.Personeller.Any())
-            throw new InvalidOperationException("Döneme en az bir personel eklenmeli.");
-
-        // Zaten ataması olan kuponlu soru ID'lerini bul
-        var atamasiOlanSoruIds = await _context.GmAtamalar
-            .Where(a => a.GmDonemId == donemId && !a.IsDeleted)
-            .Select(a => a.GmDonemSoruId)
-            .Distinct()
-            .ToListAsync();
-
-        // Henüz ataması olmayan kuponlu soruları al
-        var kuponluSorular = donem.Sorular
-            .Where(s => s.IsKuponlu && !atamasiOlanSoruIds.Contains(s.Id))
-            .OrderBy(s => s.SiraNo)
-            .ToList();
-
-        if (!kuponluSorular.Any())
-            throw new InvalidOperationException("Dağıtılacak kuponlu soru bulunamadı.");
-
-        var personeller = donem.Personeller.ToList();
-        var isGunleri = GetIsGunleri(donem.BaslangicTarihi, donem.BitisTarihi);
-        if (!isGunleri.Any())
-            throw new InvalidOperationException("Dönem aralığında iş günü bulunamadı.");
-
-        var atamalar = new List<GmAtama>();
-        var personelIndex = 0;
-        var gunIndex = 0;
-
-        foreach (var donemSoru in kuponluSorular)
-        {
-            var aranma = donemSoru.AranmaSayisi;
-            for (int i = 0; i < aranma; i++)
-            {
-                var personel = personeller[personelIndex % personeller.Count];
-                var planTarihi = isGunleri[gunIndex % isGunleri.Count];
-
-                atamalar.Add(new GmAtama
-                {
-                    GmDonemId = donemId,
-                    GmDonemSoruId = donemSoru.Id,
-                    UserId = personel.UserId,
-                    PlanTarihi = planTarihi,
-                    DurumId = GmAtamaDurumlari.Ids.Beklemede,
-                    KuponKodu = donemSoru.KuponKodu
-                });
-
-                personelIndex++;
-                gunIndex++;
-            }
-        }
-
-        _context.GmAtamalar.AddRange(atamalar);
-        await _context.SaveChangesAsync();
-
-        await _auditLog.LogInfoAsync($"GM Kuponlu dağıtım: {atamalar.Count} atama oluşturuldu ({kuponluSorular.Count} soru). Dönem: {donem.Ad}", "GolgeMusteri");
-
-        return atamalar.Count;
     }
 
     public async Task<bool> TamamlaAsync(int donemId)
@@ -1197,7 +1106,8 @@ public class GmService : IGmService
                 .ThenInclude(ds => ds!.GmHedefFirma)
             .Include(x => x.User)
             .Where(x => x.UserId == userId)
-            .Where(x => x.DurumId != GmAtamaDurumlari.Ids.Tamamlandi);
+            .Where(x => x.DurumId != GmAtamaDurumlari.Ids.Tamamlandi)
+            .Where(x => x.DurumId != GmAtamaDurumlari.Ids.KuponKoduBekliyor);
 
         // Dönem filtresi: belirli dönem seçildiyse onu, yoksa sadece aktif dönemleri getir
         if (donemIds != null && donemIds.Any())
@@ -1249,6 +1159,9 @@ public class GmService : IGmService
         if (entity.DurumId == GmAtamaDurumlari.Ids.Tamamlandi)
             throw new InvalidOperationException("Bu atama zaten tamamlanmış.");
 
+        if (entity.DurumId == GmAtamaDurumlari.Ids.KuponKoduBekliyor)
+            throw new InvalidOperationException("Önce kupon kodu girilmelidir.");
+
         if (entity.GmDonem?.DurumId != GmDonemDurumlari.Ids.Aktif)
             throw new InvalidOperationException("Dönem aktif değil.");
 
@@ -1266,6 +1179,49 @@ public class GmService : IGmService
         await CreateDinlemeForAtamaAsync(entity);
 
         return true;
+    }
+
+    // =============================================
+    // KUPONLARIM (KUPON KODU BEKLİYOR)
+    // =============================================
+
+    public async Task<List<GmAtamaDto>> GetKuponBekleyenAtamalarAsync(int userId)
+    {
+        return await _context.GmAtamalar
+            .Include(x => x.GmDonem)
+            .Include(x => x.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(x => x.User)
+            .Where(x => x.UserId == userId)
+            .Where(x => x.DurumId == GmAtamaDurumlari.Ids.KuponKoduBekliyor)
+            .Where(x => x.GmDonem!.DurumId == GmDonemDurumlari.Ids.Aktif)
+            .OrderBy(x => x.PlanTarihi)
+            .Select(x => MapToAtamaDto(x))
+            .ToListAsync();
+    }
+
+    public async Task<GmAtamaDto?> EnterKuponKoduAsync(int atamaId, int userId, EnterKuponKoduDto dto)
+    {
+        var entity = await _context.GmAtamalar
+            .Include(x => x.GmDonem)
+            .Include(x => x.GmDonemSoru)
+                .ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == atamaId && x.UserId == userId);
+
+        if (entity == null) return null;
+
+        if (entity.DurumId != GmAtamaDurumlari.Ids.KuponKoduBekliyor)
+            throw new InvalidOperationException("Bu atama kupon kodu bekliyor durumunda değil.");
+
+        entity.KuponKodu = dto.KuponKodu;
+        entity.KuponBilgisi = dto.KuponBilgisi;
+        entity.DurumId = GmAtamaDurumlari.Ids.Beklemede;
+
+        await _context.SaveChangesAsync();
+        await _auditLog.LogInfoAsync($"GM Kupon kodu girildi (AtamaId: {atamaId}, UserId: {userId})", "GolgeMusteri");
+
+        return MapToAtamaDto(entity);
     }
 
     /// <summary>
@@ -1996,7 +1952,8 @@ public class GmService : IGmService
             GerceklesmeTarihi = x.GerceklesmeTarihi,
             AramaSaati = x.AramaSaati,
             Not = x.Not,
-            KuponKodu = x.KuponKodu ?? donemSoru?.KuponKodu,
+            KuponKodu = x.KuponKodu,
+            KuponBilgisi = x.KuponBilgisi,
             GorusulenTemsilci = x.GorusulenTemsilci,
             CustomerId = donemSoru?.CustomerId ?? 0,
             DurumId = x.DurumId,

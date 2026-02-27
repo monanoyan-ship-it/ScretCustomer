@@ -1819,8 +1819,9 @@ public static class GmAtamaDurumlari
 {
     public static readonly TypeItem Beklemede = new(1, "Beklemede", "GmAtamaDurum.Beklemede", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
     public static readonly TypeItem Tamamlandi = new(2, "Tamamlandi", "GmAtamaDurum.Tamamlandi", "Tamamlandı", "bi-check-circle", "bg-success", 2);
+    public static readonly TypeItem KuponKoduBekliyor = new(3, "KuponKoduBekliyor", "GmAtamaDurum.KuponKoduBekliyor", "Kupon Kodu Bekliyor", "bi-ticket-perforated", "bg-info text-dark", 3);
 
-    public static IEnumerable<TypeItem> All => new[] { Beklemede, Tamamlandi };
+    public static IEnumerable<TypeItem> All => new[] { Beklemede, Tamamlandi, KuponKoduBekliyor };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -1829,6 +1830,7 @@ public static class GmAtamaDurumlari
     {
         public const int Beklemede = 1;
         public const int Tamamlandi = 2;
+        public const int KuponKoduBekliyor = 3;
     }
 }
 

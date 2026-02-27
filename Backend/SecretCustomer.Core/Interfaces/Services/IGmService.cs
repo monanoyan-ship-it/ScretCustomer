@@ -39,9 +39,6 @@ public interface IGmService
     // Aktif Et (dağıtım algoritması - kuponlu sorular hariç)
     Task<int> AktifEtAsync(int donemId);
 
-    // Kuponlu soru dağıtımı (aktif dönemde, ataması olmayan kuponlu soruları dağıt)
-    Task<int> KuponluDagitAsync(int donemId);
-
     // Dönem tamamla
     Task<bool> TamamlaAsync(int donemId);
 
@@ -55,6 +52,10 @@ public interface IGmService
     // Aramalarım (kullanıcı)
     Task<List<GmAtamaDto>> GetAramalarimAsync(int userId, List<int>? donemIds = null, List<int>? durumIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null);
     Task<bool> CompleteAtamaAsync(int atamaId, int userId, CompleteGmAtamaDto dto);
+
+    // Kuponlarım (kupon kodu bekleyen atamalar)
+    Task<List<GmAtamaDto>> GetKuponBekleyenAtamalarAsync(int userId);
+    Task<GmAtamaDto?> EnterKuponKoduAsync(int atamaId, int userId, EnterKuponKoduDto dto);
 
     // Tamamlanan aramalar (QualitySpecialist dinleme listesi)
     Task<object> GetTamamlananAramalarAsync(int userId, List<int>? donemIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null);
@@ -87,7 +88,6 @@ public class CreateDonemSoruRequest
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public bool IsKuponlu { get; set; } = false;
-    public string? KuponKodu { get; set; }
     public int SiraNo { get; set; } = 0;
 }
 
@@ -97,7 +97,6 @@ public class UpdateDonemSoruRequest
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public bool IsKuponlu { get; set; } = false;
-    public string? KuponKodu { get; set; }
     public int SiraNo { get; set; } = 0;
 }
 

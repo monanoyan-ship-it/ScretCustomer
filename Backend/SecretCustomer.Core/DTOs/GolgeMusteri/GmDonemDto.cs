@@ -82,7 +82,6 @@ public class GmDonemSoruDto
     public bool IsKuponlu { get; set; }
     public int AranmaSayisi { get; set; }
     public int SiraNo { get; set; }
-    public string? KuponKodu { get; set; }
     public int? GmDonemId { get; set; }
     public string? DonemAdi { get; set; }
 }

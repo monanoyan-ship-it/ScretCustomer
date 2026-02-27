@@ -537,26 +537,6 @@ public class GmApiController : BaseApiController
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpPost("donemler/{donemId}/kuponlu-dagit")]
-    public async Task<IActionResult> KuponluDagit(int donemId)
-    {
-        try
-        {
-            var atamaCount = await _gmService.KuponluDagitAsync(donemId);
-            return Ok(new { success = true, atamaCount, message = $"{atamaCount} kuponlu atama oluşturuldu." });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            await _auditLogService.LogErrorAsync("Kuponlu dağıtım yapılırken hata", "Gm", ex);
-            return StatusCode(500, CreateErrorResponse("Kuponlu dağıtım yapılırken hata oluştu", ex));
-        }
-    }
-
-    [Authorize(Roles = "Admin")]
     [HttpPost("donemler/{donemId}/tamamla")]
     public async Task<IActionResult> Tamamla(int donemId)
     {

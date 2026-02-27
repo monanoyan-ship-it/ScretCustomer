@@ -49,11 +49,6 @@ public class GmDonemSoru : BaseEntity
     public int SiraNo { get; set; } = 0;
 
     /// <summary>
-    /// Kupon kodu (kuponlu sorular için)
-    /// </summary>
-    public string? KuponKodu { get; set; }
-
-    /// <summary>
     /// Eski GmSoru FK (nullable, geriye dönük uyumluluk)
     /// </summary>
     public int? GmSoruId { get; set; }

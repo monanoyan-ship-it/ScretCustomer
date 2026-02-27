@@ -106,12 +106,26 @@ function AramalarimViewModel() {
         self.loadTamamlananAramalar();
     };
 
+    // Kuponlarım
+    self.kuponBekleyenler = ko.observableArray([]);
+    self.isKuponlarLoading = ko.observable(false);
+    self.kuponlarLoaded = false;
+    self.kuponAtama = ko.observable(null);
+    self.isKuponSaving = ko.observable(false);
+    self.kuponForm = {
+        kuponKodu: ko.observable(''),
+        kuponBilgisi: ko.observable('')
+    };
+
     // Dinlemelerim
     self.dinlemelerim = ko.observableArray([]);
     self.isDinlemelerLoading = ko.observable(false);
 
     // Tab change handler
     self.activeTab.subscribe(function (tab) {
+        if (tab === 'kuponlarim' && !self.kuponlarLoaded) {
+            self.loadKuponBekleyenler();
+        }
         if (tab === 'aramalar' && !self.aramalarLoaded) {
             self.loadTamamlananAramalar();
         }
@@ -408,6 +422,57 @@ function AramalarimViewModel() {
             .done(function (data) { self.atamalar(data); })
             .fail(function () { toastr.error('Aramalar yüklenirken hata oluştu.'); })
             .always(function () { self.isLoading(false); });
+    };
+
+    // Kuponlarım
+    self.loadKuponBekleyenler = function () {
+        self.isKuponlarLoading(true);
+        $.get('/api/gm/aramalarim/kupon-bekleyenler')
+            .done(function (data) {
+                self.kuponBekleyenler(data);
+                self.kuponlarLoaded = true;
+            })
+            .fail(function () { toastr.error('Kupon bekleyenler yüklenirken hata oluştu.'); })
+            .always(function () { self.isKuponlarLoading(false); });
+    };
+
+    self.showKuponKoduModal = function (atama) {
+        self.kuponAtama(atama);
+        self.kuponForm.kuponKodu('');
+        self.kuponForm.kuponBilgisi('');
+        $('#kuponKoduModal').modal('show');
+    };
+
+    self.saveKuponKodu = function () {
+        if (!self.kuponAtama()) return;
+        if (!self.kuponForm.kuponKodu()) {
+            toastr.warning('Kupon kodu zorunludur.');
+            return;
+        }
+
+        self.isKuponSaving(true);
+        $.ajax({
+            url: '/api/gm/aramalarim/' + self.kuponAtama().id + '/kupon-kodu',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                kuponKodu: self.kuponForm.kuponKodu(),
+                kuponBilgisi: self.kuponForm.kuponBilgisi() || null
+            })
+        })
+        .done(function () {
+            toastr.success('Kupon kodu kaydedildi. Atama aramalarınıza eklendi.');
+            $('#kuponKoduModal').modal('hide');
+            self.kuponAtama(null);
+            self.loadKuponBekleyenler();
+            self.loadAtamalar();
+        })
+        .fail(function (xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Kupon kodu kaydedilemedi.');
+        })
+        .always(function () {
+            self.isKuponSaving(false);
+        });
     };
 
     // Tamamlanan aramalar (Aramalar tab)

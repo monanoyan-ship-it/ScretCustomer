@@ -106,7 +106,6 @@ function DonemlerViewModel() {
         beklenenCevap: ko.observable(''),
         aranmaSayisi: ko.observable(1),
         isKuponlu: ko.observable(false),
-        kuponKodu: ko.observable(''),
         siraNo: ko.observable(0)
     };
 
@@ -130,7 +129,6 @@ function DonemlerViewModel() {
         self.soruForm.beklenenCevap('');
         self.soruForm.aranmaSayisi(1);
         self.soruForm.isKuponlu(false);
-        self.soruForm.kuponKodu('');
         self.soruForm.siraNo(0);
         self.hedefFirmalar([]);
 
@@ -160,7 +158,6 @@ function DonemlerViewModel() {
         self.soruForm.beklenenCevap(soru.beklenenCevap || '');
         self.soruForm.aranmaSayisi(soru.aranmaSayisi);
         self.soruForm.isKuponlu(soru.isKuponlu);
-        self.soruForm.kuponKodu(soru.kuponKodu || '');
         self.soruForm.siraNo(soru.siraNo);
 
         if (!self.customers().length) {
@@ -192,7 +189,6 @@ function DonemlerViewModel() {
                     beklenenCevap: self.soruForm.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
                     isKuponlu: self.soruForm.isKuponlu(),
-                    kuponKodu: self.soruForm.kuponKodu() || null,
                     siraNo: parseInt(self.soruForm.siraNo()) || 0
                 })
             })
@@ -221,7 +217,6 @@ function DonemlerViewModel() {
                     beklenenCevap: self.soruForm.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
                     isKuponlu: self.soruForm.isKuponlu(),
-                    kuponKodu: self.soruForm.kuponKodu() || null,
                     siraNo: parseInt(self.soruForm.siraNo()) || 0
                 })
             })
@@ -649,27 +644,6 @@ function DonemlerViewModel() {
         });
     };
 
-    self.kuponluDagit = function () {
-        if (!self.selectedDonem()) return;
-        showConfirmModal({
-            title: 'Kuponlu Dağıtım',
-            message: 'Henüz dağıtılmamış kuponlu soruları personellere dağıtmak istediğinize emin misiniz?',
-            type: 'warning',
-            confirmText: 'Evet, Dağıt',
-            confirmIcon: 'bi-ticket-perforated',
-            onConfirm: function () {
-                $.ajax({
-                    url: '/api/gm/donemler/' + self.selectedDonem().id + '/kuponlu-dagit',
-                    type: 'POST'
-                })
-                .done(function (data) {
-                    toastr.success(data.message || 'Kuponlu dağıtım tamamlandı.');
-                    self.loadDonemDetail(self.selectedDonem().id);
-                })
-                .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Kuponlu dağıtım başarısız.'); });
-            }
-        });
-    };
 
     self.tamamla = function () {
         if (!self.selectedDonem()) return;

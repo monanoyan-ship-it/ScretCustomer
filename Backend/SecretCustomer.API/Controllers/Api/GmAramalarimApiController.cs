@@ -106,6 +106,47 @@ public class GmAramalarimApiController : BaseApiController
         }
     }
 
+    [HttpGet("kupon-bekleyenler")]
+    public async Task<IActionResult> GetKuponBekleyenler()
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _gmService.GetKuponBekleyenAtamalarAsync(userId);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Kupon bekleyenler yüklenirken hata", "GmAramalarim", ex);
+            return StatusCode(500, CreateErrorResponse("Kupon bekleyenler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpPut("{atamaId}/kupon-kodu")]
+    public async Task<IActionResult> EnterKuponKodu(int atamaId, [FromBody] EnterKuponKoduDto dto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _gmService.EnterKuponKoduAsync(atamaId, userId, dto);
+            if (result == null) return NotFound(new { message = "Atama bulunamadı veya size ait değil." });
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Kupon kodu girilirken hata", "GmAramalarim", ex);
+            return StatusCode(500, CreateErrorResponse("Kupon kodu girilirken hata oluştu", ex));
+        }
+    }
+
     [HttpPost("{atamaId}/tamamla")]
     public async Task<IActionResult> CompleteAtama(int atamaId, [FromBody] CompleteGmAtamaDto dto)
     {

@@ -91,9 +91,6 @@
                 </button>
                 <!-- /ko -->
                 <!-- ko if: selectedDonem() && selectedDonem().durumId === 2 -->
-                <button class="btn btn-warning btn-sm me-1" data-bind="click: kuponluDagit">
-                    <i class="bi bi-ticket-perforated me-1"></i> Kuponlu Dağıt
-                </button>
                 <button class="btn btn-primary btn-sm" data-bind="click: tamamla">
                     <i class="bi bi-check-circle me-1"></i> Tamamla
                 </button>
@@ -262,8 +259,7 @@
                                     <td><span class="badge bg-info" data-bind="text: aranmaSayisi"></span></td>
                                     <td>
                                         <!-- ko if: isKuponlu -->
-                                        <span class="badge bg-warning text-dark me-1">Kuponlu</span>
-                                        <code data-bind="text: kuponKodu || '-'"></code>
+                                        <span class="badge bg-warning text-dark">Kuponlu</span>
                                         <!-- /ko -->
                                         <!-- ko ifnot: isKuponlu -->
                                         <span class="text-muted">-</span>
@@ -350,10 +346,6 @@
                                 <input type="checkbox" class="form-check-input" id="donemSoruIsKuponlu" data-bind="checked: soruForm.isKuponlu">
                                 <label class="form-check-label" for="donemSoruIsKuponlu">Kuponlu</label>
                             </div>
-                        </div>
-                        <div class="col-md-3 mb-3" data-bind="visible: soruForm.isKuponlu()">
-                            <label class="form-label">Kupon Kodu</label>
-                            <input type="text" class="form-control" data-bind="value: soruForm.kuponKodu" maxlength="100">
                         </div>
                     </div>
                 </div>
