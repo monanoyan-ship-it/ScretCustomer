@@ -44,8 +44,11 @@ curl -X DELETE http://127.0.0.1:41847/api/patterns/PATTERN_ID
 ### 2. Yol Haritası / Planlama
 
 ```bash
+# Özet (faz başlıkları + görev listesi, detaysız — ÖNCE BUNU KULLAN)
+curl -s http://127.0.0.1:41847/api/projects/12/roadmap/summary
+
+# Tam detay (detail + risks dahil, sadece gerektiğinde)
 curl -s http://127.0.0.1:41847/api/projects/12/roadmap
-curl -s http://127.0.0.1:41847/api/projects/12/roadmap/stats
 
 # Yeni faz
 curl -X POST http://127.0.0.1:41847/api/projects/12/phases \

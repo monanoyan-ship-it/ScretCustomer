@@ -304,6 +304,33 @@ public class ProjectsApiController : BaseApiController
     }
 
     /// <summary>
+    /// Tamamlanan projeyi yeniden aktif et
+    /// </summary>
+    [HttpPost("{id}/reactivate")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> ReactivateProject(int id)
+    {
+        try
+        {
+            var project = await _projectService.ReactivateProjectAsync(id);
+            return Ok(project);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(CreateErrorResponse(await _localizationService.GetResourceAsync("Api.Project.NotFound")));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(CreateErrorResponse(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Error reactivating project {id}", "Projects", ex);
+            return StatusCode(500, CreateErrorResponse("Proje yeniden aktif edilirken bir hata oluştu."));
+        }
+    }
+
+    /// <summary>
     /// Projeyi iptal et
     /// </summary>
     [HttpPost("{id}/cancel")]

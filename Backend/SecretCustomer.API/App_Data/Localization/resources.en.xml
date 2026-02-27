@@ -1235,6 +1235,9 @@
   <LocaleResource Name="Project.Pause">
     <Value>Pause</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.Reactivate">
+    <Value>Reactivate</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.ChecklistDeleted">
     <Value>Deleted</Value>
   </LocaleResource>

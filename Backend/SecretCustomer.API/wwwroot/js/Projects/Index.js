@@ -1023,6 +1023,35 @@ function ProjectsViewModel() {
         });
     };
 
+    // Reactivate project
+    self.reactivateProject = function(project) {
+        showConfirmModal({
+            title: 'Projeyi Yeniden Aktif Et',
+            message: 'Tamamlanan projeyi yeniden aktif etmek istediğinizden emin misiniz?',
+            type: 'success',
+            confirmText: 'Aktif Et',
+            confirmIcon: 'bi-arrow-counterclockwise',
+            onConfirm: function() {
+                fetch('/api/projects/' + project.id + '/reactivate', {
+                    method: 'POST',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(data) { throw new Error(data.message); });
+                    return res.json();
+                })
+                .then(function(updatedProject) {
+                    toastr.success('Proje yeniden aktif edildi.');
+                    self.updateProjectInArray(updatedProject);
+                })
+                .catch(function(error) {
+                    console.error('Error:', error);
+                    toastr.error(error.message || 'Proje aktif edilirken bir hata oluştu.');
+                });
+            }
+        });
+    };
+
     // Delete project
     self.deleteProject = function(project) {
         showDeleteConfirm(project.name + ' projesi', function() {

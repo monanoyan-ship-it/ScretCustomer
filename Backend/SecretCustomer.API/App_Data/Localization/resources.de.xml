@@ -1232,6 +1232,9 @@
   <LocaleResource Name="Project.Pause">
     <Value>Pausieren</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.Reactivate">
+    <Value>Reaktivieren</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.ChecklistDeleted">
     <Value>Gelöscht</Value>
   </LocaleResource>

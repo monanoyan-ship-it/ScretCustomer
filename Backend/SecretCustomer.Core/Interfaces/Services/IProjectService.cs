@@ -58,6 +58,11 @@ public interface IProjectService
     Task<ProjectDto> CancelProjectAsync(int id, string? reason);
 
     /// <summary>
+    /// Tamamlanan projeyi yeniden aktif et
+    /// </summary>
+    Task<ProjectDto> ReactivateProjectAsync(int id);
+
+    /// <summary>
     /// Proje takimini yonet
     /// </summary>
     Task<ProjectDetailDto> ManageTeamAsync(int projectId, ManageProjectTeamDto dto);

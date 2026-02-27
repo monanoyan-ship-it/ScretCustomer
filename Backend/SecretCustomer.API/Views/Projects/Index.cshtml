@@ -305,7 +305,10 @@
                                     <button type="button" class="btn btn-outline-secondary" data-bind="click: function() { $parent.completeProject($data); }, clickBubble: false, visible: status === 'Active' && !isChecklistDeleted" title="@Html.T("Common.Complete", "Tamamla")">
                                         <i class="bi bi-check-lg"></i>
                                     </button>
-                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, clickBubble: false, visible: status === 'Draft' || isChecklistDeleted" title="@Html.T("Common.Delete", "Sil")">
+                                    <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.reactivateProject($data); }, clickBubble: false, visible: status === 'Completed'" title="@Html.T("Project.Reactivate", "Yeniden Aktif Et")">
+                                        <i class="bi bi-arrow-counterclockwise"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, clickBubble: false, visible: status === 'Draft' || status === 'Completed' || isChecklistDeleted" title="@Html.T("Common.Delete", "Sil")">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </div>
@@ -391,7 +394,8 @@
                                 </small>
                                 <div class="btn-group btn-group-sm">
                                     <button type="button" class="btn btn-outline-info" data-bind="click: function() { $parent.openDetailModal($data); }, clickBubble: false" title="@Html.T("Common.Detail", "Detay")"><i class="bi bi-eye"></i></button>
-                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: !isChecklistDeleted" title="@Html.T("Common.Edit", "Düzenle")"><i class="bi bi-pencil"></i></button>
+                                    <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, clickBubble: false, visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted" title="@Html.T("Common.Edit", "Düzenle")"><i class="bi bi-pencil"></i></button>
+                                    <button type="button" class="btn btn-outline-info btn-sm" data-bind="click: function() { $parent.reactivateProject($data); }, clickBubble: false, visible: status === 'Completed'" title="@Html.T("Project.Reactivate", "Yeniden Aktif Et")"><i class="bi bi-arrow-counterclockwise"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -791,14 +795,16 @@
                                 </div>
                             </div>
                             <!-- Status Actions -->
-                            <div class="card mb-3" data-bind="visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted">
+                            <div class="card mb-3" data-bind="visible: status !== 'Cancelled' && !isChecklistDeleted">
                                 <div class="card-header py-2"><i class="bi bi-toggles"></i> @Html.T("Project.StatusActions", "Durum İşlemleri")</div>
                                 <div class="card-body">
                                     <div class="d-grid gap-2">
                                         <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.startProject($data); }, visible: status === 'Draft' || status === 'Planned' || status === 'Paused'"><i class="bi bi-play-fill"></i> @Html.T("Common.Start", "Başlat")</button>
                                         <button type="button" class="btn btn-warning btn-sm" data-bind="click: function() { $parent.pauseProject($data); }, visible: status === 'Active'"><i class="bi bi-pause-fill"></i> @Html.T("Project.Pause", "Duraklat")</button>
                                         <button type="button" class="btn btn-primary btn-sm" data-bind="click: function() { $parent.completeProject($data); }, visible: status === 'Active'"><i class="bi bi-check-lg"></i> @Html.T("Common.Complete", "Tamamla")</button>
-                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.cancelProject($data); }"><i class="bi bi-x-lg"></i> @Html.T("Project.Cancel", "İptal Et")</button>
+                                        <button type="button" class="btn btn-success btn-sm" data-bind="click: function() { $parent.reactivateProject($data); }, visible: status === 'Completed'"><i class="bi bi-arrow-counterclockwise"></i> @Html.T("Project.Reactivate", "Yeniden Aktif Et")</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.cancelProject($data); }, visible: status !== 'Completed'"><i class="bi bi-x-lg"></i> @Html.T("Project.Cancel", "İptal Et")</button>
+                                        <button type="button" class="btn btn-danger btn-sm" data-bind="click: function() { $parent.deleteProject($data); }, visible: status === 'Completed'"><i class="bi bi-trash"></i> @Html.T("Common.Delete", "Sil")</button>
                                     </div>
                                 </div>
                             </div>
@@ -831,6 +837,12 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-primary" data-bind="click: function() { $parent.openEditModal($data); }, visible: status !== 'Completed' && status !== 'Cancelled' && !isChecklistDeleted">
                         <i class="bi bi-pencil"></i> @Html.T("Common.Edit", "Düzenle")
+                    </button>
+                    <button type="button" class="btn btn-outline-success" data-bind="click: function() { $parent.reactivateProject($data); }, visible: status === 'Completed'">
+                        <i class="bi bi-arrow-counterclockwise"></i> @Html.T("Project.Reactivate", "Yeniden Aktif Et")
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" data-bind="click: function() { $parent.deleteProject($data); }, visible: status === 'Completed'">
+                        <i class="bi bi-trash"></i> @Html.T("Common.Delete", "Sil")
                     </button>
                     <button type="button" class="btn btn-secondary" data-bind="click: $parent.closeDetailModal">
                         <i class="bi bi-x-circle me-2"></i>@Html.T("Common.Close", "Kapat")

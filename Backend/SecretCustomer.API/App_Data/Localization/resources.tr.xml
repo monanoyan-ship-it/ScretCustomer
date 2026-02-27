@@ -1238,6 +1238,9 @@
   <LocaleResource Name="Project.Pause">
     <Value>Duraklat</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.Reactivate">
+    <Value>Yeniden Aktif Et</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.ChecklistDeleted">
     <Value>Silinmiş</Value>
   </LocaleResource>

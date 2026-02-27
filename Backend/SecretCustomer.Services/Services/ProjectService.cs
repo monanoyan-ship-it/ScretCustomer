@@ -45,17 +45,18 @@ public class ProjectService : IProjectService
     public async Task<ProjectDto?> GetByIdAsync(int id)
     {
         var project = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
-            .Include(p => p.Evaluations)
-            .Include(p => p.Assignments)
-            .Include(p => p.TeamMembers)
+            .Include(p => p.Evaluations.Where(e => !e.IsDeleted))
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
+            .Include(p => p.TeamMembers.Where(tm => !tm.IsDeleted))
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
-            .Include(p => p.SurveyInvitations)
-            .Include(p => p.SurveyExternalInvitations)
+            .Include(p => p.SurveyInvitations.Where(si => !si.IsDeleted))
+            .Include(p => p.SurveyExternalInvitations.Where(sei => !sei.IsDeleted))
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         return project == null ? null : MapToDto(project);
@@ -64,18 +65,19 @@ public class ProjectService : IProjectService
     public async Task<ProjectDetailDto?> GetDetailByIdAsync(int id)
     {
         var project = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
-            .Include(p => p.Evaluations)
-            .Include(p => p.Assignments)
-            .Include(p => p.TeamMembers)
+            .Include(p => p.Evaluations.Where(e => !e.IsDeleted))
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
+            .Include(p => p.TeamMembers.Where(tm => !tm.IsDeleted))
                 .ThenInclude(tm => tm.User)
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
-            .Include(p => p.SurveyInvitations)
-            .Include(p => p.SurveyExternalInvitations)
+            .Include(p => p.SurveyInvitations.Where(si => !si.IsDeleted))
+            .Include(p => p.SurveyExternalInvitations.Where(sei => !sei.IsDeleted))
             .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
 
         if (project == null)
@@ -87,17 +89,18 @@ public class ProjectService : IProjectService
     public async Task<IEnumerable<ProjectDto>> GetAllAsync(bool includeInactive = false)
     {
         var query = _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
             .Include(p => p.Customer)
             .Include(p => p.Organization)
             .Include(p => p.ProjectManager)
-            .Include(p => p.Evaluations)
-            .Include(p => p.Assignments)
-            .Include(p => p.TeamMembers)
+            .Include(p => p.Evaluations.Where(e => !e.IsDeleted))
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
+            .Include(p => p.TeamMembers.Where(tm => !tm.IsDeleted))
             .Include(p => p.EmailTemplate)
             .Include(p => p.ReminderEmailTemplate)
-            .Include(p => p.SurveyInvitations)
-            .Include(p => p.SurveyExternalInvitations)
+            .Include(p => p.SurveyInvitations.Where(si => !si.IsDeleted))
+            .Include(p => p.SurveyExternalInvitations.Where(sei => !sei.IsDeleted))
             .Where(p => !p.IsDeleted);
 
         if (!includeInactive)
@@ -798,6 +801,30 @@ public class ProjectService : IProjectService
         return MapToDto(project);
     }
 
+    public async Task<ProjectDto> ReactivateProjectAsync(int id)
+    {
+        var project = await _context.Projects
+            .IgnoreQueryFilters()
+            .Include(p => p.Checklist)
+            .Include(p => p.Customer)
+            .Include(p => p.Organization)
+            .Include(p => p.ProjectManager)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
+        if (project == null)
+            throw new KeyNotFoundException($"Project with ID {id} not found");
+
+        if (project.StatusId != ProjectStatuses.Ids.Completed)
+            throw new InvalidOperationException("Yalnızca tamamlanmış projeler yeniden aktif edilebilir.");
+
+        project.StatusId = ProjectStatuses.Ids.Active;
+        project.IsActive = true;
+        project.Notes = (project.Notes ?? "") + "\n" + TurkeyTime.Now.ToString("dd.MM.yyyy HH:mm") + ": Proje yeniden aktif edildi";
+        project.UpdatedAt = TurkeyTime.Now;
+        await _context.SaveChangesAsync();
+
+        return MapToDto(project);
+    }
+
     public async Task<ProjectDetailDto> ManageTeamAsync(int projectId, ManageProjectTeamDto dto)
     {
         var project = await _context.Projects
@@ -872,8 +899,9 @@ public class ProjectService : IProjectService
     public async Task<IEnumerable<ProjectDto>> GetByCustomerIdAsync(int customerId)
     {
         var projects = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
-            .Include(p => p.Assignments)
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
             .Where(p => p.CustomerId == customerId && !p.IsDeleted)
             .OrderByDescending(p => p.Id)
             .ToListAsync();
@@ -884,8 +912,9 @@ public class ProjectService : IProjectService
     public async Task<IEnumerable<ProjectDto>> GetByManagerIdAsync(int managerId)
     {
         var projects = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
-            .Include(p => p.Assignments)
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
             .Where(p => p.ProjectManagerId == managerId && !p.IsDeleted)
             .OrderByDescending(p => p.Id)
             .ToListAsync();
@@ -896,8 +925,9 @@ public class ProjectService : IProjectService
     public async Task<IEnumerable<ProjectDto>> GetActiveProjectsAsync()
     {
         var projects = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
-            .Include(p => p.Assignments)
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
             .Where(p => p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
             .OrderByDescending(p => p.Id)
             .ToListAsync();
@@ -909,8 +939,9 @@ public class ProjectService : IProjectService
     {
         var deadline = TurkeyTime.Now.AddDays(daysAhead);
         var projects = await _context.Projects
+            .IgnoreQueryFilters()
             .Include(p => p.Checklist)
-            .Include(p => p.Assignments)
+            .Include(p => p.Assignments.Where(a => !a.IsDeleted))
             .Where(p => p.EndDate <= deadline && p.EndDate >= TurkeyTime.Now && p.StatusId == ProjectStatuses.Ids.Active && !p.IsDeleted)
             .OrderBy(p => p.EndDate)
             .ToListAsync();
@@ -1028,7 +1059,8 @@ public class ProjectService : IProjectService
             TotalYellowCards = yellowCards,
             TotalRedCards = redCards,
             TeamMemberCount = project.TeamMembers?.Count(m => !m.IsDeleted) ?? 0,
-            TargetBranchCount = 0 // Branch system removed
+            TargetBranchCount = 0, // Branch system removed
+            IsChecklistDeleted = project.Checklist?.IsDeleted ?? false
         };
     }
 
