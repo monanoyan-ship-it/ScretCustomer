@@ -165,13 +165,6 @@ public class CustomerPortalProfileController : BaseApiController
                 return Forbid();
             }
 
-            // Sadece Manager ve Admin erişebilir
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            if (role != "CustomerManager" && role != "CustomerAdmin")
-            {
-                return Forbid();
-            }
-
             var userId = GetCurrentUserId();
             var settings = await _profileService.GetCompanySettingsAsync(null, userId);
 

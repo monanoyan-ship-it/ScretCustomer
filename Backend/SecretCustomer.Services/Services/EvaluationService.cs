@@ -102,6 +102,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -161,6 +162,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -284,6 +286,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -342,6 +345,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -398,6 +402,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,
@@ -1576,6 +1581,7 @@ public class EvaluationService : IEvaluationService
         {
             Id = evaluation.Id,
             ProjectId = evaluation.ProjectId,
+            ProjectTypeId = evaluation.Project?.ProjectTypeId ?? 0,
             AssignmentPeriodId = evaluation.AssignmentPeriodId,
             AssignmentPeriodName = periodName,
             EvaluatorId = evaluation.EvaluatorId,
@@ -2190,6 +2196,7 @@ public class EvaluationService : IEvaluationService
             {
                 Id = e.Id,
                 ProjectId = e.ProjectId,
+                ProjectTypeId = e.Project.ProjectTypeId,
                 AssignmentPeriodId = e.AssignmentPeriodId,
                 AssignmentPeriodName = e.AssignmentPeriod != null ? e.AssignmentPeriod.Name : null,
                 EvaluatorId = e.EvaluatorId,

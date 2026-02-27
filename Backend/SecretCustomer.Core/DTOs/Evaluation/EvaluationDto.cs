@@ -4,6 +4,7 @@ public class EvaluationDto
 {
     public int Id { get; set; }
     public int ProjectId { get; set; }
+    public int ProjectTypeId { get; set; }
     public int? AssignmentPeriodId { get; set; }
     public string? AssignmentPeriodName { get; set; }
     public int? EvaluatorId { get; set; }
