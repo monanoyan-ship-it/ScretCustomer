@@ -1087,7 +1087,8 @@ public class ProjectService : IProjectService
             TotalYellowCards = dto.TotalYellowCards,
             TotalRedCards = dto.TotalRedCards,
             TeamMemberCount = dto.TeamMemberCount,
-            TargetBranchCount = dto.TargetBranchCount
+            TargetBranchCount = dto.TargetBranchCount,
+            IsChecklistDeleted = project.Checklist?.IsDeleted ?? true
         };
 
         // Map team members

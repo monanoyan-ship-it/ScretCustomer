@@ -124,6 +124,9 @@ public class ProjectDto
     // Takim ve Subeler
     public int TeamMemberCount { get; set; }
     public int TargetBranchCount { get; set; }
+
+    // Checklist durumu
+    public bool IsChecklistDeleted { get; set; }
 }
 
 /// <summary>
