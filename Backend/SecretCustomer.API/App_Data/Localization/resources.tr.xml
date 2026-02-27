@@ -10771,6 +10771,12 @@
   <LocaleResource Name="GolgeMusteri.Aramalarim">
     <Value>Aramalarım</Value>
   </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.TamamlananAramalar">
+    <Value>Tamamlanan Aramalar</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.NoTamamlananAramalar">
+    <Value>Tamamlanan arama bulunmuyor.</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Görüşülen Temsilci</Value>
   </LocaleResource>

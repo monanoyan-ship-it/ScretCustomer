@@ -10793,6 +10793,12 @@
   <LocaleResource Name="GolgeMusteri.Aramalarim">
     <Value>Meine Anrufe</Value>
   </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.TamamlananAramalar">
+    <Value>Abgeschlossene Anrufe</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.NoTamamlananAramalar">
+    <Value>Keine abgeschlossenen Anrufe gefunden.</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Kontaktierter Vertreter</Value>
   </LocaleResource>

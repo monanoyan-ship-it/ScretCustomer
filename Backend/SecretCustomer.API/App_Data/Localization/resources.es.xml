@@ -10791,6 +10791,12 @@
   <LocaleResource Name="GolgeMusteri.Aramalarim">
     <Value>Mis Llamadas</Value>
   </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.TamamlananAramalar">
+    <Value>Llamadas Completadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="GolgeMusteri.NoTamamlananAramalar">
+    <Value>No se encontraron llamadas completadas.</Value>
+  </LocaleResource>
   <LocaleResource Name="GolgeMusteri.GorusulenTemsilci">
     <Value>Representante Contactado</Value>
   </LocaleResource>

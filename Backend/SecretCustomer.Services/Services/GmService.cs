@@ -1167,7 +1167,8 @@ public class GmService : IGmService
             .Include(x => x.GmDonemSoru)
                 .ThenInclude(ds => ds!.GmHedefFirma)
             .Include(x => x.User)
-            .Where(x => x.UserId == userId);
+            .Where(x => x.UserId == userId)
+            .Where(x => x.DurumId != GmAtamaDurumlari.Ids.Tamamlandi);
 
         // Dönem filtresi: belirli dönem seçildiyse onu, yoksa sadece aktif dönemleri getir
         if (donemIds != null && donemIds.Any())
