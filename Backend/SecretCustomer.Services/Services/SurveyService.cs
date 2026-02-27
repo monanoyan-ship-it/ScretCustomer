@@ -512,6 +512,13 @@ public class SurveyService : ISurveyService
             .ToListAsync();
     }
 
+    public async Task<List<CustomerPersonnel>> GetCustomerPersonnelByIdsAsync(List<int> ids)
+    {
+        return await _context.CustomerPersonnel
+            .Where(cp => ids.Contains(cp.Id) && !cp.IsDeleted)
+            .ToListAsync();
+    }
+
     public async Task<object> GetInvitationsAsync(int projectId, int? statusId)
     {
         var query = _context.SurveyInvitations

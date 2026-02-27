@@ -135,6 +135,11 @@ public interface ISurveyService
     Task<List<SurveyInvitation>> GetInvitationsRawAsync(int projectId);
 
     /// <summary>
+    /// ID listesine göre CustomerPersonnel getir
+    /// </summary>
+    Task<List<CustomerPersonnel>> GetCustomerPersonnelByIdsAsync(List<int> ids);
+
+    /// <summary>
     /// Proje için davetiye listesini getir
     /// </summary>
     Task<object> GetInvitationsAsync(int projectId, int? statusId);

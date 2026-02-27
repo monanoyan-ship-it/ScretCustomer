@@ -1609,6 +1609,103 @@ public class SurveyApiController : ControllerBase
     }
 
     /// <summary>
+    /// Anket linklerini Excel olarak indir (internal + external)
+    /// </summary>
+    [HttpGet("{projectId}/export-links")]
+    public async Task<IActionResult> ExportSurveyLinks(int projectId)
+    {
+        try
+        {
+            var project = await _surveyService.GetProjectAsync(projectId);
+            if (project == null)
+                return NotFound(new { message = "Proje bulunamadı" });
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/Survey/Form";
+
+            // Internal invitations (CustomerPersonnel)
+            var internalInvitations = await _surveyService.GetInvitationsRawAsync(projectId);
+
+            // External invitations
+            var externalInvitations = await _surveyService.GetExternalInvitationsRawAsync(projectId);
+
+            // CustomerPersonnel bilgilerini yükle
+            var personnelIds = internalInvitations.Select(i => i.CustomerPersonnelId).Distinct().ToList();
+            var personnelDict = new Dictionary<int, (string FirstName, string LastName, string Email)>();
+            if (personnelIds.Any())
+            {
+                var personnelList = await _surveyService.GetCustomerPersonnelByIdsAsync(personnelIds);
+                foreach (var p in personnelList)
+                {
+                    personnelDict[p.Id] = (p.FirstName ?? "", p.LastName ?? "", p.Email ?? "");
+                }
+            }
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Anket Linkleri");
+
+            // Headers
+            var headers = new[] { "Tip", "Email", "Ad", "Soyad", "Link", "Durum", "Tamamlandı" };
+            for (int i = 0; i < headers.Length; i++)
+            {
+                worksheet.Cell(1, i + 1).Value = headers[i];
+            }
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            var row = 2;
+
+            // Internal invitations
+            foreach (var inv in internalInvitations.Where(i => !i.IsReminder).DistinctBy(i => i.CustomerPersonnelId))
+            {
+                var token = EncryptionHelper.CreateSurveyToken(projectId, inv.CustomerPersonnelId);
+                var link = $"{baseUrl}?token={token}";
+                var personnel = personnelDict.GetValueOrDefault(inv.CustomerPersonnelId);
+
+                worksheet.Cell(row, 1).Value = "Dahili";
+                worksheet.Cell(row, 2).Value = personnel.Email ?? inv.Email;
+                worksheet.Cell(row, 3).Value = personnel.FirstName;
+                worksheet.Cell(row, 4).Value = personnel.LastName;
+                worksheet.Cell(row, 5).Value = link;
+                worksheet.Cell(row, 6).Value = inv.StatusId == SurveyInvitationStatuses.Ids.Sent ? "Gönderildi" : inv.StatusId == SurveyInvitationStatuses.Ids.Failed ? "Başarısız" : "Beklemede";
+                worksheet.Cell(row, 7).Value = inv.IsCompleted ? "Evet" : "Hayır";
+                row++;
+            }
+
+            // External invitations
+            foreach (var inv in externalInvitations)
+            {
+                var link = $"{baseUrl}?token={inv.Token}";
+
+                worksheet.Cell(row, 1).Value = "Harici";
+                worksheet.Cell(row, 2).Value = inv.Email;
+                worksheet.Cell(row, 3).Value = inv.FirstName ?? "";
+                worksheet.Cell(row, 4).Value = inv.LastName ?? "";
+                worksheet.Cell(row, 5).Value = link;
+                worksheet.Cell(row, 6).Value = inv.StatusId == SurveyInvitationStatuses.Ids.Sent ? "Gönderildi" : inv.StatusId == SurveyInvitationStatuses.Ids.Failed ? "Başarısız" : "Beklemede";
+                worksheet.Cell(row, 7).Value = inv.IsCompleted ? "Evet" : "Hayır";
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+            // Link sütunu çok uzun olabilir, max genişlik
+            if (worksheet.Column(5).Width > 60) worksheet.Column(5).Width = 60;
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"AnketLinkleri_{project.Name?.Replace(" ", "_") ?? projectId.ToString()}_{TurkeyTime.Now:yyyyMMdd}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Survey links export error for project {projectId}", "Survey", ex);
+            return StatusCode(500, new { message = "Link listesi oluşturulurken hata oluştu" });
+        }
+    }
+
+    /// <summary>
     /// Email girdisini parse et (virgül, noktalı virgül veya satır ile ayrılmış)
     /// Formatlar:
     /// - email@x.com

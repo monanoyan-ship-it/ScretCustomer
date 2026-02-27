@@ -1201,6 +1201,10 @@ function ProjectsViewModel() {
     // ==================== SURVEY MODAL FUNCTIONS ====================
 
     // Open survey invitation modal
+    self.exportSurveyLinks = function(project) {
+        window.location.href = '/api/surveys/' + project.id + '/export-links';
+    };
+
     self.openSurveyModal = function(project) {
         self.surveyProject(project);
         self.surveyPersonnelStats(null);
