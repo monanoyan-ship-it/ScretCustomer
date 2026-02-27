@@ -11,11 +11,100 @@ function AramalarimViewModel() {
     self.isSaving = ko.observable(false);
     self.completingAtama = ko.observable(null);
 
-    // Aramalar tab (tamamlanan aramalar - tüm kullanıcılar)
+    // Aramalar tab (tamamlanan aramalar)
     self.tamamlananAramalar = ko.observableArray([]);
     self.isAramalarLoading = ko.observable(false);
     self.aramalarLoaded = false;
     self.selectedAtama = ko.observable(null);
+
+    // Tab 2 Filter UI
+    self.tab2SelectedFilterType = ko.observable('');
+    self.tab2TempFilter = {
+        donemId: ko.observable(''),
+        firma: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        dateRangeType: ko.observable('')
+    };
+    self.tab2ActiveFilters = ko.observableArray([]);
+
+    self.canAddTab2Filter = ko.computed(function () {
+        var type = self.tab2SelectedFilterType();
+        if (!type) return false;
+        if (type === 'donem') return self.tab2TempFilter.donemId();
+        if (type === 'firma') return self.tab2TempFilter.firma();
+        if (type === 'dateRange') return self.tab2TempFilter.startDate() || self.tab2TempFilter.endDate() || self.tab2TempFilter.dateRangeType();
+        return false;
+    });
+
+    self.setTab2DateRange = function (rangeType) {
+        var range = self.calculateDateRange(rangeType);
+        self.tab2TempFilter.startDate(range.start);
+        self.tab2TempFilter.endDate(range.end);
+        self.tab2TempFilter.dateRangeType(rangeType);
+    };
+
+    self.addTab2Filter = function () {
+        var type = self.tab2SelectedFilterType();
+        if (!type) return;
+
+        var filter = { type: type };
+        var label = '';
+        var displayValue = '';
+
+        if (type === 'donem') {
+            filter.value = self.tab2TempFilter.donemId();
+            var donem = self.donemler().find(function (d) { return d.id == filter.value; });
+            label = 'Dönem';
+            displayValue = donem ? donem.ad : filter.value;
+        } else if (type === 'firma') {
+            filter.value = self.tab2TempFilter.firma();
+            label = 'Firma';
+            displayValue = filter.value;
+        } else if (type === 'dateRange') {
+            filter.dateRangeType = self.tab2TempFilter.dateRangeType();
+            filter.startDate = self.tab2TempFilter.startDate();
+            filter.endDate = self.tab2TempFilter.endDate();
+            label = 'Tarih';
+            if (filter.dateRangeType && self.dateRangeLabels[filter.dateRangeType]) {
+                displayValue = self.dateRangeLabels[filter.dateRangeType];
+            } else {
+                displayValue = (filter.startDate || '...') + ' - ' + (filter.endDate || '...');
+            }
+        }
+
+        self.tab2ActiveFilters.push({
+            type: type,
+            value: filter.value,
+            startDate: filter.startDate,
+            endDate: filter.endDate,
+            dateRangeType: filter.dateRangeType,
+            label: label,
+            displayValue: displayValue
+        });
+
+        self.resetTab2TempFilter();
+        self.tab2SelectedFilterType('');
+        self.loadTamamlananAramalar();
+    };
+
+    self.resetTab2TempFilter = function () {
+        self.tab2TempFilter.donemId('');
+        self.tab2TempFilter.firma('');
+        self.tab2TempFilter.startDate('');
+        self.tab2TempFilter.endDate('');
+        self.tab2TempFilter.dateRangeType('');
+    };
+
+    self.removeTab2Filter = function (filter) {
+        self.tab2ActiveFilters.remove(filter);
+        self.loadTamamlananAramalar();
+    };
+
+    self.clearTab2Filters = function () {
+        self.tab2ActiveFilters.removeAll();
+        self.loadTamamlananAramalar();
+    };
 
     // Dinlemelerim
     self.dinlemelerim = ko.observableArray([]);
@@ -322,10 +411,46 @@ function AramalarimViewModel() {
     };
 
     // Tamamlanan aramalar (Aramalar tab)
+    self.buildTab2QueryParams = function () {
+        var params = new URLSearchParams();
+        var startDate = null;
+        var endDate = null;
+
+        self.tab2ActiveFilters().forEach(function (f) {
+            switch (f.type) {
+                case 'donem':
+                    params.append('donemIds', f.value);
+                    break;
+                case 'firma':
+                    params.append('firmaArama', f.value);
+                    break;
+                case 'dateRange':
+                    if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                        var range = self.calculateDateRange(f.dateRangeType);
+                        startDate = range.start;
+                        endDate = range.end;
+                    } else {
+                        if (f.startDate) startDate = f.startDate;
+                        if (f.endDate) endDate = f.endDate;
+                    }
+                    break;
+            }
+        });
+
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+
+        return params;
+    };
+
     self.loadTamamlananAramalar = function () {
         self.isAramalarLoading(true);
 
-        $.get('/api/gm/aramalarim/tamamlanan')
+        var params = self.buildTab2QueryParams();
+        var queryString = params.toString();
+        var url = '/api/gm/aramalarim/tamamlanan' + (queryString ? '?' + queryString : '');
+
+        $.get(url)
             .done(function (data) {
                 self.tamamlananAramalar(data);
                 self.aramalarLoaded = true;

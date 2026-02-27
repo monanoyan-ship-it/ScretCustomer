@@ -70,6 +70,7 @@ public class GmAramalarimApiController : BaseApiController
     [HttpGet("tamamlanan")]
     public async Task<IActionResult> GetTamamlananAramalar(
         [FromQuery] List<int>? donemIds,
+        [FromQuery] List<string>? firmaArama,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate)
     {
@@ -77,7 +78,7 @@ public class GmAramalarimApiController : BaseApiController
         {
             var userId = GetUserId();
             if (userId == 0) return Unauthorized();
-            var result = await _gmService.GetTamamlananAramalarAsync(userId, donemIds, startDate, endDate);
+            var result = await _gmService.GetTamamlananAramalarAsync(userId, donemIds, firmaArama, startDate, endDate);
             return Ok(result);
         }
         catch (Exception ex)

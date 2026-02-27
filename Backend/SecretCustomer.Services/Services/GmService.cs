@@ -1308,7 +1308,7 @@ public class GmService : IGmService
         return gunler;
     }
 
-    public async Task<object> GetTamamlananAramalarAsync(int userId, List<int>? donemIds = null, DateTime? startDate = null, DateTime? endDate = null)
+    public async Task<object> GetTamamlananAramalarAsync(int userId, List<int>? donemIds = null, List<string>? firmaArama = null, DateTime? startDate = null, DateTime? endDate = null)
     {
         var query = _context.GmAtamalar
             .Include(a => a.GmDonem)
@@ -1326,6 +1326,14 @@ public class GmService : IGmService
         {
             // Varsayılan: sadece aktif dönemler
             query = query.Where(a => a.GmDonem.DurumId == GmDonemDurumlari.Ids.Aktif);
+        }
+
+        // Firma arama
+        if (firmaArama != null && firmaArama.Any(f => !string.IsNullOrWhiteSpace(f)))
+        {
+            var searchTerm = firmaArama.First(f => !string.IsNullOrWhiteSpace(f));
+            query = query.Where(a => a.GmDonemSoru!.GmHedefFirma != null &&
+                EF.Functions.ILike(a.GmDonemSoru.GmHedefFirma.FirmaAdi, "%" + searchTerm + "%"));
         }
 
         if (startDate.HasValue)
