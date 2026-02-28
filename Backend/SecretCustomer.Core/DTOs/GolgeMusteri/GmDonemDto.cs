@@ -81,6 +81,7 @@ public class GmDonemSoruDto
     public string? BeklenenCevap { get; set; }
     public bool IsKuponlu { get; set; }
     public int AranmaSayisi { get; set; }
+    public int AtamaSayisi { get; set; }
     public int SiraNo { get; set; }
     public int? GmDonemId { get; set; }
     public string? DonemAdi { get; set; }

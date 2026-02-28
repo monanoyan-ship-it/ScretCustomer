@@ -113,8 +113,7 @@ function AramalarimViewModel() {
     self.kuponAtama = ko.observable(null);
     self.isKuponSaving = ko.observable(false);
     self.kuponForm = {
-        kuponKodu: ko.observable(''),
-        kuponBilgisi: ko.observable('')
+        kuponKodu: ko.observable('')
     };
 
     // Dinlemelerim
@@ -439,7 +438,6 @@ function AramalarimViewModel() {
     self.showKuponKoduModal = function (atama) {
         self.kuponAtama(atama);
         self.kuponForm.kuponKodu('');
-        self.kuponForm.kuponBilgisi('');
         $('#kuponKoduModal').modal('show');
     };
 
@@ -456,8 +454,7 @@ function AramalarimViewModel() {
             type: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify({
-                kuponKodu: self.kuponForm.kuponKodu(),
-                kuponBilgisi: self.kuponForm.kuponBilgisi() || null
+                kuponKodu: self.kuponForm.kuponKodu()
             })
         })
         .done(function () {

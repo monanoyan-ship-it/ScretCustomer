@@ -58,7 +58,4 @@ public class EnterKuponKoduDto
     [Required(ErrorMessage = "Kupon kodu zorunludur")]
     [StringLength(100, ErrorMessage = "Kupon kodu en fazla 100 karakter olabilir")]
     public string KuponKodu { get; set; } = string.Empty;
-
-    [StringLength(500, ErrorMessage = "Kupon bilgisi en fazla 500 karakter olabilir")]
-    public string? KuponBilgisi { get; set; }
 }

@@ -244,7 +244,7 @@
                                     <th>Müşteri</th>
                                     <th>Firma</th>
                                     <th>Soru</th>
-                                    <th>Aranma</th>
+                                    <th>Atama</th>
                                     <th>Kupon Kodu</th>
                                     <!-- ko if: selectedDonem() && (selectedDonem().durumId === 1 || selectedDonem().durumId === 2) -->
                                     <th style="width: 100px;"></th>
@@ -256,7 +256,7 @@
                                     <td><small data-bind="text: musteriAdi || '-'"></small></td>
                                     <td data-bind="text: hedefFirmaAdi || '-'"></td>
                                     <td><small data-bind="text: soruMetni ? (soruMetni.length > 60 ? soruMetni.substring(0,60)+'...' : soruMetni) : '-'"></small></td>
-                                    <td><span class="badge bg-info" data-bind="text: aranmaSayisi"></span></td>
+                                    <td><span class="badge" data-bind="text: atamaSayisi + '/' + aranmaSayisi, css: atamaSayisi >= aranmaSayisi ? 'bg-success' : 'bg-info'"></span></td>
                                     <td>
                                         <!-- ko if: isKuponlu -->
                                         <span class="badge bg-warning text-dark">Kuponlu</span>
@@ -288,7 +288,7 @@
                                             <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removeSoru" title="Sil">
                                                 <i class="bi bi-x"></i>
                                             </button>
-                                            <!-- ko if: isKuponlu -->
+                                            <!-- ko if: isKuponlu && atamaSayisi < aranmaSayisi -->
                                             <button class="btn btn-sm btn-outline-success" data-bind="click: $parent.kuponluDagit" title="Dağıt">
                                                 <i class="bi bi-send"></i>
                                             </button>

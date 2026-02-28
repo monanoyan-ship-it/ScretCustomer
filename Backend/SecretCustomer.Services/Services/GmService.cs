@@ -152,6 +152,7 @@ public class GmService : IGmService
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
+                AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
@@ -204,6 +205,7 @@ public class GmService : IGmService
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
+                AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
@@ -259,6 +261,7 @@ public class GmService : IGmService
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
+                AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
                 GmDonemId = x.GmDonemId,
                 DonemAdi = x.GmDonem != null ? x.GmDonem.Ad : null
@@ -573,6 +576,7 @@ public class GmService : IGmService
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
                 AranmaSayisi = x.AranmaSayisi,
+                AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo
             })
             .ToListAsync();
@@ -1280,7 +1284,6 @@ public class GmService : IGmService
             throw new InvalidOperationException("Bu atama kupon kodu bekliyor durumunda değil.");
 
         entity.KuponKodu = dto.KuponKodu;
-        entity.KuponBilgisi = dto.KuponBilgisi;
         entity.DurumId = GmAtamaDurumlari.Ids.Beklemede;
 
         await _context.SaveChangesAsync();
