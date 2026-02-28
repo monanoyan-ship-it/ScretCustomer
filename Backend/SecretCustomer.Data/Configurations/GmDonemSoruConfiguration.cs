@@ -18,6 +18,9 @@ public class GmDonemSoruConfiguration : IEntityTypeConfiguration<GmDonemSoru>
         builder.Property(x => x.BeklenenCevap)
             .HasMaxLength(2000);
 
+        builder.Property(x => x.KuponBilgisi)
+            .HasMaxLength(500);
+
         builder.HasOne(x => x.Customer)
             .WithMany()
             .HasForeignKey(x => x.CustomerId)

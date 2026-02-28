@@ -91,6 +91,7 @@ public class CreateDonemSoruRequest
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public bool IsKuponlu { get; set; } = false;
+    public string? KuponBilgisi { get; set; }
     public int SiraNo { get; set; } = 0;
 }
 
@@ -100,6 +101,7 @@ public class UpdateDonemSoruRequest
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public bool IsKuponlu { get; set; } = false;
+    public string? KuponBilgisi { get; set; }
     public int SiraNo { get; set; } = 0;
 }
 
@@ -128,6 +130,7 @@ public class ImportUnmatchedItem
     public string SoruMetni { get; set; } = string.Empty;
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; }
+    public string? KuponBilgisi { get; set; }
 }
 
 public class SaveUnmatchedSoruItem
@@ -137,6 +140,7 @@ public class SaveUnmatchedSoruItem
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public int CustomerId { get; set; }
+    public string? KuponBilgisi { get; set; }
 }
 
 public class KuponluDagitRequest

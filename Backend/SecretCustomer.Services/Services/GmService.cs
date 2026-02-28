@@ -151,6 +151,7 @@ public class GmService : IGmService
                 MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
+                KuponBilgisi = x.KuponBilgisi,
                 AranmaSayisi = x.AranmaSayisi,
                 AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
@@ -180,6 +181,7 @@ public class GmService : IGmService
             BeklenenCevap = dto.BeklenenCevap,
             AranmaSayisi = dto.AranmaSayisi,
             IsKuponlu = dto.IsKuponlu,
+            KuponBilgisi = dto.KuponBilgisi,
             SiraNo = dto.SiraNo
         };
 
@@ -204,6 +206,7 @@ public class GmService : IGmService
                 MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
+                KuponBilgisi = x.KuponBilgisi,
                 AranmaSayisi = x.AranmaSayisi,
                 AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
@@ -239,6 +242,7 @@ public class GmService : IGmService
         entity.BeklenenCevap = dto.BeklenenCevap;
         entity.AranmaSayisi = dto.AranmaSayisi;
         entity.IsKuponlu = dto.IsKuponlu;
+        entity.KuponBilgisi = dto.KuponBilgisi;
         entity.SiraNo = dto.SiraNo;
 
         await _context.SaveChangesAsync();
@@ -260,6 +264,7 @@ public class GmService : IGmService
                 MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
+                KuponBilgisi = x.KuponBilgisi,
                 AranmaSayisi = x.AranmaSayisi,
                 AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo,
@@ -575,6 +580,7 @@ public class GmService : IGmService
                 MusteriAdi = x.Customer != null ? x.Customer.CompanyName : null,
                 BeklenenCevap = x.BeklenenCevap,
                 IsKuponlu = x.IsKuponlu,
+                KuponBilgisi = x.KuponBilgisi,
                 AranmaSayisi = x.AranmaSayisi,
                 AtamaSayisi = _context.GmAtamalar.Count(a => a.GmDonemSoruId == x.Id),
                 SiraNo = x.SiraNo
@@ -897,6 +903,7 @@ public class GmService : IGmService
             var soruMetni = ws.Cell(row, 1).GetString()?.Trim();
             var beklenenCevap = ws.Cell(row, 2).GetString()?.Trim();
             var aranmaSayisiStr = ws.Cell(row, 3).GetString()?.Trim();
+            var kuponBilgisi = ws.Cell(row, 4).GetString()?.Trim();
 
             if (string.IsNullOrWhiteSpace(soruMetni))
             {
@@ -930,6 +937,7 @@ public class GmService : IGmService
                 BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
                 AranmaSayisi = aranmaSayisi,
                 IsKuponlu = true,
+                KuponBilgisi = string.IsNullOrWhiteSpace(kuponBilgisi) ? null : kuponBilgisi,
                 SiraNo = 0
             };
 
@@ -948,7 +956,7 @@ public class GmService : IGmService
 
     /// <summary>
     /// Kuponlu soru import (firma eşleştirmeli, aktif dönem).
-    /// Excel formatı: Hedef Firma (A), Soru (B), Beklenen Cevap (C), Aranma Sayısı (D), Kupon Kodu (E)
+    /// Excel formatı: Hedef Firma (A), Soru (B), Beklenen Cevap (C), Aranma Sayısı (D), Kupon Bilgisi (E)
     /// </summary>
     public async Task<ImportDonemSorularResult> ImportKuponluSorularWithMatchingAsync(int donemId, Stream excelStream)
     {
@@ -982,6 +990,7 @@ public class GmService : IGmService
             var soruMetni = ws.Cell(row, 2).GetString()?.Trim();
             var beklenenCevap = ws.Cell(row, 3).GetString()?.Trim();
             var aranmaSayisiStr = ws.Cell(row, 4).GetString()?.Trim();
+            var kuponBilgisi = ws.Cell(row, 5).GetString()?.Trim();
 
             if (string.IsNullOrWhiteSpace(soruMetni))
             {
@@ -1018,6 +1027,7 @@ public class GmService : IGmService
                     BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
                     AranmaSayisi = aranmaSayisi,
                     IsKuponlu = true,
+                    KuponBilgisi = string.IsNullOrWhiteSpace(kuponBilgisi) ? null : kuponBilgisi,
                     SiraNo = 0
                 };
                 _context.GmDonemSorular.Add(entity);
@@ -1040,7 +1050,8 @@ public class GmService : IGmService
                     ExcelHedefFirmaAdi = hedefFirmaAdi ?? "",
                     SoruMetni = soruMetni,
                     BeklenenCevap = string.IsNullOrWhiteSpace(beklenenCevap) ? null : beklenenCevap,
-                    AranmaSayisi = aranmaSayisi
+                    AranmaSayisi = aranmaSayisi,
+                    KuponBilgisi = string.IsNullOrWhiteSpace(kuponBilgisi) ? null : kuponBilgisi
                 });
             }
         }
@@ -1080,6 +1091,7 @@ public class GmService : IGmService
                 BeklenenCevap = string.IsNullOrWhiteSpace(item.BeklenenCevap) ? null : item.BeklenenCevap,
                 AranmaSayisi = item.AranmaSayisi < 1 ? 1 : item.AranmaSayisi,
                 IsKuponlu = true,
+                KuponBilgisi = string.IsNullOrWhiteSpace(item.KuponBilgisi) ? null : item.KuponBilgisi,
                 SiraNo = 0
             };
             _context.GmDonemSorular.Add(entity);

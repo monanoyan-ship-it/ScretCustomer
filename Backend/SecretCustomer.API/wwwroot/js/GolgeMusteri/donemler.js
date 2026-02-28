@@ -106,6 +106,7 @@ function DonemlerViewModel() {
         beklenenCevap: ko.observable(''),
         aranmaSayisi: ko.observable(1),
         isKuponlu: ko.observable(false),
+        kuponBilgisi: ko.observable(''),
         siraNo: ko.observable(0)
     };
 
@@ -129,6 +130,7 @@ function DonemlerViewModel() {
         self.soruForm.beklenenCevap('');
         self.soruForm.aranmaSayisi(1);
         self.soruForm.isKuponlu(false);
+        self.soruForm.kuponBilgisi('');
         self.soruForm.siraNo(0);
         self.hedefFirmalar([]);
 
@@ -158,6 +160,7 @@ function DonemlerViewModel() {
         self.soruForm.beklenenCevap(soru.beklenenCevap || '');
         self.soruForm.aranmaSayisi(soru.aranmaSayisi);
         self.soruForm.isKuponlu(soru.isKuponlu);
+        self.soruForm.kuponBilgisi(soru.kuponBilgisi || '');
         self.soruForm.siraNo(soru.siraNo);
 
         if (!self.customers().length) {
@@ -189,6 +192,7 @@ function DonemlerViewModel() {
                     beklenenCevap: self.soruForm.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
                     isKuponlu: self.soruForm.isKuponlu(),
+                    kuponBilgisi: self.soruForm.kuponBilgisi() || null,
                     siraNo: parseInt(self.soruForm.siraNo()) || 0
                 })
             })
@@ -217,6 +221,7 @@ function DonemlerViewModel() {
                     beklenenCevap: self.soruForm.beklenenCevap() || null,
                     aranmaSayisi: parseInt(self.soruForm.aranmaSayisi()) || 1,
                     isKuponlu: self.soruForm.isKuponlu(),
+                    kuponBilgisi: self.soruForm.kuponBilgisi() || null,
                     siraNo: parseInt(self.soruForm.siraNo()) || 0
                 })
             })
@@ -374,6 +379,7 @@ function DonemlerViewModel() {
                     soruMetni: item.soruMetni,
                     beklenenCevap: item.beklenenCevap,
                     aranmaSayisi: item.aranmaSayisi,
+                    kuponBilgisi: item.kuponBilgisi,
                     selectedHedefFirmaId: ko.observable(null)
                 };
             });
@@ -406,7 +412,8 @@ function DonemlerViewModel() {
                     soruMetni: item.soruMetni,
                     beklenenCevap: item.beklenenCevap,
                     aranmaSayisi: item.aranmaSayisi,
-                    customerId: firma ? firma.customerId : 0
+                    customerId: firma ? firma.customerId : 0,
+                    kuponBilgisi: item.kuponBilgisi || null
                 });
             }
         });
@@ -601,7 +608,7 @@ function DonemlerViewModel() {
         self.kuponluDagitSoru(soru);
         self.kuponluDagitForm.userId(null);
         self.kuponluDagitForm.planTarihi('');
-        self.kuponluDagitForm.kuponBilgisi('');
+        self.kuponluDagitForm.kuponBilgisi(soru.kuponBilgisi || '');
         // Personel listesini dönem detayından al
         var detail = self.donemDetail();
         self.kuponluPersoneller(detail && detail.personeller ? detail.personeller : []);

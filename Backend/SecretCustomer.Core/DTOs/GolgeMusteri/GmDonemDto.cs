@@ -80,6 +80,7 @@ public class GmDonemSoruDto
     public string? MusteriAdi { get; set; }
     public string? BeklenenCevap { get; set; }
     public bool IsKuponlu { get; set; }
+    public string? KuponBilgisi { get; set; }
     public int AranmaSayisi { get; set; }
     public int AtamaSayisi { get; set; }
     public int SiraNo { get; set; }

@@ -44,6 +44,11 @@ public class GmDonemSoru : BaseEntity
     public bool IsKuponlu { get; set; } = false;
 
     /// <summary>
+    /// Kupon bilgisi (kuponlu sorular için)
+    /// </summary>
+    public string? KuponBilgisi { get; set; }
+
+    /// <summary>
     /// Sıra numarası
     /// </summary>
     public int SiraNo { get; set; } = 0;
