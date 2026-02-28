@@ -10911,4 +10911,143 @@
   <LocaleResource Name="GmDinleme.NoRecords">
     <Value>No mystery customer listening records found.</Value>
   </LocaleResource>
+  <!-- Evaluation Import -->
+  <LocaleResource Name="Menu.EvaluationImport">
+    <Value>Evaluation Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.UploadFile">
+    <Value>Upload Excel File</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Upload">
+    <Value>Upload &amp; Process</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Sessions">
+    <Value>Import Sessions</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.NoSessions">
+    <Value>No import sessions found yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.FileName">
+    <Value>File</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.TotalRows">
+    <Value>Total Rows</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Imported">
+    <Value>Imported</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Skipped">
+    <Value>Skipped</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.UnmatchedItems">
+    <Value>Unmatched Items</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.PendingRows">
+    <Value>Pending Rows</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.AllMatched">
+    <Value>All items have been matched.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ItemType">
+    <Value>Type</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.OriginalValue">
+    <Value>Original Value</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.AffectedRows">
+    <Value>Affected Rows</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Unresolved">
+    <Value>Unresolved</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Resolve">
+    <Value>Resolve</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ResolveItem">
+    <Value>Resolve Item</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SearchExisting">
+    <Value>Search Existing Record</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SearchPlaceholder">
+    <Value>Search by name...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CreateNew">
+    <Value>Create New Record</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CreateAndLink">
+    <Value>Create &amp; Link</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SkipItem">
+    <Value>Skip This Item</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.LinkSelected">
+    <Value>Link Selected</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ImportResolved">
+    <Value>Import Resolved Rows</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.NoRows">
+    <Value>No rows found for this filter.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Person">
+    <Value>Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Evaluator">
+    <Value>Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Project">
+    <Value>Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Score">
+    <Value>Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CallDate">
+    <Value>Call Date</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Row">
+    <Value>Row</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Processing">
+    <Value>Processing</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Completed">
+    <Value>Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Failed">
+    <Value>Failed</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Pending">
+    <Value>Pending</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Imported">
+    <Value>Imported</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Skipped">
+    <Value>Skipped</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.EvaluatedPerson">
+    <Value>Evaluated Person</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.Evaluator">
+    <Value>Evaluator</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.Project">
+    <Value>Project</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.LinkedExisting">
+    <Value>Linked to Existing</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.CreatedNew">
+    <Value>Created New</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.Skipped">
+    <Value>Skipped</Value>
+  </LocaleResource>
 </Language>

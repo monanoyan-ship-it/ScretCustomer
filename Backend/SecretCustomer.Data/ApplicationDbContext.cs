@@ -137,6 +137,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<GmDinlemeAnswer> GmDinlemeAnswers { get; set; }
     public DbSet<GmDinlemeAnswerSubCriteria> GmDinlemeAnswerSubCriteria { get; set; }
 
+    // Evaluation Import
+    public DbSet<EvaluationImportSession> EvaluationImportSessions { get; set; }
+    public DbSet<EvaluationImportPendingRow> EvaluationImportPendingRows { get; set; }
+    public DbSet<EvaluationImportUnmatchedItem> EvaluationImportUnmatchedItems { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -233,6 +238,11 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<GmDinlemeAyar>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<GmDinlemeEvaluation>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<GmDinlemeAnswer>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Evaluation Import
+        modelBuilder.Entity<EvaluationImportSession>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<EvaluationImportPendingRow>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<EvaluationImportUnmatchedItem>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 
@@ -633,6 +643,67 @@ public class ApplicationDbContext : DbContext
             .HasIndex(r => r.TrainingVideoExternalParticipantId);
         modelBuilder.Entity<TrainingQuizAnswer>()
             .HasIndex(a => a.TrainingQuizResponseId);
+
+        // ===== Evaluation Import İlişkileri =====
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasOne(r => r.ImportSession)
+            .WithMany(s => s.PendingRowItems)
+            .HasForeignKey(r => r.ImportSessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasOne(r => r.MatchedProject)
+            .WithMany()
+            .HasForeignKey(r => r.MatchedProjectId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasOne(r => r.MatchedEvaluator)
+            .WithMany()
+            .HasForeignKey(r => r.MatchedEvaluatorId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasOne(r => r.MatchedCustomerPersonnel)
+            .WithMany()
+            .HasForeignKey(r => r.MatchedCustomerPersonnelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasOne(r => r.Evaluation)
+            .WithMany()
+            .HasForeignKey(r => r.EvaluationId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportUnmatchedItem>()
+            .HasOne(u => u.ImportSession)
+            .WithMany(s => s.UnmatchedItems)
+            .HasForeignKey(u => u.ImportSessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<EvaluationImportUnmatchedItem>()
+            .HasOne(u => u.ResolvedByUser)
+            .WithMany()
+            .HasForeignKey(u => u.ResolvedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportSession>()
+            .HasOne(s => s.Customer)
+            .WithMany()
+            .HasForeignKey(s => s.CustomerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<EvaluationImportSession>()
+            .HasOne(s => s.UploadedByUser)
+            .WithMany()
+            .HasForeignKey(s => s.UploadedByUserId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Evaluation Import indexleri
+        modelBuilder.Entity<EvaluationImportPendingRow>()
+            .HasIndex(r => r.ImportSessionId);
+        modelBuilder.Entity<EvaluationImportUnmatchedItem>()
+            .HasIndex(u => u.ImportSessionId);
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

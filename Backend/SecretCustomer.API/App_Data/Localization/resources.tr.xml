@@ -10909,4 +10909,143 @@
   <LocaleResource Name="Listenings.Report.UnscoredQuestionsDesc">
     <Value>Puansız soruların alt kriter seçimleri ve dağılımı</Value>
   </LocaleResource>
+  <!-- Evaluation Import -->
+  <LocaleResource Name="Menu.EvaluationImport">
+    <Value>Değerlendirme Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.UploadFile">
+    <Value>Excel Dosyası Yükle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Upload">
+    <Value>Yükle ve İşle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Sessions">
+    <Value>Import Oturumları</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.NoSessions">
+    <Value>Henüz import oturumu bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.FileName">
+    <Value>Dosya</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.TotalRows">
+    <Value>Toplam Satır</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Imported">
+    <Value>İçe Aktarılan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Pending">
+    <Value>Bekleyen</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Skipped">
+    <Value>Atlanan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.UnmatchedItems">
+    <Value>Eşleşmeyen Öğeler</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.PendingRows">
+    <Value>Bekleyen Satırlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.AllMatched">
+    <Value>Tüm öğeler eşleştirildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ItemType">
+    <Value>Tür</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.OriginalValue">
+    <Value>Orijinal Değer</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.AffectedRows">
+    <Value>Etkilenen Satır</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Unresolved">
+    <Value>Çözümlenmemiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Resolve">
+    <Value>Çözümle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ResolveItem">
+    <Value>Öğeyi Çözümle</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SearchExisting">
+    <Value>Mevcut Kayıt Ara</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SearchPlaceholder">
+    <Value>Ad soyad yazarak arayın...</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CreateNew">
+    <Value>Yeni Kayıt Oluştur</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CreateAndLink">
+    <Value>Oluştur ve Eşleştir</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.SkipItem">
+    <Value>Bu Öğeyi Atla</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.LinkSelected">
+    <Value>Seçileni Eşleştir</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.ImportResolved">
+    <Value>Çözülmüş Satırları İçe Aktar</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.NoRows">
+    <Value>Bu filtreye uygun satır bulunamadı.</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Person">
+    <Value>Kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Evaluator">
+    <Value>Değerlendiren</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Project">
+    <Value>Proje</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Score">
+    <Value>Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.CallDate">
+    <Value>Çağrı Tarihi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImport.Row">
+    <Value>Satır</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Pending">
+    <Value>Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Processing">
+    <Value>İşleniyor</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Completed">
+    <Value>Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportSessionStatus.Failed">
+    <Value>Başarısız</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Pending">
+    <Value>Beklemede</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Imported">
+    <Value>İçe Aktarıldı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportRowStatus.Skipped">
+    <Value>Atlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.EvaluatedPerson">
+    <Value>Değerlendirilen Kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.Evaluator">
+    <Value>Değerlendiren</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportUnmatchedItemType.Project">
+    <Value>Proje</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.LinkedExisting">
+    <Value>Mevcut Kayıtla Eşleştirildi</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.CreatedNew">
+    <Value>Yeni Oluşturuldu</Value>
+  </LocaleResource>
+  <LocaleResource Name="EvaluationImportResolutionAction.Skipped">
+    <Value>Atlandı</Value>
+  </LocaleResource>
 </Language>

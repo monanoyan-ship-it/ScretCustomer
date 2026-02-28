@@ -1,0 +1,23 @@
+#evaluation-import-app .progress {
+    border-radius: 6px;
+}
+
+#evaluation-import-app .table th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+#evaluation-import-app .table td {
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+#evaluation-import-app .sticky-top {
+    z-index: 1;
+}
+
+#evaluation-import-app .list-group-item.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}

@@ -1855,3 +1855,83 @@ public static class GmDinlemeDurumlari
         public const int Tamamlandi = 3;
     }
 }
+
+// ===== Değerlendirme Import =====
+
+public static class EvaluationImportSessionStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", "EvaluationImportSessionStatus.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Processing = new(2, "Processing", "EvaluationImportSessionStatus.Processing", "İşleniyor", "bi-arrow-repeat", "bg-info", 2);
+    public static readonly TypeItem Completed = new(3, "Completed", "EvaluationImportSessionStatus.Completed", "Tamamlandı", "bi-check-circle", "bg-success", 3);
+    public static readonly TypeItem Failed = new(4, "Failed", "EvaluationImportSessionStatus.Failed", "Başarısız", "bi-x-circle", "bg-danger", 4);
+
+    public static IEnumerable<TypeItem> All => new[] { Pending, Processing, Completed, Failed };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int Processing = 2;
+        public const int Completed = 3;
+        public const int Failed = 4;
+    }
+}
+
+public static class EvaluationImportRowStatuses
+{
+    public static readonly TypeItem Pending = new(1, "Pending", "EvaluationImportRowStatus.Pending", "Beklemede", "bi-hourglass-split", "bg-warning text-dark", 1, isDefault: true);
+    public static readonly TypeItem Imported = new(2, "Imported", "EvaluationImportRowStatus.Imported", "İçe Aktarıldı", "bi-check-circle", "bg-success", 2);
+    public static readonly TypeItem Skipped = new(3, "Skipped", "EvaluationImportRowStatus.Skipped", "Atlandı", "bi-skip-forward", "bg-secondary", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { Pending, Imported, Skipped };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Pending = 1;
+        public const int Imported = 2;
+        public const int Skipped = 3;
+    }
+}
+
+public static class EvaluationImportUnmatchedItemTypes
+{
+    public static readonly TypeItem EvaluatedPerson = new(1, "EvaluatedPerson", "EvaluationImportUnmatchedItemType.EvaluatedPerson", "Değerlendirilen Kişi", "bi-person", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Evaluator = new(2, "Evaluator", "EvaluationImportUnmatchedItemType.Evaluator", "Değerlendiren", "bi-person-check", "bg-info", 2);
+    public static readonly TypeItem Project = new(3, "Project", "EvaluationImportUnmatchedItemType.Project", "Proje", "bi-folder", "bg-warning text-dark", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { EvaluatedPerson, Evaluator, Project };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int EvaluatedPerson = 1;
+        public const int Evaluator = 2;
+        public const int Project = 3;
+    }
+}
+
+public static class EvaluationImportResolutionActions
+{
+    public static readonly TypeItem LinkedExisting = new(1, "LinkedExisting", "EvaluationImportResolutionAction.LinkedExisting", "Mevcut Kayıtla Eşleştirildi", "bi-link", "bg-success", 1, isDefault: true);
+    public static readonly TypeItem CreatedNew = new(2, "CreatedNew", "EvaluationImportResolutionAction.CreatedNew", "Yeni Oluşturuldu", "bi-plus-circle", "bg-primary", 2);
+    public static readonly TypeItem Skipped = new(3, "Skipped", "EvaluationImportResolutionAction.Skipped", "Atlandı", "bi-skip-forward", "bg-secondary", 3);
+
+    public static IEnumerable<TypeItem> All => new[] { LinkedExisting, CreatedNew, Skipped };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int LinkedExisting = 1;
+        public const int CreatedNew = 2;
+        public const int Skipped = 3;
+    }
+}
