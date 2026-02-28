@@ -579,6 +579,67 @@ function DonemlerViewModel() {
             .fail(function (xhr) { toastr.error(xhr.responseJSON?.message || 'Çıkarma başarısız.'); });
     };
 
+    // Kuponlu dağıtım modal
+    self.kuponluDagitSoru = ko.observable(null);
+    self.kuponluPersoneller = ko.observableArray([]);
+    self.isKuponluDagitSaving = ko.observable(false);
+    self.kuponluDagitForm = {
+        userId: ko.observable(null),
+        planTarihi: ko.observable(''),
+        kuponBilgisi: ko.observable('')
+    };
+    self.kuponluDagitMinDate = ko.computed(function () {
+        var d = self.selectedDonem();
+        return d && d.baslangicTarihi ? d.baslangicTarihi.split('T')[0] : '';
+    });
+    self.kuponluDagitMaxDate = ko.computed(function () {
+        var d = self.selectedDonem();
+        return d && d.bitisTarihi ? d.bitisTarihi.split('T')[0] : '';
+    });
+
+    self.kuponluDagit = function (soru) {
+        self.kuponluDagitSoru(soru);
+        self.kuponluDagitForm.userId(null);
+        self.kuponluDagitForm.planTarihi('');
+        self.kuponluDagitForm.kuponBilgisi('');
+        // Personel listesini dönem detayından al
+        var detail = self.donemDetail();
+        self.kuponluPersoneller(detail && detail.personeller ? detail.personeller : []);
+        $('#kuponluDagitModal').modal('show');
+    };
+
+    self.saveKuponluDagit = function () {
+        if (!self.kuponluDagitForm.userId()) {
+            toastr.warning('Kişi seçimi zorunludur.');
+            return;
+        }
+        if (!self.kuponluDagitForm.planTarihi()) {
+            toastr.warning('Plan tarihi zorunludur.');
+            return;
+        }
+
+        self.isKuponluDagitSaving(true);
+        $.ajax({
+            url: '/api/gm/donem-sorular/' + self.kuponluDagitSoru().id + '/kuponlu-dagit',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                userId: parseInt(self.kuponluDagitForm.userId()),
+                planTarihi: self.kuponluDagitForm.planTarihi(),
+                kuponBilgisi: self.kuponluDagitForm.kuponBilgisi() || null
+            })
+        })
+        .done(function (res) {
+            toastr.success(res.message || 'Kuponlu atama oluşturuldu.');
+            $('#kuponluDagitModal').modal('hide');
+            self.loadDonemDetail(self.selectedDonem().id);
+        })
+        .fail(function (xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Dağıtım başarısız.');
+        })
+        .always(function () { self.isKuponluDagitSaving(false); });
+    };
+
     // Kopyala
     self.copySourceDonemId = ko.observable(null);
     self.copyForm = {

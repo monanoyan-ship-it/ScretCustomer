@@ -39,6 +39,9 @@ public interface IGmService
     // Aktif Et (dağıtım algoritması - kuponlu sorular hariç)
     Task<int> AktifEtAsync(int donemId);
 
+    // Kuponlu soru dağıtımı (manuel - tek atama)
+    Task<GmAtamaDto> KuponluDagitAsync(int donemSoruId, KuponluDagitRequest request);
+
     // Dönem tamamla
     Task<bool> TamamlaAsync(int donemId);
 
@@ -134,4 +137,16 @@ public class SaveUnmatchedSoruItem
     public string? BeklenenCevap { get; set; }
     public int AranmaSayisi { get; set; } = 1;
     public int CustomerId { get; set; }
+}
+
+public class KuponluDagitRequest
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Kullanıcı seçimi zorunludur")]
+    public int UserId { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Plan tarihi zorunludur")]
+    public DateTime PlanTarihi { get; set; }
+
+    [System.ComponentModel.DataAnnotations.StringLength(500, ErrorMessage = "Kupon bilgisi en fazla 500 karakter olabilir")]
+    public string? KuponBilgisi { get; set; }
 }

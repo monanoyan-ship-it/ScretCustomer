@@ -453,6 +453,30 @@ public class GmApiController : BaseApiController
     }
 
     // =============================================
+    // KUPONLU SORU DAĞITIMI (TEK SORU BAZINDA)
+    // =============================================
+
+    [Authorize(Roles = "Admin")]
+    [HttpPost("donem-sorular/{donemSoruId}/kuponlu-dagit")]
+    public async Task<IActionResult> KuponluDagit(int donemSoruId, [FromBody] KuponluDagitRequest request)
+    {
+        try
+        {
+            var atama = await _gmService.KuponluDagitAsync(donemSoruId, request);
+            return Ok(new { success = true, atama, message = "Kuponlu atama oluşturuldu." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Kuponlu soru dağıtılırken hata", "Gm", ex);
+            return StatusCode(500, CreateErrorResponse("Kuponlu soru dağıtılırken hata oluştu", ex));
+        }
+    }
+
+    // =============================================
     // KUPONLU SORU IMPORT (AKTİF DÖNEM)
     // =============================================
 

@@ -35,6 +35,9 @@ public class CreateGmHedefFirmaDto
 
 public class UpdateGmHedefFirmaDto
 {
+    [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
+    public int CustomerId { get; set; }
+
     [Required(ErrorMessage = "Firma adı zorunludur")]
     [StringLength(300, ErrorMessage = "Firma adı en fazla 300 karakter olabilir")]
     public string FirmaAdi { get; set; } = string.Empty;

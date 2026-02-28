@@ -278,8 +278,8 @@
                                         </div>
                                     </td>
                                     <!-- /ko -->
-                                    <!-- Aktif: sadece kuponlu sorular düzenlenebilir -->
-                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 2 && isKuponlu -->
+                                    <!-- Aktif: tüm sorular düzenlenebilir (tamamlanmış ataması yoksa) -->
+                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 2 -->
                                     <td>
                                         <div class="btn-group btn-group-sm">
                                             <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showEditSoruModal" title="Düzenle">
@@ -288,12 +288,13 @@
                                             <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.removeSoru" title="Sil">
                                                 <i class="bi bi-x"></i>
                                             </button>
+                                            <!-- ko if: isKuponlu -->
+                                            <button class="btn btn-sm btn-outline-success" data-bind="click: $parent.kuponluDagit" title="Dağıt">
+                                                <i class="bi bi-send"></i>
+                                            </button>
+                                            <!-- /ko -->
                                         </div>
                                     </td>
-                                    <!-- /ko -->
-                                    <!-- Aktif: normal sorular için boş td (kolon hizası) -->
-                                    <!-- ko if: $parent.selectedDonem() && $parent.selectedDonem().durumId === 2 && !isKuponlu -->
-                                    <td></td>
                                     <!-- /ko -->
                                 </tr>
                             </tbody>
@@ -583,6 +584,44 @@
                     <button type="button" class="btn btn-primary" data-bind="click: saveDonem, disable: isSaving">
                         <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
                         Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kuponlu Dağıtım Modal -->
+    <div class="modal fade" id="kuponluDagitModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning bg-opacity-10">
+                    <h5 class="modal-title"><i class="bi bi-ticket-perforated me-2"></i>Kuponlu Atama Oluştur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3" data-bind="visible: kuponluDagitSoru()">
+                        <strong data-bind="text: kuponluDagitSoru() ? kuponluDagitSoru().hedefFirmaAdi : ''"></strong>
+                        <div class="mt-1 small" data-bind="text: kuponluDagitSoru() ? kuponluDagitSoru().soruMetni : ''"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kişi <span class="text-danger">*</span></label>
+                        <select class="form-select" data-bind="options: kuponluPersoneller, optionsText: 'userName', optionsValue: 'userId', value: kuponluDagitForm.userId, optionsCaption: '-- Seçin --'"></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Plan Tarihi <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" data-bind="value: kuponluDagitForm.planTarihi, attr: { min: kuponluDagitMinDate(), max: kuponluDagitMaxDate() }">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.KuponBilgisi", "Kupon Bilgisi")</label>
+                        <textarea class="form-control" rows="2" maxlength="500" data-bind="value: kuponluDagitForm.kuponBilgisi"
+                                  placeholder="@Html.T("GolgeMusteri.KuponBilgisiPlaceholder", "Kupon detaylarını yazın...")"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" data-bind="click: saveKuponluDagit, disable: isKuponluDagitSaving">
+                        <span data-bind="visible: isKuponluDagitSaving" class="spinner-border spinner-border-sm me-1"></span>
+                        <i class="bi bi-send me-1"></i> Ata
                     </button>
                 </div>
             </div>

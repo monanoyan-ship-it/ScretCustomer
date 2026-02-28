@@ -91,6 +91,7 @@ function HedefFirmalarViewModel() {
                 type: 'PUT',
                 contentType: 'application/json',
                 data: JSON.stringify({
+                    customerId: self.form.customerId(),
                     firmaAdi: self.form.firmaAdi(),
                     telefonNo: self.form.telefonNo() || null,
                     aciklama: self.form.aciklama() || null,

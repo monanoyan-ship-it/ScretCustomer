@@ -93,6 +93,7 @@ public class GmService : IGmService
         var entity = await _context.GmHedefFirmalar.FindAsync(id);
         if (entity == null) return null;
 
+        entity.CustomerId = dto.CustomerId;
         entity.FirmaAdi = dto.FirmaAdi;
         entity.TelefonNo = dto.TelefonNo;
         entity.Aciklama = dto.Aciklama;
@@ -219,11 +220,18 @@ public class GmService : IGmService
             .FirstOrDefaultAsync(x => x.Id == donemSoruId);
         if (entity == null) return null;
 
-        // Taslak: her soru düzenlenebilir. Aktif: sadece kuponlu sorular düzenlenebilir.
+        // Tamamlanmış dönemlerde güncelleme engelle
         if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Tamamlandi)
             throw new InvalidOperationException("Tamamlanmış dönemlerdeki sorular güncellenemez.");
-        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Aktif && !entity.IsKuponlu)
-            throw new InvalidOperationException("Aktif dönemlerde sadece kuponlu sorular güncellenebilir.");
+
+        // Aktif dönemde: tamamlanmış ataması varsa güncelleme engelle
+        if (entity.GmDonem?.DurumId == GmDonemDurumlari.Ids.Aktif)
+        {
+            var tamamlanmisAtama = await _context.GmAtamalar
+                .AnyAsync(x => x.GmDonemSoruId == donemSoruId && x.DurumId == GmAtamaDurumlari.Ids.Tamamlandi);
+            if (tamamlanmisAtama)
+                throw new InvalidOperationException("Tamamlanmış ataması olan sorular güncellenemez.");
+        }
 
         entity.SoruMetni = dto.SoruMetni;
         entity.BeklenenCevap = dto.BeklenenCevap;
@@ -768,7 +776,10 @@ public class GmService : IGmService
         var personelIndex = 0;
         var gunIndex = 0;
 
-        foreach (var donemSoru in sorular)
+        // Kuponlu soruları hariç tut - onlar ayrı dağıtılacak (KuponluDagitAsync)
+        var normalSorular = sorular.Where(s => !s.IsKuponlu).ToList();
+
+        foreach (var donemSoru in normalSorular)
         {
             var aranma = donemSoru.AranmaSayisi;
             for (int i = 0; i < aranma; i++)
@@ -782,9 +793,7 @@ public class GmService : IGmService
                     GmDonemSoruId = donemSoru.Id,
                     UserId = personel.UserId,
                     PlanTarihi = planTarihi,
-                    DurumId = donemSoru.IsKuponlu
-                        ? GmAtamaDurumlari.Ids.KuponKoduBekliyor
-                        : GmAtamaDurumlari.Ids.Beklemede
+                    DurumId = GmAtamaDurumlari.Ids.Beklemede
                 });
 
                 personelIndex++;
@@ -801,6 +810,62 @@ public class GmService : IGmService
         await _auditLog.LogInfoAsync($"GM Dönem aktif edildi: {donem.Ad}. {atamalar.Count} atama oluşturuldu.", "GolgeMusteri");
 
         return atamalar.Count;
+    }
+
+    // =============================================
+    // KUPONLU SORU DAĞITIMI (TEK SORU BAZINDA)
+    // =============================================
+
+    public async Task<GmAtamaDto> KuponluDagitAsync(int donemSoruId, KuponluDagitRequest request)
+    {
+        var donemSoru = await _context.GmDonemSorular
+            .Include(x => x.GmDonem)
+            .Include(x => x.GmHedefFirma)
+            .FirstOrDefaultAsync(x => x.Id == donemSoruId);
+
+        if (donemSoru == null)
+            throw new InvalidOperationException("Soru bulunamadı.");
+
+        if (!donemSoru.IsKuponlu)
+            throw new InvalidOperationException("Bu soru kuponlu değil.");
+
+        if (donemSoru.GmDonem?.DurumId != GmDonemDurumlari.Ids.Aktif)
+            throw new InvalidOperationException("Sadece aktif dönemlerdeki kuponlu sorular dağıtılabilir.");
+
+        // Aranma sayısı kontrolü
+        var mevcutAtamaSayisi = await _context.GmAtamalar
+            .CountAsync(x => x.GmDonemSoruId == donemSoruId);
+        if (mevcutAtamaSayisi >= donemSoru.AranmaSayisi)
+            throw new InvalidOperationException($"Bu soru için maksimum atama sayısına ({donemSoru.AranmaSayisi}) ulaşıldı.");
+
+        // Tarih dönem aralığında olmalı
+        var planTarihi = DateTime.SpecifyKind(request.PlanTarihi.Date, DateTimeKind.Utc);
+        if (planTarihi < donemSoru.GmDonem.BaslangicTarihi.Date || planTarihi > donemSoru.GmDonem.BitisTarihi.Date)
+            throw new InvalidOperationException($"Plan tarihi dönem aralığında olmalıdır ({donemSoru.GmDonem.BaslangicTarihi:dd.MM.yyyy} - {donemSoru.GmDonem.BitisTarihi:dd.MM.yyyy}).");
+
+        var entity = new GmAtama
+        {
+            GmDonemId = donemSoru.GmDonemId,
+            GmDonemSoruId = donemSoruId,
+            UserId = request.UserId,
+            PlanTarihi = planTarihi,
+            KuponBilgisi = request.KuponBilgisi,
+            DurumId = GmAtamaDurumlari.Ids.KuponKoduBekliyor
+        };
+
+        _context.GmAtamalar.Add(entity);
+        await _context.SaveChangesAsync();
+
+        await _auditLog.LogInfoAsync($"GM Kuponlu atama oluşturuldu (SoruId: {donemSoruId}, UserId: {request.UserId})", "GolgeMusteri");
+
+        // Reload with includes
+        var saved = await _context.GmAtamalar
+            .Include(x => x.GmDonem)
+            .Include(x => x.GmDonemSoru).ThenInclude(ds => ds!.GmHedefFirma)
+            .Include(x => x.User)
+            .FirstAsync(x => x.Id == entity.Id);
+
+        return MapToAtamaDto(saved);
     }
 
     // =============================================
