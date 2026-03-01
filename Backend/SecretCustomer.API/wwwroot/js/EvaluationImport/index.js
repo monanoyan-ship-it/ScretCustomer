@@ -461,6 +461,50 @@ function EvaluationImportViewModel() {
             });
     }
 
+    // ===== Delete Session =====
+    self.isDeleting = ko.observable(false);
+    self.deletingSessionId = ko.observable(null);
+
+    self.deleteSession = function (session) {
+        var sessionId = session.id || session.Id;
+        var itemName = "Import oturumu '" + (session.fileName || session.FileName || "#" + sessionId) + "'";
+        if (session.importedRows > 0) {
+            itemName += " ve bu oturumdan oluşturulan " + session.importedRows + " değerlendirme";
+        }
+
+        showDeleteConfirm(itemName, function () {
+            self.isDeleting(true);
+            self.deletingSessionId(sessionId);
+            fetch("/api/evaluation-import/sessions/" + sessionId, {
+                method: "DELETE"
+            })
+                .then(function (response) {
+                    if (!response.ok) return response.json().then(function (err) { throw err; });
+                    return response.json();
+                })
+                .then(function (result) {
+                    var msg = "Import oturumu silindi.";
+                    if (result.importedCount > 0) {
+                        msg += " " + result.importedCount + " değerlendirme de silindi.";
+                    }
+                    toastr.success(msg);
+
+                    // Modal açıksa kapat
+                    var detailModal = bootstrap.Modal.getInstance(document.getElementById("sessionDetailModal"));
+                    if (detailModal) detailModal.hide();
+
+                    self.loadSessions();
+                })
+                .catch(function (err) {
+                    toastr.error(err.message || "Silme sırasında hata oluştu.");
+                })
+                .finally(function () {
+                    self.isDeleting(false);
+                    self.deletingSessionId(null);
+                });
+        });
+    };
+
     // ===== Import Resolved =====
     self.importResolved = function () {
         var session = self.selectedSession();

@@ -16,4 +16,5 @@ public interface IEvaluationImportService
     Task<List<ProjectSearchDto>> SearchProjectsAsync(int? customerId, string query);
     Task<List<CustomerSearchDto>> GetCustomersAsync();
     Task<List<ChecklistSearchDto>> GetChecklistsAsync();
+    Task<ImportResultDto> DeleteSessionAsync(int sessionId);
 }

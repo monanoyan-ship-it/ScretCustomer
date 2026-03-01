@@ -144,6 +144,24 @@ public class EvaluationImportApiController : BaseApiController
         }
     }
 
+    [HttpDelete("sessions/{id}")]
+    public async Task<IActionResult> DeleteSession(int id)
+    {
+        try
+        {
+            var result = await _importService.DeleteSessionAsync(id);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(CreateErrorResponse("Oturum bulunamadı."));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CreateErrorResponse("Oturum silinirken hata oluştu.", ex));
+        }
+    }
+
     [HttpGet("search/personnel")]
     public async Task<IActionResult> SearchPersonnel([FromQuery] int customerId, [FromQuery] string q = "")
     {

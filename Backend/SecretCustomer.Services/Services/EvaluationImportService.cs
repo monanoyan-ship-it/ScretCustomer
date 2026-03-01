@@ -813,6 +813,69 @@ public class EvaluationImportService : IEvaluationImportService
             .ToListAsync();
     }
 
+    public async Task<ImportResultDto> DeleteSessionAsync(int sessionId)
+    {
+        var session = await _context.EvaluationImportSessions
+            .FirstOrDefaultAsync(s => !s.IsDeleted && s.Id == sessionId)
+            ?? throw new KeyNotFoundException($"Import session {sessionId} bulunamadı.");
+
+        var result = new ImportResultDto();
+
+        // Import edilmiş satırların evaluation ID'lerini bul
+        var importedRows = await _context.EvaluationImportPendingRows
+            .Where(r => !r.IsDeleted
+                && r.ImportSessionId == sessionId
+                && r.EvaluationId != null)
+            .ToListAsync();
+
+        // Evaluation'ları soft-delete et
+        if (importedRows.Count > 0)
+        {
+            var evaluationIds = importedRows
+                .Select(r => r.EvaluationId!.Value)
+                .Distinct()
+                .ToList();
+
+            var evaluations = await _context.Evaluations
+                .Where(e => !e.IsDeleted && evaluationIds.Contains(e.Id))
+                .ToListAsync();
+
+            foreach (var evaluation in evaluations)
+            {
+                evaluation.IsDeleted = true;
+                result.ImportedCount++;
+            }
+        }
+
+        // Pending rows soft-delete
+        var allRows = await _context.EvaluationImportPendingRows
+            .Where(r => !r.IsDeleted && r.ImportSessionId == sessionId)
+            .ToListAsync();
+
+        foreach (var row in allRows)
+        {
+            row.IsDeleted = true;
+        }
+
+        // Unmatched items soft-delete
+        var unmatchedItems = await _context.EvaluationImportUnmatchedItems
+            .Where(u => !u.IsDeleted && u.ImportSessionId == sessionId)
+            .ToListAsync();
+
+        foreach (var item in unmatchedItems)
+        {
+            item.IsDeleted = true;
+        }
+
+        // Session soft-delete
+        session.IsDeleted = true;
+
+        await _context.SaveChangesAsync();
+
+        result.SkippedCount = allRows.Count;
+        return result;
+    }
+
     // ===== Private Helpers =====
 
     private static string? ParseProjectName(string? cellG)
@@ -1075,6 +1138,13 @@ public class EvaluationImportService : IEvaluationImportService
                     && r.StatusId == EvaluationImportRowStatuses.Ids.Pending
                     && r.UnmatchedProjectValue == item.OriginalValue)
                 .ToListAsync();
+
+            foreach (var r in rows)
+            {
+                r.UnmatchedProjectValue = null;
+                // MatchedProjectId stays null → row can never be fully imported
+                CheckAndMarkRowSkipped(r);
+            }
         }
         else if (item.ItemTypeId == EvaluationImportUnmatchedItemTypes.Ids.Evaluator)
         {
@@ -1084,6 +1154,13 @@ public class EvaluationImportService : IEvaluationImportService
                     && r.StatusId == EvaluationImportRowStatuses.Ids.Pending
                     && r.UnmatchedEvaluatorValue == item.OriginalValue)
                 .ToListAsync();
+
+            foreach (var r in rows)
+            {
+                r.UnmatchedEvaluatorValue = null;
+                // MatchedEvaluatorId stays null → row can never be fully imported
+                CheckAndMarkRowSkipped(r);
+            }
         }
         else
         {
@@ -1093,12 +1170,36 @@ public class EvaluationImportService : IEvaluationImportService
                     && r.StatusId == EvaluationImportRowStatuses.Ids.Pending
                     && r.UnmatchedPersonValue == item.OriginalValue)
                 .ToListAsync();
-        }
 
-        foreach (var r in rows)
-        {
-            r.StatusId = EvaluationImportRowStatuses.Ids.Skipped;
+            foreach (var r in rows)
+            {
+                r.UnmatchedPersonValue = null;
+                // MatchedCustomerPersonnelId stays null → row can never be fully imported
+                CheckAndMarkRowSkipped(r);
+            }
         }
+    }
+
+    /// <summary>
+    /// Satırda başka eşleşmemiş alan kalmamışsa ve en az bir MatchedXxxId null ise (skip'ten dolayı) → Skipped yap.
+    /// Hâlâ eşleşmemiş alan varsa → Pending bırak (diğer öğeler çözülmeyi beklesin).
+    /// </summary>
+    private static void CheckAndMarkRowSkipped(EvaluationImportPendingRow row)
+    {
+        bool hasRemainingUnmatched = row.UnmatchedProjectValue != null
+            || row.UnmatchedEvaluatorValue != null
+            || row.UnmatchedPersonValue != null;
+
+        if (hasRemainingUnmatched)
+            return; // Diğer unmatched öğeler hâlâ çözülmeyi bekliyor
+
+        // Tüm unmatched alanlar temizlendi. MatchedXxxId null ise skip'ten dolayı → satır import edilemez
+        bool hasMissingMatch = row.MatchedProjectId == null
+            || row.MatchedEvaluatorId == null
+            || row.MatchedCustomerPersonnelId == null;
+
+        if (hasMissingMatch)
+            row.StatusId = EvaluationImportRowStatuses.Ids.Skipped;
     }
 
     private async Task RecalculateSessionStats(int sessionId)

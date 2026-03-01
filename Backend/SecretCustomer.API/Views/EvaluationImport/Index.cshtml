@@ -102,8 +102,12 @@
                                 <td><span class="text-secondary" data-bind="text: skippedRows"></span></td>
                                 <td data-bind="text: createdAtFormatted"></td>
                                 <td>
-                                    <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.openSessionDetail">
+                                    <button class="btn btn-sm btn-outline-primary me-1" data-bind="click: $parent.openSessionDetail, disable: $parent.isDeleting()">
                                         <i class="bi bi-eye me-1"></i> @Html.T("Common.Detail", "Detay")
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bind="click: $parent.deleteSession, disable: $parent.isDeleting()">
+                                        <span data-bind="visible: $parent.deletingSessionId() !== id"><i class="bi bi-trash"></i></span>
+                                        <span data-bind="visible: $parent.deletingSessionId() === id"><span class="spinner-border spinner-border-sm"></span></span>
                                     </button>
                                 </td>
                             </tr>
@@ -125,7 +129,16 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body position-relative">
+                    <!-- Import/Delete Loading Overlay -->
+                    <div data-bind="visible: $parent.isImporting() || $parent.isDeleting()" class="import-loading-overlay">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-2" style="width: 3rem; height: 3rem;"></div>
+                            <div class="fw-bold" data-bind="text: $parent.isImporting() ? 'İçe aktarılıyor...' : 'Siliniyor...'"></div>
+                            <small class="text-muted">Lütfen bekleyin, bu işlem biraz sürebilir.</small>
+                        </div>
+                    </div>
+
                     <!-- Overview -->
                     <div class="row mb-4">
                         <div class="col-md-3">
@@ -301,7 +314,7 @@
                                         </button>
                                     </div>
                                     <!-- ko if: readyToImportRowCount > 0 -->
-                                    <button class="btn btn-success" data-bind="click: $parent.importResolved, disable: $parent.isImporting">
+                                    <button class="btn btn-success" data-bind="click: $parent.importResolved, disable: $parent.isImporting() || $parent.isDeleting()">
                                         <span data-bind="visible: !$parent.isImporting()">
                                             <i class="bi bi-check-all me-1"></i> @Html.T("EvaluationImport.ImportResolved", "Çözülmüş Satırları İçe Aktar")
                                             (<span data-bind="text: readyToImportRowCount"></span>)
@@ -390,7 +403,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-danger" data-bind="click: function() { $parent.deleteSession($data); }, disable: $parent.isDeleting() || $parent.isImporting()">
+                        <span data-bind="visible: !$parent.isDeleting()">
+                            <i class="bi bi-trash me-1"></i> @Html.T("EvaluationImport.DeleteSession", "Oturumu Sil")
+                        </span>
+                        <span data-bind="visible: $parent.isDeleting">
+                            <span class="spinner-border spinner-border-sm me-1"></span> @Html.T("Common.Deleting", "Siliniyor...")
+                        </span>
+                    </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-lg me-1"></i> @Html.T("Common.Close", "Kapat")
                     </button>
