@@ -1234,6 +1234,8 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+                    .ThenInclude(cp => cp!.OrganizationAssignments)
+                        .ThenInclude(oa => oa.CustomerOrganization)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedOrganization)
             .Include(a => a.Evaluation)
@@ -1309,6 +1311,16 @@ public class ReportService : IReportService
 
         var penaltyAnswers = await query.ToListAsync();
 
+        // Organizasyon adı helper: EvaluatedOrganization yoksa personelin organizasyon atamasından al
+        string GetOrgName(Evaluation eval)
+        {
+            if (eval.EvaluatedOrganization != null)
+                return eval.EvaluatedOrganization.Name;
+            return eval.EvaluatedCustomerPersonnel?.OrganizationAssignments
+                ?.Select(oa => oa.CustomerOrganization?.Name)
+                .FirstOrDefault() ?? "";
+        }
+
         // Summary
         var summary = new PenaltySummaryDto
         {
@@ -1339,7 +1351,7 @@ public class ReportService : IReportService
                 PenaltyType = PenaltyTypes.GetById(a.AppliedPenaltyTypeId)?.SystemName ?? "None",
                 ProjectName = a.Evaluation.Project != null ? (a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name) ?? "" : "",
                 CustomerName = a.Evaluation.Project?.Customer?.CompanyName,
-                OrganizationName = a.Evaluation.EvaluatedOrganization?.Name,
+                OrganizationName = GetOrgName(a.Evaluation),
                 ChecklistName = a.Question?.Checklist?.Name,
                 EvaluatorName = a.Evaluation.Evaluator != null
                     ? $"{a.Evaluation.Evaluator.FirstName} {a.Evaluation.Evaluator.LastName}"
@@ -1412,7 +1424,7 @@ public class ReportService : IReportService
                 PersonnelName = a.Evaluation.EvaluatedCustomerPersonnel != null
                     ? $"{a.Evaluation.EvaluatedCustomerPersonnel.FirstName} {a.Evaluation.EvaluatedCustomerPersonnel.LastName}"
                     : "",
-                OrgName = a.Evaluation.EvaluatedOrganization?.Name ?? ""
+                OrgName = GetOrgName(a.Evaluation)
             })
             .Where(g => g.Key.PersonnelId > 0)
             .Select(g => new PenaltyPersonnelDto
@@ -1475,6 +1487,8 @@ public class ReportService : IReportService
                 .ThenInclude(e => e.Evaluator)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedCustomerPersonnel)
+                    .ThenInclude(cp => cp!.OrganizationAssignments)
+                        .ThenInclude(oa => oa.CustomerOrganization)
             .Include(a => a.Evaluation)
                 .ThenInclude(e => e.EvaluatedPersonnel)
             .Include(a => a.Evaluation)
@@ -1549,6 +1563,16 @@ public class ReportService : IReportService
 
         var penaltyAnswers = await query.ToListAsync();
 
+        // Organizasyon adı helper: EvaluatedOrganization yoksa personelin organizasyon atamasından al
+        string GetExportOrgName(Evaluation eval)
+        {
+            if (eval.EvaluatedOrganization != null)
+                return eval.EvaluatedOrganization.Name;
+            return eval.EvaluatedCustomerPersonnel?.OrganizationAssignments
+                ?.Select(oa => oa.CustomerOrganization?.Name)
+                .FirstOrDefault() ?? "";
+        }
+
         using var workbook = new XLWorkbook();
 
         // Summary sheet
@@ -1621,7 +1645,7 @@ public class ReportService : IReportService
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.CallTime ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Duration ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Evaluation.Project?.Name ?? "";
-            penaltiesSheet.Cell(row, col++).Value = a.Evaluation.EvaluatedOrganization?.Name ?? "";
+            penaltiesSheet.Cell(row, col++).Value = GetExportOrgName(a.Evaluation);
             penaltiesSheet.Cell(row, col++).Value = a.Question?.Checklist?.Name ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.GroupName ?? "";
             penaltiesSheet.Cell(row, col++).Value = a.Question?.Text ?? "";

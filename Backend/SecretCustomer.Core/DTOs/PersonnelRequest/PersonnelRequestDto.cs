@@ -8,7 +8,7 @@ public class PersonnelRequestDto
     public int EvaluationId { get; set; }
     public int CustomerId { get; set; }
     public string CustomerName { get; set; } = string.Empty;
-    public int CustomerOrganizationId { get; set; }
+    public int? CustomerOrganizationId { get; set; }
     public string CustomerOrganizationName { get; set; } = string.Empty;
 
     // Personel bilgileri
@@ -42,7 +42,7 @@ public class CreatePersonnelRequestDto
 {
     public int EvaluationId { get; set; }
     public int CustomerId { get; set; }
-    public int CustomerOrganizationId { get; set; }
+    public int? CustomerOrganizationId { get; set; }
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? Title { get; set; }

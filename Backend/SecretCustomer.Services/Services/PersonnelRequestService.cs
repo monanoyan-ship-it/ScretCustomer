@@ -50,7 +50,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                 pr.FirstName.ToLower().Contains(term) ||
                 pr.LastName.ToLower().Contains(term) ||
                 pr.Customer.CompanyName.ToLower().Contains(term) ||
-                pr.CustomerOrganization.Name.ToLower().Contains(term));
+                (pr.CustomerOrganization != null && pr.CustomerOrganization.Name.ToLower().Contains(term)));
         }
 
         var totalCount = await query.CountAsync();
@@ -173,17 +173,20 @@ public class PersonnelRequestService : IPersonnelRequestService
         // Organizasyon: DTO'dan gelirse override et, yoksa request'tekini kullan
         var organizationId = dto.CustomerOrganizationId ?? request.CustomerOrganizationId;
 
-        // Junction table'a organizasyon ataması ekle
-        var orgAssignment = new CustomerPersonnelOrganization
+        // Junction table'a organizasyon ataması ekle (org varsa)
+        if (organizationId is not null and > 0)
         {
-            CustomerPersonnelId = personnel.Id,
-            CustomerOrganizationId = organizationId,
-            SupervisorId = dto.SupervisorId,
-            AssignedAt = TurkeyTime.Now,
-            Notes = $"PersonnelRequest #{request.Id} onayıyla oluşturuldu",
-            CreatedAt = TurkeyTime.Now
-        };
-        _context.CustomerPersonnelOrganizations.Add(orgAssignment);
+            var orgAssignment = new CustomerPersonnelOrganization
+            {
+                CustomerPersonnelId = personnel.Id,
+                CustomerOrganizationId = organizationId.Value,
+                SupervisorId = dto.SupervisorId,
+                AssignedAt = TurkeyTime.Now,
+                Notes = $"PersonnelRequest #{request.Id} onayıyla oluşturuldu",
+                CreatedAt = TurkeyTime.Now
+            };
+            _context.CustomerPersonnelOrganizations.Add(orgAssignment);
+        }
         await _context.SaveChangesAsync();
 
         // 2. Request güncelle
@@ -251,7 +254,8 @@ public class PersonnelRequestService : IPersonnelRequestService
             }
 
             // Farklı organizasyondaysa, o organizasyon için de atama ekle (zaten yoksa)
-            if (otherRequest.CustomerOrganizationId != organizationId)
+            if (otherRequest.CustomerOrganizationId is not null and > 0 &&
+                otherRequest.CustomerOrganizationId != organizationId)
             {
                 var existingAssignment = await _context.CustomerPersonnelOrganizations
                     .AnyAsync(cpo => cpo.CustomerPersonnelId == personnel.Id &&
@@ -261,7 +265,7 @@ public class PersonnelRequestService : IPersonnelRequestService
                     _context.CustomerPersonnelOrganizations.Add(new CustomerPersonnelOrganization
                     {
                         CustomerPersonnelId = personnel.Id,
-                        CustomerOrganizationId = otherRequest.CustomerOrganizationId,
+                        CustomerOrganizationId = otherRequest.CustomerOrganizationId.Value,
                         AssignedAt = TurkeyTime.Now,
                         Notes = $"PersonnelRequest #{otherRequest.Id} toplu onayıyla oluşturuldu",
                         CreatedAt = TurkeyTime.Now

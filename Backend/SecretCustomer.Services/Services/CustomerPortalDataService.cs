@@ -1219,7 +1219,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : "-",
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : "-",
+                organizationName = e.EvaluatedOrganization != null
+                    ? e.EvaluatedOrganization.Name
+                    : (e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.OrganizationAssignments
+                            .Select(oa => oa.CustomerOrganization.Name)
+                            .FirstOrDefault() ?? "-"
+                        : "-"),
                 score = e.ScorePercentage ?? 0,
                 projectTypeId = e.Project!.ProjectTypeId,
                 e.YellowCardCount,
@@ -1293,7 +1299,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
                     : "-",
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : "-",
+                organizationName = e.EvaluatedOrganization != null
+                    ? e.EvaluatedOrganization.Name
+                    : (e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.OrganizationAssignments
+                            .Select(oa => oa.CustomerOrganization.Name)
+                            .FirstOrDefault() ?? "-"
+                        : "-"),
                 score = e.ScorePercentage ?? 0,
                 yellowCardCount = e.YellowCardCount,
                 redCardCount = e.RedCardCount
@@ -2024,13 +2036,20 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 evaluationDate = e.CallDate,
                 projectName = e.Project.Name,
                 projectCode = e.Project.Code,
+                projectTypeId = e.Project.ProjectTypeId,
                 evaluatorName = e.EvaluatorCustomerPersonnel != null
                     ? e.EvaluatorCustomerPersonnel.FirstName + " " + e.EvaluatorCustomerPersonnel.LastName
                     : null,
                 e.EvaluatorCustomerPersonnelId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
                 dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
+                organizationName = e.EvaluatedOrganization != null
+                    ? e.EvaluatedOrganization.Name
+                    : (e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.OrganizationAssignments
+                            .Select(oa => oa.CustomerOrganization.Name)
+                            .FirstOrDefault()
+                        : null),
                 e.TotalScore,
                 e.ScorePercentage,
                 e.YellowCardCount,
@@ -2065,6 +2084,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             e.evaluationDate,
             e.projectName,
             e.projectCode,
+            e.projectTypeId,
             evaluatorName = e.evaluatorName
                 ?? (e.EvaluatorCustomerPersonnelId.HasValue && deletedPersonnelNames.ContainsKey(e.EvaluatorCustomerPersonnelId.Value)
                     ? deletedPersonnelNames[e.EvaluatorCustomerPersonnelId.Value]
@@ -2205,7 +2225,13 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 projectTypeId = e.Project.ProjectTypeId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
                 dealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : (string?)null,
-                organizationName = e.EvaluatedOrganization != null ? e.EvaluatedOrganization.Name : null,
+                organizationName = e.EvaluatedOrganization != null
+                    ? e.EvaluatedOrganization.Name
+                    : (e.EvaluatedCustomerPersonnel != null
+                        ? e.EvaluatedCustomerPersonnel.OrganizationAssignments
+                            .Select(oa => oa.CustomerOrganization.Name)
+                            .FirstOrDefault()
+                        : null),
                 e.TotalScore,
                 e.ScorePercentage,
                 e.YellowCardCount,

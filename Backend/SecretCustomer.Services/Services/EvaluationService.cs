@@ -1714,8 +1714,31 @@ public class EvaluationService : IEvaluationService
             return string.Format(message, $"{firstName} {lastName}");
         }
 
-        // FK değerlerini belirle (0 atanırsa FK constraint violation olur)
-        var organizationId = dto.EvaluatedOrganizationId ?? evaluation.EvaluatedOrganizationId ?? 0;
+        // Organizasyon ID: mümkünse bul, bulamazsa null olarak oluştur
+        int? organizationId = dto.EvaluatedOrganizationId ?? evaluation.EvaluatedOrganizationId;
+
+        // Fallback: PersonnelAssignments'tan al
+        if (organizationId is null or <= 0 && evaluation.EvaluatedCustomerPersonnelId != null)
+        {
+            organizationId = await _context.CustomerPersonnelOrganizations
+                .Where(cpo => cpo.CustomerPersonnelId == evaluation.EvaluatedCustomerPersonnelId.Value)
+                .Select(cpo => cpo.CustomerOrganizationId)
+                .FirstOrDefaultAsync();
+        }
+
+        // Fallback: Müşterinin herhangi bir organizasyonu
+        if (organizationId is null or <= 0)
+        {
+            organizationId = await _context.CustomerOrganizations
+                .Where(co => co.CustomerId == customerId && !co.IsDeleted)
+                .Select(co => co.Id)
+                .FirstOrDefaultAsync();
+        }
+
+        // 0 gelirse null'a çevir (FK constraint violation olmasın)
+        if (organizationId <= 0) organizationId = null;
+
+        // RequestedByUserId belirle
         var requestedByUserId = dto.EvaluatorId ?? evaluation.EvaluatorId ?? 0;
 
         // CustomerPersonnel ise (EvaluatorId yok), ilk Admin kullanıcısını fallback olarak kullan
@@ -1728,11 +1751,20 @@ public class EvaluationService : IEvaluationService
             requestedByUserId = firstAdmin;
         }
 
-        // FK'ler geçerli değilse oluşturma (0 = geçersiz FK)
-        if (organizationId <= 0 || requestedByUserId <= 0)
+        // RequestedByUserId bulunamadıysa herhangi bir admin'i kullan
+        if (requestedByUserId <= 0)
+        {
+            requestedByUserId = await _context.Users
+                .Where(u => u.RoleId == UserRoles.Ids.Admin && u.IsActive && !u.IsDeleted)
+                .Select(u => u.Id)
+                .FirstOrDefaultAsync();
+        }
+
+        // RequestedByUserId bulunamadıysa oluşturamayız (FK constraint)
+        if (requestedByUserId <= 0)
         {
             await _auditLogService.LogWarningAsync(
-                $"PersonnelRequest oluşturulamadı: geçersiz FK değerleri (OrganizationId: {organizationId}, RequestedByUserId: {requestedByUserId}, EvaluationId: {evaluation.Id})",
+                $"PersonnelRequest oluşturulamadı: RequestedByUserId bulunamadı (EvaluationId: {evaluation.Id})",
                 "EvaluationService");
             return null;
         }

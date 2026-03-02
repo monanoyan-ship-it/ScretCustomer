@@ -383,6 +383,7 @@ public class SurveyApiController : ControllerBase
             var evaluation = new Evaluation
             {
                 ProjectId = project.Id,
+                ChecklistId = project.ChecklistId,
                 EvaluatedCustomerPersonnelId = personnel.Id,
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = tokenData.CreatedAt,
@@ -458,6 +459,7 @@ public class SurveyApiController : ControllerBase
             var evaluation = new Evaluation
             {
                 ProjectId = project.Id,
+                ChecklistId = project.ChecklistId,
                 EvaluatedCustomerPersonnelId = null, // External - personnel yok
                 EvaluatedOrganizationId = project.OrganizationId,
                 StartedAt = invitation.OpenedAt ?? invitation.CreatedAt,

@@ -19,10 +19,10 @@ public class PersonnelRequest : BaseEntity
     public Customer Customer { get; set; } = null!;
 
     /// <summary>
-    /// Hangi organizasyon/departman için
+    /// Hangi organizasyon/departman için (opsiyonel - org bulunamadığında null olabilir)
     /// </summary>
-    public int CustomerOrganizationId { get; set; }
-    public CustomerOrganization CustomerOrganization { get; set; } = null!;
+    public int? CustomerOrganizationId { get; set; }
+    public CustomerOrganization? CustomerOrganization { get; set; }
 
     /// <summary>
     /// Talep edilen personelin adı
