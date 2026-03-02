@@ -1399,7 +1399,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.StatusId != EvaluationStatuses.Ids.Cancelled); // Taslaklar dahil, iptal edilenler hariç
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         // Rol bazlı filtreleme
         if (role == "CustomerOperator" && personnelId.HasValue)
@@ -1477,7 +1477,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                 .ThenInclude(p => p.Checklist)
             .Where(e => e.Project != null &&
                         e.Project.CustomerId == customerId &&
-                        e.StatusId != EvaluationStatuses.Ids.Cancelled);
+                        e.StatusId == EvaluationStatuses.Ids.Completed);
 
         if (role == "CustomerOperator" && personnelId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
@@ -3511,6 +3511,9 @@ public class CustomerPortalDataService : ICustomerPortalDataService
                         .ThenInclude(oa => oa.CustomerOrganization)
             .Where(a => a.Evaluation.Project != null &&
                        a.Evaluation.Project.CustomerId == customerId &&
+                       filteredProjectIds.Contains(a.Evaluation.ProjectId) &&
+                       a.Evaluation.EvaluatedCustomerPersonnelId.HasValue &&
+                       personnelIds.Contains(a.Evaluation.EvaluatedCustomerPersonnelId.Value) &&
                        a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
                        a.Question.GroupName != null &&
                        a.Question.WeightPoints > 0);
