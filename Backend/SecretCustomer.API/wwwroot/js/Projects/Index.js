@@ -1205,6 +1205,14 @@ function ProjectsViewModel() {
         window.location.href = '/api/surveys/' + project.id + '/export-links';
     };
 
+    self.exportSurveyQRZip = function(project) {
+        window.location.href = '/api/surveys/' + project.id + '/export-qr-zip';
+    };
+
+    self.exportSurveyQRPdf = function(project) {
+        window.location.href = '/api/surveys/' + project.id + '/export-qr-pdf';
+    };
+
     self.openSurveyModal = function(project) {
         self.surveyProject(project);
         self.surveyPersonnelStats(null);

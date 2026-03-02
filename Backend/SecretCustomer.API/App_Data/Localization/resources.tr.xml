@@ -8420,6 +8420,12 @@
   <LocaleResource Name="Project.ExternalStats">
     <Value>Dış Katılımcı İstatistikleri</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesPdf">
+    <Value>QR Kodları İndir (PDF)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesZip">
+    <Value>QR Kodları İndir (ZIP)</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.Failed">
     <Value>Başarısız</Value>
   </LocaleResource>

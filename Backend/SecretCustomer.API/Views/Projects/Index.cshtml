@@ -785,6 +785,12 @@
                                         <button type="button" class="btn btn-outline-primary btn-sm" data-bind="click: function() { $parent.exportSurveyLinks($data); }">
                                             <i class="bi bi-file-earmark-excel"></i> @Html.T("Project.ExportSurveyLinks", "Linkleri İndir (Excel)")
                                         </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" data-bind="click: function() { $parent.exportSurveyQRZip($data); }">
+                                            <i class="bi bi-qr-code"></i> @Html.T("Project.ExportQRCodesZip", "QR Kodları İndir (ZIP)")
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" data-bind="click: function() { $parent.exportSurveyQRPdf($data); }">
+                                            <i class="bi bi-filetype-pdf"></i> @Html.T("Project.ExportQRCodesPdf", "QR Kodları İndir (PDF)")
+                                        </button>
                                     </div>
                                     <!-- ko if: surveyIdentityType -->
                                     <div class="mt-2 small text-muted">

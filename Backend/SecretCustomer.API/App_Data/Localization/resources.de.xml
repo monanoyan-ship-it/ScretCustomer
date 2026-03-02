@@ -8416,6 +8416,12 @@
   <LocaleResource Name="Project.ExternalStats">
     <Value>Externe Teilnehmerstatistiken</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesPdf">
+    <Value>QR-Codes herunterladen (PDF)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesZip">
+    <Value>QR-Codes herunterladen (ZIP)</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.Failed">
     <Value>Fehlgeschlagen</Value>
   </LocaleResource>

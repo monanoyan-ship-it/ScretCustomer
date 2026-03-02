@@ -8423,6 +8423,12 @@
   <LocaleResource Name="Project.ExternalStats">
     <Value>External Participant Statistics</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesPdf">
+    <Value>Download QR Codes (PDF)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.ExportQRCodesZip">
+    <Value>Download QR Codes (ZIP)</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.Failed">
     <Value>Failed</Value>
   </LocaleResource>

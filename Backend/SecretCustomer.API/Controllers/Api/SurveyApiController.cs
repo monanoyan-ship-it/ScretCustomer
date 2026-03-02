@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text;
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
@@ -19,17 +20,20 @@ public class SurveyApiController : ControllerBase
     private readonly IEmailService _emailService;
     private readonly IQRCodeService _qrCodeService;
     private readonly IAuditLogService _auditLogService;
+    private readonly IPdfService _pdfService;
 
     public SurveyApiController(
         ISurveyService surveyService,
         IEmailService emailService,
         IQRCodeService qrCodeService,
-        IAuditLogService auditLogService)
+        IAuditLogService auditLogService,
+        IPdfService pdfService)
     {
         _surveyService = surveyService;
         _emailService = emailService;
         _qrCodeService = qrCodeService;
         _auditLogService = auditLogService;
+        _pdfService = pdfService;
     }
 
     /// <summary>
@@ -1872,6 +1876,214 @@ public class SurveyApiController : ControllerBase
         text = text.Replace(EmailPlaceholders.SystemName, "Secret Customer");
 
         return text;
+    }
+
+    /// <summary>
+    /// Anket QR kodlarını ZIP olarak indir (her davetiye için ayrı PNG)
+    /// </summary>
+    [HttpGet("{projectId}/export-qr-zip")]
+    public async Task<IActionResult> ExportSurveyQRCodesZip(int projectId)
+    {
+        try
+        {
+            var project = await _surveyService.GetProjectAsync(projectId);
+            if (project == null)
+                return NotFound(new { message = "Proje bulunamadı" });
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/Survey/Form";
+
+            // Internal invitations (CustomerPersonnel)
+            var internalInvitations = await _surveyService.GetInvitationsRawAsync(projectId);
+
+            // External invitations
+            var externalInvitations = await _surveyService.GetExternalInvitationsRawAsync(projectId);
+
+            // CustomerPersonnel bilgilerini yükle
+            var personnelIds = internalInvitations.Select(i => i.CustomerPersonnelId).Distinct().ToList();
+            var personnelDict = new Dictionary<int, (string FirstName, string LastName, string Email)>();
+            if (personnelIds.Any())
+            {
+                var personnelList = await _surveyService.GetCustomerPersonnelByIdsAsync(personnelIds);
+                foreach (var p in personnelList)
+                {
+                    personnelDict[p.Id] = (p.FirstName ?? "", p.LastName ?? "", p.Email ?? "");
+                }
+            }
+
+            using var zipStream = new MemoryStream();
+            using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
+            {
+                var fileNameCounts = new Dictionary<string, int>();
+
+                // Internal invitations
+                foreach (var inv in internalInvitations.Where(i => !i.IsReminder).DistinctBy(i => i.CustomerPersonnelId))
+                {
+                    var token = EncryptionHelper.CreateSurveyToken(projectId, inv.CustomerPersonnelId);
+                    var link = $"{baseUrl}?token={token}";
+                    var personnel = personnelDict.GetValueOrDefault(inv.CustomerPersonnelId);
+                    var email = personnel.Email ?? inv.Email;
+
+                    var qrBytes = _qrCodeService.GenerateQRCode(link);
+                    var baseName = $"dahili_{SanitizeFileName(email)}";
+                    var uniqueName = GetUniqueFileName(fileNameCounts, baseName);
+                    var entry = archive.CreateEntry($"{uniqueName}.png", CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    await entryStream.WriteAsync(qrBytes);
+                }
+
+                // External invitations
+                foreach (var inv in externalInvitations)
+                {
+                    var link = $"{baseUrl}?token={inv.Token}";
+
+                    var qrBytes = _qrCodeService.GenerateQRCode(link);
+                    var baseName = $"harici_{SanitizeFileName(inv.Email)}";
+                    var uniqueName = GetUniqueFileName(fileNameCounts, baseName);
+                    var entry = archive.CreateEntry($"{uniqueName}.png", CompressionLevel.Fastest);
+                    using var entryStream = entry.Open();
+                    await entryStream.WriteAsync(qrBytes);
+                }
+            }
+
+            zipStream.Position = 0;
+            var fileName = $"AnketQRKodlari_{SanitizeFileName(project.Name ?? projectId.ToString())}_{TurkeyTime.Now:yyyyMMdd}.zip";
+            return File(zipStream.ToArray(), "application/zip", fileName);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Survey QR ZIP export error for project {projectId}", "Survey", ex);
+            return StatusCode(500, new { message = "QR kod ZIP dosyası oluşturulurken hata oluştu" });
+        }
+    }
+
+    /// <summary>
+    /// Anket QR kodlarını PDF olarak indir (tüm QR kodlar alt alta, yazdırılabilir)
+    /// </summary>
+    [HttpGet("{projectId}/export-qr-pdf")]
+    public async Task<IActionResult> ExportSurveyQRCodesPdf(int projectId)
+    {
+        try
+        {
+            var project = await _surveyService.GetProjectAsync(projectId);
+            if (project == null)
+                return NotFound(new { message = "Proje bulunamadı" });
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/Survey/Form";
+
+            // Internal invitations (CustomerPersonnel)
+            var internalInvitations = await _surveyService.GetInvitationsRawAsync(projectId);
+
+            // External invitations
+            var externalInvitations = await _surveyService.GetExternalInvitationsRawAsync(projectId);
+
+            // CustomerPersonnel bilgilerini yükle
+            var personnelIds = internalInvitations.Select(i => i.CustomerPersonnelId).Distinct().ToList();
+            var personnelDict = new Dictionary<int, (string FirstName, string LastName, string Email)>();
+            if (personnelIds.Any())
+            {
+                var personnelList = await _surveyService.GetCustomerPersonnelByIdsAsync(personnelIds);
+                foreach (var p in personnelList)
+                {
+                    personnelDict[p.Id] = (p.FirstName ?? "", p.LastName ?? "", p.Email ?? "");
+                }
+            }
+
+            // QR kod item'larını topla
+            var qrItems = new List<(string Type, string Email, string FirstName, string LastName, string Base64)>();
+
+            // Internal invitations
+            foreach (var inv in internalInvitations.Where(i => !i.IsReminder).DistinctBy(i => i.CustomerPersonnelId))
+            {
+                var token = EncryptionHelper.CreateSurveyToken(projectId, inv.CustomerPersonnelId);
+                var link = $"{baseUrl}?token={token}";
+                var personnel = personnelDict.GetValueOrDefault(inv.CustomerPersonnelId);
+
+                var qrBase64 = _qrCodeService.GenerateQRCodeBase64(link);
+                qrItems.Add(("Dahili", personnel.Email ?? inv.Email, personnel.FirstName, personnel.LastName, qrBase64));
+            }
+
+            // External invitations
+            foreach (var inv in externalInvitations)
+            {
+                var link = $"{baseUrl}?token={inv.Token}";
+
+                var qrBase64 = _qrCodeService.GenerateQRCodeBase64(link);
+                qrItems.Add(("Harici", inv.Email, inv.FirstName ?? "", inv.LastName ?? "", qrBase64));
+            }
+
+            var html = GenerateSurveyQRCodesPdfHtml(project.Name ?? "Anket", qrItems);
+            var pdfBytes = await _pdfService.GeneratePdfFromHtmlAsync(html);
+
+            var fileName = $"AnketQRKodlari_{SanitizeFileName(project.Name ?? projectId.ToString())}_{TurkeyTime.Now:yyyyMMdd}.pdf";
+            return File(pdfBytes, "application/pdf", fileName);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Survey QR PDF export error for project {projectId}", "Survey", ex);
+            return StatusCode(500, new { message = "QR kod PDF dosyası oluşturulurken hata oluştu" });
+        }
+    }
+
+    /// <summary>
+    /// Dosya adı için geçersiz karakterleri temizle
+    /// </summary>
+    private static string SanitizeFileName(string name)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var sanitized = new string(name.Select(c => invalid.Contains(c) ? '_' : c).ToArray());
+        return sanitized.Replace(" ", "_");
+    }
+
+    /// <summary>
+    /// Aynı isimde dosya varsa suffix ekle (_2, _3...)
+    /// </summary>
+    private static string GetUniqueFileName(Dictionary<string, int> counts, string baseName)
+    {
+        if (counts.TryGetValue(baseName, out var count))
+        {
+            counts[baseName] = count + 1;
+            return $"{baseName}_{count + 1}";
+        }
+        counts[baseName] = 1;
+        return baseName;
+    }
+
+    /// <summary>
+    /// QR kodlar için yazdırılabilir PDF HTML'i oluştur
+    /// </summary>
+    private static string GenerateSurveyQRCodesPdfHtml(string projectName, List<(string Type, string Email, string FirstName, string LastName, string Base64)> items)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("<!DOCTYPE html>");
+        sb.AppendLine("<html><head><meta charset=\"utf-8\"><style>");
+        sb.AppendLine("body { font-family: Arial, sans-serif; margin: 20px; }");
+        sb.AppendLine("h1 { font-size: 18px; border-bottom: 2px solid #333; padding-bottom: 8px; }");
+        sb.AppendLine(".subtitle { font-size: 12px; color: #666; margin-bottom: 20px; }");
+        sb.AppendLine(".qr-item { display: flex; align-items: center; gap: 15px; padding: 10px 0; border-bottom: 1px solid #eee; page-break-inside: avoid; }");
+        sb.AppendLine(".qr-item img { width: 120px; height: 120px; }");
+        sb.AppendLine(".qr-info { font-size: 12px; }");
+        sb.AppendLine(".qr-info .name { font-weight: bold; font-size: 14px; }");
+        sb.AppendLine(".qr-info .type { color: #666; font-size: 11px; }");
+        sb.AppendLine("</style></head><body>");
+        sb.AppendLine($"<h1>{System.Net.WebUtility.HtmlEncode(projectName)} - QR Kodlar</h1>");
+        sb.AppendLine($"<div class=\"subtitle\">Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm} | Toplam: {items.Count} adet</div>");
+
+        foreach (var item in items)
+        {
+            sb.AppendLine("<div class=\"qr-item\">");
+            sb.AppendLine($"  <img src=\"data:image/png;base64,{item.Base64}\" />");
+            sb.AppendLine("  <div class=\"qr-info\">");
+            var fullName = $"{System.Net.WebUtility.HtmlEncode(item.FirstName)} {System.Net.WebUtility.HtmlEncode(item.LastName)}".Trim();
+            if (!string.IsNullOrWhiteSpace(fullName))
+                sb.AppendLine($"    <div class=\"name\">{fullName}</div>");
+            sb.AppendLine($"    <div>{System.Net.WebUtility.HtmlEncode(item.Email)}</div>");
+            sb.AppendLine($"    <div class=\"type\">{System.Net.WebUtility.HtmlEncode(item.Type)}</div>");
+            sb.AppendLine("  </div>");
+            sb.AppendLine("</div>");
+        }
+
+        sb.AppendLine("</body></html>");
+        return sb.ToString();
     }
 
     #endregion
