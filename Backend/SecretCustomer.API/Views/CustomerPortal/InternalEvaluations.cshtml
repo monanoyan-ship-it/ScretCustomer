@@ -210,6 +210,7 @@
                         <thead class="table-light">
                             <tr>
                                 <th>@Html.T("Common.Id", "ID")</th>
+                                <th>@Html.T("Evaluation.EvaluationDate", "Denetleme Tarihi")</th>
                                 <th>@Html.T("Report.CallDate", "Çağrı Tarihi")</th>
                                 <th>@Html.T("CustomerPortal.Evaluations.CallTime", "Saat")</th>
                                 <th>@Html.T("CustomerPortal.Evaluations.Duration", "Süre")</th>
@@ -226,7 +227,10 @@
                             <tr>
                                 <td><call-id params="value: callId"></call-id></td>
                                 <td>
-                                    <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : new Date(evaluationDate).toLocaleDateString('tr-TR')"></span>
+                                    <span data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></span>
+                                </td>
+                                <td>
+                                    <span data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 </td>
                                 <td>
                                     <span data-bind="text: callTime || '-'"></span>

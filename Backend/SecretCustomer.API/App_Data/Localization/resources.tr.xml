@@ -5506,6 +5506,9 @@
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Kontrol Saati</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationDate">
+    <Value>Denetleme Tarihi</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.DateFrom">
     <Value>Başlangıç</Value>
   </LocaleResource>

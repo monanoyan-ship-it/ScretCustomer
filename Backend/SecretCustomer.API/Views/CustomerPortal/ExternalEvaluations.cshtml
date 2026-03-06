@@ -234,7 +234,7 @@
                             <tr>
                                 <td><call-id params="value: callId"></call-id></td>
                                 <td>
-                                    <span data-bind="text: (controlDate || callDate) ? new Date(controlDate || callDate).toLocaleDateString('tr-TR') : new Date(evaluationDate).toLocaleDateString('tr-TR')"></span>
+                                    <span data-bind="text: (controlDate || callDate) ? new Date(controlDate || callDate).toLocaleDateString('tr-TR') : '-'"></span>
                                 </td>
                                 <td>
                                     <span data-bind="text: controlTime || callTime || '-'"></span>

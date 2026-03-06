@@ -5508,6 +5508,9 @@
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Control Time</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationDate">
+    <Value>Evaluation Date</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.DateFrom">
     <Value>From</Value>
   </LocaleResource>

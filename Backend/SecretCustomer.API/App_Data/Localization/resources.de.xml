@@ -5370,6 +5370,9 @@
   <LocaleResource Name="Evaluation.ControlTime">
     <Value>Kontrollzeit</Value>
   </LocaleResource>
+  <LocaleResource Name="Evaluation.EvaluationDate">
+    <Value>Bewertungsdatum</Value>
+  </LocaleResource>
   <LocaleResource Name="Evaluation.DateFrom">
     <Value>Von</Value>
   </LocaleResource>

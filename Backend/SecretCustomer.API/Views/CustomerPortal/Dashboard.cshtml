@@ -416,7 +416,7 @@
                         </thead>
                         <tbody data-bind="foreach: recentEvaluations">
                             <tr>
-                                <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                 <td data-bind="text: projectName"></td>
                                 <td data-bind="text: personnelName"></td>
                                 <td data-bind="text: checklistName"></td>
@@ -468,7 +468,7 @@
                                 </thead>
                                 <tbody data-bind="foreach: scoreModalEvaluations">
                                     <tr>
-                                        <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                        <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                         <td data-bind="text: projectName"></td>
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: organizationName"></td>
@@ -606,7 +606,7 @@
                                 </thead>
                                 <tbody data-bind="foreach: allEvalsItems">
                                     <tr>
-                                        <td data-bind="text: new Date(evaluationDate).toLocaleDateString('tr-TR')"></td>
+                                        <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                         <td data-bind="text: projectName"></td>
                                         <td data-bind="text: personnelName"></td>
                                         <td data-bind="text: checklistName"></td>

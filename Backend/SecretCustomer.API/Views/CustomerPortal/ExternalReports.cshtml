@@ -251,7 +251,7 @@
                                 </thead>
                                 <tbody data-bind="foreach: scoreRangeEvaluations">
                                     <tr>
-                                        <td data-bind="text: evaluationDate ? new Date(evaluationDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                        <td data-bind="text: callDate ? new Date(callDate).toLocaleDateString('tr-TR') : '-'"></td>
                                         <td data-bind="text: projectName"></td>
                                         <td data-bind="text: personnelName"></td>
                                         <td class="text-center">

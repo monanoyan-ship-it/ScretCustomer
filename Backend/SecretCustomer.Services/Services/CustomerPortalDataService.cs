@@ -1214,7 +1214,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate ?? e.ControlDate,
+                callDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -1294,7 +1294,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .OrderByDescending(e => e.CallDate ?? e.ControlDate)
             .Select(e => new
             {
-                evaluationDate = e.CallDate ?? e.ControlDate,
+                callDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 personnelName = e.EvaluatedCustomerPersonnel != null
                     ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName
@@ -1331,7 +1331,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             var row = i + 2;
             var eval = evaluations[i];
-            worksheet.Cell(row, 1).Value = eval.evaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            worksheet.Cell(row, 1).Value = eval.callDate?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 2).Value = eval.projectName;
             worksheet.Cell(row, 3).Value = eval.personnelName;
             worksheet.Cell(row, 4).Value = eval.organizationName;
@@ -1375,7 +1375,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate ?? e.ControlDate,
+                callDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 personnelName = e.EvaluatedCustomerPersonnel != null
@@ -1390,7 +1390,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var result = evaluations.Select(e => new
         {
             e.Id,
-            e.evaluationDate,
+            e.callDate,
             e.projectName,
             e.checklistName,
             e.personnelName,
@@ -1445,7 +1445,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate,
+                callDate = e.CallDate,
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 scoringMethodId = e.Project.Checklist != null ? e.Project.Checklist.ScoringMethodId : 1,
@@ -1461,7 +1461,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         var mappedEvaluations = evaluations.Select(e => new
         {
             e.Id,
-            e.evaluationDate,
+            e.callDate,
             e.projectName,
             e.checklistName,
             e.personnelName,
@@ -1512,7 +1512,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .OrderByDescending(e => e.CallDate)
             .Select(e => new
             {
-                evaluationDate = e.CallDate,
+                callDate = e.CallDate,
                 projectName = e.Project!.Name,
                 checklistName = e.Project.Checklist != null ? e.Project.Checklist.Name : "N/A",
                 score = e.ScorePercentage ?? 0,
@@ -1537,7 +1537,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             var row = i + 2;
             var eval = evaluations[i];
-            worksheet.Cell(row, 1).Value = eval.evaluationDate?.ToString("dd.MM.yyyy") ?? "";
+            worksheet.Cell(row, 1).Value = eval.callDate?.ToString("dd.MM.yyyy") ?? "";
             worksheet.Cell(row, 2).Value = eval.projectName;
             worksheet.Cell(row, 3).Value = eval.checklistName;
             worksheet.Cell(row, 4).Value = eval.score;
@@ -1770,7 +1770,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 evaluationId = e.Id,
-                evaluationDate = e.CallDate ?? e.ControlDate,
+                callDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project != null ? e.Project.Name : "-",
                 personnelName = e.EvaluatedPersonnel != null
                     ? e.EvaluatedPersonnel.FirstName + " " + e.EvaluatedPersonnel.LastName
@@ -2033,7 +2033,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate,
+                evaluationDate = e.CreatedAt,
                 projectName = e.Project.Name,
                 projectCode = e.Project.Code,
                 projectTypeId = e.Project.ProjectTypeId,
@@ -2220,7 +2220,6 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Select(e => new
             {
                 e.Id,
-                evaluationDate = e.CallDate ?? e.ControlDate,
                 projectName = e.Project.Name,
                 projectTypeId = e.Project.ProjectTypeId,
                 evaluatedPersonnelName = e.EvaluatedCustomerPersonnel != null ? e.EvaluatedCustomerPersonnel.FirstName + " " + e.EvaluatedCustomerPersonnel.LastName : e.EvaluatedUnknownPersonnel,
