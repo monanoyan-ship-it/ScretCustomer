@@ -26,6 +26,7 @@ function CustomerInternalEvaluationsViewModel() {
         personnelName: ko.observable(''),
         organizationId: ko.observable(''),
         callId: ko.observable(''),
+        evaluationId: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         dateRangeType: ko.observable('')
@@ -68,6 +69,7 @@ function CustomerInternalEvaluationsViewModel() {
         if (type === 'personnel') return self.tempFilter.personnelName();
         if (type === 'organization') return self.tempFilter.organizationId();
         if (type === 'callId') return self.tempFilter.callId();
+        if (type === 'evaluationId') return self.tempFilter.evaluationId().toString().trim() !== '';
         if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
         return false;
     });
@@ -221,6 +223,10 @@ function CustomerInternalEvaluationsViewModel() {
             filter.value = self.tempFilter.callId();
             label = 'Çağrı ID';
             displayValue = filter.value;
+        } else if (type === 'evaluationId') {
+            filter.value = parseInt(self.tempFilter.evaluationId());
+            label = 'ID';
+            displayValue = '#' + filter.value;
         } else if (type === 'dateRange') {
             filter.dateRangeType = self.tempFilter.dateRangeType();
             filter.startDate = self.tempFilter.startDate();
@@ -257,6 +263,7 @@ function CustomerInternalEvaluationsViewModel() {
         self.tempFilter.personnelName('');
         self.tempFilter.organizationId('');
         self.tempFilter.callId('');
+        self.tempFilter.evaluationId('');
         self.tempFilter.startDate('');
         self.tempFilter.endDate('');
         self.tempFilter.dateRangeType('');
@@ -306,6 +313,9 @@ function CustomerInternalEvaluationsViewModel() {
                     break;
                 case 'callId':
                     callIds.push(f.value);
+                    break;
+                case 'evaluationId':
+                    params.evaluationId = f.value;
                     break;
                 case 'dateRange':
                     // If it's a named range type, recalculate dates dynamically
@@ -658,6 +668,16 @@ function CustomerInternalEvaluationsViewModel() {
         // OrganizationIds (çoğul array)
         if (params.organizationIds && params.organizationIds.length > 0) {
             filter.organizationIds = params.organizationIds.map(function(id) { return parseInt(id); });
+        }
+
+        // PersonnelNames (çoğul array)
+        if (params.personnelNames && params.personnelNames.length > 0) {
+            filter.personnelNames = params.personnelNames;
+        }
+
+        // CallIds (çoğul array)
+        if (params.callIds && params.callIds.length > 0) {
+            filter.callIds = params.callIds;
         }
 
         // DateRanges (DTO List<DateRangeFilter> formatında)

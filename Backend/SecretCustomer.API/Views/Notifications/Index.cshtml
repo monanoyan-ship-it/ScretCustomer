@@ -146,11 +146,9 @@
                                 <i class="bi bi-check-lg"></i>
                             </button>
                             <!-- /ko -->
-                            <!-- ko if: actionUrl -->
-                            <a class="btn btn-outline-primary" data-bind="attr: { href: actionUrl }" title="@Html.T("Common.View", "Görüntüle")">
-                                <i class="bi bi-box-arrow-up-right"></i>
-                            </a>
-                            <!-- /ko -->
+                            <button class="btn btn-outline-primary" data-bind="click: $parent.showDetail" title="@Html.T("Common.View", "Görüntüle")">
+                                <i class="bi bi-eye"></i>
+                            </button>
                             <button class="btn btn-outline-danger" data-bind="click: $parent.deleteNotification" title="@Html.T("Common.Delete", "Sil")">
                                 <i class="bi bi-trash"></i>
                             </button>
@@ -183,6 +181,73 @@
                     </li>
                 </ul>
             </nav>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="notificationDetailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" data-bind="with: selectedNotification">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <span class="badge rounded-circle p-2 me-2" data-bind="css: $parent.getNotificationTypeIconClass(notificationType)">
+                            <i data-bind="css: $parent.getNotificationTypeIcon(notificationType)"></i>
+                        </span>
+                        <span data-bind="text: title"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p data-bind="text: message"></p>
+                    <hr />
+                    <div class="row g-2 small text-muted">
+                        <div class="col-6">
+                            <strong>@Html.T("Common.Type", "Tip"):</strong>
+                            <span data-bind="text: notificationType"></span>
+                        </div>
+                        <div class="col-6">
+                            <strong>@Html.T("Call.Priority", "Öncelik"):</strong>
+                            <span class="badge" data-bind="text: $parent.getPriorityText(priority), css: $parent.getPriorityBadgeClass(priority)"></span>
+                        </div>
+                        <div class="col-6">
+                            <strong>@Html.T("Common.Channel", "Kanal"):</strong>
+                            <span data-bind="text: channel"></span>
+                        </div>
+                        <div class="col-6">
+                            <strong>@Html.T("Common.Status", "Durum"):</strong>
+                            <span class="badge" data-bind="text: isRead ? '@Html.T("Notification.Read", "Okunmuş")' : '@Html.T("Notification.Unread", "Okunmamış")', css: isRead ? 'bg-success' : 'bg-warning text-dark'"></span>
+                        </div>
+                        <!-- ko if: senderUserName -->
+                        <div class="col-6">
+                            <strong>@Html.T("Common.Sender", "Gönderen"):</strong>
+                            <span data-bind="text: senderUserName"></span>
+                        </div>
+                        <!-- /ko -->
+                        <div class="col-6">
+                            <strong>@Html.T("Common.Date", "Tarih"):</strong>
+                            <span data-bind="text: $parent.formatDateFull(createdAt)"></span>
+                        </div>
+                        <!-- ko if: readAt -->
+                        <div class="col-6">
+                            <strong>@Html.T("Notification.ReadAt", "Okunma Tarihi"):</strong>
+                            <span data-bind="text: $parent.formatDateFull(readAt)"></span>
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko if: relatedEntityType -->
+                        <div class="col-12">
+                            <strong>@Html.T("Common.RelatedEntity", "İlgili Kayıt"):</strong>
+                            <span data-bind="text: relatedEntityType"></span>
+                            <!-- ko if: relatedEntityId -->
+                            <span class="text-muted">(#<span data-bind="text: relatedEntityId"></span>)</span>
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>

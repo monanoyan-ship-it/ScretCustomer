@@ -1919,7 +1919,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
     public async Task<object> GetInternalEvaluationsAsync(int customerId, string? role, int? personnelId,
         int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
         List<int>? projectIds, List<string>? evaluatorNames, List<string>? personnelNames,
-        List<int>? organizationIds, List<string>? callIds)
+        List<int>? organizationIds, List<string>? callIds, int? evaluationId = null)
     {
         // Anket ve Enneagram checklist tipleri hariç (kendi raporları var)
         var excludedChecklistTypes = new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.Enneagram };
@@ -2008,6 +2008,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             var lowerCallIds = callIds.Select(c => c.ToLower()).ToList();
             query = query.Where(e => e.CallId != null && lowerCallIds.Any(c => e.CallId.ToLower().Contains(c)));
+        }
+
+        // EvaluationId filter
+        if (evaluationId.HasValue)
+        {
+            query = query.Where(e => e.Id == evaluationId.Value);
         }
 
         // General search filter (legacy support)

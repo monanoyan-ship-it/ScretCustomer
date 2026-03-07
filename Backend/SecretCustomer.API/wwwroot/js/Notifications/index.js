@@ -161,6 +161,21 @@ function NotificationsIndexViewModel() {
         });
     };
 
+    // Detail modal
+    self.selectedNotification = ko.observable(null);
+
+    self.showDetail = function(notification) {
+        $.get('/api/notifications/' + notification.id, function(data) {
+            self.selectedNotification(data);
+            $('#notificationDetailModal').modal('show');
+            if (!notification.isRead) {
+                self.markAsRead(notification);
+            }
+        }).fail(function() {
+            toastr.error('Bildirim detayı yüklenemedi.');
+        });
+    };
+
     // Helper functions
     self.getNotificationTypeIcon = function(type) {
         var icons = {
@@ -229,6 +244,12 @@ function NotificationsIndexViewModel() {
         if (days < 7) return days + ' gün önce';
 
         return date.toLocaleDateString('tr-TR');
+    };
+
+    self.formatDateFull = function(dateStr) {
+        if (!dateStr) return '-';
+        var date = new Date(dateStr);
+        return date.toLocaleDateString('tr-TR') + ' ' + date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
     };
 
     // Initialize

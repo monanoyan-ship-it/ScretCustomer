@@ -140,6 +140,7 @@
                     <!-- Filter Type Select -->
                     <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalSelectedFilterType">
                         <option value="">@Html.T("Common.AddFilter", "Filtre Ekle...")</option>
+                        <option value="evaluationId">@Html.T("Common.Id", "ID")</option>
                         <option value="search">@Html.T("Common.Search", "Arama")</option>
                         <option value="personnel">@Html.T("Evaluation.Personnel", "Temsilci")</option>
                         <option value="project">@Html.T("Common.Project", "Proje")</option>
@@ -157,6 +158,18 @@
                             <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
                             <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Ediyor")</option>
                         </select>
+                        <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- ko if: evalSelectedFilterType() === 'evaluationId' -->
+                    <!-- Evaluation ID Filter Input -->
+                    <div class="d-flex gap-1">
+                        <input type="number" class="form-control form-control-sm" style="width: 150px;"
+                               data-bind="value: evalTempFilter.evaluationId, valueUpdate: 'afterkeydown'"
+                               placeholder="@Html.T("Evaluation.IdPlaceholder", "Değerlendirme ID...")">
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
                             <i class="bi bi-plus"></i>
                         </button>

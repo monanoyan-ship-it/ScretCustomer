@@ -2215,12 +2215,12 @@ public class EvaluationService : IEvaluationService
     public async Task<List<EvaluationDto>> GetByEvaluatorFilteredAsync(int userId, string? userType,
         string? status, string? search, string? personnel,
         DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
-        List<int>? projectIds, List<string>? statuses)
+        List<int>? projectIds, List<string>? statuses, int? evaluationId = null)
     {
         var query = BuildEvaluatorQuery(userId, userType,
             status, search, personnel,
             startDate, endDate, controlStartDate, controlEndDate,
-            projectIds, statuses: statuses);
+            projectIds, statuses: statuses, evaluationId: evaluationId);
 
         return await query
             .OrderByDescending(e => e.Id)
@@ -2279,12 +2279,14 @@ public class EvaluationService : IEvaluationService
         string? status, string? search, string? personnel,
         DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
         List<int>? projectIds, List<int>? customerIds, List<int>? organizationIds,
-        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses)
+        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses,
+        int? evaluationId = null)
     {
         var query = BuildEvaluatorQuery(userId, userType,
             status, search, personnel,
             startDate, endDate, controlStartDate, controlEndDate,
-            projectIds, customerIds, organizationIds, evaluatorIds, checklistIds, statuses);
+            projectIds, customerIds, organizationIds, evaluatorIds, checklistIds, statuses,
+            evaluationId: evaluationId);
 
         return await query
             .Include(e => e.Project).ThenInclude(p => p.Checklist)
@@ -2322,7 +2324,8 @@ public class EvaluationService : IEvaluationService
         DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
         List<int>? projectIds = null, List<int>? customerIds = null,
         List<int>? organizationIds = null, List<int>? evaluatorIds = null,
-        List<int>? checklistIds = null, List<string>? statuses = null)
+        List<int>? checklistIds = null, List<string>? statuses = null,
+        int? evaluationId = null)
     {
         IQueryable<Evaluation> query;
         if (userType == "CustomerPersonnel")
@@ -2335,6 +2338,9 @@ public class EvaluationService : IEvaluationService
             query = _context.Evaluations
                 .Where(e => !e.IsDeleted && e.EvaluatorId == userId);
         }
+
+        if (evaluationId.HasValue)
+            query = query.Where(e => e.Id == evaluationId.Value);
 
         // Çoklu filtreler
         if (projectIds?.Any() == true)

@@ -138,7 +138,7 @@ public interface IEvaluationService
     Task<List<EvaluationDto>> GetByEvaluatorFilteredAsync(int userId, string? userType,
         string? status, string? search, string? personnel,
         DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
-        List<int>? projectIds, List<string>? statuses);
+        List<int>? projectIds, List<string>? statuses, int? evaluationId = null);
 
     /// <summary>
     /// Sonradan bildirim maili gönderir (tamamlanmış değerlendirme için)
@@ -152,7 +152,8 @@ public interface IEvaluationService
         string? status, string? search, string? personnel,
         DateTime? startDate, DateTime? endDate, DateTime? controlStartDate, DateTime? controlEndDate,
         List<int>? projectIds, List<int>? customerIds, List<int>? organizationIds,
-        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses);
+        List<int>? evaluatorIds, List<int>? checklistIds, List<string>? statuses,
+        int? evaluationId = null);
 }
 
 // ===== Result DTOs =====

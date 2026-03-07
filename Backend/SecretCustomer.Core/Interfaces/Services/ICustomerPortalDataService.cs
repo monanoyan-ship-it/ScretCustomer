@@ -30,7 +30,7 @@ public interface ICustomerPortalDataService
     Task<object> GetInternalEvaluationsAsync(int customerId, string? role, int? personnelId,
         int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
         List<int>? projectIds, List<string>? evaluatorNames, List<string>? personnelNames,
-        List<int>? organizationIds, List<string>? callIds);
+        List<int>? organizationIds, List<string>? callIds, int? evaluationId = null);
     Task<object> GetExternalEvaluationsAsync(int customerId, string? role, int? personnelId,
         int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
         List<int>? projectIds, List<string>? personnelNames, List<int>? organizationIds,

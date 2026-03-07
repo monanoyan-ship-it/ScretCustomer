@@ -661,6 +661,16 @@ function CustomerExternalEvaluationsViewModel() {
             filter.organizationIds = params.organizationIds.map(function(id) { return parseInt(id); });
         }
 
+        // PersonnelNames (çoğul array)
+        if (params.personnelNames && params.personnelNames.length > 0) {
+            filter.personnelNames = params.personnelNames;
+        }
+
+        // CallIds (çoğul array)
+        if (params.callIds && params.callIds.length > 0) {
+            filter.callIds = params.callIds;
+        }
+
         // DateRanges (DTO List<DateRangeFilter> formatında)
         if (params.startDate || params.endDate) {
             filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null }];

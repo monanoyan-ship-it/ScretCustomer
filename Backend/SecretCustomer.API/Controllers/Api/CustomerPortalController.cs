@@ -933,7 +933,8 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] List<string>? evaluatorNames = null,
         [FromQuery] List<string>? personnelNames = null,
         [FromQuery] List<int>? organizationIds = null,
-        [FromQuery] List<string>? callIds = null)
+        [FromQuery] List<string>? callIds = null,
+        [FromQuery] int? evaluationId = null)
     {
         var customerId = await GetCustomerId();
         if (customerId == null)
@@ -942,7 +943,7 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        var result = await _cpDataService.GetInternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, startDate, endDate, projectIds, evaluatorNames, personnelNames, organizationIds, callIds);
+        var result = await _cpDataService.GetInternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, startDate, endDate, projectIds, evaluatorNames, personnelNames, organizationIds, callIds, evaluationId);
         return Ok(result);
     }
 

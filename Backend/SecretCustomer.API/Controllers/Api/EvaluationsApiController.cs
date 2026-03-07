@@ -265,7 +265,8 @@ public class EvaluationsApiController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] DateTime? controlStartDate = null,
-        [FromQuery] DateTime? controlEndDate = null)
+        [FromQuery] DateTime? controlEndDate = null,
+        [FromQuery] int? evaluationId = null)
     {
         try
         {
@@ -280,7 +281,7 @@ public class EvaluationsApiController : BaseApiController
             var evaluations = await _evaluationService.GetByEvaluatorFilteredAsync(userId, userType,
                 status, search, personnel,
                 startDate, endDate, controlStartDate, controlEndDate,
-                projectIds, statuses);
+                projectIds, statuses, evaluationId);
 
             return Ok(evaluations);
         }
@@ -841,7 +842,8 @@ public class EvaluationsApiController : BaseApiController
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
         [FromQuery] DateTime? controlStartDate = null,
-        [FromQuery] DateTime? controlEndDate = null)
+        [FromQuery] DateTime? controlEndDate = null,
+        [FromQuery] int? evaluationId = null)
     {
         try
         {
@@ -856,7 +858,8 @@ public class EvaluationsApiController : BaseApiController
             var evaluations = await _evaluationService.GetEvaluationsForExportAsync(userId, userType,
                 status, search, personnel,
                 startDate, endDate, controlStartDate, controlEndDate,
-                projectIds, customerIds, organizationIds, evaluatorIds, checklistIds, statuses);
+                projectIds, customerIds, organizationIds, evaluatorIds, checklistIds, statuses,
+                evaluationId);
 
             // Excel oluştur
             using var workbook = new ClosedXML.Excel.XLWorkbook();

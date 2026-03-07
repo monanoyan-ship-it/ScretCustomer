@@ -40,6 +40,7 @@ function EvaluationsViewModel() {
         searchTerm: ko.observable(''),
         personnelName: ko.observable(''),
         projectId: ko.observable(''),
+        evaluationId: ko.observable(''),
         startDate: ko.observable(''),
         endDate: ko.observable(''),
         selectedDateRangeType: ko.observable(null),
@@ -55,6 +56,7 @@ function EvaluationsViewModel() {
         search: 'Arama',
         personnel: 'Temsilci',
         project: 'Proje',
+        evaluationId: 'ID',
         dateRange: 'Çağrı Tarihi',
         controlDate: 'Değerlendirme Tarihi'
     };
@@ -95,6 +97,7 @@ function EvaluationsViewModel() {
             case 'search': return self.evalTempFilter.searchTerm().trim() !== '';
             case 'personnel': return self.evalTempFilter.personnelName().trim() !== '';
             case 'project': return self.evalTempFilter.projectId();
+            case 'evaluationId': return self.evalTempFilter.evaluationId().toString().trim() !== '';
             case 'dateRange': return self.evalTempFilter.startDate() || self.evalTempFilter.endDate();
             case 'controlDate': return self.evalTempFilter.controlStartDate() || self.evalTempFilter.controlEndDate();
             default: return false;
@@ -127,6 +130,9 @@ function EvaluationsViewModel() {
                     break;
                 case 'project':
                     params.push('projectIds=' + encodeURIComponent(f.value));
+                    break;
+                case 'evaluationId':
+                    params.push('evaluationId=' + encodeURIComponent(f.value));
                     break;
                 case 'dateRange':
                     if (f.value.start) params.push('startDate=' + encodeURIComponent(f.value.start));
@@ -315,6 +321,13 @@ function EvaluationsViewModel() {
                 filter.displayValue = '"' + personnelName + '"';
                 break;
 
+            case 'evaluationId':
+                var evalId = self.evalTempFilter.evaluationId().toString().trim();
+                if (!evalId) return;
+                filter.value = parseInt(evalId);
+                filter.displayValue = '#' + evalId;
+                break;
+
             case 'project':
                 var selectedProjectId = self.evalTempFilter.projectId();
                 if (!selectedProjectId) return;
@@ -365,6 +378,7 @@ function EvaluationsViewModel() {
         self.evalTempFilter.searchTerm('');
         self.evalTempFilter.personnelName('');
         self.evalTempFilter.projectId('');
+        self.evalTempFilter.evaluationId('');
         self.evalTempFilter.startDate('');
         self.evalTempFilter.endDate('');
         self.evalTempFilter.selectedDateRangeType(null);

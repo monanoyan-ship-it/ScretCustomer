@@ -27,6 +27,7 @@
                             <div class="mb-2">
                                 <select class="form-select form-select-sm" data-bind="value: selectedFilterType">
                                     <option value="">@Html.T("Common.SelectFilter", "Filtre Seçin...")</option>
+                                    <option value="evaluationId">@Html.T("Common.Id", "ID")</option>
                                     <option value="project">@Html.T("Common.Project", "Proje")</option>
                                     <option value="evaluator">@Html.T("CustomerPortal.Evaluations.Evaluator", "Dinleyen")</option>
                                     <option value="personnel">@Html.T("CustomerPortal.Evaluations.EvaluatedPersonnel", "Dinlenen")</option>
@@ -36,6 +37,10 @@
                                 </select>
                             </div>
                             <!-- Dynamic Filter Input -->
+                            <!-- Evaluation ID -->
+                            <div data-bind="visible: selectedFilterType() === 'evaluationId'" class="mb-2">
+                                <input type="number" class="form-control form-control-sm" autocomplete="off" data-bind="value: tempFilter.evaluationId" placeholder="@Html.T("Evaluation.IdPlaceholder", "Değerlendirme ID...")">
+                            </div>
                             <!-- Project -->
                             <div data-bind="visible: selectedFilterType() === 'project'" class="mb-2">
                                 <select class="form-select form-select-sm" data-bind="options: projects, optionsText: function(item) { return item.code ? item.code + ' - ' + item.name : item.name; }, optionsValue: 'id', value: tempFilter.projectId, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
