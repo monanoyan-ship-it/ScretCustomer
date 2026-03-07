@@ -781,33 +781,42 @@ public class GmService : IGmService
         if (!isGunleri.Any())
             throw new InvalidOperationException("Dönem aralığında iş günü bulunamadı.");
 
-        // Tüm atamaları üret (kuponlu sorular KuponKoduBekliyor durumunda)
-        var atamalar = new List<GmAtama>();
-        var personelIndex = 0;
-        var gunIndex = 0;
-
         // Kuponlu soruları hariç tut - onlar ayrı dağıtılacak (KuponluDagitAsync)
         var normalSorular = sorular.Where(s => !s.IsKuponlu).ToList();
 
+        // 1. Tüm atamaları personele dağıt (round-robin)
+        var personelAtamalari = new Dictionary<int, List<int>>(); // userId -> donemSoruId listesi
+        var personelIndex = 0;
+
         foreach (var donemSoru in normalSorular)
         {
-            var aranma = donemSoru.AranmaSayisi;
-            for (int i = 0; i < aranma; i++)
+            for (int i = 0; i < donemSoru.AranmaSayisi; i++)
             {
-                var personel = personeller[personelIndex % personeller.Count];
-                var planTarihi = isGunleri[gunIndex % isGunleri.Count];
+                var userId = personeller[personelIndex % personeller.Count].UserId;
+                if (!personelAtamalari.ContainsKey(userId))
+                    personelAtamalari[userId] = new List<int>();
+                personelAtamalari[userId].Add(donemSoru.Id);
+                personelIndex++;
+            }
+        }
 
+        // 2. Her personelin aramalarını tüm iş günlerine eşit dağıt
+        var atamalar = new List<GmAtama>();
+        var dayCount = isGunleri.Count;
+
+        foreach (var (userId, soruIds) in personelAtamalari)
+        {
+            for (int i = 0; i < soruIds.Count; i++)
+            {
+                var dayIndex = (int)((long)i * dayCount / soruIds.Count);
                 atamalar.Add(new GmAtama
                 {
                     GmDonemId = donemId,
-                    GmDonemSoruId = donemSoru.Id,
-                    UserId = personel.UserId,
-                    PlanTarihi = planTarihi,
+                    GmDonemSoruId = soruIds[i],
+                    UserId = userId,
+                    PlanTarihi = isGunleri[dayIndex],
                     DurumId = GmAtamaDurumlari.Ids.Beklemede
                 });
-
-                personelIndex++;
-                gunIndex++;
             }
         }
 
@@ -1258,6 +1267,27 @@ public class GmService : IGmService
 
         // Otomatik dinleme oluştur
         await CreateDinlemeForAtamaAsync(entity);
+
+        return true;
+    }
+
+    public async Task<bool> UpdateCompletedAtamaAsync(int atamaId, int userId, CompleteGmAtamaDto dto)
+    {
+        var entity = await _context.GmAtamalar
+            .FirstOrDefaultAsync(x => x.Id == atamaId && x.UserId == userId);
+
+        if (entity == null) return false;
+
+        if (entity.DurumId != GmAtamaDurumlari.Ids.Tamamlandi)
+            throw new InvalidOperationException("Sadece tamamlanmış atamalar güncellenebilir.");
+
+        entity.GerceklesmeTarihi = dto.GerceklesmeTarihi;
+        entity.AramaSaati = dto.AramaSaati;
+        entity.Not = dto.Not;
+        entity.GorusulenTemsilci = dto.GorusulenTemsilci;
+
+        await _context.SaveChangesAsync();
+        await _auditLog.LogInfoAsync($"GM Atama güncellendi (AtamaId: {atamaId}, UserId: {userId})", "GolgeMusteri");
 
         return true;
     }

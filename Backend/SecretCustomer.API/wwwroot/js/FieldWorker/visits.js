@@ -53,17 +53,6 @@ function FieldWorkerVisitsViewModel() {
             });
     };
 
-    // Start new visit from assignment - popup olarak aç
-    self.startNewVisit = function(assignment) {
-        var url = '/FieldWorker/VisitPopup?assignmentId=' + assignment.id;
-        var width = 1200;
-        var height = 800;
-        var left = (screen.width - width) / 2;
-        var top = (screen.height - height) / 2;
-        window.open(url, 'FieldWorkerVisitPopup',
-            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
-    };
-
     // ========================
     // VISITS TAB
     // ========================
@@ -497,6 +486,52 @@ function FieldWorkerVisitsViewModel() {
     };
 
     // ========================
+    // ASSIGNMENT VISITS MODAL
+    // ========================
+    self.isAssignmentVisitsModalOpen = ko.observable(false);
+    self.isAssignmentVisitsLoading = ko.observable(false);
+    self.assignmentVisits = ko.observableArray([]);
+    self.selectedAssignment = ko.observable(null);
+
+    self.showAssignmentVisits = function(assignment) {
+        self.selectedAssignment(assignment);
+        self.assignmentVisits([]);
+        self.isAssignmentVisitsLoading(true);
+        self.isAssignmentVisitsModalOpen(true);
+
+        ApiService.get('/fieldworker/visits?projectId=' + assignment.projectId + '&pageSize=100')
+            .then(function(data) {
+                var items = (data.items || []).filter(function(v) {
+                    return v.statusId !== 3 && v.statusId !== 5;
+                });
+                self.assignmentVisits(items);
+            })
+            .catch(function(error) {
+                console.error('Error loading assignment visits:', error);
+                toastr.error(T('FieldWorker.LoadVisitsError', 'Ziyaretler yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.isAssignmentVisitsLoading(false);
+            });
+    };
+
+    self.closeAssignmentVisitsModal = function() {
+        self.isAssignmentVisitsModalOpen(false);
+        self.selectedAssignment(null);
+        self.assignmentVisits([]);
+    };
+
+    self.openVisitInPopup = function(visit) {
+        var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+        var width = 1200;
+        var height = 800;
+        var left = (screen.width - width) / 2;
+        var top = (screen.height - height) / 2;
+        window.open(url, 'FieldWorkerVisitPopup',
+            'width=' + width + ',height=' + height + ',left=' + left + ',top=' + top + ',scrollbars=yes,resizable=yes');
+    };
+
+    // ========================
     // DETAIL MODAL
     // ========================
     self.isDetailModalOpen = ko.observable(false);
@@ -637,6 +672,20 @@ function FieldWorkerVisitsViewModel() {
     // ========================
     // INITIALIZE
     // ========================
+
+    // Popup kapandığında yenile
+    window.addEventListener('message', function(event) {
+        if (event.data === 'visitSaved' || event.data === 'evaluationSaved') {
+            self.loadAssignments();
+            if (self.activeTab() === 'visits') {
+                self.loadVisits();
+            }
+            if (self.isAssignmentVisitsModalOpen() && self.selectedAssignment()) {
+                self.showAssignmentVisits(self.selectedAssignment());
+            }
+        }
+    });
+
     self.init = function() {
         // URL parametrelerini kontrol et
         var urlParams = new URLSearchParams(window.location.search);

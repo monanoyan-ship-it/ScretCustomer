@@ -370,6 +370,7 @@
                                     <th>@Html.T("GolgeMusteri.GorusulenTemsilci", "Temsilci")</th>
                                     <th>@Html.T("Common.Note", "Not")</th>
                                     <th>@Html.T("GolgeMusteri.KuponKodu", "Kupon")</th>
+                                    <th style="width: 100px;">@Html.T("Common.Actions", "İşlem")</th>
                                 </tr>
                             </thead>
                             <tbody data-bind="foreach: tamamlananAramalar">
@@ -384,6 +385,11 @@
                                     <td data-bind="text: gorusulenTemsilci || '-'"></td>
                                     <td><small class="text-muted" data-bind="text: not ? (not.length > 20 ? not.substring(0,20)+'...' : not) : '-'"></small></td>
                                     <td><code data-bind="text: kuponKodu || '-'"></code></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-warning" data-bind="click: function() { $parent.showUpdateModal($data); }, clickBubble: false">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -546,6 +552,66 @@
                     <button type="button" class="btn btn-success" data-bind="click: completeAtama, disable: isSaving">
                         <span data-bind="visible: isSaving" class="spinner-border spinner-border-sm me-1"></span>
                         Tamamla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Güncelleme Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>@Html.T("GolgeMusteri.AramaGuncelle", "Aramayı Güncelle")</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3" data-bind="visible: updatingAtama()">
+                        <strong data-bind="text: updatingAtama() ? updatingAtama().hedefFirmaAdi : ''"></strong>
+                        <span data-bind="text: updatingAtama() ? ' - ' + updatingAtama().hedefFirmaTelefonNo : ''"></span>
+                        <div class="mt-1 small" data-bind="text: updatingAtama() ? updatingAtama().soruMetni : ''"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Date", "Tarih") <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" data-bind="value: updateForm.gerceklesmeTarihi" autocomplete="off">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">@Html.T("Common.Time", "Saat") <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" data-bind="value: updateForm.aramaSaati" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("GolgeMusteri.GorusulenTemsilci", "Görüşülen Temsilci")</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" autocomplete="off"
+                                   placeholder="@Html.T("GolgeMusteri.GorusulenTemsilciAra", "Ad soyad yazarak arayın...")"
+                                   data-bind="value: updateForm.gorusulenTemsilci, valueUpdate: 'afterkeydown', event: { focus: onUpdateTemsilciFocus, blur: onUpdateTemsilciBlur }">
+                            <div class="list-group position-absolute w-100 shadow-sm" style="z-index: 1050; max-height: 200px; overflow-y: auto;"
+                                 data-bind="visible: isUpdateTemsilciDropdownVisible() && updateFilteredPersonnel().length > 0">
+                                <!-- ko foreach: updateFilteredPersonnel -->
+                                <button type="button" class="list-group-item list-group-item-action py-1 px-2"
+                                        data-bind="click: $parent.selectUpdateTemsilci, event: { mousedown: function() { return true; } }">
+                                    <small data-bind="text: name"></small>
+                                    <!-- ko if: title -->
+                                    <small class="text-muted" data-bind="text: ' - ' + title"></small>
+                                    <!-- /ko -->
+                                </button>
+                                <!-- /ko -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">@Html.T("Common.Note", "Not")</label>
+                        <textarea class="form-control" rows="3" data-bind="value: updateForm.not" maxlength="2000" autocomplete="off"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Cancel", "İptal")</button>
+                    <button type="button" class="btn btn-warning" data-bind="click: updateAtama, disable: isUpdating">
+                        <span data-bind="visible: isUpdating" class="spinner-border spinner-border-sm me-1"></span>
+                        <i class="bi bi-check-circle me-1"></i>@Html.T("Common.Update", "Güncelle")
                     </button>
                 </div>
             </div>

@@ -147,6 +147,29 @@ public class GmAramalarimApiController : BaseApiController
         }
     }
 
+    [HttpPut("{atamaId}/guncelle")]
+    public async Task<IActionResult> UpdateCompletedAtama(int atamaId, [FromBody] CompleteGmAtamaDto dto)
+    {
+        try
+        {
+            var userId = GetUserId();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _gmService.UpdateCompletedAtamaAsync(atamaId, userId, dto);
+            if (!result) return NotFound(new { message = "Atama bulunamadı veya size ait değil." });
+            return Ok(new { success = true });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Atama güncellenirken hata", "GmAramalarim", ex);
+            return StatusCode(500, CreateErrorResponse("Atama güncellenirken hata oluştu", ex));
+        }
+    }
+
     [HttpPost("{atamaId}/tamamla")]
     public async Task<IActionResult> CompleteAtama(int atamaId, [FromBody] CompleteGmAtamaDto dto)
     {

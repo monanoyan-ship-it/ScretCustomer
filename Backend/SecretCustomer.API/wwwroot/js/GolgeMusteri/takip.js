@@ -90,6 +90,18 @@ function TakipViewModel() {
             .always(function () { self.isDinlemelerLoading(false); });
     };
 
+    // Excel export
+    self.exportExcel = function () {
+        if (!self.selectedDonemId()) {
+            toastr.warning('Önce bir dönem seçin.');
+            return;
+        }
+        var params = ['donemId=' + self.selectedDonemId()];
+        if (self.selectedUserId()) params.push('userId=' + self.selectedUserId());
+        if (self.selectedAramaDurumId()) params.push('durumId=' + self.selectedAramaDurumId());
+        window.location.href = '/api/gm/atamalar/export?' + params.join('&');
+    };
+
     // Detay modal
     self.selectedAtama = ko.observable(null);
 

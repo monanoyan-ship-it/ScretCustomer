@@ -1,6 +1,8 @@
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SecretCustomer.Core.DTOs.GolgeMusteri;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 
 namespace SecretCustomer.API.Controllers.Api;
@@ -686,6 +688,57 @@ public class GmApiController : BaseApiController
         {
             await _auditLogService.LogErrorAsync("Atamalar yüklenirken hata", "Gm", ex);
             return StatusCode(500, CreateErrorResponse("Atamalar yüklenirken hata oluştu", ex));
+        }
+    }
+
+    [HttpGet("atamalar/export")]
+    public async Task<IActionResult> ExportAtamalar([FromQuery] int donemId, [FromQuery] int? userId, [FromQuery] int? durumId)
+    {
+        try
+        {
+            var data = await _gmService.GetAtamalarAsync(donemId, userId, durumId);
+
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Aramalar");
+
+            var headers = new[] { "Personel", "Firma", "Telefon", "Soru", "Beklenen Cevap", "Plan Tarihi", "Gerçekleşme Tarihi", "Saat", "Temsilci", "Durum", "Not", "Kupon Bilgisi", "Kupon Kodu" };
+            for (int i = 0; i < headers.Length; i++)
+                ws.Cell(1, i + 1).Value = headers[i];
+
+            var headerRow = ws.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            for (int r = 0; r < data.Count; r++)
+            {
+                var a = data[r];
+                var row = r + 2;
+                ws.Cell(row, 1).Value = a.UserName ?? "-";
+                ws.Cell(row, 2).Value = a.HedefFirmaAdi ?? "-";
+                ws.Cell(row, 3).Value = a.HedefFirmaTelefonNo ?? "-";
+                ws.Cell(row, 4).Value = a.SoruMetni ?? "-";
+                ws.Cell(row, 5).Value = a.BeklenenCevap ?? "-";
+                ws.Cell(row, 6).Value = a.PlanTarihi?.ToString("dd.MM.yyyy") ?? "-";
+                ws.Cell(row, 7).Value = a.GerceklesmeTarihi?.ToString("dd.MM.yyyy") ?? "-";
+                ws.Cell(row, 8).Value = a.AramaSaati ?? "-";
+                ws.Cell(row, 9).Value = a.GorusulenTemsilci ?? "-";
+                ws.Cell(row, 10).Value = a.DurumText ?? "-";
+                ws.Cell(row, 11).Value = a.Not ?? "-";
+                ws.Cell(row, 12).Value = a.KuponBilgisi ?? "-";
+                ws.Cell(row, 13).Value = a.KuponKodu ?? "-";
+            }
+
+            ws.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            var fileName = $"GM_Aramalar_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("GM Atamalar Excel export hatası", "Gm", ex);
+            return StatusCode(500, CreateErrorResponse("Excel dışa aktarma hatası", ex));
         }
     }
 

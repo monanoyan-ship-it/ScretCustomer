@@ -56,6 +56,12 @@
                         <option value="3">Tamamlandı</option>
                     </select>
                 </div>
+                <!-- Excel Export -->
+                <div class="col-auto" data-bind="visible: activeTab() === 'aramalar' && selectedDonemId()">
+                    <button class="btn btn-sm btn-outline-success" data-bind="click: exportExcel">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Excel
+                    </button>
+                </div>
             </div>
         </div>
     </div>

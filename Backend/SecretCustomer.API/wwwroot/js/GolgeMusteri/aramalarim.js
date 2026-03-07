@@ -547,6 +547,87 @@ function AramalarimViewModel() {
         $('#atamaDetailModal').modal('show');
     };
 
+    // Güncelleme
+    self.updatingAtama = ko.observable(null);
+    self.isUpdating = ko.observable(false);
+    self.updateForm = {
+        gerceklesmeTarihi: ko.observable(''),
+        aramaSaati: ko.observable(''),
+        not: ko.observable(''),
+        gorusulenTemsilci: ko.observable('')
+    };
+
+    // Güncelle temsilci autocomplete
+    self.updateFilteredPersonnel = ko.computed(function () {
+        var search = (self.updateForm.gorusulenTemsilci() || '').toLowerCase().trim();
+        if (!search) return [];
+        return self.availablePersonnel().filter(function (p) {
+            return p.name.toLowerCase().indexOf(search) >= 0;
+        }).slice(0, 15);
+    });
+
+    self.isUpdateTemsilciDropdownVisible = ko.observable(false);
+
+    self.selectUpdateTemsilci = function (personnel) {
+        self.updateForm.gorusulenTemsilci(personnel.name);
+        self.isUpdateTemsilciDropdownVisible(false);
+    };
+
+    self.onUpdateTemsilciFocus = function () {
+        self.isUpdateTemsilciDropdownVisible(true);
+        return true;
+    };
+
+    self.onUpdateTemsilciBlur = function () {
+        setTimeout(function () { self.isUpdateTemsilciDropdownVisible(false); }, 200);
+        return true;
+    };
+
+    self.showUpdateModal = function (atama) {
+        self.updatingAtama(atama);
+        self.updateForm.gerceklesmeTarihi(atama.gerceklesmeTarihi ? new Date(atama.gerceklesmeTarihi).toISOString().substring(0, 10) : '');
+        self.updateForm.aramaSaati(atama.aramaSaati || '');
+        self.updateForm.not(atama.not || '');
+        self.updateForm.gorusulenTemsilci(atama.gorusulenTemsilci || '');
+        if (atama.customerId) {
+            self.loadPersonnelForCustomer(atama.customerId);
+        }
+        $('#updateModal').modal('show');
+    };
+
+    self.updateAtama = function () {
+        if (!self.updatingAtama()) return;
+        if (!self.updateForm.gerceklesmeTarihi() || !self.updateForm.aramaSaati()) {
+            toastr.warning('Tarih ve saat zorunludur.');
+            return;
+        }
+
+        self.isUpdating(true);
+        $.ajax({
+            url: '/api/gm/aramalarim/' + self.updatingAtama().id + '/guncelle',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                gerceklesmeTarihi: self.updateForm.gerceklesmeTarihi(),
+                aramaSaati: self.updateForm.aramaSaati(),
+                not: self.updateForm.not() || null,
+                gorusulenTemsilci: self.updateForm.gorusulenTemsilci() || null
+            })
+        })
+        .done(function () {
+            toastr.success('Arama güncellendi.');
+            $('#updateModal').modal('hide');
+            self.updatingAtama(null);
+            self.loadTamamlananAramalar();
+        })
+        .fail(function (xhr) {
+            toastr.error(xhr.responseJSON?.message || 'Güncelleme başarısız.');
+        })
+        .always(function () {
+            self.isUpdating(false);
+        });
+    };
+
     self.showCompleteModal = function (atama) {
         self.completingAtama(atama);
         var today = new Date().toISOString().substring(0, 10);

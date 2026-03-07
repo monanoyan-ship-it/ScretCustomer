@@ -90,11 +90,9 @@
                                 </small>
                             </td>
                             <td>
-                                <div class="d-flex gap-1">
-                                    <button class="btn btn-sm btn-primary" data-bind="click: $parent.startNewVisit">
-                                        <i class="bi bi-plus-circle me-1"></i>@Html.T("FieldWorker.NewVisit", "Ziyaret Ekle")
-                                    </button>
-                                </div>
+                                <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.showAssignmentVisits">
+                                    <i class="bi bi-list-ul me-1"></i>@Html.T("FieldWorker.IncompleteVisits", "Ziyaretler")
+                                </button>
                             </td>
                         </tr>
                     </tbody>
@@ -722,8 +720,74 @@
         </div>
     </div>
 
+    <!-- ==================== ASSIGNMENT VISITS MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isAssignmentVisitsModalOpen }, style: { display: isAssignmentVisitsModalOpen() ? 'block' : 'none' }" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-list-ul me-2"></i>@Html.T("FieldWorker.IncompleteVisits", "Tamamlanmamış Ziyaretler")
+                        <!-- ko if: selectedAssignment() -->
+                        <small class="ms-2 opacity-75">- <span data-bind="text: selectedAssignment().projectName"></span></small>
+                        <!-- /ko -->
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bind="click: closeAssignmentVisitsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Loading -->
+                    <div data-bind="visible: isAssignmentVisitsLoading" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div data-bind="visible: !isAssignmentVisitsLoading() && assignmentVisits().length === 0" class="text-center py-4">
+                        <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                        <p class="mt-2 text-muted">@Html.T("FieldWorker.NoIncompleteVisits", "Tamamlanmamış ziyaret bulunmamaktadır.")</p>
+                    </div>
+
+                    <!-- Visits list -->
+                    <div data-bind="visible: !isAssignmentVisitsLoading() && assignmentVisits().length > 0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Dealer.Name", "Bayi")</th>
+                                        <th>@Html.T("Dealer.City", "Şehir")</th>
+                                        <th>@Html.T("Report.ControlDate", "Kontrol Tarihi")</th>
+                                        <th>@Html.T("Common.Status", "Durum")</th>
+                                        <th style="width: 120px;">@Html.T("Common.Actions", "İşlemler")</th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: assignmentVisits">
+                                    <tr>
+                                        <td data-bind="text: customerDealerName || '-'"></td>
+                                        <td data-bind="text: customerDealerCity || '-'"></td>
+                                        <td data-bind="text: controlDate ? new Date(controlDate).toLocaleDateString('tr-TR') : '-'"></td>
+                                        <td>
+                                            <span class="badge" data-bind="text: statusName, css: $parent.getStatusBadgeClass(statusId)"></span>
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bind="click: $parent.openVisitInPopup">
+                                                <i class="bi bi-pencil-square me-1"></i>@Html.T("Common.Edit", "Düzenle")
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bind="click: closeAssignmentVisitsModal">
+                        @Html.T("Common.Close", "Kapat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Backdrop -->
-    <div class="modal-backdrop fade" data-bind="css: { show: isNewVisitModalOpen() || isDetailModalOpen() || isRevertRequestModalOpen() }, style: { display: (isNewVisitModalOpen() || isDetailModalOpen() || isRevertRequestModalOpen()) ? 'block' : 'none' }"></div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isNewVisitModalOpen() || isDetailModalOpen() || isRevertRequestModalOpen() || isAssignmentVisitsModalOpen() }, style: { display: (isNewVisitModalOpen() || isDetailModalOpen() || isRevertRequestModalOpen() || isAssignmentVisitsModalOpen()) ? 'block' : 'none' }"></div>
 </div>
 
 @section Styles {
