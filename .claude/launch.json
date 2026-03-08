@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dotnet-api",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Backend/SecretCustomer.API", "--launch-profile", "https"],
+      "port": 5004
+    },
+    {
+      "name": "pdf-service",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["PdfService/app.py"],
+      "port": 5060
+    },
+    {
+      "name": "excel-service",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["ExcelService/main.py"],
+      "port": 8002
+    }
+  ]
+}

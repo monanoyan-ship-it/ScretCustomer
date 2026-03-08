@@ -23,9 +23,6 @@ var FieldWorkerVisitPopupViewModel = function() {
     self.summaryData = ko.observable(null);
 
     // Form fields
-    self.callId = ko.observable('');
-    self.callIdExists = ko.observable(false);
-    self.isCheckingCallId = ko.observable(false);
     self.callDate = ko.observable('');
     self.callTime = ko.observable('');
     self.duration = ko.observable('');
@@ -383,7 +380,6 @@ var FieldWorkerVisitPopupViewModel = function() {
     };
 
     self.resetFormFields = function() {
-        self.callId('');
         self.callDate('');
         self.callTime('');
         self.duration('');
@@ -490,7 +486,6 @@ var FieldWorkerVisitPopupViewModel = function() {
                 self.formData(data);
 
                 // Load existing values if any
-                if (data.callId) self.callId(data.callId);
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
                 if (data.callTime) self.callTime(data.callTime);
                 if (data.duration) self.duration(data.duration);
@@ -782,10 +777,6 @@ var FieldWorkerVisitPopupViewModel = function() {
             errors.push(T('FieldWorker.DealerRequired', 'Bayi seçimi zorunludur'));
         }
 
-        if (!self.callId() || !self.callId().trim()) {
-            errors.push(T('Evaluation.CallIdRequired', 'Çağrı ID zorunludur'));
-        }
-
         // Ziyaret tarihi (callDate yerine controlDate kullanıyoruz ama zaten formda var)
         if (!self.callDate()) {
             errors.push(T('FieldWorker.VisitDateRequired', 'Ziyaret Tarihi zorunludur'));
@@ -796,61 +787,6 @@ var FieldWorkerVisitPopupViewModel = function() {
 
         return errors;
     };
-
-    // ========================
-    // CALLID CHECK (Index.js ile birebir aynı)
-    // ========================
-
-    self.checkCallIdExists = function() {
-        return new Promise(function(resolve) {
-            var callId = self.callId();
-            if (!callId || !callId.trim()) {
-                resolve(false);
-                return;
-            }
-            var projectId = self.formData() ? self.formData().projectId : null;
-            var evaluationId = self.formData() ? self.formData().evaluationId : null;
-            if (!projectId) {
-                resolve(false);
-                return;
-            }
-            var url = '/api/evaluations/check-call-id?callId=' + encodeURIComponent(callId) +
-                      '&projectId=' + projectId;
-            if (evaluationId) {
-                url += '&evaluationId=' + evaluationId;
-            }
-            fetch(url, { credentials: 'include' })
-                .then(function(response) { return response.json(); })
-                .then(function(data) { resolve(data.exists === true); })
-                .catch(function() { resolve(false); });
-        });
-    };
-
-    // CallId değiştiğinde otomatik kontrol (debounced)
-    var callIdCheckTimeout = null;
-    self.callId.subscribe(function(newValue) {
-        // Önceki timeout'u temizle
-        if (callIdCheckTimeout) {
-            clearTimeout(callIdCheckTimeout);
-            callIdCheckTimeout = null;
-        }
-
-        // Boşsa veya form açık değilse kontrol etme
-        if (!newValue || !newValue.trim() || !self.formData()) {
-            self.callIdExists(false);
-            self.isCheckingCallId(false);
-            return;
-        }
-
-        // 500ms sonra kontrol et (debounce)
-        self.isCheckingCallId(true);
-        callIdCheckTimeout = setTimeout(function() {
-            self.checkCallIdExists().then(function(exists) {
-                self.callIdExists(exists);
-                self.isCheckingCallId(false);
-            });
-        }, 500);
-    });
 
     // ========================
     // SAVE DRAFT (FieldWorker için özelleştirildi)
@@ -991,7 +927,6 @@ var FieldWorkerVisitPopupViewModel = function() {
             redCardWeight: self.redCardWeightCalc(),
             // FieldWorker için bayi bilgisi (personel yerine)
             evaluatedPersonnelName: selectedDealer ? selectedDealer.name : '-',
-            callId: '-',
             callDate: self.callDate() || '-',
             callTime: self.callTime() || '-',
             duration: '-',
