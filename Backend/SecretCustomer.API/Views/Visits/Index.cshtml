@@ -56,7 +56,7 @@
                         </div>
                         <!-- Project Type -->
                         <div data-bind="visible: selectedFilterType() === 'projectType'" class="mb-2">
-                            <select class="form-select form-select-sm" data-bind="options: projectTypes, optionsText: function(item) { return T(item.nameKey, item.systemName); }, optionsValue: 'id', value: tempFilter.projectType, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
+                            <select class="form-select form-select-sm" data-bind="options: projectTypes, optionsText: 'displayName', optionsValue: 'id', value: tempFilter.projectType, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                         </div>
                         <!-- Evaluator -->
                         <div data-bind="visible: selectedFilterType() === 'evaluator'" class="mb-2">

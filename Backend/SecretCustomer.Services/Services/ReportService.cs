@@ -470,6 +470,11 @@ public class ReportService : IReportService
             if (statusIds.Any())
                 query = query.Where(e => statusIds.Contains(e.StatusId));
         }
+        // Varsayılan: sadece Completed (ana sorguyla tutarlı)
+        else
+        {
+            query = query.Where(e => e.StatusId == EvaluationStatuses.Ids.Completed);
+        }
 
         // Evaluation source filter (çoklu)
         if (filter.EvaluationSources?.Any() == true)

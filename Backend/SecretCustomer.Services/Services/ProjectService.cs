@@ -110,6 +110,28 @@ public class ProjectService : IProjectService
         return projects.Select(MapToDto);
     }
 
+    public async Task<IEnumerable<ProjectLookupDto>> GetLookupsAsync(bool includeInactive = false)
+    {
+        var query = _context.Projects
+            .AsNoTracking()
+            .IgnoreQueryFilters()
+            .Where(p => !p.IsDeleted);
+
+        if (!includeInactive)
+            query = query.Where(p => p.IsActive);
+
+        return await query
+            .OrderByDescending(p => p.Id)
+            .Select(p => new ProjectLookupDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Code = p.Code,
+                CustomerId = p.CustomerId
+            })
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<ProjectSummaryDto>> GetSummariesAsync()
     {
         var projects = await _context.Projects

@@ -8,6 +8,10 @@ public interface IProjectService
     Task<ProjectDetailDto?> GetDetailByIdAsync(int id);
     Task<IEnumerable<ProjectDto>> GetAllAsync(bool includeInactive = false);
     /// <summary>
+    /// Lookup/filtre için hafif projection (sadece Id, Name, Code, CustomerId)
+    /// </summary>
+    Task<IEnumerable<ProjectLookupDto>> GetLookupsAsync(bool includeInactive = false);
+    /// <summary>
     /// Liste görünümü için optimize edilmiş method (Assignments/TeamMembers yüklemez)
     /// </summary>
     Task<IEnumerable<ProjectListDto>> GetListAsync(

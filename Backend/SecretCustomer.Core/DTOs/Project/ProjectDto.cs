@@ -196,3 +196,14 @@ public class ProjectFilterDto
     /// </summary>
     public string? EndingDateFilter { get; set; }
 }
+
+/// <summary>
+/// Lookup/filtre dropdown'ları için minimal DTO (Include'sız projection)
+/// </summary>
+public class ProjectLookupDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Code { get; set; }
+    public int? CustomerId { get; set; }
+}

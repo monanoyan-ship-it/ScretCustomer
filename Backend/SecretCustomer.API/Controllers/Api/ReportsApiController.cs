@@ -55,7 +55,7 @@ public class ReportsApiController : BaseApiController
         try
         {
             var customers = await _customerService.GetListAsync(includeInactive: false);
-            var projects = await _projectService.GetAllAsync(includeInactive: true); // Listenings filtresi için tüm projeler
+            var projects = await _projectService.GetLookupsAsync(includeInactive: true); // Listenings filtresi için tüm projeler (hafif projection)
             var evaluators = await _userService.GetByRoleIdAsync(UserRoles.Ids.QualitySpecialist);
 
             // DateRangeTypes with localized names
