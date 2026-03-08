@@ -180,7 +180,7 @@ function FieldWorkerVisitsViewModel() {
         };
 
         var formatDate = function(d) {
-            return d.toISOString().split('T')[0];
+            return formatLocalDate(d);
         };
 
         switch (range) {
@@ -392,7 +392,7 @@ function FieldWorkerVisitsViewModel() {
     self.showNewVisitModal = function() {
         self.newVisit.projectId('');
         self.newVisit.customerDealerId('');
-        self.newVisit.controlDate(new Date().toISOString().split('T')[0]);
+        self.newVisit.controlDate(formatLocalDate(new Date()));
         self.newVisit.controlTime('');
         self.newVisit.auditorComment('');
         self.formData(null);

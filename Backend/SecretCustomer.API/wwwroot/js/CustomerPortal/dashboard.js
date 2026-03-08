@@ -599,7 +599,7 @@ function CustomerDashboardViewModel() {
         customerApiDownloadPost(
             '/api/customer/portal/dashboard/charts/export',
             requestBody,
-            filename + '_' + new Date().toISOString().split('T')[0] + '.xlsx'
+            filename + '_' + formatLocalDate(new Date()) + '.xlsx'
         ).then(function() {
             toastr.success('Excel indirildi');
         }).catch(function(error) {
@@ -998,7 +998,7 @@ function CustomerDashboardViewModel() {
         var y = 28;
 
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-        pdf.save(filename + '_' + new Date().toISOString().split('T')[0] + '.pdf');
+        pdf.save(filename + '_' + formatLocalDate(new Date()) + '.pdf');
         toastr.success('PDF indirildi');
     };
 
@@ -1054,7 +1054,7 @@ function CustomerDashboardViewModel() {
         customerApiDownloadPost(
             '/api/customer/portal/dashboard/charts/export',
             requestBody,
-            filename + '_' + new Date().toISOString().split('T')[0] + '.xlsx'
+            filename + '_' + formatLocalDate(new Date()) + '.xlsx'
         ).then(function() {
             toastr.success('Excel indirildi');
         }).catch(function(error) {

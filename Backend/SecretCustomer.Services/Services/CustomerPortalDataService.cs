@@ -2132,6 +2132,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             .Where(e => e.Project != null &&
                        e.Project.CustomerId == customerId &&
                        e.EvaluatorId != null &&
+                       e.EvaluatorCustomerPersonnelId == null && // Sadece dış dinlemeler (iç dinlemeler hariç)
                        e.StatusId == EvaluationStatuses.Ids.Completed &&
                        !excludedChecklistTypes.Contains(e.Project!.Checklist!.ChecklistTypeId)); // Anket/Enneagram hariç
 

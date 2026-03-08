@@ -3904,10 +3904,23 @@ public class ReportService : IReportService
             var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
+            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
+            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
+
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
+                else
+                    query = query.Where(e => e.CreatedAt >= minStart);
+            }
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
+                else
+                    query = query.Where(e => e.CreatedAt <= maxEnd);
+            }
         }
 
         // Status filter (çoklu)
@@ -4178,10 +4191,23 @@ public class ReportService : IReportService
             var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
+            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
+            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
+
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
+                else
+                    query = query.Where(e => e.CreatedAt >= minStart);
+            }
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
+                else
+                    query = query.Where(e => e.CreatedAt <= maxEnd);
+            }
         }
 
         // Status filter (çoklu)
@@ -7875,10 +7901,23 @@ public class ReportService : IReportService
             var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
             var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
 
+            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
+            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
+
             if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
+                else
+                    query = query.Where(e => e.CreatedAt >= minStart);
+            }
             if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            {
+                if (useCallDate)
+                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
+                else
+                    query = query.Where(e => e.CreatedAt <= maxEnd);
+            }
         }
 
         // Status filter (çoklu)

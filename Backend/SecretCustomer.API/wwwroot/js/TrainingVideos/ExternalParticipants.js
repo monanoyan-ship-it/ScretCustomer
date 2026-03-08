@@ -137,8 +137,8 @@
         self.setDefaultDates = function () {
             var today = new Date();
             var nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
-            self.formStartDate(today.toISOString().split('T')[0]);
-            self.formDueDate(nextMonth.toISOString().split('T')[0]);
+            self.formStartDate(formatLocalDate(today));
+            self.formDueDate(formatLocalDate(nextMonth));
         };
 
         self.loadVideos = function () {

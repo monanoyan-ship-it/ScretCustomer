@@ -534,7 +534,7 @@ function InternalAssignmentsViewModel() {
     function getDefaultDueDate() {
         var date = new Date();
         date.setDate(date.getDate() + 7);
-        return date.toISOString().split('T')[0];
+        return formatLocalDate(date);
     }
 
     // ===== Subscriptions =====

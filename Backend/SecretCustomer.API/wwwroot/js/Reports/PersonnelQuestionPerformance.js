@@ -272,7 +272,7 @@ function PersonnelQuestionPerformanceViewModel() {
                 return response.blob();
             })
             .then(function(blob) {
-                var filename = 'PersonelSoruPerformansi_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                var filename = 'PersonelSoruPerformansi_' + formatLocalDate(new Date()) + '.xlsx';
                 var a = document.createElement('a');
                 a.href = URL.createObjectURL(blob);
                 a.download = filename;

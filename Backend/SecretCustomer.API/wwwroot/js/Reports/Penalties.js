@@ -582,7 +582,7 @@ function PenaltiesViewModel() {
                 var url = window.URL.createObjectURL(blob);
                 var a = document.createElement('a');
                 a.href = url;
-                a.download = T('File.PenaltyReport', 'CezaliKLRaporu') + '_' + new Date().toISOString().split('T')[0] + '.xlsx';
+                a.download = T('File.PenaltyReport', 'CezaliKLRaporu') + '_' + formatLocalDate(new Date()) + '.xlsx';
                 document.body.appendChild(a);
                 a.click();
                 window.URL.revokeObjectURL(url);

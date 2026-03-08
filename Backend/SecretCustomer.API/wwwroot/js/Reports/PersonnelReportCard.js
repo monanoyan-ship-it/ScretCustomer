@@ -69,7 +69,7 @@ function PersonnelReportCardViewModel() {
         var start, end;
 
         var formatDate = function(date) {
-            return date.toISOString().split('T')[0];
+            return formatLocalDate(date);
         };
 
         switch (rangeType) {

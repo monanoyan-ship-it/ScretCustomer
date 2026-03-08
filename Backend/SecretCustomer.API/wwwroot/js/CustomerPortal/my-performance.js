@@ -76,7 +76,7 @@ function MyPerformanceViewModel() {
     self.calculateDateRange = function(rangeType) {
         var today = new Date();
         var start, end;
-        var formatDate = function(date) { return date.toISOString().split('T')[0]; };
+        var formatDate = formatLocalDate;
 
         switch (rangeType) {
             case 'today': start = end = today; break;

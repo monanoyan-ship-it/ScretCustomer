@@ -338,15 +338,15 @@ function AssignmentsViewModel() {
         var start, end;
 
         if (rangeType === 'today') {
-            start = end = today.toISOString().split('T')[0];
+            start = end = formatLocalDate(today);
         } else if (rangeType === 'tomorrow') {
             var tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            start = end = tomorrow.toISOString().split('T')[0];
+            start = end = formatLocalDate(tomorrow);
         } else if (rangeType === 'yesterday') {
             var yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            start = end = yesterday.toISOString().split('T')[0];
+            start = end = formatLocalDate(yesterday);
         } else if (rangeType === 'thisWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -354,8 +354,8 @@ function AssignmentsViewModel() {
             weekStart.setDate(diff);
             var weekEnd = new Date(weekStart);
             weekEnd.setDate(weekStart.getDate() + 6);
-            start = weekStart.toISOString().split('T')[0];
-            end = weekEnd.toISOString().split('T')[0];
+            start = formatLocalDate(weekStart);
+            end = formatLocalDate(weekEnd);
         } else if (rangeType === 'nextWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -363,8 +363,8 @@ function AssignmentsViewModel() {
             nextWeekStart.setDate(diff + 7);
             var nextWeekEnd = new Date(nextWeekStart);
             nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
-            start = nextWeekStart.toISOString().split('T')[0];
-            end = nextWeekEnd.toISOString().split('T')[0];
+            start = formatLocalDate(nextWeekStart);
+            end = formatLocalDate(nextWeekEnd);
         } else if (rangeType === 'lastWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -372,32 +372,32 @@ function AssignmentsViewModel() {
             lastWeekEnd.setDate(diff - 1);
             var lastWeekStart = new Date(lastWeekEnd);
             lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
-            start = lastWeekStart.toISOString().split('T')[0];
-            end = lastWeekEnd.toISOString().split('T')[0];
+            start = formatLocalDate(lastWeekStart);
+            end = formatLocalDate(lastWeekEnd);
         } else if (rangeType === 'thisMonth') {
-            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 1));
+            end = formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 1, 0));
         } else if (rangeType === 'nextMonth') {
-            start = new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth() + 2, 0).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 1, 1));
+            end = formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 2, 0));
         } else if (rangeType === 'lastMonth') {
-            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+            end = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 0));
         } else if (rangeType === 'next3Months') {
-            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth() + 3, 0).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 1));
+            end = formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 3, 0));
         } else if (rangeType === 'last3Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 2, 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'last6Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 5, 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'thisYear') {
-            start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), 11, 31).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), 0, 1));
+            end = formatLocalDate(new Date(today.getFullYear(), 11, 31));
         } else if (rangeType === 'lastYear') {
-            start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear() - 1, 0, 1));
+            end = formatLocalDate(new Date(today.getFullYear() - 1, 11, 31));
         }
 
         return { start: start, end: end };

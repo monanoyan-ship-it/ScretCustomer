@@ -243,18 +243,18 @@ function AramalarimViewModel() {
         var start, end;
 
         if (rangeType === 'today') {
-            start = end = today.toISOString().split('T')[0];
+            start = end = formatLocalDate(today);
         } else if (rangeType === 'yesterday') {
             var yesterday = new Date(today);
             yesterday.setDate(yesterday.getDate() - 1);
-            start = end = yesterday.toISOString().split('T')[0];
+            start = end = formatLocalDate(yesterday);
         } else if (rangeType === 'thisWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
             var weekStart = new Date(today);
             weekStart.setDate(diff);
-            start = weekStart.toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(weekStart);
+            end = formatLocalDate(today);
         } else if (rangeType === 'lastWeek') {
             var dayOfWeek = today.getDay();
             var diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -262,26 +262,26 @@ function AramalarimViewModel() {
             lastWeekEnd.setDate(diff - 1);
             var lastWeekStart = new Date(lastWeekEnd);
             lastWeekStart.setDate(lastWeekEnd.getDate() - 6);
-            start = lastWeekStart.toISOString().split('T')[0];
-            end = lastWeekEnd.toISOString().split('T')[0];
+            start = formatLocalDate(lastWeekStart);
+            end = formatLocalDate(lastWeekEnd);
         } else if (rangeType === 'thisMonth') {
-            start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'lastMonth') {
-            start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+            end = formatLocalDate(new Date(today.getFullYear(), today.getMonth(), 0));
         } else if (rangeType === 'last3Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 2, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 2, 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'last6Months') {
-            start = new Date(today.getFullYear(), today.getMonth() - 5, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), today.getMonth() - 5, 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'thisYear') {
-            start = new Date(today.getFullYear(), 0, 1).toISOString().split('T')[0];
-            end = today.toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear(), 0, 1));
+            end = formatLocalDate(today);
         } else if (rangeType === 'lastYear') {
-            start = new Date(today.getFullYear() - 1, 0, 1).toISOString().split('T')[0];
-            end = new Date(today.getFullYear() - 1, 11, 31).toISOString().split('T')[0];
+            start = formatLocalDate(new Date(today.getFullYear() - 1, 0, 1));
+            end = formatLocalDate(new Date(today.getFullYear() - 1, 11, 31));
         }
 
         return { start: start, end: end };
@@ -585,7 +585,7 @@ function AramalarimViewModel() {
 
     self.showUpdateModal = function (atama) {
         self.updatingAtama(atama);
-        self.updateForm.gerceklesmeTarihi(atama.gerceklesmeTarihi ? new Date(atama.gerceklesmeTarihi).toISOString().substring(0, 10) : '');
+        self.updateForm.gerceklesmeTarihi(atama.gerceklesmeTarihi ? formatLocalDate(new Date(atama.gerceklesmeTarihi)) : '');
         self.updateForm.aramaSaati(atama.aramaSaati || '');
         self.updateForm.not(atama.not || '');
         self.updateForm.gorusulenTemsilci(atama.gorusulenTemsilci || '');
@@ -630,7 +630,7 @@ function AramalarimViewModel() {
 
     self.showCompleteModal = function (atama) {
         self.completingAtama(atama);
-        var today = new Date().toISOString().substring(0, 10);
+        var today = formatLocalDate(new Date());
         var now = new Date().toTimeString().substring(0, 5);
         self.completeForm.gerceklesmeTarihi(today);
         self.completeForm.aramaSaati(now);

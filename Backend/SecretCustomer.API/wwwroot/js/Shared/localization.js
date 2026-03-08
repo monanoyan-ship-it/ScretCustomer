@@ -122,8 +122,18 @@
             });
     }
 
+    /**
+     * Format a Date object as YYYY-MM-DD using local timezone (not UTC).
+     * Replaces .toISOString().split('T')[0] which causes off-by-one errors in UTC+ timezones.
+     */
+    function formatLocalDate(date) {
+        if (!date || !(date instanceof Date)) return '';
+        return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+    }
+
     // Expose to global scope
     window.T = T;
+    window.formatLocalDate = formatLocalDate;
     window.Localization = {
         T: T,
         setTranslations: setTranslations,

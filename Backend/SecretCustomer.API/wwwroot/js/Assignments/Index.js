@@ -1059,8 +1059,8 @@ function AssignmentsViewModel() {
         // Auto-set start/end dates (current month)
         var startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         var endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        self.periodForm().startDate(startOfMonth.toISOString().split('T')[0]);
-        self.periodForm().endDate(endOfMonth.toISOString().split('T')[0]);
+        self.periodForm().startDate(formatLocalDate(startOfMonth));
+        self.periodForm().endDate(formatLocalDate(endOfMonth));
 
         var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('addPeriodModal'));
         modal.show();
