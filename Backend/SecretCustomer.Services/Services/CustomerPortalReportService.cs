@@ -3470,6 +3470,12 @@ public class CustomerPortalReportService : ICustomerPortalReportService
 
     public async Task<ExcelExportDto?> ExportSurveyResponsesToExcelAsync(int? projectId = null)
     {
+        // Enneagram checklist'lerini hariç tut - sadece Survey tipi
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
         // Yanıtları al (max 500)
         var query = _context.Evaluations
             .Include(e => e.Project)
@@ -3481,7 +3487,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     .ThenInclude(s => s.SubCriteria)
             .Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
-                   !e.Project.IsDeleted)
+                   !e.Project.IsDeleted &&
+                   !enneagramChecklistIds.Contains(e.Project.ChecklistId))
             .AsQueryable();
 
         // Filter by project
@@ -4301,40 +4308,266 @@ public class CustomerPortalReportService : ICustomerPortalReportService
 
     public async Task<ExcelExportDto> ExportEnneagramResultsToExcelAsync(EnneagramFilterDto filter)
     {
-        // Tüm sonuçları al (sayfalama yok)
-        filter.PageSize = int.MaxValue;
-        var (results, summary, _) = await GetEnneagramResultsAsync(filter);
+        // Enneagram checklist'leri
+        var enneagramChecklistIds = await _context.Checklists
+            .Where(c => c.ChecklistTypeId == ChecklistTypes.Ids.Enneagram && !c.IsDeleted)
+            .Select(c => c.Id)
+            .ToListAsync();
+
+        if (!enneagramChecklistIds.Any())
+            return new ExcelExportDto
+            {
+                FileName = $"Enneagram_Sonuclari_{TurkeyTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                FileContent = Array.Empty<byte>(),
+                ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            };
+
+        // Evaluations sorgusu (Cevap Detayları sheet'i için Answers dahil)
+        var query = _context.Evaluations
+            .Include(e => e.Project)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.Question)
+            .Include(e => e.Answers)
+                .ThenInclude(a => a.SubCriteriaSelections)
+                    .ThenInclude(s => s.SubCriteria)
+            .Where(e => !e.IsDeleted &&
+                        e.StatusId == EvaluationStatuses.Ids.Completed &&
+                        e.Project != null &&
+                        enneagramChecklistIds.Contains(e.Project.ChecklistId));
+
+        // Proje filtresi
+        if (filter.ProjectIds?.Any() == true)
+        {
+            query = query.Where(e => filter.ProjectIds.Contains(e.ProjectId));
+        }
+
+        // Arama filtresi
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var term = filter.SearchTerm.ToLower();
+            query = query.Where(e =>
+                (e.EvaluatedCustomerPersonnel != null &&
+                    ((e.EvaluatedCustomerPersonnel.FirstName != null && e.EvaluatedCustomerPersonnel.FirstName.ToLower().Contains(term)) ||
+                     (e.EvaluatedCustomerPersonnel.LastName != null && e.EvaluatedCustomerPersonnel.LastName.ToLower().Contains(term)) ||
+                     (e.EvaluatedCustomerPersonnel.Email != null && e.EvaluatedCustomerPersonnel.Email.ToLower().Contains(term)))));
+        }
+
+        // Tarih filtresi (çoklu aralık OR)
+        if (filter.DateRanges?.Any() == true)
+        {
+            var param = Expression.Parameter(typeof(Evaluation), "e");
+            var createdAtProp = Expression.Property(param, nameof(Evaluation.CreatedAt));
+            Expression? orBody = null;
+            foreach (var dr in filter.DateRanges)
+            {
+                Expression? rangeExpr = null;
+                if (dr.StartDate.HasValue)
+                {
+                    var startUtc = DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc);
+                    rangeExpr = Expression.GreaterThanOrEqual(createdAtProp, Expression.Constant(startUtc, typeof(DateTime)));
+                }
+                if (dr.EndDate.HasValue)
+                {
+                    var endUtc = DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+                    var leExpr = Expression.LessThanOrEqual(createdAtProp, Expression.Constant(endUtc, typeof(DateTime)));
+                    rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+                }
+                if (rangeExpr != null)
+                    orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+            }
+            if (orBody != null)
+                query = query.Where(Expression.Lambda<Func<Evaluation, bool>>(orBody, param));
+        }
+
+        var evaluations = await query
+            .OrderByDescending(e => e.CreatedAt)
+            .ToListAsync();
+
+        // External invitations
+        var evaluationIds = evaluations.Where(e => e.EvaluatedCustomerPersonnelId == null).Select(e => e.Id).ToList();
+        var externalInvitations = new Dictionary<int, (string? FirstName, string? LastName, string? Email)>();
+        if (evaluationIds.Any())
+        {
+            var extList = await _context.SurveyExternalInvitations
+                .Where(sei => sei.EvaluationId != null && evaluationIds.Contains(sei.EvaluationId.Value))
+                .Select(sei => new { EvalId = sei.EvaluationId!.Value, sei.FirstName, sei.LastName, sei.Email })
+                .ToListAsync();
+            foreach (var item in extList)
+                externalInvitations[item.EvalId] = (item.FirstName, item.LastName, item.Email);
+        }
+
+        // Helper: get respondent info
+        (string? Name, string? Email) GetRespondentInfo(Evaluation eval)
+        {
+            if (eval.EvaluatedCustomerPersonnel != null)
+            {
+                var name = $"{eval.EvaluatedCustomerPersonnel.FirstName} {eval.EvaluatedCustomerPersonnel.LastName}".Trim();
+                return (string.IsNullOrWhiteSpace(name) ? null : name, eval.EvaluatedCustomerPersonnel.Email);
+            }
+            if (externalInvitations.TryGetValue(eval.Id, out var ext))
+            {
+                var name = $"{ext.FirstName} {ext.LastName}".Trim();
+                return (string.IsNullOrWhiteSpace(name) ? null : name, ext.Email);
+            }
+            return (null, null);
+        }
+
+        string GetProjectDisplayName(Project? project)
+        {
+            if (project == null) return "";
+            return !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : project.Name;
+        }
 
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add("Enneagram Sonuçları");
 
-        // Header
-        var headers = new[] { "Katılımcı", "E-posta", "Proje", "Baskın Tip", "Baskın Yüzde", "Toplam Puan", "Tamamlanma Tarihi" };
-        for (int i = 0; i < headers.Length; i++)
+        // ===== Sheet 1: Enneagram Sonuçları =====
+        var sheet1 = workbook.Worksheets.Add("Enneagram Sonuçları");
+        var headers1 = new[] { "Katılımcı", "E-posta", "Proje", "Baskın Tip", "Baskın Yüzde", "Toplam Puan", "Tamamlanma Tarihi" };
+        for (int i = 0; i < headers1.Length; i++)
         {
-            worksheet.Cell(1, i + 1).Value = headers[i];
+            sheet1.Cell(1, i + 1).Value = headers1[i];
+            sheet1.Cell(1, i + 1).Style.Font.Bold = true;
+            sheet1.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
         }
 
-        var headerRange = worksheet.Range(1, 1, 1, headers.Length);
-        headerRange.Style.Font.Bold = true;
-        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-
-        // Veri
-        var row = 2;
-        foreach (var result in results)
+        int row1 = 2;
+        foreach (var eval in evaluations)
         {
-            worksheet.Cell(row, 1).Value = result.RespondentName ?? "Anonim";
-            worksheet.Cell(row, 2).Value = result.RespondentEmail ?? "";
-            worksheet.Cell(row, 3).Value = result.ProjectName;
-            worksheet.Cell(row, 4).Value = result.DominantType ?? "-";
-            worksheet.Cell(row, 5).Value = result.DominantPercentage.HasValue ? $"%{result.DominantPercentage:F2}" : "-";
-            worksheet.Cell(row, 6).Value = result.TotalScore ?? 0;
-            worksheet.Cell(row, 7).Value = result.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
-            row++;
+            var (respondentName, respondentEmail) = GetRespondentInfo(eval);
+            var scores = CalculateEnneagramScores(eval);
+            var dominantScore = scores.OrderByDescending(s => s.Percentage).FirstOrDefault();
+
+            sheet1.Cell(row1, 1).Value = respondentName ?? "Anonim";
+            sheet1.Cell(row1, 2).Value = respondentEmail ?? "";
+            sheet1.Cell(row1, 3).Value = GetProjectDisplayName(eval.Project);
+            sheet1.Cell(row1, 4).Value = dominantScore?.PersonalityType ?? "-";
+            sheet1.Cell(row1, 5).Value = dominantScore?.Percentage != null ? $"%{dominantScore.Percentage:F2}" : "-";
+            sheet1.Cell(row1, 6).Value = scores.Sum(s => s.TotalPoints);
+            sheet1.Cell(row1, 7).Value = eval.CompletedAt?.ToString("dd.MM.yyyy HH:mm") ?? "-";
+            row1++;
         }
 
-        worksheet.Columns().AdjustToContents();
-        ExcelHelper.ApplyLongTextColumnStyles(worksheet);
+        sheet1.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet1);
+
+        // ===== Sheet 2: Cevap Detayları =====
+        var sheet2 = workbook.Worksheets.Add("Cevap Detayları");
+        var headers2 = new[] { "Proje", "Katılımcı", "E-posta", "Grup", "Soru", "Puan", "Max Puan", "Seçilen Kriterler", "Yorum" };
+        for (int i = 0; i < headers2.Length; i++)
+        {
+            sheet2.Cell(1, i + 1).Value = headers2[i];
+            sheet2.Cell(1, i + 1).Style.Font.Bold = true;
+            sheet2.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        int row2 = 2;
+        foreach (var eval in evaluations)
+        {
+            var (respondentName, respondentEmail) = GetRespondentInfo(eval);
+            var projectName = GetProjectDisplayName(eval.Project);
+
+            var answers = eval.Answers
+                .Where(a => a.Question != null)
+                .OrderBy(a => a.Question!.GroupName ?? "")
+                .ThenBy(a => a.Question!.Order)
+                .ToList();
+
+            foreach (var a in answers)
+            {
+                var selectedCriteria = a.SubCriteriaSelections
+                    .Select(s => s.SubCriteria?.Description)
+                    .Where(d => !string.IsNullOrEmpty(d))
+                    .ToList();
+
+                sheet2.Cell(row2, 1).Value = projectName;
+                sheet2.Cell(row2, 2).Value = respondentName ?? "-";
+                sheet2.Cell(row2, 3).Value = respondentEmail ?? "-";
+                // Enneagram puanlama: SubCriteriaSelections üzerinden (CalculateEnneagramScores ile aynı)
+                var earnedPoints = a.SubCriteriaSelections
+                    .Select(sc => sc.SubCriteria?.WeightPoints ?? 0)
+                    .DefaultIfEmpty(0)
+                    .Max();
+
+                sheet2.Cell(row2, 4).Value = a.Question!.GroupName ?? "Genel";
+                sheet2.Cell(row2, 5).Value = a.Question.Text;
+                sheet2.Cell(row2, 6).Value = (int)earnedPoints;
+                sheet2.Cell(row2, 7).Value = a.Question.MaxPoints;
+                sheet2.Cell(row2, 8).Value = selectedCriteria.Any() ? string.Join(", ", selectedCriteria) : "-";
+                sheet2.Cell(row2, 9).Value = a.Notes ?? "-";
+                row2++;
+            }
+        }
+
+        sheet2.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet2, subCriteriaColumns: new[] { 8 }, noteColumns: new[] { 9 });
+
+        // ===== Sheet 3: Kişilik Tipi Dağılımı (proje bazlı) =====
+        var sheet3 = workbook.Worksheets.Add("Kişilik Tipi Dağılımı");
+        var headers3 = new[] { "Proje", "Yanıt Sayısı", "Kişilik Tipi", "Ortalama Puan", "Maks Puan", "Ortalama Yüzde (%)" };
+        for (int i = 0; i < headers3.Length; i++)
+        {
+            sheet3.Cell(1, i + 1).Value = headers3[i];
+            sheet3.Cell(1, i + 1).Style.Font.Bold = true;
+            sheet3.Cell(1, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        }
+
+        // Proje bazlı dağılım hesapla
+        var projectGroups = evaluations.GroupBy(e => e.ProjectId);
+        int row3 = 2;
+
+        foreach (var projectGroup in projectGroups)
+        {
+            var projectEvals = projectGroup.ToList();
+            var projectDisplayName = GetProjectDisplayName(projectEvals.First().Project);
+            var responseCount = projectEvals.Count;
+
+            // Tüm kişilik tiplerini ve puanlarını topla
+            var personalityScores = new Dictionary<string, List<decimal>>();
+            var personalityPoints = new Dictionary<string, List<int>>();
+
+            foreach (var eval in projectEvals)
+            {
+                var scores = CalculateEnneagramScores(eval);
+                foreach (var score in scores)
+                {
+                    if (!personalityScores.ContainsKey(score.PersonalityType))
+                    {
+                        personalityScores[score.PersonalityType] = new List<decimal>();
+                        personalityPoints[score.PersonalityType] = new List<int>();
+                    }
+                    personalityScores[score.PersonalityType].Add(score.Percentage);
+                    personalityPoints[score.PersonalityType].Add(score.TotalPoints);
+                }
+            }
+
+            // Yüzdeye göre sırala
+            var distribution = personalityScores
+                .Select(kvp => new
+                {
+                    PersonalityType = kvp.Key,
+                    AveragePoints = personalityPoints[kvp.Key].Any() ? (int)Math.Round(personalityPoints[kvp.Key].Average()) : 0,
+                    MaxPoints = 50,
+                    AveragePercentage = kvp.Value.Any() ? kvp.Value.Average() : 0
+                })
+                .OrderByDescending(d => d.AveragePercentage)
+                .ToList();
+
+            foreach (var d in distribution)
+            {
+                sheet3.Cell(row3, 1).Value = projectDisplayName;
+                sheet3.Cell(row3, 2).Value = responseCount;
+                sheet3.Cell(row3, 3).Value = d.PersonalityType;
+                sheet3.Cell(row3, 4).Value = d.AveragePoints;
+                sheet3.Cell(row3, 5).Value = d.MaxPoints;
+                sheet3.Cell(row3, 6).Value = Math.Round(d.AveragePercentage, 2);
+                sheet3.Cell(row3, 6).Style.NumberFormat.Format = "0.00";
+                row3++;
+            }
+        }
+
+        sheet3.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet3);
 
         using var stream = new MemoryStream();
         workbook.SaveAs(stream);
