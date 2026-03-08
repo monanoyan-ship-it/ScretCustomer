@@ -64,12 +64,7 @@
                         </div>
                         <!-- Status -->
                         <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
-                            <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
-                                <option value="">@Html.T("Common.Select", "Secin...")</option>
-                                <option value="Completed">@Html.T("Status.Completed", "Tamamlandi")</option>
-                                <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
-                                <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Eden")</option>
-                            </select>
+                            <select class="form-select form-select-sm" data-bind="options: evaluationStatuses, optionsText: 'displayName', optionsValue: 'systemName', value: tempFilter.status, optionsCaption: '@Html.T("Common.Select", "Secin...")'"></select>
                         </div>
                         <!-- Date Range -->
                         <div data-bind="visible: selectedFilterType() === 'dateRange' || selectedFilterType() === 'callDateRange'" class="mb-2">
@@ -403,5 +398,6 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/Shared/enums.service.js" asp-append-version="true"></script>
     <script src="~/js/Reports/Index.js" asp-append-version="true"></script>
 }

@@ -61,10 +61,10 @@ function EvaluationsViewModel() {
         controlDate: 'Değerlendirme Tarihi'
     };
 
+    self.evaluationStatuses = ko.observableArray([]);
     self.evalStatusLabels = {
         'Completed': 'Tamamlandı',
-        'Draft': 'Taslak',
-        'InProgress': 'Devam Ediyor'
+        'Draft': 'Taslak'
     };
 
     // Date range options
@@ -1965,7 +1965,13 @@ function EvaluationsViewModel() {
     });
 
     // Once EnumsService'i yukle, sonra diger verileri cek
-    EnumsService.load().then(function() {
+    EnumsService.load().then(function(enumsData) {
+        if (enumsData && enumsData.evaluationStatuses) {
+            var allowedStatuses = ['Completed', 'Draft'];
+            self.evaluationStatuses(enumsData.evaluationStatuses.filter(function(s) {
+                return allowedStatuses.indexOf(s.systemName) !== -1;
+            }));
+        }
         self.loadEvaluations();
     });
 }

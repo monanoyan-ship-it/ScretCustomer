@@ -55,6 +55,7 @@ function VisitsViewModel() {
     self.dateRanges = ko.observableArray([]);
     self.evaluationSources = ko.observableArray([]);
     self.projectTypes = ko.observableArray([]);
+    self.evaluationStatuses = ko.observableArray([]);
 
     // Sorting
     self.sortField = ko.observable('id'); // ID = Primary Key, en hızlı sıralama
@@ -180,6 +181,14 @@ function VisitsViewModel() {
             // Proje tiplerini EnumsService'den al
             if (enumsData && enumsData.projectTypes) {
                 self.projectTypes(enumsData.projectTypes);
+            }
+
+            // Değerlendirme durumlarını EnumsService'den al (Completed + Draft)
+            if (enumsData && enumsData.evaluationStatuses) {
+                var allowedStatuses = ['Completed', 'Draft'];
+                self.evaluationStatuses(enumsData.evaluationStatuses.filter(function(s) {
+                    return allowedStatuses.indexOf(s.systemName) !== -1;
+                }));
             }
 
             // Lookups yüklendikten sonra varsayılan filtreyi kontrol et

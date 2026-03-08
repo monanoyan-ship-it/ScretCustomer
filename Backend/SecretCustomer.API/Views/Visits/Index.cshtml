@@ -72,12 +72,7 @@
                         </div>
                         <!-- Status -->
                         <div data-bind="visible: selectedFilterType() === 'status'" class="mb-2">
-                            <select class="form-select form-select-sm" data-bind="value: tempFilter.status">
-                                <option value="">@Html.T("Common.Select", "Seçin...")</option>
-                                <option value="Completed">@Html.T("Status.Completed", "Tamamlandı")</option>
-                                <option value="InProgress">@Html.T("Evaluation.Status.InProgress", "Devam Ediyor")</option>
-                                <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
-                            </select>
+                            <select class="form-select form-select-sm" data-bind="options: evaluationStatuses, optionsText: 'displayName', optionsValue: 'systemName', value: tempFilter.status, optionsCaption: '@Html.T("Common.Select", "Seçin...")'"></select>
                         </div>
                         <!-- Evaluation Source -->
                         <div data-bind="visible: selectedFilterType() === 'evaluationSource'" class="mb-2">

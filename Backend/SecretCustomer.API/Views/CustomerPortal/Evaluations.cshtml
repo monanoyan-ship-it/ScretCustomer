@@ -124,12 +124,7 @@
                     <!-- ko if: evalSelectedFilterType() === 'status' -->
                     <!-- Status Filter Input -->
                     <div class="d-flex gap-1">
-                        <select class="form-select form-select-sm" style="width: auto;" data-bind="value: evalTempFilter.status">
-                            <option value="">@Html.T("Common.Select", "Seçiniz")</option>
-                            <option value="Completed">@Html.T("Common.Status.Completed", "Tamamlandı")</option>
-                            <option value="Draft">@Html.T("Common.Status.Draft", "Taslak")</option>
-                            <option value="InProgress">@Html.T("Common.Status.InProgress", "Devam Ediyor")</option>
-                        </select>
+                        <select class="form-select form-select-sm" style="width: auto;" data-bind="options: evaluationStatuses, optionsText: 'displayName', optionsValue: 'systemName', value: evalTempFilter.status, optionsCaption: '@Html.T("Common.Select", "Seçiniz")'"></select>
                         <button class="btn btn-sm btn-primary" data-bind="click: evalAddFilter, enable: evalCanAddFilter">
                             <i class="bi bi-plus"></i>
                         </button>

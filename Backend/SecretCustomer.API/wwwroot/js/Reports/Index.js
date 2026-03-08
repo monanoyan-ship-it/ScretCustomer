@@ -75,12 +75,12 @@ function ReportsViewModel() {
 
     self.statusLabels = {
         'Completed': 'Tamamlandi',
-        'InProgress': 'Devam Ediyor',
         'Draft': 'Taslak'
     };
 
     // Data
     self.evaluations = ko.observableArray([]);
+    self.evaluationStatuses = ko.observableArray([]);
     self.selectedDetail = ko.observable(null);
 
     // Summary
@@ -483,6 +483,18 @@ function ReportsViewModel() {
                 self.checklists(data.filter(function(c) { return c.isActive; }));
             })
             .catch(function(error) { console.error('Error loading checklists:', error); });
+
+        // Evaluation Statuses (EnumsService)
+        if (typeof EnumsService !== 'undefined') {
+            EnumsService.load().then(function(enumsData) {
+                if (enumsData && enumsData.evaluationStatuses) {
+                    var allowedStatuses = ['Completed', 'Draft'];
+                    self.evaluationStatuses(enumsData.evaluationStatuses.filter(function(s) {
+                        return allowedStatuses.indexOf(s.systemName) !== -1;
+                    }));
+                }
+            });
+        }
     };
 
     // Pagination
