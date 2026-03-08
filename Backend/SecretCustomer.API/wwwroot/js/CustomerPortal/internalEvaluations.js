@@ -70,7 +70,7 @@ function CustomerInternalEvaluationsViewModel() {
         if (type === 'organization') return self.tempFilter.organizationId();
         if (type === 'callId') return self.tempFilter.callId();
         if (type === 'evaluationId') return self.tempFilter.evaluationId().toString().trim() !== '';
-        if (type === 'dateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
+        if (type === 'callDateRange' || type === 'evalDateRange') return self.tempFilter.startDate() || self.tempFilter.endDate() || self.tempFilter.dateRangeType();
         return false;
     });
 
@@ -160,12 +160,12 @@ function CustomerInternalEvaluationsViewModel() {
         var displayValue = self.dateRangeLabels[rangeType] || (range.start + ' - ' + range.end);
 
         self.activeFilters.push({
-            type: 'dateRange',
+            type: 'callDateRange',
             value: null,
             startDate: range.start,
             endDate: range.end,
             dateRangeType: rangeType,
-            label: 'Tarih',
+            label: 'Çağrı Tarihi',
             displayValue: displayValue
         });
 
@@ -227,11 +227,11 @@ function CustomerInternalEvaluationsViewModel() {
             filter.value = parseInt(self.tempFilter.evaluationId());
             label = 'ID';
             displayValue = '#' + filter.value;
-        } else if (type === 'dateRange') {
+        } else if (type === 'callDateRange' || type === 'evalDateRange') {
             filter.dateRangeType = self.tempFilter.dateRangeType();
             filter.startDate = self.tempFilter.startDate();
             filter.endDate = self.tempFilter.endDate();
-            label = 'Tarih';
+            label = type === 'callDateRange' ? 'Çağrı Tarihi' : 'Değerlendirme Tarihi';
             // If it's a named range, show the name; otherwise show dates
             if (filter.dateRangeType && self.dateRangeLabels[filter.dateRangeType]) {
                 displayValue = self.dateRangeLabels[filter.dateRangeType];
@@ -294,8 +294,10 @@ function CustomerInternalEvaluationsViewModel() {
         var personnelNames = [];
         var organizationIds = [];
         var callIds = [];
-        var startDate = null;
-        var endDate = null;
+        var callStartDate = null;
+        var callEndDate = null;
+        var evalStartDate = null;
+        var evalEndDate = null;
 
         self.activeFilters().forEach(function(f) {
             switch (f.type) {
@@ -317,15 +319,24 @@ function CustomerInternalEvaluationsViewModel() {
                 case 'evaluationId':
                     params.evaluationId = f.value;
                     break;
-                case 'dateRange':
-                    // If it's a named range type, recalculate dates dynamically
+                case 'callDateRange':
                     if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
                         var range = self.calculateDateRange(f.dateRangeType);
-                        startDate = range.start;
-                        endDate = range.end;
+                        callStartDate = range.start;
+                        callEndDate = range.end;
                     } else {
-                        if (f.startDate) startDate = f.startDate;
-                        if (f.endDate) endDate = f.endDate;
+                        if (f.startDate) callStartDate = f.startDate;
+                        if (f.endDate) callEndDate = f.endDate;
+                    }
+                    break;
+                case 'evalDateRange':
+                    if (f.dateRangeType && self.dateRangeLabels[f.dateRangeType]) {
+                        var range = self.calculateDateRange(f.dateRangeType);
+                        evalStartDate = range.start;
+                        evalEndDate = range.end;
+                    } else {
+                        if (f.startDate) evalStartDate = f.startDate;
+                        if (f.endDate) evalEndDate = f.endDate;
                     }
                     break;
             }
@@ -338,8 +349,10 @@ function CustomerInternalEvaluationsViewModel() {
         if (organizationIds.length > 0) params.organizationIds = organizationIds;
         if (callIds.length > 0) params.callIds = callIds;
 
-        if (startDate) params.startDate = startDate;
-        if (endDate) params.endDate = endDate;
+        if (callStartDate) params.callStartDate = callStartDate;
+        if (callEndDate) params.callEndDate = callEndDate;
+        if (evalStartDate) params.evalStartDate = evalStartDate;
+        if (evalEndDate) params.evalEndDate = evalEndDate;
 
         return params;
     };
@@ -493,7 +506,7 @@ function CustomerInternalEvaluationsViewModel() {
             } else if (f.type === 'organization') {
                 var org = self.organizations().find(function(o) { return o.id == f.value; });
                 if (org) displayValue = org.name;
-            } else if (f.type === 'dateRange' && f.dateRangeType) {
+            } else if ((f.type === 'callDateRange' || f.type === 'evalDateRange') && f.dateRangeType) {
                 // Recalculate dates for relative ranges
                 var range = self.calculateDateRange(f.dateRangeType);
                 startDate = range.start;
@@ -681,9 +694,15 @@ function CustomerInternalEvaluationsViewModel() {
         }
 
         // DateRanges (DTO List<DateRangeFilter> formatında)
-        // filterType: 'call' → CallDate üzerinden filtreleme (liste ile uyumlu)
-        if (params.startDate || params.endDate) {
-            filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null, filterType: 'call' }];
+        var dateRanges = [];
+        if (params.callStartDate || params.callEndDate) {
+            dateRanges.push({ startDate: params.callStartDate || null, endDate: params.callEndDate || null, filterType: 'callDate' });
+        }
+        if (params.evalStartDate || params.evalEndDate) {
+            dateRanges.push({ startDate: params.evalStartDate || null, endDate: params.evalEndDate || null, filterType: 'createdAt' });
+        }
+        if (dateRanges.length > 0) {
+            filter.dateRanges = dateRanges;
         }
 
         return filter;

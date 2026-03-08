@@ -28,7 +28,8 @@ public interface ICustomerPortalDataService
     Task<object> GetEvaluationsAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int page, int pageSize, int? projectId = null, DateTime? startDate = null, DateTime? endDate = null);
     Task<(byte[] FileContent, string FileName)> ExportAllEvaluationsToExcelAsync(int customerId, string? role, int? personnelId, List<int>? allowedPersonnelIds, int? projectId, DateTime? startDate, DateTime? endDate);
     Task<object> GetInternalEvaluationsAsync(int customerId, string? role, int? personnelId,
-        int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
+        int? page, int? pageSize, string? search, DateTime? callStartDate, DateTime? callEndDate,
+        DateTime? evalStartDate, DateTime? evalEndDate,
         List<int>? projectIds, List<string>? evaluatorNames, List<string>? personnelNames,
         List<int>? organizationIds, List<string>? callIds, int? evaluationId = null);
     Task<object> GetExternalEvaluationsAsync(int customerId, string? role, int? personnelId,

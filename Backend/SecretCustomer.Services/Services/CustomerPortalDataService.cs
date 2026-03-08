@@ -1917,7 +1917,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
     }
 
     public async Task<object> GetInternalEvaluationsAsync(int customerId, string? role, int? personnelId,
-        int? page, int? pageSize, string? search, DateTime? startDate, DateTime? endDate,
+        int? page, int? pageSize, string? search, DateTime? callStartDate, DateTime? callEndDate,
+        DateTime? evalStartDate, DateTime? evalEndDate,
         List<int>? projectIds, List<string>? evaluatorNames, List<string>? personnelNames,
         List<int>? organizationIds, List<string>? callIds, int? evaluationId = null)
     {
@@ -1955,22 +1956,34 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
         // Manager ve Admin: Tüm kayıtları görür
 
-        // Date filters (çağrı tarihi - CallDate)
-        if (startDate.HasValue)
+        // Date filters - Çağrı Tarihi (CallDate/ControlDate)
+        if (callStartDate.HasValue)
         {
-            var start = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            var start = DateTime.SpecifyKind(callStartDate.Value.Date, DateTimeKind.Utc);
             query = query.Where(e =>
              (e.CallDate.HasValue && e.CallDate.Value >= start) ||
              (e.ControlDate.HasValue && e.ControlDate.Value >= start)
             );
         }
-        if (endDate.HasValue)
+        if (callEndDate.HasValue)
         {
-            var end = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            var end = DateTime.SpecifyKind(callEndDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
             query = query.Where(e =>
              (e.CallDate.HasValue && e.CallDate.Value <= end) ||
              (e.ControlDate.HasValue && e.ControlDate.Value <= end)
             );
+        }
+
+        // Date filters - Değerlendirme Tarihi (CreatedAt)
+        if (evalStartDate.HasValue)
+        {
+            var start = DateTime.SpecifyKind(evalStartDate.Value.Date, DateTimeKind.Utc);
+            query = query.Where(e => e.CreatedAt >= start);
+        }
+        if (evalEndDate.HasValue)
+        {
+            var end = DateTime.SpecifyKind(evalEndDate.Value.Date.AddDays(1).AddSeconds(-1), DateTimeKind.Utc);
+            query = query.Where(e => e.CreatedAt <= end);
         }
 
         // Project filter

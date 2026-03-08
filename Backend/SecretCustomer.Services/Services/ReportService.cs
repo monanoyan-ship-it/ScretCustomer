@@ -27,6 +27,77 @@ public class ReportService : IReportService
         _customerScoreThresholdService = customerScoreThresholdService;
     }
 
+    /// <summary>
+    /// DateRange listesini OR mantığıyla uygular. Her range ayrı predicate olarak OR ile birleştirilir.
+    /// navigationPath: Entity'den Evaluation'a ulaşmak için property yolu.
+    /// FilterType: "callDate" → CallDate, "createdAt" veya boş → CreatedAt (admin default)
+    /// </summary>
+    private static IQueryable<T> ApplyDateRangeOrFilter<T>(
+        IQueryable<T> query, List<DateRangeFilter>? dateRanges, params string[] navigationPath)
+    {
+        if (dateRanges == null || !dateRanges.Any()) return query;
+
+        var param = Expression.Parameter(typeof(T), "x");
+        Expression evalExpr = param;
+        foreach (var prop in navigationPath)
+            evalExpr = Expression.Property(evalExpr, prop);
+
+        Expression? orBody = null;
+
+        foreach (var dr in dateRanges)
+        {
+            var startUtc = dr.StartDate.HasValue
+                ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc) : (DateTime?)null;
+            var endUtc = dr.EndDate.HasValue
+                ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc) : (DateTime?)null;
+
+            Expression dateProp;
+            bool isNullable;
+            if (dr.FilterType == "callDate")
+            {
+                dateProp = Expression.Property(evalExpr, nameof(Evaluation.CallDate));
+                isNullable = true;
+            }
+            else
+            {
+                // Admin varsayılan: CreatedAt
+                dateProp = Expression.Property(evalExpr, nameof(Evaluation.CreatedAt));
+                isNullable = false;
+            }
+
+            Expression? rangeExpr = null;
+            if (startUtc.HasValue)
+            {
+                var startConst = isNullable
+                    ? Expression.Constant((DateTime?)startUtc.Value, typeof(DateTime?))
+                    : Expression.Constant(startUtc.Value, typeof(DateTime));
+                rangeExpr = Expression.GreaterThanOrEqual(dateProp, startConst);
+            }
+            if (endUtc.HasValue)
+            {
+                var endConst = isNullable
+                    ? Expression.Constant((DateTime?)endUtc.Value, typeof(DateTime?))
+                    : Expression.Constant(endUtc.Value, typeof(DateTime));
+                var leExpr = Expression.LessThanOrEqual(dateProp, endConst);
+                rangeExpr = rangeExpr != null ? Expression.AndAlso(rangeExpr, leExpr) : leExpr;
+            }
+            if (rangeExpr != null)
+            {
+                if (isNullable)
+                {
+                    var notNull = Expression.NotEqual(dateProp, Expression.Constant(null, typeof(DateTime?)));
+                    rangeExpr = Expression.AndAlso(notNull, rangeExpr);
+                }
+                orBody = orBody != null ? Expression.OrElse(orBody, rangeExpr) : rangeExpr;
+            }
+        }
+
+        if (orBody != null)
+            query = query.Where(Expression.Lambda<Func<T, bool>>(orBody, param));
+
+        return query;
+    }
+
     public async Task<PagedReportResult<EvaluationReportDto>> GetEvaluationsAsync(ReportFilterDto filter)
     {
 
@@ -855,24 +926,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Veritabanında aggregate - memory'ye çekmeden
@@ -1069,24 +1123,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         var evaluations = await query.Take(1000).ToListAsync();
@@ -1289,24 +1326,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges, "Evaluation");
         }
 
         var penaltyAnswers = await query.ToListAsync();
@@ -1541,24 +1561,7 @@ public class ReportService : IReportService
         // Date Range filter
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges, "Evaluation");
         }
 
         var penaltyAnswers = await query.ToListAsync();
@@ -2847,24 +2850,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges, "Evaluation");
         }
 
         if (!string.IsNullOrEmpty(filter.SearchText))
@@ -2989,24 +2975,7 @@ public class ReportService : IReportService
 
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return new { Start = startUtc, End = endUtc };
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                evaluationNotesQuery = evaluationNotesQuery.Where(e => e.CreatedAt <= maxEnd);
+            evaluationNotesQuery = ApplyDateRangeOrFilter(evaluationNotesQuery, filter.DateRanges);
         }
 
         var evaluationNotes = await evaluationNotesQuery
@@ -3089,24 +3058,7 @@ public class ReportService : IReportService
         // DateRanges pattern (UTC dönüşümü Service'de)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(a => a.Evaluation.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(a => a.Evaluation.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges, "Evaluation");
         }
 
         var answers = await query.ToListAsync();
@@ -3204,24 +3156,7 @@ public class ReportService : IReportService
         // DateRanges filter
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(s => s.Answer.Evaluation.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(s => s.Answer.Evaluation.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges, "Answer", "Evaluation");
         }
 
         var selections = await query.ToListAsync();
@@ -3281,24 +3216,7 @@ public class ReportService : IReportService
             // Tarih filtreleri
             if (filter.DateRanges?.Any() == true)
             {
-                var datePredicates = filter.DateRanges.Select(dr =>
-                {
-                    DateTime? startUtc = dr.StartDate.HasValue
-                        ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                        : null;
-                    DateTime? endUtc = dr.EndDate.HasValue
-                        ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                        : null;
-                    return (Start: startUtc, End: endUtc);
-                }).ToList();
-
-                var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-                var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-                if (minStart != DateTime.MinValue)
-                    answerQuery = answerQuery.Where(a => a.Evaluation.CreatedAt >= minStart);
-                if (maxEnd != DateTime.MaxValue)
-                    answerQuery = answerQuery.Where(a => a.Evaluation.CreatedAt <= maxEnd);
+                answerQuery = ApplyDateRangeOrFilter(answerQuery, filter.DateRanges, "Evaluation");
             }
 
             var questionEvalCounts = await answerQuery
@@ -3623,24 +3541,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Customer filter (çoklu)
@@ -3890,37 +3791,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
-            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
-
-            if (minStart != DateTime.MinValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
-                else
-                    query = query.Where(e => e.CreatedAt >= minStart);
-            }
-            if (maxEnd != DateTime.MaxValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
-                else
-                    query = query.Where(e => e.CreatedAt <= maxEnd);
-            }
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Status filter (çoklu)
@@ -4177,37 +4048,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
-            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
-
-            if (minStart != DateTime.MinValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
-                else
-                    query = query.Where(e => e.CreatedAt >= minStart);
-            }
-            if (maxEnd != DateTime.MaxValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
-                else
-                    query = query.Where(e => e.CreatedAt <= maxEnd);
-            }
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Status filter (çoklu)
@@ -4462,24 +4303,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Customer filter (çoklu)
@@ -4635,24 +4459,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Customer filter (çoklu)
@@ -7027,24 +6834,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => (e.CallDate ?? e.CreatedAt) >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => (e.CallDate ?? e.CreatedAt) <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Verileri çek
@@ -7198,24 +6988,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => (e.CallDate ?? e.CreatedAt) >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => (e.CallDate ?? e.CreatedAt) <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Verileri çek
@@ -7887,37 +7660,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            // FilterType: "call" → CallDate üzerinden filtrele (CustomerPortal dış dinlemeler)
-            var useCallDate = filter.DateRanges.Any(dr => dr.FilterType == "call");
-
-            if (minStart != DateTime.MinValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value >= minStart);
-                else
-                    query = query.Where(e => e.CreatedAt >= minStart);
-            }
-            if (maxEnd != DateTime.MaxValue)
-            {
-                if (useCallDate)
-                    query = query.Where(e => e.CallDate.HasValue && e.CallDate.Value <= maxEnd);
-                else
-                    query = query.Where(e => e.CreatedAt <= maxEnd);
-            }
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Status filter (çoklu)
@@ -8485,24 +8228,7 @@ public class ReportService : IReportService
         // DateRanges pattern
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         var evaluations = await query.ToListAsync();
@@ -9143,24 +8869,7 @@ public class ReportService : IReportService
         // Date Range filter (çoklu - OR mantığı)
         if (filter.DateRanges?.Any() == true)
         {
-            var datePredicates = filter.DateRanges.Select(dr =>
-            {
-                DateTime? startUtc = dr.StartDate.HasValue
-                    ? DateTime.SpecifyKind(dr.StartDate.Value.Date, DateTimeKind.Utc)
-                    : null;
-                DateTime? endUtc = dr.EndDate.HasValue
-                    ? DateTime.SpecifyKind(dr.EndDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                    : null;
-                return (Start: startUtc, End: endUtc);
-            }).ToList();
-
-            var minStart = datePredicates.Where(d => d.Start.HasValue).Select(d => d.Start!.Value).DefaultIfEmpty(DateTime.MinValue).Min();
-            var maxEnd = datePredicates.Where(d => d.End.HasValue).Select(d => d.End!.Value).DefaultIfEmpty(DateTime.MaxValue).Max();
-
-            if (minStart != DateTime.MinValue)
-                query = query.Where(e => e.CreatedAt >= minStart);
-            if (maxEnd != DateTime.MaxValue)
-                query = query.Where(e => e.CreatedAt <= maxEnd);
+            query = ApplyDateRangeOrFilter(query, filter.DateRanges);
         }
 
         // Customer filter (çoklu)

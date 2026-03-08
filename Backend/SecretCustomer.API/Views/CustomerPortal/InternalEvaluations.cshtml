@@ -33,7 +33,8 @@
                                     <option value="personnel">@Html.T("CustomerPortal.Evaluations.EvaluatedPersonnel", "Dinlenen")</option>
                                     <option value="organization">@Html.T("CustomerPortal.Evaluations.Organization", "Organizasyon")</option>
                                     <option value="callId">@Html.T("Common.Id", "Çağrı ID")</option>
-                                    <option value="dateRange">@Html.T("Common.DateRange", "Tarih Aralığı")</option>
+                                    <option value="callDateRange">@Html.T("Report.CallDateRange", "Çağrı Tarihi Aralığı")</option>
+                                    <option value="evalDateRange">@Html.T("Report.EvalDateRange", "Değerlendirme Tarihi Aralığı")</option>
                                 </select>
                             </div>
                             <!-- Dynamic Filter Input -->
@@ -62,7 +63,7 @@
                                 <input type="text" class="form-control form-control-sm" autocomplete="off" data-bind="value: tempFilter.callId" placeholder="@Html.T("Common.Id", "Çağrı ID...")">
                             </div>
                             <!-- Date Range -->
-                            <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                            <div data-bind="visible: selectedFilterType() === 'callDateRange' || selectedFilterType() === 'evalDateRange'" class="mb-2">
                                 <div class="d-flex gap-1 mb-1">
                                     <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
                                     <span class="align-self-center">-</span>

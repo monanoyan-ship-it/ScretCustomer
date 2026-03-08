@@ -21,7 +21,6 @@ public class CustomerPortalApiController : ControllerBase
 {
     private readonly IAuditLogService _auditLogService;
     private readonly ILocalizationService _localizationService;
-    private readonly IReportService _reportService;
     private readonly IEvaluationService _evaluationService;
     private readonly ICustomerScoreThresholdService _customerScoreThresholdService;
     private readonly IPdfService _pdfService;
@@ -31,7 +30,6 @@ public class CustomerPortalApiController : ControllerBase
     public CustomerPortalApiController(
         IAuditLogService auditLogService,
         ILocalizationService localizationService,
-        IReportService reportService,
         IEvaluationService evaluationService,
         ICustomerScoreThresholdService customerScoreThresholdService,
         IPdfService pdfService,
@@ -40,7 +38,6 @@ public class CustomerPortalApiController : ControllerBase
     {
         _auditLogService = auditLogService;
         _localizationService = localizationService;
-        _reportService = reportService;
         _evaluationService = evaluationService;
         _customerScoreThresholdService = customerScoreThresholdService;
         _pdfService = pdfService;
@@ -929,6 +926,10 @@ public class CustomerPortalApiController : ControllerBase
         [FromQuery] string? search = null,
         [FromQuery] DateTime? startDate = null,
         [FromQuery] DateTime? endDate = null,
+        [FromQuery] DateTime? callStartDate = null,
+        [FromQuery] DateTime? callEndDate = null,
+        [FromQuery] DateTime? evalStartDate = null,
+        [FromQuery] DateTime? evalEndDate = null,
         [FromQuery] List<int>? projectIds = null,
         [FromQuery] List<string>? evaluatorNames = null,
         [FromQuery] List<string>? personnelNames = null,
@@ -943,7 +944,11 @@ public class CustomerPortalApiController : ControllerBase
         var role = GetPersonnelRole();
         var personnelId = GetPersonnelId();
 
-        var result = await _cpDataService.GetInternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, startDate, endDate, projectIds, evaluatorNames, personnelNames, organizationIds, callIds, evaluationId);
+        // Eski startDate/endDate parametreleri geriye uyumluluk için callStartDate'e map'lenir
+        var effectiveCallStart = callStartDate ?? startDate;
+        var effectiveCallEnd = callEndDate ?? endDate;
+
+        var result = await _cpDataService.GetInternalEvaluationsAsync(customerId.Value, role, personnelId, page, pageSize, search, effectiveCallStart, effectiveCallEnd, evalStartDate, evalEndDate, projectIds, evaluatorNames, personnelNames, organizationIds, callIds, evaluationId);
         return Ok(result);
     }
 
@@ -1056,7 +1061,7 @@ public class CustomerPortalApiController : ControllerBase
             if (!accessCheck.Value.IsAuthorized)
                 return StatusCode(403, new { message = "Bu değerlendirmeyi görüntüleme yetkiniz bulunmamaktadır." });
 
-            var detail = await _reportService.GetEvaluationDetailAsync(evaluationId);
+            var detail = await _cpReportService.GetEvaluationDetailAsync(evaluationId);
             if (detail == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
 
@@ -1123,7 +1128,7 @@ public class CustomerPortalApiController : ControllerBase
             if (!accessResult.Value.IsAuthorized)
                 return StatusCode(403, new { message = "Bu değerlendirmeyi dışa aktarma yetkiniz bulunmamaktadır." });
 
-            var result = await _reportService.ExportEvaluationDetailToExcelAsync(evaluationId, excludeEvaluatorInfo: true);
+            var result = await _cpReportService.ExportEvaluationDetailToExcelAsync(evaluationId, excludeEvaluatorInfo: true);
             if (result == null)
                 return NotFound(new { message = "Değerlendirme bulunamadı." });
 
@@ -1151,7 +1156,7 @@ public class CustomerPortalApiController : ControllerBase
             // Müşteri sadece kendi projesinin raporunu görebilir
             filter.ProjectCustomerIds = new List<int> { customerId.Value };
 
-            var result = await _reportService.ExportQuestionGroupAverageReportAsync(filter);
+            var result = await _cpReportService.ExportQuestionGroupAverageReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1181,7 +1186,7 @@ public class CustomerPortalApiController : ControllerBase
             if (allowedPersonnelIds != null)
                 filter.PersonnelIds = allowedPersonnelIds;
 
-            var result = await _reportService.ExportCustomerEvaluationReportAsync(filter);
+            var result = await _cpReportService.ExportCustomerEvaluationReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1211,7 +1216,7 @@ public class CustomerPortalApiController : ControllerBase
             if (allowedPersonnelIds != null)
                 filter.PersonnelIds = allowedPersonnelIds;
 
-            var result = await _reportService.ExportInternalEvaluationReportAsync(filter);
+            var result = await _cpReportService.ExportInternalEvaluationReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1241,7 +1246,7 @@ public class CustomerPortalApiController : ControllerBase
             if (allowedPersonnelIds != null)
                 filter.PersonnelIds = allowedPersonnelIds;
 
-            var result = await _reportService.ExportUnscoredQuestionsReportAsync(filter);
+            var result = await _cpReportService.ExportUnscoredQuestionsReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1305,7 +1310,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.GetPenaltiesReportAsync(filter);
+            var result = await _cpReportService.GetPenaltiesReportAsync(filter);
 
             // EvaluatorName alanlarını temizle (müşteri görmemeli)
             foreach (var penalty in result.Penalties)
@@ -1374,7 +1379,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.ExportPenaltiesToExcelAsync(filter, excludeEvaluator: true);
+            var result = await _cpReportService.ExportPenaltiesToExcelAsync(filter, excludeEvaluator: true);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1438,7 +1443,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.GetSuggestionsReportAsync(filter);
+            var result = await _cpReportService.GetSuggestionsReportAsync(filter);
 
             // EvaluatorName alanlarını temizle (müşteri görmemeli)
             foreach (var suggestion in result.Suggestions)
@@ -1494,7 +1499,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
+            var result = await _cpReportService.GetTopSuggestedQuestionsAsync(filter, top);
             return Ok(result);
         }
         catch (Exception ex)
@@ -1540,7 +1545,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.GetTopSubCriteriaAsync(filter, top);
+            var result = await _cpReportService.GetTopSubCriteriaAsync(filter, top);
             return Ok(result);
         }
         catch (Exception ex)
@@ -1584,7 +1589,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var data = await _reportService.GetTopSubCriteriaAsync(filter, int.MaxValue);
+            var data = await _cpReportService.GetTopSubCriteriaAsync(filter, int.MaxValue);
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("En Çok Seçilen Alt Kriterler");
@@ -1670,7 +1675,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var data = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
+            var data = await _cpReportService.GetTopSuggestedQuestionsAsync(filter, top);
 
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("En Çok Önerilen Sorular");
@@ -1757,7 +1762,7 @@ public class CustomerPortalApiController : ControllerBase
                 };
             }
 
-            var result = await _reportService.ExportSuggestionsToExcelAsync(filter, excludeEvaluator: true);
+            var result = await _cpReportService.ExportSuggestionsToExcelAsync(filter, excludeEvaluator: true);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -1785,7 +1790,7 @@ public class CustomerPortalApiController : ControllerBase
 
             // Geriye uyumluluk: tekil organizationId parametresi için array'in ilk elemanını kullan
             var organizationId = organizationIds?.FirstOrDefault();
-            var personnel = await _reportService.GetEvaluatedPersonnelListAsync(customerId.Value, organizationId);
+            var personnel = await _cpReportService.GetEvaluatedPersonnelListAsync(customerId.Value, organizationId);
 
             // Supervisor için sadece yetkili olduğu personeli filtrele
             if (allowedPersonnelIds != null)
@@ -1841,7 +1846,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.GetPersonnelReportCardAsync(filter);
+            var result = await _cpReportService.GetPersonnelReportCardAsync(filter);
 
             if (result == null)
                 return NotFound(new { message = "Temsilci bulunamadı." });
@@ -1898,7 +1903,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.GetPersonnelReportCardAsync(filter);
+            var result = await _cpReportService.GetPersonnelReportCardAsync(filter);
 
             if (result == null)
                 return NotFound(new { message = "Karne verisi bulunamadı." });
@@ -1954,7 +1959,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
+            var result = await _cpReportService.ExportPersonnelReportCardToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -2000,7 +2005,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.ExportPersonnelReportCardToWordAsync(filter);
+            var result = await _cpReportService.ExportPersonnelReportCardToWordAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -2043,7 +2048,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.ExportPersonnelReportCardToExcelAsync(filter);
+            var result = await _cpReportService.ExportPersonnelReportCardToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -2086,7 +2091,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var result = await _reportService.ExportPersonnelReportCardToWordAsync(filter);
+            var result = await _cpReportService.ExportPersonnelReportCardToWordAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -2128,7 +2133,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var report = await _reportService.GetPersonnelReportCardAsync(filter);
+            var report = await _cpReportService.GetPersonnelReportCardAsync(filter);
             if (report == null)
                 return NotFound(new { message = "Karne verisi bulunamadı." });
 
@@ -2181,7 +2186,7 @@ public class CustomerPortalApiController : ControllerBase
                 EvaluationType = evaluationType
             };
 
-            var report = await _reportService.GetPersonnelReportCardAsync(filter);
+            var report = await _cpReportService.GetPersonnelReportCardAsync(filter);
             if (report == null)
                 return NotFound(new { message = "Karne verisi bulunamadı." });
 
@@ -2323,7 +2328,7 @@ public class CustomerPortalApiController : ControllerBase
             // Müşteri sadece kendi projesinin raporunu görebilir
             filter.ProjectCustomerIds = new List<int> { customerId.Value };
 
-            var result = await _reportService.ExportProjectPerformanceReportAsync(filter);
+            var result = await _cpReportService.ExportProjectPerformanceReportAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -2575,7 +2580,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyGroupScoresToExcelAsync(projectId);
+        var result = await _cpReportService.ExportSurveyGroupScoresToExcelAsync(projectId);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2595,7 +2600,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyQuestionStatsToExcelAsync(projectId);
+        var result = await _cpReportService.ExportSurveyQuestionStatsToExcelAsync(projectId);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2615,7 +2620,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: false);
+        var result = await _cpReportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: false);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2635,7 +2640,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: true);
+        var result = await _cpReportService.ExportSurveyDetailReportToExcelAsync(projectId, includeComments: true);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2655,7 +2660,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyQuestionScoreDetailAsync(projectId);
+        var result = await _cpReportService.ExportSurveyQuestionScoreDetailAsync(projectId);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2818,7 +2823,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId.Value, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyResponsesToExcelAsync(projectId);
+        var result = await _cpReportService.ExportSurveyResponsesToExcelAsync(projectId);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2841,7 +2846,7 @@ public class CustomerPortalApiController : ControllerBase
         if (!await _cpDataService.ValidateSurveyProjectBelongsToCustomerAsync(projectId.Value, customerId.Value))
             return NotFound(new { message = "Proje bulunamadı." });
 
-        var result = await _reportService.ExportSurveyQuestionDistributionToExcelAsync(projectId.Value);
+        var result = await _cpReportService.ExportSurveyQuestionDistributionToExcelAsync(projectId.Value);
         if (result == null)
             return NotFound(new { message = "Rapor oluşturulamadı." });
 
@@ -2872,7 +2877,7 @@ public class CustomerPortalApiController : ControllerBase
             SearchTerm = searchTerm
         };
 
-        var result = await _reportService.ExportEnneagramResultsToExcelAsync(filter);
+        var result = await _cpReportService.ExportEnneagramResultsToExcelAsync(filter);
         return File(result.FileContent, result.ContentType, result.FileName);
     }
 
@@ -2934,7 +2939,7 @@ public class CustomerPortalApiController : ControllerBase
 
         try
         {
-            var dealers = await _reportService.GetDealerListAsync(customerId.Value);
+            var dealers = await _cpReportService.GetDealerListAsync(customerId.Value);
             return Ok(dealers);
         }
         catch (Exception ex)
@@ -2967,7 +2972,7 @@ public class CustomerPortalApiController : ControllerBase
                 DateRanges = dateRanges
             };
 
-            var result = await _reportService.GetDealerReportCardAsync(filter);
+            var result = await _cpReportService.GetDealerReportCardAsync(filter);
 
             if (result == null)
                 return NotFound(new { message = "Şube bulunamadı." });
@@ -3009,7 +3014,7 @@ public class CustomerPortalApiController : ControllerBase
                 DateRanges = dateRanges
             };
 
-            var result = await _reportService.ExportDealerReportCardToExcelAsync(filter);
+            var result = await _cpReportService.ExportDealerReportCardToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -3041,7 +3046,7 @@ public class CustomerPortalApiController : ControllerBase
                 DateRanges = dateRanges
             };
 
-            var result = await _reportService.ExportDealerReportCardToWordAsync(filter);
+            var result = await _cpReportService.ExportDealerReportCardToWordAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
         }
         catch (Exception ex)
@@ -3076,7 +3081,7 @@ public class CustomerPortalApiController : ControllerBase
                 DateRanges = dateRanges
             };
 
-            var report = await _reportService.GetDealerReportCardAsync(filter);
+            var report = await _cpReportService.GetDealerReportCardAsync(filter);
             if (report == null)
                 return NotFound(new { message = "Şube karnesi verisi bulunamadı." });
 

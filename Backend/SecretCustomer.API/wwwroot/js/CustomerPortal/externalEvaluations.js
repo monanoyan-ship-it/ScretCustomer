@@ -672,9 +672,9 @@ function CustomerExternalEvaluationsViewModel() {
         }
 
         // DateRanges (DTO List<DateRangeFilter> formatında)
-        // filterType: 'call' → CallDate üzerinden filtreleme (liste ile uyumlu)
+        // filterType: 'callDate' → CallDate üzerinden filtreleme (liste ile uyumlu)
         if (params.startDate || params.endDate) {
-            filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null, filterType: 'call' }];
+            filter.dateRanges = [{ startDate: params.startDate || null, endDate: params.endDate || null, filterType: 'callDate' }];
         }
 
         return filter;
