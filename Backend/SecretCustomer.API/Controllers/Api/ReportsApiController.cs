@@ -421,8 +421,7 @@ public class ReportsApiController : BaseApiController
         [FromQuery] List<int>? checklistIds,
         [FromQuery] List<int>? evaluatorIds,
         [FromQuery] List<string>? penaltyTypes,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
+        [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
@@ -436,17 +435,10 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PenaltyTypes = penaltyTypes,
+                DateRanges = dateRanges,
                 Page = page,
                 PageSize = pageSize
             };
-
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
-                };
-            }
 
             var result = await _reportService.GetPenaltiesReportAsync(filter);
             return Ok(result);
@@ -469,8 +461,7 @@ public class ReportsApiController : BaseApiController
         [FromQuery] List<int>? checklistIds,
         [FromQuery] List<int>? evaluatorIds,
         [FromQuery] List<string>? penaltyTypes,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate)
+        [FromQuery] List<DateRangeFilter>? dateRanges)
     {
         try
         {
@@ -482,17 +473,10 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PenaltyTypes = penaltyTypes,
+                DateRanges = dateRanges,
                 Page = 1,
                 PageSize = int.MaxValue // Export için pagination yok
             };
-
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
-                };
-            }
 
             var result = await _reportService.ExportPenaltiesToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);
@@ -752,8 +736,7 @@ public class ReportsApiController : BaseApiController
         [FromQuery] List<int>? checklistIds,
         [FromQuery] List<int>? evaluatorIds,
         [FromQuery] List<int>? personnelIds,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
+        [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? searchText,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
@@ -768,18 +751,11 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PersonnelIds = personnelIds,
+                DateRanges = dateRanges,
                 SearchText = searchText,
                 Page = page,
                 PageSize = pageSize
             };
-
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
-                };
-            }
 
             var result = await _reportService.GetSuggestionsReportAsync(filter);
             return Ok(result);
@@ -799,8 +775,7 @@ public class ReportsApiController : BaseApiController
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<int>? customerIds,
         [FromQuery] List<int>? checklistIds,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
+        [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] int top = 10)
     {
         try
@@ -809,16 +784,9 @@ public class ReportsApiController : BaseApiController
             {
                 ProjectIds = projectIds,
                 CustomerIds = customerIds,
-                ChecklistIds = checklistIds
+                ChecklistIds = checklistIds,
+                DateRanges = dateRanges
             };
-
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
-                };
-            }
 
             var result = await _reportService.GetTopSuggestedQuestionsAsync(filter, top);
             return Ok(result);
@@ -1150,8 +1118,7 @@ public class ReportsApiController : BaseApiController
         [FromQuery] List<int>? checklistIds,
         [FromQuery] List<int>? evaluatorIds,
         [FromQuery] List<int>? personnelIds,
-        [FromQuery] DateTime? startDate,
-        [FromQuery] DateTime? endDate,
+        [FromQuery] List<DateRangeFilter>? dateRanges,
         [FromQuery] string? searchText)
     {
         try
@@ -1164,16 +1131,9 @@ public class ReportsApiController : BaseApiController
                 ChecklistIds = checklistIds,
                 EvaluatorIds = evaluatorIds,
                 PersonnelIds = personnelIds,
+                DateRanges = dateRanges,
                 SearchText = searchText
             };
-
-            if (startDate.HasValue || endDate.HasValue)
-            {
-                filter.DateRanges = new List<DateRangeFilter>
-                {
-                    new DateRangeFilter { StartDate = startDate, EndDate = endDate }
-                };
-            }
 
             var result = await _reportService.ExportSuggestionsToExcelAsync(filter);
             return File(result.FileContent, result.ContentType, result.FileName);

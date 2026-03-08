@@ -107,7 +107,8 @@ function VisitsViewModel() {
         supervisor: 'Yönetici',
         status: 'Durum',
         evaluationSource: 'Kaynak',
-        dateRange: 'Tarih'
+        callDateRange: 'Kontrol Tarihi',
+        dateRange: 'Kayıt Tarihi'
     };
 
     self.statusLabels = {
@@ -146,6 +147,7 @@ function VisitsViewModel() {
             case 'supervisor': return self.tempFilter.supervisorName().trim() !== '';
             case 'status': return self.tempFilter.status() !== '';
             case 'evaluationSource': return self.tempFilter.evaluationSource();
+            case 'callDateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             default: return false;
         }
@@ -355,6 +357,7 @@ function VisitsViewModel() {
                 self.tempFilter.evaluationSource(null);
                 break;
 
+            case 'callDateRange':
             case 'dateRange':
                 var startDate = self.tempFilter.startDate();
                 var endDate = self.tempFilter.endDate();
@@ -364,10 +367,9 @@ function VisitsViewModel() {
                 filter.value = {
                     startDate: startDate,
                     endDate: endDate,
-                    dateRangeType: dateRangeType // null ise sabit tarih, değilse dinamik
+                    dateRangeType: dateRangeType
                 };
 
-                // Display value - eğer dateRangeType varsa onun adını göster
                 if (dateRangeType) {
                     var rangeInfo = self.dateRanges().find(function(r) { return r.systemName === dateRangeType; });
                     filter.displayValue = rangeInfo ? rangeInfo.name : dateRangeType;
@@ -534,10 +536,18 @@ function VisitsViewModel() {
                 case 'evaluationSource':
                     evaluationSources.push(filter.value);
                     break;
+                case 'callDateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate,
+                        filterType: 'callDate'
+                    });
+                    break;
                 case 'dateRange':
                     dateRanges.push({
                         startDate: filter.value.startDate,
-                        endDate: filter.value.endDate
+                        endDate: filter.value.endDate,
+                        filterType: 'createdAt'
                     });
                     break;
             }
@@ -1065,7 +1075,7 @@ function VisitsViewModel() {
             // Apply each filter
             filters.forEach(function(f) {
                 // dateRange filtresi için dateRangeType varsa tarihleri yeniden hesapla
-                if (f.type === 'dateRange' && f.value && f.value.dateRangeType) {
+                if ((f.type === 'dateRange' || f.type === 'callDateRange') && f.value && f.value.dateRangeType) {
                     // Dinamik tarih hesapla
                     self.setTempDateRange(f.value.dateRangeType);
                     var newStartDate = self.tempFilter.startDate();

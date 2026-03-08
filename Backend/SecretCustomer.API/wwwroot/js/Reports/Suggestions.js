@@ -67,7 +67,8 @@ function SuggestionsViewModel() {
         branch: 'Şube/Org.',
         checklist: 'Kontrol Listesi',
         search: 'Arama',
-        dateRange: 'Tarih'
+        callDateRange: 'Cagri Tarihi',
+        dateRange: 'Degerlendirme Tarihi'
     };
 
     // Summary
@@ -113,6 +114,7 @@ function SuggestionsViewModel() {
             case 'branch': return !!self.tempFilter.branchId();
             case 'checklist': return !!self.tempFilter.checklistId();
             case 'search': return !!self.tempFilter.searchText();
+            case 'callDateRange': return !!self.tempFilter.startDate() || !!self.tempFilter.endDate();
             case 'dateRange': return !!self.tempFilter.startDate() || !!self.tempFilter.endDate();
             default: return false;
         }
@@ -236,6 +238,7 @@ function SuggestionsViewModel() {
                 self.tempFilter.searchText('');
                 break;
 
+            case 'callDateRange':
             case 'dateRange':
                 var startDate = self.tempFilter.startDate();
                 var endDate = self.tempFilter.endDate();
@@ -340,10 +343,18 @@ function SuggestionsViewModel() {
                 case 'search':
                     searchTexts.push(filter.value);
                     break;
+                case 'callDateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate,
+                        filterType: 'callDate'
+                    });
+                    break;
                 case 'dateRange':
                     dateRanges.push({
                         startDate: filter.value.startDate,
-                        endDate: filter.value.endDate
+                        endDate: filter.value.endDate,
+                        filterType: 'createdAt'
                     });
                     break;
             }
@@ -356,10 +367,11 @@ function SuggestionsViewModel() {
 
         if (searchTexts.length > 0) params.push('searchText=' + encodeURIComponent(searchTexts.join(' ')));
 
-        if (dateRanges.length > 0) {
-            if (dateRanges[0].startDate) params.push('startDate=' + dateRanges[0].startDate);
-            if (dateRanges[0].endDate) params.push('endDate=' + dateRanges[0].endDate);
-        }
+        dateRanges.forEach(function(dr, i) {
+            if (dr.startDate) params.push('dateRanges[' + i + '].startDate=' + dr.startDate);
+            if (dr.endDate) params.push('dateRanges[' + i + '].endDate=' + dr.endDate);
+            if (dr.filterType) params.push('dateRanges[' + i + '].filterType=' + dr.filterType);
+        });
 
         if (includePagination) {
             params.push('page=' + self.currentPage());

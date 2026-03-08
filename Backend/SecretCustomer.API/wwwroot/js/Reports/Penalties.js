@@ -85,7 +85,8 @@ function PenaltiesViewModel() {
         checklist: 'Kontrol Listesi',
         evaluator: 'Degerlendirici',
         penaltyType: 'Ceza Tipi',
-        dateRange: 'Tarih'
+        callDateRange: 'Cagri Tarihi',
+        dateRange: 'Degerlendirme Tarihi'
     };
 
     self.penaltyTypeLabels = {
@@ -137,6 +138,7 @@ function PenaltiesViewModel() {
             case 'checklist': return self.tempFilter.checklistId();
             case 'evaluator': return self.tempFilter.evaluatorId();
             case 'penaltyType': return self.tempFilter.penaltyType() !== '';
+            case 'callDateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             default: return false;
         }
@@ -205,6 +207,7 @@ function PenaltiesViewModel() {
                 self.tempFilter.penaltyType('');
                 break;
 
+            case 'callDateRange':
             case 'dateRange':
                 var startDate = self.tempFilter.startDate();
                 var endDate = self.tempFilter.endDate();
@@ -353,10 +356,18 @@ function PenaltiesViewModel() {
                 case 'penaltyType':
                     penaltyTypes.push(filter.value);
                     break;
+                case 'callDateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate,
+                        filterType: 'callDate'
+                    });
+                    break;
                 case 'dateRange':
                     dateRanges.push({
                         startDate: filter.value.startDate,
-                        endDate: filter.value.endDate
+                        endDate: filter.value.endDate,
+                        filterType: 'createdAt'
                     });
                     break;
             }
@@ -370,10 +381,11 @@ function PenaltiesViewModel() {
         evaluatorIds.forEach(function(id) { params.push('evaluatorIds=' + id); });
         penaltyTypes.forEach(function(t) { params.push('penaltyTypes=' + t); });
 
-        if (dateRanges.length > 0) {
-            if (dateRanges[0].startDate) params.push('startDate=' + dateRanges[0].startDate);
-            if (dateRanges[0].endDate) params.push('endDate=' + dateRanges[0].endDate);
-        }
+        dateRanges.forEach(function(dr, i) {
+            if (dr.startDate) params.push('dateRanges[' + i + '].startDate=' + dr.startDate);
+            if (dr.endDate) params.push('dateRanges[' + i + '].endDate=' + dr.endDate);
+            if (dr.filterType) params.push('dateRanges[' + i + '].filterType=' + dr.filterType);
+        });
 
         params.push('page=' + self.page());
         params.push('pageSize=' + self.pageSize());

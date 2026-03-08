@@ -41,7 +41,8 @@
                                 <option value="evaluator">@Html.T("Report.Evaluator", "Degerlendirici")</option>
                                 <option value="checklist">@Html.T("Report.Checklist", "Kontrol Listesi")</option>
                                 <option value="status">@Html.T("Common.Status", "Durum")</option>
-                                <option value="dateRange">@Html.T("Common.DateRange", "Tarih Araligi")</option>
+                                <option value="callDateRange">@Html.T("Report.CallDateRange", "Cagri Tarihi")</option>
+                                <option value="dateRange">@Html.T("Report.CreatedAtRange", "Degerlendirme Tarihi")</option>
                             </select>
                         </div>
                         <!-- Dynamic Filter Input -->
@@ -71,7 +72,7 @@
                             </select>
                         </div>
                         <!-- Date Range -->
-                        <div data-bind="visible: selectedFilterType() === 'dateRange'" class="mb-2">
+                        <div data-bind="visible: selectedFilterType() === 'dateRange' || selectedFilterType() === 'callDateRange'" class="mb-2">
                             <div class="d-flex gap-1 mb-1">
                                 <input type="date" class="form-control form-control-sm" data-bind="value: tempFilter.startDate">
                                 <span class="align-self-center">-</span>

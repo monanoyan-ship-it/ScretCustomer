@@ -69,7 +69,8 @@ function ReportsViewModel() {
         checklist: 'Kontrol Listesi',
         region: 'Bolge',
         status: 'Durum',
-        dateRange: 'Tarih'
+        callDateRange: 'Cagri Tarihi',
+        dateRange: 'Degerlendirme Tarihi'
     };
 
     self.statusLabels = {
@@ -128,6 +129,7 @@ function ReportsViewModel() {
             case 'checklist': return self.tempFilter.checklistId();
             case 'region': return self.tempFilter.region();
             case 'status': return self.tempFilter.status() !== '';
+            case 'callDateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             case 'dateRange': return self.tempFilter.startDate() || self.tempFilter.endDate();
             default: return false;
         }
@@ -198,6 +200,7 @@ function ReportsViewModel() {
                 self.tempFilter.status('');
                 break;
 
+            case 'callDateRange':
             case 'dateRange':
                 var startDate = self.tempFilter.startDate();
                 var endDate = self.tempFilter.endDate();
@@ -351,10 +354,18 @@ function ReportsViewModel() {
                 case 'status':
                     statuses.push(filter.value);
                     break;
+                case 'callDateRange':
+                    dateRanges.push({
+                        startDate: filter.value.startDate,
+                        endDate: filter.value.endDate,
+                        filterType: 'callDate'
+                    });
+                    break;
                 case 'dateRange':
                     dateRanges.push({
                         startDate: filter.value.startDate,
-                        endDate: filter.value.endDate
+                        endDate: filter.value.endDate,
+                        filterType: 'createdAt'
                     });
                     break;
             }
@@ -368,10 +379,7 @@ function ReportsViewModel() {
         if (regions.length > 0) params.regions = regions;
         if (statuses.length > 0) params.statuses = statuses;
 
-        if (dateRanges.length > 0) {
-            params.startDate = dateRanges[0].startDate;
-            params.endDate = dateRanges[0].endDate;
-        }
+        if (dateRanges.length > 0) params.dateRanges = dateRanges;
 
         return params;
     };
