@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
 
@@ -194,6 +195,172 @@ public class AssessmentService : IAssessmentService
     {
         return await _context.AssessmentParticipants
             .CountAsync(x => x.AssignmentPeriodId == assignmentPeriodId);
+    }
+
+    // ===== AssessmentTask Zincir Oluşturma =====
+
+    public async Task<int> GenerateAssessmentTasksAsync(int assignmentPeriodId, int projectId)
+    {
+        var project = await _context.Projects
+            .FirstOrDefaultAsync(x => x.Id == projectId);
+        if (project == null)
+            throw new InvalidOperationException("Proje bulunamadı.");
+
+        var isAnonymous = project.IsAnonymous;
+        var is360 = project.AssessmentModeId == AssessmentModes.Ids.Mode360;
+
+        // Dönemdeki tüm katılımcıları al
+        var participants = await _context.AssessmentParticipants
+            .Where(x => x.AssignmentPeriodId == assignmentPeriodId)
+            .ToListAsync();
+
+        if (!participants.Any())
+            throw new InvalidOperationException("Dönemde katılımcı bulunmuyor.");
+
+        var totalTaskCount = 0;
+
+        foreach (var participant in participants)
+        {
+            // Bu katılımcı için mevcut davetiye var mı kontrol et
+            var existingInvitation = await _context.SurveyInvitations
+                .AnyAsync(x => x.ProjectId == projectId
+                            && x.CustomerPersonnelId == participant.CustomerPersonnelId
+                            && !x.IsCompleted);
+            if (existingInvitation) continue;
+
+            // Davetiye oluştur
+            var invitation = new SurveyInvitation
+            {
+                ProjectId = projectId,
+                CustomerPersonnelId = participant.CustomerPersonnelId,
+                StatusId = SurveyInvitationStatuses.Ids.Pending
+            };
+            _context.SurveyInvitations.Add(invitation);
+            await _context.SaveChangesAsync();
+
+            var order = 1;
+
+            // 1. Self — her zaman ilk
+            _context.AssessmentTasks.Add(new AssessmentTask
+            {
+                SurveyInvitationId = invitation.Id,
+                EvaluatedCustomerPersonnelId = participant.CustomerPersonnelId,
+                FeedbackRoleId = FeedbackRoles.Ids.Self,
+                Order = order++
+            });
+
+            // 2. Manager — üstünü değerlendir (ParentId varsa)
+            if (participant.ParentId.HasValue)
+            {
+                var parent = participants.FirstOrDefault(x => x.Id == participant.ParentId.Value);
+                if (parent != null)
+                {
+                    _context.AssessmentTasks.Add(new AssessmentTask
+                    {
+                        SurveyInvitationId = invitation.Id,
+                        EvaluatedCustomerPersonnelId = parent.CustomerPersonnelId,
+                        FeedbackRoleId = FeedbackRoles.Ids.Manager,
+                        Order = order++
+                    });
+                }
+            }
+
+            // 360° modda ek task'lar
+            if (is360)
+            {
+                // 3. Peer — aynı ParentId'ye sahip kardeşler
+                var peers = participants
+                    .Where(x => x.ParentId == participant.ParentId
+                             && x.Id != participant.Id)
+                    .ToList();
+
+                if (peers.Any())
+                {
+                    if (isAnonymous)
+                    {
+                        // Anonim: toplu tek form (EvaluatedPerson = null)
+                        _context.AssessmentTasks.Add(new AssessmentTask
+                        {
+                            SurveyInvitationId = invitation.Id,
+                            EvaluatedCustomerPersonnelId = null,
+                            FeedbackRoleId = FeedbackRoles.Ids.Peer,
+                            Order = order++
+                        });
+                    }
+                    else
+                    {
+                        // İsimli: her peer için ayrı form
+                        foreach (var peer in peers)
+                        {
+                            _context.AssessmentTasks.Add(new AssessmentTask
+                            {
+                                SurveyInvitationId = invitation.Id,
+                                EvaluatedCustomerPersonnelId = peer.CustomerPersonnelId,
+                                FeedbackRoleId = FeedbackRoles.Ids.Peer,
+                                Order = order++
+                            });
+                        }
+                    }
+                }
+
+                // 4. Subordinate — ParentId'si kendisine bakan çocuklar
+                var subordinates = participants
+                    .Where(x => x.ParentId == participant.Id)
+                    .ToList();
+
+                if (subordinates.Any())
+                {
+                    if (isAnonymous)
+                    {
+                        // Anonim: toplu tek form (EvaluatedPerson = null)
+                        _context.AssessmentTasks.Add(new AssessmentTask
+                        {
+                            SurveyInvitationId = invitation.Id,
+                            EvaluatedCustomerPersonnelId = null,
+                            FeedbackRoleId = FeedbackRoles.Ids.Subordinate,
+                            Order = order++
+                        });
+                    }
+                    else
+                    {
+                        // İsimli: her subordinate için ayrı form
+                        foreach (var sub in subordinates)
+                        {
+                            _context.AssessmentTasks.Add(new AssessmentTask
+                            {
+                                SurveyInvitationId = invitation.Id,
+                                EvaluatedCustomerPersonnelId = sub.CustomerPersonnelId,
+                                FeedbackRoleId = FeedbackRoles.Ids.Subordinate,
+                                Order = order++
+                            });
+                        }
+                    }
+                }
+            }
+
+            totalTaskCount += order - 1;
+        }
+
+        await _context.SaveChangesAsync();
+        return totalTaskCount;
+    }
+
+    public async Task<List<AssessmentTask>> GetTaskChainAsync(int surveyInvitationId)
+    {
+        return await _context.AssessmentTasks
+            .Include(x => x.EvaluatedCustomerPersonnel)
+            .Where(x => x.SurveyInvitationId == surveyInvitationId)
+            .OrderBy(x => x.Order)
+            .ToListAsync();
+    }
+
+    public async Task<AssessmentTask?> GetNextPendingTaskAsync(int surveyInvitationId)
+    {
+        return await _context.AssessmentTasks
+            .Include(x => x.EvaluatedCustomerPersonnel)
+            .Where(x => x.SurveyInvitationId == surveyInvitationId && !x.IsCompleted)
+            .OrderBy(x => x.Order)
+            .FirstOrDefaultAsync();
     }
 
     // ===== Private Helpers =====

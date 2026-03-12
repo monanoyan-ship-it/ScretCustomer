@@ -35,4 +35,22 @@ public interface IAssessmentService
     /// Dönemdeki katılımcı sayısını getirir
     /// </summary>
     Task<int> GetParticipantCountAsync(int assignmentPeriodId);
+
+    // ===== AssessmentTask Zincir Oluşturma =====
+
+    /// <summary>
+    /// Tüm katılımcılar için AssessmentTask zincirlerini oluştur ve davetiye gönderimini başlat
+    /// Mod (180/360) ve anonimlik ayarına göre task'lar oluşturulur
+    /// </summary>
+    Task<int> GenerateAssessmentTasksAsync(int assignmentPeriodId, int projectId);
+
+    /// <summary>
+    /// Belirli bir davetiyenin task zincirini getirir
+    /// </summary>
+    Task<List<AssessmentTask>> GetTaskChainAsync(int surveyInvitationId);
+
+    /// <summary>
+    /// Belirli bir davetiyenin sıradaki tamamlanmamış task'ını getirir
+    /// </summary>
+    Task<AssessmentTask?> GetNextPendingTaskAsync(int surveyInvitationId);
 }
