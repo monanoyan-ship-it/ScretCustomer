@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Data;
+using SecretCustomer.Services.Helpers;
 
 namespace SecretCustomer.Services.Services;
 
@@ -361,6 +363,130 @@ public class AssessmentService : IAssessmentService
             .Where(x => x.SurveyInvitationId == surveyInvitationId && !x.IsCompleted)
             .OrderBy(x => x.Order)
             .FirstOrDefaultAsync();
+    }
+
+    // ===== Tek Link Doldurma Akışı =====
+
+    public async Task<AssessmentFillContext?> GetFillContextByTokenAsync(string token)
+    {
+        // Token'ı çöz → projectId + personnelId
+        var tokenData = EncryptionHelper.ParseSurveyToken(token);
+        if (tokenData == null) return null;
+
+        // Proje bitiş tarihine göre expiration kontrolü
+        var project = await _context.Projects
+            .Include(x => x.Checklist)
+                .ThenInclude(c => c!.Questions.Where(q => !q.IsDeleted))
+                    .ThenInclude(q => q.SubCriteria.Where(sc => !sc.IsDeleted))
+            .Include(x => x.Customer)
+            .FirstOrDefaultAsync(x => x.Id == tokenData.ProjectId);
+
+        if (project == null) return null;
+
+        if (tokenData.IsExpiredByDate(project.EndDate))
+            return null;
+
+        // SurveyInvitation bul
+        var invitation = await _context.SurveyInvitations
+            .Include(x => x.CustomerPersonnel)
+            .FirstOrDefaultAsync(x => x.ProjectId == tokenData.ProjectId
+                                   && x.CustomerPersonnelId == tokenData.PersonnelId
+                                   && !x.IsCompleted);
+
+        if (invitation == null) return null;
+
+        // Açıldı olarak işaretle
+        if (!invitation.IsOpened)
+        {
+            invitation.IsOpened = true;
+            invitation.OpenedAt = TurkeyTime.Now;
+            await _context.SaveChangesAsync();
+        }
+
+        // Task zincirini getir
+        var tasks = await _context.AssessmentTasks
+            .Include(x => x.EvaluatedCustomerPersonnel)
+            .Where(x => x.SurveyInvitationId == invitation.Id)
+            .OrderBy(x => x.Order)
+            .ToListAsync();
+
+        var totalCount = tasks.Count;
+        var completedCount = tasks.Count(x => x.IsCompleted);
+        var currentTask = tasks.FirstOrDefault(x => !x.IsCompleted);
+
+        if (currentTask == null)
+        {
+            // Tüm task'lar tamamlanmış
+            return new AssessmentFillContext
+            {
+                Invitation = invitation,
+                Project = project,
+                CurrentTask = tasks.Last(), // son tamamlanan
+                TotalTaskCount = totalCount,
+                CompletedTaskCount = completedCount,
+                IsAllCompleted = true
+            };
+        }
+
+        return new AssessmentFillContext
+        {
+            Invitation = invitation,
+            Project = project,
+            CurrentTask = currentTask,
+            TotalTaskCount = totalCount,
+            CompletedTaskCount = completedCount,
+            IsAllCompleted = false
+        };
+    }
+
+    public async Task<AssessmentTaskCompletionResult> CompleteTaskAsync(int assessmentTaskId, int evaluationId)
+    {
+        var task = await _context.AssessmentTasks
+            .FirstOrDefaultAsync(x => x.Id == assessmentTaskId);
+
+        if (task == null)
+            throw new InvalidOperationException("Değerlendirme görevi bulunamadı.");
+
+        if (task.IsCompleted)
+            throw new InvalidOperationException("Bu görev zaten tamamlanmış.");
+
+        // Task'ı tamamla
+        task.EvaluationId = evaluationId;
+        task.IsCompleted = true;
+        task.CompletedAt = TurkeyTime.Now;
+
+        // Sıradaki task'ı kontrol et
+        var nextTask = await _context.AssessmentTasks
+            .Include(x => x.EvaluatedCustomerPersonnel)
+            .Where(x => x.SurveyInvitationId == task.SurveyInvitationId
+                     && !x.IsCompleted
+                     && x.Id != assessmentTaskId)
+            .OrderBy(x => x.Order)
+            .FirstOrDefaultAsync();
+
+        var isAllCompleted = nextTask == null;
+
+        // Tümü tamamlandıysa davetiyeyi de kapat
+        if (isAllCompleted)
+        {
+            var invitation = await _context.SurveyInvitations
+                .FirstOrDefaultAsync(x => x.Id == task.SurveyInvitationId);
+
+            if (invitation != null)
+            {
+                invitation.IsCompleted = true;
+                invitation.CompletedAt = TurkeyTime.Now;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+
+        return new AssessmentTaskCompletionResult
+        {
+            HasNextTask = !isAllCompleted,
+            NextTask = nextTask,
+            IsAllCompleted = isAllCompleted
+        };
     }
 
     // ===== Private Helpers =====

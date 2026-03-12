@@ -53,4 +53,44 @@ public interface IAssessmentService
     /// Belirli bir davetiyenin sıradaki tamamlanmamış task'ını getirir
     /// </summary>
     Task<AssessmentTask?> GetNextPendingTaskAsync(int surveyInvitationId);
+
+    // ===== Tek Link Doldurma Akışı =====
+
+    /// <summary>
+    /// Token ile davetiyeyi ve projeyi getir (doldurma sayfası için)
+    /// </summary>
+    Task<AssessmentFillContext?> GetFillContextByTokenAsync(string token);
+
+    /// <summary>
+    /// Bir task'ı tamamla: Evaluation oluştur, task'ı güncelle, sonraki task'ı döndür
+    /// </summary>
+    Task<AssessmentTaskCompletionResult> CompleteTaskAsync(int assessmentTaskId, int evaluationId);
+}
+
+/// <summary>
+/// Doldurma sayfası context'i — token'dan çözümlenir
+/// </summary>
+public class AssessmentFillContext
+{
+    public SurveyInvitation Invitation { get; set; } = null!;
+    public Project Project { get; set; } = null!;
+    public AssessmentTask CurrentTask { get; set; } = null!;
+    public int TotalTaskCount { get; set; }
+    public int CompletedTaskCount { get; set; }
+    public bool IsAllCompleted { get; set; }
+
+    /// <summary>
+    /// Gösterilecek soru metni: Self ise SelfText (fallback Text), diğerleri Text
+    /// </summary>
+    public bool UseSelfText => CurrentTask.FeedbackRoleId == SecretCustomer.Core.Enums.FeedbackRoles.Ids.Self;
+}
+
+/// <summary>
+/// Task tamamlama sonucu
+/// </summary>
+public class AssessmentTaskCompletionResult
+{
+    public bool HasNextTask { get; set; }
+    public AssessmentTask? NextTask { get; set; }
+    public bool IsAllCompleted { get; set; }
 }
