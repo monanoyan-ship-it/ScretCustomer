@@ -2642,6 +2642,30 @@
   <LocaleResource Name="ProjectType.QualityControl">
     <Value>Kalite Kontrol</Value>
   </LocaleResource>
+  <LocaleResource Name="ProjectType.PersonnelAssessment">
+    <Value>Personel Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="ChecklistType.PersonnelAssessment">
+    <Value>Personel Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Self">
+    <Value>Öz Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Manager">
+    <Value>Yönetici Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Peer">
+    <Value>Eş Düzey Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Subordinate">
+    <Value>Ast Değerlendirmesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode180">
+    <Value>180 Derece</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode360">
+    <Value>360 Derece</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Çoktan Seçmeli</Value>

@@ -6710,6 +6710,30 @@
   <LocaleResource Name="ProjectType.TrainingEvaluation">
     <Value>Schulungsbewertung</Value>
   </LocaleResource>
+  <LocaleResource Name="ProjectType.PersonnelAssessment">
+    <Value>Personalbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="ChecklistType.PersonnelAssessment">
+    <Value>Personalbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Self">
+    <Value>Selbstbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Manager">
+    <Value>Vorgesetztenbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Peer">
+    <Value>Kollegenbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Subordinate">
+    <Value>Mitarbeiterbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode180">
+    <Value>180 Grad</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode360">
+    <Value>360 Grad</Value>
+  </LocaleResource>
   <LocaleResource Name="QuestionType.Likert">
     <Value>Likert-Skala</Value>
   </LocaleResource>

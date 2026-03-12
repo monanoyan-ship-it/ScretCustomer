@@ -6648,6 +6648,30 @@
   <LocaleResource Name="ProjectType.TrainingEvaluation">
     <Value>Evaluación de Capacitación</Value>
   </LocaleResource>
+  <LocaleResource Name="ProjectType.PersonnelAssessment">
+    <Value>Evaluación de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="ChecklistType.PersonnelAssessment">
+    <Value>Evaluación de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Self">
+    <Value>Autoevaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Manager">
+    <Value>Evaluación del Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Peer">
+    <Value>Evaluación de Pares</Value>
+  </LocaleResource>
+  <LocaleResource Name="FeedbackRole.Subordinate">
+    <Value>Evaluación de Subordinados</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode180">
+    <Value>180 Grados</Value>
+  </LocaleResource>
+  <LocaleResource Name="AssessmentMode.Mode360">
+    <Value>360 Grados</Value>
+  </LocaleResource>
   <LocaleResource Name="Question.GroupNamePlaceholder">
     <Value>Nombre del grupo...</Value>
   </LocaleResource>

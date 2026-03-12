@@ -206,8 +206,9 @@ public static class ProjectTypes
     public static readonly TypeItem CustomerSatisfaction = new(5, "CustomerSatisfaction", "ProjectType.CustomerSatisfaction", "Müşteri Memnuniyeti", "bi-emoji-smile", "bg-warning text-dark", 5);
     public static readonly TypeItem TrainingEvaluation = new(6, "TrainingEvaluation", "ProjectType.TrainingEvaluation", "Eğitim Değerlendirmesi", "bi-mortarboard", "bg-purple", 6);
     public static readonly TypeItem QualityControl = new(7, "QualityControl", "ProjectType.QualityControl", "Kalite Kontrol", "bi-patch-check", "bg-danger", 7);
+    public static readonly TypeItem PersonnelAssessment = new(8, "PersonnelAssessment", "ProjectType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-teal", 8);
 
-    public static IEnumerable<TypeItem> All => new[] { MysteryShopping, CallAuditing, PhysicalAudit, OnlineSurvey, CustomerSatisfaction, TrainingEvaluation, QualityControl };
+    public static IEnumerable<TypeItem> All => new[] { MysteryShopping, CallAuditing, PhysicalAudit, OnlineSurvey, CustomerSatisfaction, TrainingEvaluation, QualityControl, PersonnelAssessment };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -221,6 +222,7 @@ public static class ProjectTypes
         public const int CustomerSatisfaction = 5;
         public const int TrainingEvaluation = 6;
         public const int QualityControl = 7;
+        public const int PersonnelAssessment = 8;
     }
 }
 
@@ -619,9 +621,10 @@ public static class ChecklistTypes
     public static readonly TypeItem MysteryShopping = new(3, "MysteryShopping", "ChecklistType.MysteryShopping", "Gizli Müşteri", "bi-incognito", "bg-warning text-dark", 3);
     public static readonly TypeItem OnlineEvaluation = new(4, "OnlineEvaluation", "ChecklistType.OnlineEvaluation", "Online Değerlendirme", "bi-globe", "bg-success", 4);
     public static readonly TypeItem Survey = new(5, "Survey", "ChecklistType.Survey", "Anket", "bi-clipboard-data", "bg-secondary", 5);
+    public static readonly TypeItem PersonnelAssessment = new(6, "PersonnelAssessment", "ChecklistType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-teal", 6);
     public static readonly TypeItem Enneagram = new(7, "Enneagram", "ChecklistType.Enneagram", "Enneagram Kisilik Testi", "bi-people", "bg-purple", 7);
 
-    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, Enneagram };
+    public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, PersonnelAssessment, Enneagram };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -633,6 +636,7 @@ public static class ChecklistTypes
         public const int MysteryShopping = 3;
         public const int OnlineEvaluation = 4;
         public const int Survey = 5;
+        public const int PersonnelAssessment = 6;
         public const int Enneagram = 7;
     }
 }
@@ -651,6 +655,7 @@ public static class ProjectChecklistTypeRelations
         { ProjectTypes.Ids.CustomerSatisfaction, new[] { ChecklistTypes.Ids.Survey, ChecklistTypes.Ids.CallPerformance } },
         { ProjectTypes.Ids.TrainingEvaluation,   new[] { ChecklistTypes.Ids.OnlineEvaluation } },
         { ProjectTypes.Ids.QualityControl,       new[] { ChecklistTypes.Ids.CallPerformance, ChecklistTypes.Ids.PhysicalAudit } },
+        { ProjectTypes.Ids.PersonnelAssessment,  new[] { ChecklistTypes.Ids.PersonnelAssessment } },
     };
 
     public static int[]? GetAllowedChecklistTypes(int projectTypeId)
@@ -1933,5 +1938,49 @@ public static class EvaluationImportResolutionActions
         public const int LinkedExisting = 1;
         public const int CreatedNew = 2;
         public const int Skipped = 3;
+    }
+}
+
+// ============================================================
+// FEEDBACK ROLES (Geri Bildirim Rolleri - Personel Degerlendirme)
+// ============================================================
+public static class FeedbackRoles
+{
+    public static readonly TypeItem Self = new(1, "Self", "FeedbackRole.Self", "Öz Değerlendirme", "bi-person", "bg-primary", 1, isDefault: true);
+    public static readonly TypeItem Manager = new(2, "Manager", "FeedbackRole.Manager", "Yönetici Değerlendirmesi", "bi-person-up", "bg-info", 2);
+    public static readonly TypeItem Peer = new(3, "Peer", "FeedbackRole.Peer", "Eş Düzey Değerlendirmesi", "bi-people", "bg-success", 3);
+    public static readonly TypeItem Subordinate = new(4, "Subordinate", "FeedbackRole.Subordinate", "Ast Değerlendirmesi", "bi-person-down", "bg-warning text-dark", 4);
+
+    public static IEnumerable<TypeItem> All => new[] { Self, Manager, Peer, Subordinate };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Self = 1;
+        public const int Manager = 2;
+        public const int Peer = 3;
+        public const int Subordinate = 4;
+    }
+}
+
+// ============================================================
+// ASSESSMENT MODES (Degerlendirme Modlari - 180/360 Derece)
+// ============================================================
+public static class AssessmentModes
+{
+    public static readonly TypeItem Mode180 = new(1, "Mode180", "AssessmentMode.Mode180", "180 Derece", "bi-circle-half", "bg-info", 1, isDefault: true);
+    public static readonly TypeItem Mode360 = new(2, "Mode360", "AssessmentMode.Mode360", "360 Derece", "bi-circle", "bg-primary", 2);
+
+    public static IEnumerable<TypeItem> All => new[] { Mode180, Mode360 };
+    public static TypeItem Default => All.First(x => x.IsDefault);
+    public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
+    public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
+
+    public static class Ids
+    {
+        public const int Mode180 = 1;
+        public const int Mode360 = 2;
     }
 }
