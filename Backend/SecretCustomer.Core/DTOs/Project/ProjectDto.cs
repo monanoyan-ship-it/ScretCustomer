@@ -117,6 +117,11 @@ public class ProjectDto
     public bool SendReminderEmails { get; set; }
     public int? ReminderDaysBeforeEnd { get; set; }
 
+    // ===== DEĞERLENDİRME AYARLARI (Assessment Settings) =====
+    public int? AssessmentModeId { get; set; }
+    public bool IsAnonymous { get; set; }
+    public int MinRespondentsForAnonymity { get; set; }
+
     // Kart sayilari
     public int TotalYellowCards { get; set; }
     public int TotalRedCards { get; set; }

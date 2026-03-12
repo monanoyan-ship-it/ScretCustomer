@@ -85,6 +85,24 @@ public class CreateProjectDto
     /// </summary>
     public int? ReminderDaysBeforeEnd { get; set; }
 
+    // ===== DEĞERLENDİRME AYARLARI (Assessment Settings) =====
+    // Sadece ProjectType = "PersonnelAssessment" olduğunda kullanılır
+
+    /// <summary>
+    /// Değerlendirme modu: 1=180°, 2=360°
+    /// </summary>
+    public int? AssessmentModeId { get; set; }
+
+    /// <summary>
+    /// Anonim değerlendirme (Peer/Subordinate toplu form)
+    /// </summary>
+    public bool IsAnonymous { get; set; } = false;
+
+    /// <summary>
+    /// Raporda sonuç göstermek için min. katılımcı sayısı
+    /// </summary>
+    public int MinRespondentsForAnonymity { get; set; } = 2;
+
     // Takim Uyeleri
     public List<CreateProjectTeamMemberDto>? TeamMembers { get; set; }
 }

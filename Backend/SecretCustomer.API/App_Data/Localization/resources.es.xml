@@ -8543,6 +8543,27 @@
   <LocaleResource Name="Project.SurveySettings">
     <Value>Configuración de Encuesta</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.AssessmentSettings">
+    <Value>Configuración de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentMode">
+    <Value>Modo de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentModeHint">
+    <Value>180°: Auto + Gerente, 360°: Auto + Gerente + Par + Subordinado</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymous">
+    <Value>Evaluación Anónima</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymousHint">
+    <Value>Las evaluaciones de pares y subordinados se completan como un formulario grupal único</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondents">
+    <Value>Mín. Número de Participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondentsHint">
+    <Value>Número mínimo de evaluadores necesarios para mostrar resultados en el informe</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.TemplateFromSettings">
     <Value>Plantilla desde Configuración</Value>
   </LocaleResource>

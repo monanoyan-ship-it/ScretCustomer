@@ -108,6 +108,7 @@
                             <option value="CustomerSatisfaction">@Html.T("ProjectType.CustomerSatisfaction", "Müşteri Memnuniyeti")</option>
                             <option value="TrainingEvaluation">@Html.T("Project.Type.TrainingEvaluation", "Eğitim Değerlendirme")</option>
                             <option value="QualityControl">@Html.T("ProjectType.QualityControl", "Kalite Kontrol")</option>
+                            <option value="PersonnelAssessment">@Html.T("ProjectType.PersonnelAssessment", "Personel Değerlendirme")</option>
                         </select>
                     </div>
 
@@ -541,6 +542,36 @@
                                             <label class="form-label">@Html.T("Project.ReminderDays", "Hatırlatma (Gün Önce)")</label>
                                             <input type="number" class="form-control" data-bind="value: reminderDaysBeforeEnd" min="1" max="30" placeholder="3">
                                             <small class="text-muted">@Html.T("Project.ReminderDaysHint", "Bitiş tarihinden kaç gün önce")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Assessment Settings (PersonnelAssessment için) -->
+                            <div class="card mb-3" data-bind="visible: projectType() === 'PersonnelAssessment'">
+                                <div class="card-header py-2 bg-teal text-white"><i class="bi bi-person-check"></i> @Html.T("Project.AssessmentSettings", "Değerlendirme Ayarları")</div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.AssessmentMode", "Değerlendirme Modu") <span class="text-danger">*</span></label>
+                                            <select class="form-select" data-bind="value: assessmentModeId">
+                                                <option value="1">@Html.T("AssessmentMode.Mode180", "180 Derece")</option>
+                                                <option value="2">@Html.T("AssessmentMode.Mode360", "360 Derece")</option>
+                                            </select>
+                                            <small class="text-muted">@Html.T("Project.AssessmentModeHint", "180°: Öz + Yönetici, 360°: Öz + Yönetici + Eş Düzey + Ast")</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check form-switch mt-4">
+                                                <input class="form-check-input" type="checkbox" id="isAnonymous" data-bind="checked: isAnonymous" autocomplete="off">
+                                                <label class="form-check-label" for="isAnonymous">@Html.T("Project.IsAnonymous", "Anonim Değerlendirme")</label>
+                                            </div>
+                                            <small class="text-muted">@Html.T("Project.IsAnonymousHint", "Eş düzey ve ast değerlendirmeleri toplu tek form olarak doldurulur")</small>
+                                        </div>
+                                    </div>
+                                    <div class="row" data-bind="visible: isAnonymous()">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.MinRespondents", "Min. Katılımcı Sayısı")</label>
+                                            <input type="number" class="form-control" data-bind="value: minRespondentsForAnonymity" min="1" max="10" autocomplete="off">
+                                            <small class="text-muted">@Html.T("Project.MinRespondentsHint", "Raporda sonuç göstermek için gereken minimum değerlendirici sayısı")</small>
                                         </div>
                                     </div>
                                 </div>

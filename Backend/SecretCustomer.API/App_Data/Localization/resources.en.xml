@@ -8552,6 +8552,27 @@
   <LocaleResource Name="Project.SurveySettings">
     <Value>Survey Settings</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.AssessmentSettings">
+    <Value>Assessment Settings</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentMode">
+    <Value>Assessment Mode</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentModeHint">
+    <Value>180°: Self + Manager, 360°: Self + Manager + Peer + Subordinate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymous">
+    <Value>Anonymous Assessment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymousHint">
+    <Value>Peer and subordinate evaluations are filled as a single group form</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondents">
+    <Value>Min. Respondent Count</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondentsHint">
+    <Value>Minimum number of evaluators required to show results in report</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.TemplateFromSettings">
     <Value>Template from Settings</Value>
   </LocaleResource>

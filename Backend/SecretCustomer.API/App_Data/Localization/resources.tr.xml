@@ -8549,6 +8549,27 @@
   <LocaleResource Name="Project.SurveySettings">
     <Value>Anket Ayarları</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.AssessmentSettings">
+    <Value>Değerlendirme Ayarları</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentMode">
+    <Value>Değerlendirme Modu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentModeHint">
+    <Value>180°: Öz + Yönetici, 360°: Öz + Yönetici + Eş Düzey + Ast</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymous">
+    <Value>Anonim Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymousHint">
+    <Value>Eş düzey ve ast değerlendirmeleri toplu tek form olarak doldurulur</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondents">
+    <Value>Min. Katılımcı Sayısı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondentsHint">
+    <Value>Raporda sonuç göstermek için gereken minimum değerlendirici sayısı</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.TemplateFromSettings">
     <Value>Ayarlardan Şablon</Value>
   </LocaleResource>

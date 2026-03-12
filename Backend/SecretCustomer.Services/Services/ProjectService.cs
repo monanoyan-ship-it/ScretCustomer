@@ -549,7 +549,11 @@ public class ProjectService : IProjectService
             EmailTemplateId = dto.EmailTemplateId,
             ReminderEmailTemplateId = dto.ReminderEmailTemplateId,
             SendReminderEmails = dto.SendReminderEmails,
-            ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd
+            ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd,
+            // Assessment Settings
+            AssessmentModeId = dto.AssessmentModeId,
+            IsAnonymous = dto.IsAnonymous,
+            MinRespondentsForAnonymity = dto.MinRespondentsForAnonymity
         };
 
         _context.Projects.Add(project);
@@ -618,6 +622,10 @@ public class ProjectService : IProjectService
         project.ReminderEmailTemplateId = dto.ReminderEmailTemplateId;
         project.SendReminderEmails = dto.SendReminderEmails;
         project.ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd;
+        // Assessment Settings
+        project.AssessmentModeId = dto.AssessmentModeId;
+        project.IsAnonymous = dto.IsAnonymous;
+        project.MinRespondentsForAnonymity = dto.MinRespondentsForAnonymity;
         project.UpdatedAt = TurkeyTime.Now;
 
         // Update team members
@@ -1078,6 +1086,10 @@ public class ProjectService : IProjectService
             ReminderEmailTemplateName = project.ReminderEmailTemplate?.Name,
             SendReminderEmails = project.SendReminderEmails,
             ReminderDaysBeforeEnd = project.ReminderDaysBeforeEnd,
+            // Assessment Settings
+            AssessmentModeId = project.AssessmentModeId,
+            IsAnonymous = project.IsAnonymous,
+            MinRespondentsForAnonymity = project.MinRespondentsForAnonymity,
             TotalYellowCards = yellowCards,
             TotalRedCards = redCards,
             TeamMemberCount = project.TeamMembers?.Count(m => !m.IsDeleted) ?? 0,

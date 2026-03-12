@@ -48,6 +48,11 @@ function ProjectEditViewModel(data) {
     self.sendReminderEmails = ko.observable(data.sendReminderEmails || false);
     self.reminderDaysBeforeEnd = ko.observable(data.reminderDaysBeforeEnd || null);
 
+    // Assessment Settings (PersonnelAssessment proje tipi için)
+    self.assessmentModeId = ko.observable(data.assessmentModeId || 1);
+    self.isAnonymous = ko.observable(data.isAnonymous || false);
+    self.minRespondentsForAnonymity = ko.observable(data.minRespondentsForAnonymity || 2);
+
     // Team Members
     self.teamMembers = ko.observableArray([]);
 
@@ -85,6 +90,10 @@ function ProjectEditViewModel(data) {
             reminderEmailTemplateId: self.projectType() === 'OnlineSurvey' ? self.reminderEmailTemplateId() : null,
             sendReminderEmails: self.projectType() === 'OnlineSurvey' ? self.sendReminderEmails() : false,
             reminderDaysBeforeEnd: self.projectType() === 'OnlineSurvey' ? self.reminderDaysBeforeEnd() : null,
+            // Assessment Settings
+            assessmentModeId: self.projectType() === 'PersonnelAssessment' ? parseInt(self.assessmentModeId()) : null,
+            isAnonymous: self.projectType() === 'PersonnelAssessment' ? self.isAnonymous() : false,
+            minRespondentsForAnonymity: self.projectType() === 'PersonnelAssessment' ? parseInt(self.minRespondentsForAnonymity()) : 2,
             teamMembers: self.teamMembers().map(function(tm) {
                 return { userId: tm.userId(), role: tm.role() };
             }).filter(function(tm) { return tm.userId; })

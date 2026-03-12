@@ -8545,6 +8545,27 @@
   <LocaleResource Name="Project.SurveySettings">
     <Value>Umfrageeinstellungen</Value>
   </LocaleResource>
+  <LocaleResource Name="Project.AssessmentSettings">
+    <Value>Bewertungseinstellungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentMode">
+    <Value>Bewertungsmodus</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.AssessmentModeHint">
+    <Value>180°: Selbst + Vorgesetzter, 360°: Selbst + Vorgesetzter + Kollege + Untergebener</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymous">
+    <Value>Anonyme Bewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.IsAnonymousHint">
+    <Value>Kollegen- und Untergebenenbewertungen werden als einzelnes Gruppenformular ausgefüllt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondents">
+    <Value>Min. Teilnehmeranzahl</Value>
+  </LocaleResource>
+  <LocaleResource Name="Project.MinRespondentsHint">
+    <Value>Mindestanzahl der Bewerter für die Anzeige von Ergebnissen im Bericht</Value>
+  </LocaleResource>
   <LocaleResource Name="Project.TemplateFromSettings">
     <Value>Vorlage aus Einstellungen</Value>
   </LocaleResource>
