@@ -103,6 +103,12 @@ public static class EmailPlaceholders
     public const string TrainingDueDate = "{TrainingDueDate}";
     public const string TrainingStartDate = "{TrainingStartDate}";
 
+    // Personel Değerlendirme
+    public const string AssessmentLink = "{AssessmentLink}";
+    public const string AssessmentUrl = "{AssessmentUrl}";
+    public const string PeriodName = "{PeriodName}";
+    public const string AssessmentMode = "{AssessmentMode}";
+
     /// <summary>
     /// Tüm placeholder'ları kategorili listele
     /// </summary>
@@ -199,6 +205,18 @@ public static class EmailPlaceholders
                     new(TrainingAssignmentTitle, "Atama Başlığı", "Eğitim ataması başlığı"),
                     new(TrainingStartDate, "Başlangıç Tarihi", "Eğitim başlangıç tarihi"),
                     new(TrainingDueDate, "Son Tarih", "Eğitim son tarihi")
+                }
+            },
+            new PlaceholderCategory
+            {
+                Name = "Personel Değerlendirme",
+                Icon = "bi-people",
+                Placeholders = new List<PlaceholderInfo>
+                {
+                    new(AssessmentLink, "Değerlendirme Linki (Hazır)", "Tıklanabilir link olarak gelir"),
+                    new(AssessmentUrl, "Değerlendirme URL", "Sadece URL - kendi linkinizi oluşturmak için"),
+                    new(PeriodName, "Dönem Adı", "Değerlendirme dönemi adı"),
+                    new(AssessmentMode, "Değerlendirme Modu", "Anonim veya açık değerlendirme")
                 }
             }
         };

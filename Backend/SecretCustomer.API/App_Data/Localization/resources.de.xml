@@ -9938,6 +9938,27 @@
   <LocaleResource Name="EmailTemplate.UseRealDataHint">
     <Value>Echter Umfragelink und QR-Code werden generiert</Value>
   </LocaleResource>
+  <LocaleResource Name="EmailTemplateType.AssessmentInvitation">
+    <Value>Bewertungseinladung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendEmails">
+    <Value>Einladungen senden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SelectTemplate">
+    <Value>E-Mail-Vorlage auswählen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoTemplates">
+    <Value>Noch keine E-Mail-Vorlagen erstellt.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendConfirm">
+    <Value>Bewertungseinladungen werden an alle Teilnehmer gesendet. Möchten Sie fortfahren?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSending">
+    <Value>Einladungen werden gesendet...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSendTitle">
+    <Value>Einladung senden</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Company">
     <Value>Unternehmen</Value>
   </LocaleResource>

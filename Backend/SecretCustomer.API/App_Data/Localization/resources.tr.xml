@@ -9942,6 +9942,27 @@
   <LocaleResource Name="EmailTemplate.UseRealDataHint">
     <Value>Gerçek anket linki ve QR kod oluşturulur</Value>
   </LocaleResource>
+  <LocaleResource Name="EmailTemplateType.AssessmentInvitation">
+    <Value>Değerlendirme Davetiyesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendEmails">
+    <Value>Davetiye Gönder</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SelectTemplate">
+    <Value>Email Şablonu Seç</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoTemplates">
+    <Value>Henüz email şablonu oluşturulmamış.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendConfirm">
+    <Value>Tüm katılımcılara değerlendirme davetiyesi gönderilecek. Devam etmek istiyor musunuz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSending">
+    <Value>Davetiyeler gönderiliyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSendTitle">
+    <Value>Davetiye Gönder</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Company">
     <Value>Firma</Value>
   </LocaleResource>

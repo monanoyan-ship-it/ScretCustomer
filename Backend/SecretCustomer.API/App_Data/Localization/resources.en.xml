@@ -9945,6 +9945,27 @@
   <LocaleResource Name="EmailTemplate.UseRealDataHint">
     <Value>Real survey link and QR code will be generated</Value>
   </LocaleResource>
+  <LocaleResource Name="EmailTemplateType.AssessmentInvitation">
+    <Value>Assessment Invitation</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendEmails">
+    <Value>Send Invitations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SelectTemplate">
+    <Value>Select Email Template</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoTemplates">
+    <Value>No email templates created yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendConfirm">
+    <Value>Assessment invitations will be sent to all participants. Do you want to continue?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSending">
+    <Value>Sending invitations...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSendTitle">
+    <Value>Send Invitation</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Company">
     <Value>Company</Value>
   </LocaleResource>

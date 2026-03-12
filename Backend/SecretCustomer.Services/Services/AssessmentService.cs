@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.DTOs.AssignmentPeriod;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
 using SecretCustomer.Core.Helpers;
@@ -15,6 +16,122 @@ public class AssessmentService : IAssessmentService
     public AssessmentService(ApplicationDbContext context)
     {
         _context = context;
+    }
+
+    // ===== Proje Bazlı Dönem Yönetimi (PersonnelAssessment) =====
+
+    public async Task<List<AssignmentPeriodDto>> GetPeriodsByProjectAsync(int projectId)
+    {
+        return await _context.AssignmentPeriods
+            .Where(p => p.ProjectId == projectId && !p.IsDeleted)
+            .OrderByDescending(p => p.Id)
+            .Select(p => new AssignmentPeriodDto
+            {
+                Id = p.Id,
+                AssignmentId = p.AssignmentId,
+                ProjectId = p.ProjectId,
+                Name = p.Name,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                Status = PeriodStatuses.GetById(p.StatusId) != null ? PeriodStatuses.GetById(p.StatusId)!.SystemName : "Open",
+                StatusName = p.StatusId == PeriodStatuses.Ids.Open ? "Açık" : "Kapalı",
+                TargetCount = p.TargetCount,
+                CompletedCount = p.CompletedCount,
+                AverageScore = p.AverageScore,
+                Notes = p.Notes,
+                CreatedByUserId = p.CreatedByUserId,
+                CreatedAt = p.CreatedAt
+            })
+            .ToListAsync();
+    }
+
+    public async Task<AssignmentPeriodDto> CreatePeriodForProjectAsync(int projectId, CreateAssignmentPeriodDto dto)
+    {
+        var project = await _context.Projects.FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
+        if (project == null)
+            throw new InvalidOperationException("Proje bulunamadı.");
+
+        if (project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment)
+            throw new InvalidOperationException("Bu işlem sadece Personel Değerlendirme projelerinde kullanılabilir.");
+
+        var period = new AssignmentPeriod
+        {
+            ProjectId = projectId,
+            AssignmentId = null,
+            Name = dto.Name,
+            StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
+            EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc),
+            StatusId = PeriodStatuses.Ids.Open,
+            TargetCount = dto.TargetCount,
+            Notes = dto.Notes,
+            CreatedAt = TurkeyTime.Now
+        };
+
+        _context.AssignmentPeriods.Add(period);
+        await _context.SaveChangesAsync();
+
+        return new AssignmentPeriodDto
+        {
+            Id = period.Id,
+            ProjectId = period.ProjectId,
+            Name = period.Name,
+            StartDate = period.StartDate,
+            EndDate = period.EndDate,
+            Status = "Open",
+            StatusName = "Açık",
+            TargetCount = period.TargetCount,
+            CompletedCount = 0,
+            Notes = period.Notes,
+            CreatedAt = period.CreatedAt
+        };
+    }
+
+    public async Task<AssignmentPeriodDto?> UpdatePeriodAsync(int periodId, UpdateAssignmentPeriodDto dto)
+    {
+        var period = await _context.AssignmentPeriods
+            .FirstOrDefaultAsync(p => p.Id == periodId && !p.IsDeleted);
+
+        if (period == null) return null;
+
+        period.Name = dto.Name;
+        period.StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc);
+        period.EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc);
+        period.TargetCount = dto.TargetCount;
+        period.Notes = dto.Notes;
+        period.StatusId = dto.Status == "Closed" ? PeriodStatuses.Ids.Closed : PeriodStatuses.Ids.Open;
+        period.UpdatedAt = TurkeyTime.Now;
+
+        await _context.SaveChangesAsync();
+
+        return new AssignmentPeriodDto
+        {
+            Id = period.Id,
+            AssignmentId = period.AssignmentId,
+            ProjectId = period.ProjectId,
+            Name = period.Name,
+            StartDate = period.StartDate,
+            EndDate = period.EndDate,
+            Status = PeriodStatuses.GetById(period.StatusId)?.SystemName ?? "Open",
+            StatusName = period.StatusId == PeriodStatuses.Ids.Open ? "Açık" : "Kapalı",
+            TargetCount = period.TargetCount,
+            CompletedCount = period.CompletedCount,
+            AverageScore = period.AverageScore,
+            Notes = period.Notes,
+            CreatedAt = period.CreatedAt
+        };
+    }
+
+    public async Task<bool> DeletePeriodAsync(int periodId)
+    {
+        var period = await _context.AssignmentPeriods
+            .FirstOrDefaultAsync(p => p.Id == periodId && !p.IsDeleted);
+
+        if (period == null) return false;
+
+        period.IsDeleted = true;
+        period.UpdatedAt = TurkeyTime.Now;
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     // ===== Hiyerarşi Yönetimi =====

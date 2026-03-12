@@ -16,19 +16,111 @@ public class AssessmentApiController : BaseApiController
     private readonly IAssessmentService _assessmentService;
     private readonly IAssessmentReportService _reportService;
     private readonly ISurveyService _surveyService;
+    private readonly IEmailService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly IAuditLogService _auditLogService;
 
     public AssessmentApiController(
         IAssessmentService assessmentService,
         IAssessmentReportService reportService,
         ISurveyService surveyService,
+        IEmailService emailService,
+        IEmailTemplateService emailTemplateService,
         IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _assessmentService = assessmentService;
         _reportService = reportService;
         _surveyService = surveyService;
+        _emailService = emailService;
+        _emailTemplateService = emailTemplateService;
         _auditLogService = auditLogService;
+    }
+
+    // ===== Proje Bazlı Dönem Yönetimi (PersonnelAssessment) =====
+
+    /// <summary>
+    /// Projeye ait dönemleri getir
+    /// </summary>
+    [HttpGet("periods")]
+    public async Task<IActionResult> GetPeriodsByProject([FromQuery] int projectId)
+    {
+        try
+        {
+            var periods = await _assessmentService.GetPeriodsByProjectAsync(projectId);
+            return Ok(periods);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Error loading periods for project {projectId}", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Dönemler yüklenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Proje bazlı dönem oluştur (assignment gerektirmez)
+    /// </summary>
+    [HttpPost("periods")]
+    public async Task<IActionResult> CreatePeriod([FromBody] Core.DTOs.AssignmentPeriod.CreateAssignmentPeriodDto dto)
+    {
+        try
+        {
+            if (!dto.ProjectId.HasValue)
+                return BadRequest(new { message = "ProjectId zorunludur." });
+
+            var period = await _assessmentService.CreatePeriodForProjectAsync(dto.ProjectId.Value, dto);
+            return Ok(period);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Error creating assessment period", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Dönem oluşturulurken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dönem güncelle
+    /// </summary>
+    [HttpPut("periods/{periodId}")]
+    public async Task<IActionResult> UpdatePeriod(int periodId, [FromBody] Core.DTOs.AssignmentPeriod.UpdateAssignmentPeriodDto dto)
+    {
+        try
+        {
+            dto.Id = periodId;
+            var period = await _assessmentService.UpdatePeriodAsync(periodId, dto);
+            if (period == null)
+                return NotFound(new { message = "Dönem bulunamadı." });
+            return Ok(period);
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Error updating assessment period {periodId}", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Dönem güncellenirken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Dönem sil
+    /// </summary>
+    [HttpDelete("periods/{periodId}")]
+    public async Task<IActionResult> DeletePeriod(int periodId)
+    {
+        try
+        {
+            var result = await _assessmentService.DeletePeriodAsync(periodId);
+            if (!result)
+                return NotFound(new { message = "Dönem bulunamadı." });
+            return Ok(new { message = "Dönem silindi." });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync($"Error deleting assessment period {periodId}", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Dönem silinirken hata oluştu", ex));
+        }
     }
 
     // ===== Hiyerarşi Yönetimi =====
@@ -175,6 +267,179 @@ public class AssessmentApiController : BaseApiController
             await _auditLogService.LogErrorAsync("Error generating assessment tasks", "Assessment", ex);
             return StatusCode(500, CreateErrorResponse("Değerlendirme görevleri oluşturulurken hata oluştu", ex));
         }
+    }
+
+    // ===== Email Gönderimi =====
+
+    /// <summary>
+    /// Değerlendirme davetiyelerini gönder - her katılımcı için encrypted token ile
+    /// </summary>
+    [HttpPost("send-invitations")]
+    public async Task<IActionResult> SendInvitations([FromBody] SendAssessmentInvitationsDto dto)
+    {
+        try
+        {
+            // Proje kontrolü
+            var project = await _surveyService.GetProjectWithDetailsAsync(dto.ProjectId);
+            if (project == null)
+                return NotFound(new { message = "Proje bulunamadı." });
+
+            if (project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment)
+                return BadRequest(new { message = "Bu proje bir personel değerlendirme projesi değil." });
+
+            // Email şablonu kontrolü
+            var emailTemplate = await _emailTemplateService.FindByIdAsync(dto.EmailTemplateId);
+            if (emailTemplate == null)
+                return BadRequest(new { message = "Email şablonu bulunamadı." });
+
+            // SMTP kontrolü
+            if (!await _emailService.IsConfiguredAsync())
+                return BadRequest(new { message = "SMTP ayarları yapılandırılmamış. Ayarlar > SMTP Ayarları sayfasından yapılandırın." });
+
+            // Base URL kontrolü
+            if (string.IsNullOrWhiteSpace(dto.BaseUrl))
+                return BadRequest(new { message = "Değerlendirme base URL'i belirtilmemiş." });
+
+            // Dönem kontrolü
+            var periods = await _assessmentService.GetPeriodsByProjectAsync(dto.ProjectId);
+            var period = dto.AssignmentPeriodId.HasValue
+                ? periods.FirstOrDefault(p => p.Id == dto.AssignmentPeriodId.Value)
+                : periods.FirstOrDefault();
+
+            if (period == null)
+                return BadRequest(new { message = "Değerlendirme dönemi bulunamadı." });
+
+            // Katılımcıları getir (hiyerarşiden flat listeye)
+            var participants = await _assessmentService.GetParticipantsAsync(period.Id);
+            var flatParticipants = FlattenParticipants(participants);
+
+            if (!flatParticipants.Any())
+                return BadRequest(new { message = "Dönemde katılımcı bulunamadı. Önce katılımcı ekleyin." });
+
+            // Email gönderim sonuçları
+            var successCount = 0;
+            var failCount = 0;
+            var skippedCount = 0;
+            var errors = new List<string>();
+
+            foreach (var participant in flatParticipants)
+            {
+                try
+                {
+                    var person = participant.CustomerPersonnel;
+                    if (person == null || string.IsNullOrWhiteSpace(person.Email))
+                    {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Encrypted token oluştur
+                    var token = EncryptionHelper.CreateSurveyToken(dto.ProjectId, person.Id);
+
+                    // Kişiye özel değerlendirme URL'i
+                    var assessmentUrl = $"{dto.BaseUrl.TrimEnd('/')}?token={token}";
+
+                    // Placeholder değişimleri
+                    var subject = ReplaceAssessmentPlaceholders(emailTemplate.Subject, project, person, assessmentUrl, period.Name, project.IsAnonymous);
+                    var body = ReplaceAssessmentPlaceholders(emailTemplate.Body, project, person, assessmentUrl, period.Name, project.IsAnonymous);
+
+                    // SurveyInvitation kaydı oluştur
+                    var invitation = await _surveyService.CreateSurveyInvitationAsync(dto.ProjectId, person.Id, person.Email, false);
+
+                    var result = await _emailService.SendEmailAsync(person.Email, subject, body, true);
+
+                    if (result.Success)
+                    {
+                        await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Sent);
+                        successCount++;
+                        await _auditLogService.LogInfoAsync($"Assessment invitation sent to {person.Email} for project {dto.ProjectId}", "Assessment");
+                    }
+                    else
+                    {
+                        await _surveyService.UpdateSurveyInvitationStatusAsync(invitation, SurveyInvitationStatuses.Ids.Failed, result.ErrorMessage);
+                        failCount++;
+                        errors.Add($"{person.Email}: {result.ErrorMessage}");
+                        await _auditLogService.LogWarningAsync($"Failed to send assessment invitation to {person.Email}: {result.ErrorMessage}", "Assessment");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    failCount++;
+                    errors.Add($"{participant.CustomerPersonnel?.Email}: {ex.Message}");
+                    await _auditLogService.LogErrorAsync($"Error sending assessment invitation to {participant.CustomerPersonnel?.Email}", "Assessment", ex);
+                }
+            }
+
+            return Ok(new
+            {
+                success = true,
+                totalPersonnel = flatParticipants.Count,
+                successCount,
+                failCount,
+                skippedCount,
+                errors = errors.Take(10).ToList(),
+                message = $"{successCount} kişiye davetiye gönderildi." +
+                          (failCount > 0 ? $" {failCount} başarısız." : "") +
+                          (skippedCount > 0 ? $" {skippedCount} email adresi yok." : "")
+            });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Error sending assessment invitations", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Davetiyeler gönderilirken hata oluştu", ex));
+        }
+    }
+
+    private static List<AssessmentParticipant> FlattenParticipants(List<AssessmentParticipant> participants)
+    {
+        var result = new List<AssessmentParticipant>();
+        foreach (var p in participants)
+        {
+            result.Add(p);
+            if (p.Children != null && p.Children.Any())
+                result.AddRange(FlattenParticipants(p.Children.ToList()));
+        }
+        return result;
+    }
+
+    private static string ReplaceAssessmentPlaceholders(string text, Project project, CustomerPersonnel person,
+        string assessmentUrl, string periodName, bool isAnonymous)
+    {
+        if (string.IsNullOrEmpty(text)) return text;
+
+        // Değerlendirme Linkleri
+        text = text.Replace(EmailPlaceholders.AssessmentUrl, assessmentUrl);
+        text = text.Replace(EmailPlaceholders.AssessmentLink, $@"<a href=""{assessmentUrl}"" target=""_blank"">{assessmentUrl}</a>");
+        text = text.Replace(EmailPlaceholders.PeriodName, periodName ?? "");
+        text = text.Replace(EmailPlaceholders.AssessmentMode, isAnonymous ? "Anonim" : "Açık");
+
+        // Anket Linkleri (geri uyumluluk)
+        text = text.Replace(EmailPlaceholders.SurveyUrl, assessmentUrl);
+        text = text.Replace(EmailPlaceholders.SurveyLink, $@"<a href=""{assessmentUrl}"" target=""_blank"">{assessmentUrl}</a>");
+
+        // Firma/Organizasyon
+        text = text.Replace(EmailPlaceholders.CompanyName, project.Customer?.CompanyName ?? "");
+        text = text.Replace(EmailPlaceholders.OrganizationName, project.Organization?.Name ?? "");
+
+        // Alıcı Bilgileri
+        text = text.Replace(EmailPlaceholders.RecipientName, $"{person.FirstName} {person.LastName}".Trim());
+        text = text.Replace(EmailPlaceholders.RecipientFirstName, person.FirstName ?? "");
+        text = text.Replace(EmailPlaceholders.RecipientLastName, person.LastName ?? "");
+        text = text.Replace(EmailPlaceholders.RecipientEmail, person.Email ?? "");
+
+        // Proje Bilgileri
+        text = text.Replace(EmailPlaceholders.ProjectName, project.Name);
+        text = text.Replace(EmailPlaceholders.SurveyName, project.Checklist?.Name ?? project.Name);
+        text = text.Replace(EmailPlaceholders.DueDate, project.EndDate.ToString("dd.MM.yyyy"));
+        text = text.Replace(EmailPlaceholders.StartDate, project.StartDate.ToString("dd.MM.yyyy"));
+        text = text.Replace(EmailPlaceholders.EndDate, project.EndDate.ToString("dd.MM.yyyy"));
+
+        // Sistem
+        text = text.Replace(EmailPlaceholders.CurrentDate, TurkeyTime.Now.ToString("dd.MM.yyyy"));
+        text = text.Replace(EmailPlaceholders.CurrentYear, TurkeyTime.Now.Year.ToString());
+        text = text.Replace(EmailPlaceholders.SystemName, "Secret Customer");
+
+        return text;
     }
 
     /// <summary>
@@ -485,4 +750,12 @@ public class SubmitAssessmentTaskDto
     public string Token { get; set; } = string.Empty;
     public int AssessmentTaskId { get; set; }
     public List<SurveyAnswerDto> Answers { get; set; } = new();
+}
+
+public class SendAssessmentInvitationsDto
+{
+    public int ProjectId { get; set; }
+    public int EmailTemplateId { get; set; }
+    public string BaseUrl { get; set; } = string.Empty;
+    public int? AssignmentPeriodId { get; set; }
 }

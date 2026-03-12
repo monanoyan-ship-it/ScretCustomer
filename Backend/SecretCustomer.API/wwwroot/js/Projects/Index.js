@@ -768,6 +768,12 @@ function ProjectsViewModel() {
 
     // Open detail modal
     self.openDetailModal = function(project) {
+        // PersonnelAssessment projelerinde assessment panelini aç
+        if (project.projectType === 'PersonnelAssessment') {
+            self.openAssessmentPanel(project);
+            return;
+        }
+
         self.isLoadingModal(true);
         self.projectFiles([]); // Clear previous files
         fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
@@ -794,6 +800,398 @@ function ProjectsViewModel() {
     self.closeDetailModal = function() {
         self.isDetailModalOpen(false);
         self.viewingProject(null);
+    };
+
+    // ===== PersonnelAssessment - Dönem Yönetim Paneli =====
+
+    self.isAssessmentPanelOpen = ko.observable(false);
+    self.assessmentProject = ko.observable(null);
+    self.assessmentPeriods = ko.observableArray([]);
+    self.isAssessmentLoading = ko.observable(false);
+
+    // Dönem form
+    self.isPeriodFormOpen = ko.observable(false);
+    self.isEditingPeriod = ko.observable(false);
+    self.periodForm = {
+        id: ko.observable(null),
+        name: ko.observable(''),
+        startDate: ko.observable(''),
+        endDate: ko.observable(''),
+        targetCount: ko.observable(0),
+        notes: ko.observable('')
+    };
+
+    self.resetPeriodForm = function() {
+        self.periodForm.id(null);
+        self.periodForm.name('');
+        self.periodForm.startDate('');
+        self.periodForm.endDate('');
+        self.periodForm.targetCount(0);
+        self.periodForm.notes('');
+        self.isEditingPeriod(false);
+    };
+
+    // Katılımcı yönetimi
+    self.isParticipantsModalOpen = ko.observable(false);
+    self.participantsPeriod = ko.observable(null);
+    self.participants = ko.observableArray([]);
+    self.isParticipantsLoading = ko.observable(false);
+    self.availablePersonnel = ko.observableArray([]);
+    self.newParticipantPersonnelId = ko.observable('');
+    self.newParticipantParentId = ko.observable('');
+
+    // Flat participant list (for parent dropdown)
+    self.flatParticipants = ko.computed(function() {
+        var result = [];
+        function flatten(list) {
+            for (var i = 0; i < list.length; i++) {
+                var p = list[i];
+                result.push(p);
+                if (p.children && p.children.length > 0) flatten(p.children);
+            }
+        }
+        flatten(self.participants());
+        return result;
+    });
+
+    self.openAssessmentPanel = function(project) {
+        self.isLoadingModal(true);
+        fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.assessmentProject(data);
+                self.isAssessmentPanelOpen(true);
+                self.loadAssessmentPeriods(data.id);
+                // Müşteri personelini yükle (katılımcı ekleme için)
+                if (data.customerId) {
+                    self.loadAvailablePersonnel(data.customerId);
+                }
+            })
+            .catch(function() { toastr.error('Proje detayı yüklenemedi.'); })
+            .finally(function() { self.isLoadingModal(false); });
+    };
+
+    self.closeAssessmentPanel = function() {
+        self.isAssessmentPanelOpen(false);
+        self.assessmentProject(null);
+        self.assessmentPeriods([]);
+        self.closeParticipantsModal();
+    };
+
+    self.loadAssessmentPeriods = function(projectId) {
+        self.isAssessmentLoading(true);
+        fetch('/api/assessment/periods?projectId=' + projectId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.assessmentPeriods(data || []); })
+            .catch(function() { toastr.error('Dönemler yüklenemedi.'); })
+            .finally(function() { self.isAssessmentLoading(false); });
+    };
+
+    self.openAddPeriodForm = function() {
+        self.resetPeriodForm();
+        self.isPeriodFormOpen(true);
+    };
+
+    self.openEditPeriodForm = function(period) {
+        self.periodForm.id(period.id);
+        self.periodForm.name(period.name);
+        self.periodForm.startDate(period.startDate ? period.startDate.split('T')[0] : '');
+        self.periodForm.endDate(period.endDate ? period.endDate.split('T')[0] : '');
+        self.periodForm.targetCount(period.targetCount || 0);
+        self.periodForm.notes(period.notes || '');
+        self.isEditingPeriod(true);
+        self.isPeriodFormOpen(true);
+    };
+
+    self.closePeriodForm = function() {
+        self.isPeriodFormOpen(false);
+        self.resetPeriodForm();
+    };
+
+    self.savePeriod = function() {
+        var project = self.assessmentProject();
+        if (!project) return;
+
+        if (!self.periodForm.name()) {
+            toastr.error('Dönem adı zorunludur.');
+            return;
+        }
+        if (!self.periodForm.startDate() || !self.periodForm.endDate()) {
+            toastr.error('Başlangıç ve bitiş tarihi zorunludur.');
+            return;
+        }
+
+        var isEdit = self.isEditingPeriod();
+        var url = isEdit ? '/api/assessment/periods/' + self.periodForm.id() : '/api/assessment/periods';
+        var method = isEdit ? 'PUT' : 'POST';
+
+        var body = {
+            projectId: project.id,
+            name: self.periodForm.name(),
+            startDate: self.periodForm.startDate(),
+            endDate: self.periodForm.endDate(),
+            targetCount: parseInt(self.periodForm.targetCount()) || 0,
+            notes: self.periodForm.notes() || null
+        };
+
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(body)
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function() {
+            toastr.success(isEdit ? 'Dönem güncellendi.' : 'Dönem oluşturuldu.');
+            self.closePeriodForm();
+            self.loadAssessmentPeriods(project.id);
+        })
+        .catch(function(err) { toastr.error(err.message || 'Dönem kaydedilemedi.'); });
+    };
+
+    self.deletePeriod = function(period) {
+        showDeleteConfirm({
+            title: 'Dönem Sil',
+            message: '"' + period.name + '" dönemi silinecek. Emin misiniz?',
+            onConfirm: function() {
+                fetch('/api/assessment/periods/' + period.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Silinemedi');
+                    toastr.success('Dönem silindi.');
+                    var project = self.assessmentProject();
+                    if (project) self.loadAssessmentPeriods(project.id);
+                })
+                .catch(function() { toastr.error('Dönem silinirken hata oluştu.'); });
+            }
+        });
+    };
+
+    // ===== Katılımcı Yönetimi =====
+
+    self.loadAvailablePersonnel = function(customerId) {
+        fetch('/api/customer-personnel/by-customer/' + customerId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.availablePersonnel(data || []); })
+            .catch(function() { console.error('Personel listesi yüklenemedi'); });
+    };
+
+    self.openParticipantsModal = function(period) {
+        self.participantsPeriod(period);
+        self.isParticipantsModalOpen(true);
+        self.loadParticipants(period.id);
+    };
+
+    self.closeParticipantsModal = function() {
+        self.isParticipantsModalOpen(false);
+        self.participantsPeriod(null);
+        self.participants([]);
+        self.newParticipantPersonnelId('');
+        self.newParticipantParentId('');
+    };
+
+    self.loadParticipants = function(periodId) {
+        self.isParticipantsLoading(true);
+        fetch('/api/assessment/participants/' + periodId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.participants(data || []); })
+            .catch(function() { toastr.error('Katılımcılar yüklenemedi.'); })
+            .finally(function() { self.isParticipantsLoading(false); });
+    };
+
+    self.addParticipant = function() {
+        var period = self.participantsPeriod();
+        if (!period) return;
+        var personnelId = self.newParticipantPersonnelId();
+        if (!personnelId) {
+            toastr.error('Personel seçmelisiniz.');
+            return;
+        }
+
+        fetch('/api/assessment/participants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                assignmentPeriodId: period.id,
+                customerPersonnelId: parseInt(personnelId),
+                parentId: self.newParticipantParentId() ? parseInt(self.newParticipantParentId()) : null
+            })
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function() {
+            toastr.success('Katılımcı eklendi.');
+            self.newParticipantPersonnelId('');
+            self.newParticipantParentId('');
+            self.loadParticipants(period.id);
+        })
+        .catch(function(err) { toastr.error(err.message || 'Katılımcı eklenemedi.'); });
+    };
+
+    self.removeParticipant = function(participant) {
+        var period = self.participantsPeriod();
+        var name = participant.customerPersonnel
+            ? (participant.customerPersonnel.firstName + ' ' + participant.customerPersonnel.lastName).trim()
+            : 'Katılımcı';
+
+        showDeleteConfirm({
+            title: 'Katılımcı Çıkar',
+            message: '"' + name + '" katılımcı listesinden çıkarılacak. Emin misiniz?',
+            onConfirm: function() {
+                fetch('/api/assessment/participants/' + participant.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Silinemedi');
+                    toastr.success('Katılımcı çıkarıldı.');
+                    if (period) self.loadParticipants(period.id);
+                })
+                .catch(function() { toastr.error('Katılımcı çıkarılırken hata oluştu.'); });
+            }
+        });
+    };
+
+    self.importFromOrganization = function() {
+        var period = self.participantsPeriod();
+        var project = self.assessmentProject();
+        if (!period || !project) return;
+
+        self.isParticipantsLoading(true);
+        fetch('/api/assessment/participants/import/' + period.id, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ projectId: project.id })
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function(data) {
+            toastr.success(data.message || 'Organizasyon aktarıldı.');
+            self.loadParticipants(period.id);
+        })
+        .catch(function(err) { toastr.error(err.message || 'Organizasyon aktarılamadı.'); })
+        .finally(function() { self.isParticipantsLoading(false); });
+    };
+
+    // ===== Email Gönderimi =====
+
+    self.isEmailPanelOpen = ko.observable(false);
+    self.assessmentEmailTemplates = ko.observableArray([]);
+    self.selectedEmailTemplateId = ko.observable('');
+    self.isEmailSending = ko.observable(false);
+    self.emailSendResult = ko.observable(null);
+
+    self.toggleEmailPanel = function() {
+        var open = !self.isEmailPanelOpen();
+        self.isEmailPanelOpen(open);
+        if (open && self.assessmentEmailTemplates().length === 0) {
+            self.loadAssessmentEmailTemplates();
+        }
+    };
+
+    self.loadAssessmentEmailTemplates = function() {
+        // AssessmentInvitation = templateTypeId 10
+        fetch('/api/email-templates?templateTypeId=10', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.assessmentEmailTemplates(data || []); })
+            .catch(function() { toastr.error('Email şablonları yüklenemedi.'); });
+    };
+
+    self.sendAssessmentEmails = function() {
+        var project = self.assessmentProject();
+        var period = self.participantsPeriod();
+        var templateId = self.selectedEmailTemplateId();
+
+        if (!project || !period) return;
+        if (!templateId) {
+            toastr.error('Lütfen bir email şablonu seçin.');
+            return;
+        }
+
+        showConfirmModal({
+            title: 'Davetiye Gönder',
+            message: 'Tüm katılımcılara değerlendirme davetiyesi gönderilecek. Devam etmek istiyor musunuz?',
+            confirmText: 'Gönder',
+            confirmClass: 'btn-teal',
+            onConfirm: function() {
+                self.isEmailSending(true);
+                self.emailSendResult(null);
+
+                var baseUrl = window.location.origin + '/Assessment/Fill';
+
+                fetch('/api/assessment/send-invitations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        projectId: project.id,
+                        emailTemplateId: parseInt(templateId),
+                        baseUrl: baseUrl,
+                        assignmentPeriodId: period.id
+                    })
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    self.emailSendResult(data);
+                    if (data.successCount > 0) {
+                        toastr.success(data.message);
+                    }
+                    if (data.failCount > 0) {
+                        toastr.warning(data.failCount + ' davetiye gönderilemedi.');
+                    }
+                })
+                .catch(function(err) { toastr.error(err.message || 'Davetiyeler gönderilemedi.'); })
+                .finally(function() { self.isEmailSending(false); });
+            }
+        });
+    };
+
+    self.generateAssessmentTasks = function() {
+        var period = self.participantsPeriod();
+        var project = self.assessmentProject();
+        if (!period || !project) return;
+
+        showConfirmModal({
+            title: 'Değerlendirme Görevleri Oluştur',
+            message: 'Tüm katılımcılar için değerlendirme görevleri ve davetiyeler oluşturulacak. Devam etmek istiyor musunuz?',
+            confirmText: 'Oluştur',
+            confirmClass: 'btn-teal',
+            onConfirm: function() {
+                self.isParticipantsLoading(true);
+                fetch('/api/assessment/generate-tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        assignmentPeriodId: period.id,
+                        projectId: project.id
+                    })
+                })
+                .then(function(res) {
+                    if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+                    return res.json();
+                })
+                .then(function(data) {
+                    toastr.success(data.message || 'Görevler oluşturuldu.');
+                })
+                .catch(function(err) { toastr.error(err.message || 'Görevler oluşturulamadı.'); })
+                .finally(function() { self.isParticipantsLoading(false); });
+            }
+        });
     };
 
     // Add team member

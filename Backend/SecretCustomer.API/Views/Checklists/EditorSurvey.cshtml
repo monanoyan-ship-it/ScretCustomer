@@ -112,8 +112,15 @@
                         <div class="col-md-3 mb-3">
                             <label class="form-label">@Html.T("Checklist.Type", "K.L. Tipi")</label>
                             <select class="form-select" data-bind="value: checklistType">
-                                <option value="Survey">@Html.T("ScoringMethod.Survey", "Anket")</option>
-                                <option value="Enneagram">@Html.T("Checklist.Type.Enneagram", "Enneagram")</option>
+                                @if (isAssessment)
+                                {
+                                    <option value="PersonnelAssessment">@Html.T("ChecklistType.PersonnelAssessment", "Personel Değerlendirme")</option>
+                                }
+                                else
+                                {
+                                    <option value="Survey">@Html.T("ScoringMethod.Survey", "Anket")</option>
+                                    <option value="Enneagram">@Html.T("Checklist.Type.Enneagram", "Enneagram")</option>
+                                }
                             </select>
                         </div>
                         <div class="col-md-3 mb-3">

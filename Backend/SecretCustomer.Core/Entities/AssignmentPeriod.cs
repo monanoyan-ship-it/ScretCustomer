@@ -9,10 +9,16 @@ namespace SecretCustomer.Core.Entities;
 public class AssignmentPeriod : BaseEntity
 {
     /// <summary>
-    /// Hangi atamaya ait
+    /// Hangi atamaya ait (klasik atama akışı - PersonnelAssessment dışı)
     /// </summary>
-    public int AssignmentId { get; set; }
-    public Assignment Assignment { get; set; } = null!;
+    public int? AssignmentId { get; set; }
+    public Assignment? Assignment { get; set; }
+
+    /// <summary>
+    /// Hangi projeye ait (PersonnelAssessment doğrudan proje bazlı dönem yönetimi)
+    /// </summary>
+    public int? ProjectId { get; set; }
+    public Project? Project { get; set; }
 
     /// <summary>
     /// Dönem adı - Örnek: "Aralık 2025", "Ocak 2026"

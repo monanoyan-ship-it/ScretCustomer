@@ -1577,8 +1577,9 @@ public static class EmailTemplateTypes
     public static readonly TypeItem Custom = new(7, "Custom", "EmailTemplateType.Custom", "Özel Şablon", "bi-palette", "bg-dark", 7);
     public static readonly TypeItem EvaluationNotification = new(8, "EvaluationNotification", "EmailTemplateType.EvaluationNotification", "Değerlendirme Bildirimi", "bi-clipboard-check", "bg-purple", 8);
     public static readonly TypeItem TrainingVideo = new(9, "TrainingVideo", "EmailTemplateType.TrainingVideo", "Eğitim Videosu", "bi-play-circle", "bg-danger", 9);
+    public static readonly TypeItem AssessmentInvitation = new(10, "AssessmentInvitation", "EmailTemplateType.AssessmentInvitation", "Değerlendirme Davetiyesi", "bi-people", "bg-teal", 10);
 
-    public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom, EvaluationNotification, TrainingVideo };
+    public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom, EvaluationNotification, TrainingVideo, AssessmentInvitation };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -1594,6 +1595,7 @@ public static class EmailTemplateTypes
         public const int Custom = 7;
         public const int EvaluationNotification = 8;
         public const int TrainingVideo = 9;
+        public const int AssessmentInvitation = 10;
     }
 }
 

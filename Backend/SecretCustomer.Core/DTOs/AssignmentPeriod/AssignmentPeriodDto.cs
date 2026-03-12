@@ -9,7 +9,8 @@ namespace SecretCustomer.Core.DTOs.AssignmentPeriod;
 public class AssignmentPeriodDto
 {
     public int Id { get; set; }
-    public int AssignmentId { get; set; }
+    public int? AssignmentId { get; set; }
+    public int? ProjectId { get; set; }
     public string Name { get; set; } = string.Empty;
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
@@ -38,8 +39,8 @@ public class AssignmentPeriodDto
 /// </summary>
 public class CreateAssignmentPeriodDto
 {
-    [Required]
-    public int AssignmentId { get; set; }
+    public int? AssignmentId { get; set; }
+    public int? ProjectId { get; set; }
 
     [Required]
     [MaxLength(100)]

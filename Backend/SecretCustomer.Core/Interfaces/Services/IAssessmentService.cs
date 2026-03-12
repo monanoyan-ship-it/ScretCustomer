@@ -1,9 +1,32 @@
+using SecretCustomer.Core.DTOs.AssignmentPeriod;
 using SecretCustomer.Core.Entities;
 
 namespace SecretCustomer.Core.Interfaces.Services;
 
 public interface IAssessmentService
 {
+    // ===== Proje Bazlı Dönem Yönetimi (PersonnelAssessment) =====
+
+    /// <summary>
+    /// Projeye ait dönemleri getirir (assignment gerektirmez)
+    /// </summary>
+    Task<List<AssignmentPeriodDto>> GetPeriodsByProjectAsync(int projectId);
+
+    /// <summary>
+    /// Proje bazlı dönem oluşturur (assignment gerektirmez)
+    /// </summary>
+    Task<AssignmentPeriodDto> CreatePeriodForProjectAsync(int projectId, CreateAssignmentPeriodDto dto);
+
+    /// <summary>
+    /// Dönem güncelle
+    /// </summary>
+    Task<AssignmentPeriodDto?> UpdatePeriodAsync(int periodId, UpdateAssignmentPeriodDto dto);
+
+    /// <summary>
+    /// Dönem sil (soft delete)
+    /// </summary>
+    Task<bool> DeletePeriodAsync(int periodId);
+
     // ===== Hiyerarşi Yönetimi =====
 
     /// <summary>

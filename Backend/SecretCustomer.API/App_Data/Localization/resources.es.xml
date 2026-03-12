@@ -9936,6 +9936,27 @@
   <LocaleResource Name="EmailTemplate.UseRealDataHint">
     <Value>Se generará enlace de encuesta real y código QR</Value>
   </LocaleResource>
+  <LocaleResource Name="EmailTemplateType.AssessmentInvitation">
+    <Value>Invitación de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendEmails">
+    <Value>Enviar Invitaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SelectTemplate">
+    <Value>Seleccionar Plantilla de Email</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoTemplates">
+    <Value>Aún no se han creado plantillas de email.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.SendConfirm">
+    <Value>Se enviarán invitaciones de evaluación a todos los participantes. ¿Desea continuar?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSending">
+    <Value>Enviando invitaciones...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.EmailSendTitle">
+    <Value>Enviar Invitación</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Company">
     <Value>Empresa</Value>
   </LocaleResource>

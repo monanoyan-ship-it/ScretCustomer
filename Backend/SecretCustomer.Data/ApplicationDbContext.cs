@@ -349,6 +349,20 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<AssignmentPeriod>()
             .Property(p => p.StatusId).HasColumnName("Status");
 
+        // AssignmentPeriod -> Project (PersonnelAssessment doğrudan dönem yönetimi)
+        modelBuilder.Entity<AssignmentPeriod>()
+            .HasOne(p => p.Project)
+            .WithMany(p => p.Periods)
+            .HasForeignKey(p => p.ProjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // AssignmentPeriod -> Assignment (nullable - klasik akış)
+        modelBuilder.Entity<AssignmentPeriod>()
+            .HasOne(p => p.Assignment)
+            .WithMany(a => a.Periods)
+            .HasForeignKey(p => p.AssignmentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // AppSettings ValueType mapping
         modelBuilder.Entity<AppSettings>()
             .Property(s => s.ValueTypeId).HasColumnName("ValueType");

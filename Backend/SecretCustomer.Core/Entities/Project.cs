@@ -158,6 +158,7 @@ public class Project : BaseEntity
 
     // Navigation properties
     public ICollection<Assignment> Assignments { get; set; } = new List<Assignment>();
+    public ICollection<AssignmentPeriod> Periods { get; set; } = new List<AssignmentPeriod>();
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
 
     public int? CustomerId { get; set; }
