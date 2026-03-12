@@ -4745,6 +4745,63 @@
   <LocaleResource Name="Assessment.GenerateTasks">
     <Value>Start Assessments</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Title">
+    <Value>Personnel Assessment</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Loading">
+    <Value>Loading assessment form...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ErrorHint">
+    <Value>Please check the link sent to you or contact your administrator.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompleted">
+    <Value>All Assessments Completed!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompletedMessage">
+    <Value>You have successfully completed all assessment steps.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.CloseWindow">
+    <Value>Thank you for your participation. You may close this window.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.TaskProgress">
+    <Value>Assessment Progress</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Evaluating">
+    <Value>Evaluating:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SelfEvaluating">
+    <Value>You are evaluating yourself</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndNext">
+    <Value>Submit and Continue</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndFinish">
+    <Value>Submit and Finish</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmit">
+    <Value>Assessment Submission</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmitMessage">
+    <Value>Are you sure you want to submit this step?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitSuccess">
+    <Value>Assessment submitted successfully!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.NextTaskLoading">
+    <Value>Loading next step...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Title">
+    <Value>Assessment Completed</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Thanks">
+    <Value>Thank you!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Success">
+    <Value>All your assessments have been submitted successfully.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.CloseWindow">
+    <Value>Thank you for your participation. You may close this window.</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Multiple Choice</Value>

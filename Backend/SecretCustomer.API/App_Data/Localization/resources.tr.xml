@@ -2700,6 +2700,63 @@
   <LocaleResource Name="Assessment.GenerateTasks">
     <Value>Değerlendirmeleri Başlat</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Title">
+    <Value>Personel Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Loading">
+    <Value>Değerlendirme formu yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ErrorHint">
+    <Value>Lütfen size gönderilen linki kontrol edin veya yöneticinize başvurun.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompleted">
+    <Value>Tüm Değerlendirmeler Tamamlandı!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompletedMessage">
+    <Value>Tüm değerlendirme adımlarını başarıyla tamamladınız.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.CloseWindow">
+    <Value>Katılımınız için teşekkür ederiz. Bu pencereyi kapatabilirsiniz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.TaskProgress">
+    <Value>Değerlendirme İlerlemesi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Evaluating">
+    <Value>Değerlendirilen:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SelfEvaluating">
+    <Value>Kendinizi değerlendiriyorsunuz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndNext">
+    <Value>Gönder ve Devam Et</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndFinish">
+    <Value>Gönder ve Tamamla</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmit">
+    <Value>Değerlendirme Gönderimi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmitMessage">
+    <Value>Bu adımı göndermek istediğinize emin misiniz?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitSuccess">
+    <Value>Değerlendirme başarıyla gönderildi!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.NextTaskLoading">
+    <Value>Sonraki adım yükleniyor...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Title">
+    <Value>Değerlendirme Tamamlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Thanks">
+    <Value>Teşekkürler!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Success">
+    <Value>Tüm değerlendirmeleriniz başarıyla gönderildi.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.CloseWindow">
+    <Value>Katılımınız için teşekkür ederiz. Bu pencereyi kapatabilirsiniz.</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Çoktan Seçmeli</Value>

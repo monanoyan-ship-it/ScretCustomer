@@ -6706,6 +6706,63 @@
   <LocaleResource Name="Assessment.GenerateTasks">
     <Value>Iniciar Evaluaciones</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Title">
+    <Value>Evaluación de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Loading">
+    <Value>Cargando formulario de evaluación...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ErrorHint">
+    <Value>Verifique el enlace enviado o contacte a su administrador.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompleted">
+    <Value>¡Todas las evaluaciones completadas!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.AllCompletedMessage">
+    <Value>Ha completado exitosamente todos los pasos de evaluación.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.CloseWindow">
+    <Value>Gracias por su participación. Puede cerrar esta ventana.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.TaskProgress">
+    <Value>Progreso de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.Evaluating">
+    <Value>Evaluando:</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SelfEvaluating">
+    <Value>Se está evaluando a sí mismo</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndNext">
+    <Value>Enviar y Continuar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitAndFinish">
+    <Value>Enviar y Finalizar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmit">
+    <Value>Envío de Evaluación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.ConfirmSubmitMessage">
+    <Value>¿Está seguro de que desea enviar este paso?</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.SubmitSuccess">
+    <Value>¡Evaluación enviada exitosamente!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Fill.NextTaskLoading">
+    <Value>Cargando siguiente paso...</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Title">
+    <Value>Evaluación Completada</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Thanks">
+    <Value>¡Gracias!</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.Success">
+    <Value>Todas sus evaluaciones han sido enviadas exitosamente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Completed.CloseWindow">
+    <Value>Gracias por su participación. Puede cerrar esta ventana.</Value>
+  </LocaleResource>
   <LocaleResource Name="Question.GroupNamePlaceholder">
     <Value>Nombre del grupo...</Value>
   </LocaleResource>

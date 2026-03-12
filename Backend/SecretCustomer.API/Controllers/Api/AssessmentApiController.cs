@@ -1,5 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SecretCustomer.Core.Entities;
+using SecretCustomer.Core.Enums;
+using SecretCustomer.Core.Helpers;
 using SecretCustomer.Core.Interfaces.Services;
 using SecretCustomer.Services.Helpers;
 
@@ -12,16 +15,19 @@ public class AssessmentApiController : BaseApiController
 {
     private readonly IAssessmentService _assessmentService;
     private readonly IAssessmentReportService _reportService;
+    private readonly ISurveyService _surveyService;
     private readonly IAuditLogService _auditLogService;
 
     public AssessmentApiController(
         IAssessmentService assessmentService,
         IAssessmentReportService reportService,
+        ISurveyService surveyService,
         IAuditLogService auditLogService,
         IConfiguration configuration) : base(configuration)
     {
         _assessmentService = assessmentService;
         _reportService = reportService;
+        _surveyService = surveyService;
         _auditLogService = auditLogService;
     }
 
@@ -241,22 +247,30 @@ public class AssessmentApiController : BaseApiController
                     isAnonymous = project.IsAnonymous
                 },
                 questions = project.Checklist?.Questions
-                    .OrderBy(q => q.Order)
+                    .OrderBy(q => q.GroupName)
+                    .ThenBy(q => q.Order)
                     .Select(q => new
                     {
                         id = q.Id,
                         text = context.UseSelfText && !string.IsNullOrEmpty(q.SelfText) ? q.SelfText : q.Text,
+                        description = context.UseSelfText && !string.IsNullOrEmpty(q.SelfText) ? null : q.HelpText,
                         groupName = q.GroupName,
+                        scoringType = ScoringTypes.GetById(q.ScoringTypeId)!.SystemName,
                         maxPoints = q.MaxPoints,
                         weightPoints = q.WeightPoints,
                         order = q.Order,
+                        isRequired = q.IsRequired,
+                        selectionTypeId = q.SelectionTypeId,
+                        showScoreInput = q.ShowScoreInput,
+                        allowComment = q.AllowComment,
                         subCriteria = q.SubCriteria
+                            .Where(sc => sc.IsActive && !sc.IsDeleted)
                             .OrderBy(sc => sc.Order)
                             .Select(sc => new
                             {
                                 id = sc.Id,
                                 description = context.UseSelfText && !string.IsNullOrEmpty(sc.SelfDescription) ? sc.SelfDescription : sc.Description,
-                                weightPoints = sc.WeightPoints
+                                order = sc.Order
                             })
                     })
             });
@@ -301,6 +315,90 @@ public class AssessmentApiController : BaseApiController
         {
             await _auditLogService.LogErrorAsync("Error completing assessment task", "Assessment", ex);
             return StatusCode(500, CreateErrorResponse("Değerlendirme tamamlanırken hata oluştu", ex));
+        }
+    }
+
+    /// <summary>
+    /// Cevapları gönder: Evaluation oluştur + cevapları kaydet + task tamamla + sonraki task döndür (PUBLIC)
+    /// </summary>
+    [HttpPost("fill/submit")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SubmitAssessmentTask([FromBody] SubmitAssessmentTaskDto dto)
+    {
+        try
+        {
+            // 1. Token doğrula ve context al
+            var context = await _assessmentService.GetFillContextByTokenAsync(dto.Token);
+            if (context == null)
+                return NotFound(new { message = "Geçersiz veya süresi dolmuş link." });
+
+            if (context.IsAllCompleted)
+                return BadRequest(new { message = "Tüm değerlendirmeler zaten tamamlanmış." });
+
+            // Task ID kontrolü
+            if (context.CurrentTask.Id != dto.AssessmentTaskId)
+                return BadRequest(new { message = "Geçersiz değerlendirme görevi." });
+
+            var project = context.Project;
+
+            // 2. Evaluation oluştur
+            var evaluation = new Evaluation
+            {
+                ProjectId = project.Id,
+                ChecklistId = project.ChecklistId,
+                EvaluatedCustomerPersonnelId = context.CurrentTask.EvaluatedCustomerPersonnelId,
+                EvaluatedOrganizationId = project.OrganizationId,
+                FeedbackRoleId = context.CurrentTask.FeedbackRoleId,
+                StartedAt = context.Invitation.OpenedAt ?? TurkeyTime.Now,
+                CompletedAt = TurkeyTime.Now,
+                StatusId = EvaluationStatuses.Ids.Completed,
+                Notes = $"Personel değerlendirme - {FeedbackRoles.GetById(context.CurrentTask.FeedbackRoleId)?.Description ?? ""}",
+                CreatedAt = TurkeyTime.Now
+            };
+
+            evaluation = await _surveyService.CreateEvaluationAsync(evaluation);
+
+            // 3. Cevapları kaydet ve puanı hesapla
+            var scoreResult = await _surveyService.SaveAnswersAndCalculateScoreAsync(evaluation.Id, project.ChecklistId, dto.Answers);
+            evaluation.TotalScore = scoreResult.TotalScore;
+            evaluation.MaxScore = scoreResult.MaxScore;
+            evaluation.ScorePercentage = scoreResult.ScorePercentage;
+            await _surveyService.SaveChangesAsync();
+
+            // 4. Task'ı tamamla
+            var result = await _assessmentService.CompleteTaskAsync(dto.AssessmentTaskId, evaluation.Id);
+
+            await _auditLogService.LogInfoAsync(
+                $"Assessment task completed: TaskId={dto.AssessmentTaskId}, EvaluationId={evaluation.Id}, Score={evaluation.TotalScore}",
+                "Assessment");
+
+            // 5. Sonraki task bilgisini döndür
+            return Ok(new
+            {
+                success = true,
+                evaluationId = evaluation.Id,
+                totalScore = evaluation.TotalScore,
+                hasNextTask = result.HasNextTask,
+                isAllCompleted = result.IsAllCompleted,
+                nextTask = result.NextTask != null ? new
+                {
+                    id = result.NextTask.Id,
+                    feedbackRoleId = result.NextTask.FeedbackRoleId,
+                    order = result.NextTask.Order,
+                    evaluatedPersonnelName = result.NextTask.EvaluatedCustomerPersonnel != null
+                        ? $"{result.NextTask.EvaluatedCustomerPersonnel.FirstName} {result.NextTask.EvaluatedCustomerPersonnel.LastName}".Trim()
+                        : null
+                } : null
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            await _auditLogService.LogErrorAsync("Error submitting assessment task", "Assessment", ex);
+            return StatusCode(500, CreateErrorResponse("Değerlendirme gönderilirken hata oluştu", ex));
         }
     }
 
@@ -380,4 +478,11 @@ public class CompleteAssessmentTaskDto
 {
     public int AssessmentTaskId { get; set; }
     public int EvaluationId { get; set; }
+}
+
+public class SubmitAssessmentTaskDto
+{
+    public string Token { get; set; } = string.Empty;
+    public int AssessmentTaskId { get; set; }
+    public List<SurveyAnswerDto> Answers { get; set; } = new();
 }
