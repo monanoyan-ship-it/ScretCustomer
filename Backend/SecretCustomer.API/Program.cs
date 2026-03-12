@@ -229,6 +229,7 @@ builder.Services.AddScoped<IQuestionAttachmentService, QuestionAttachmentService
 builder.Services.AddScoped<IProjectFileService, ProjectFileService>();
 builder.Services.AddScoped<ISurveyService, SurveyService>();
 builder.Services.AddScoped<IAssessmentService, AssessmentService>();
+builder.Services.AddScoped<IAssessmentReportService, AssessmentReportService>();
 builder.Services.AddScoped<IEvaluationImportService, EvaluationImportService>();
 
 // SignalR
