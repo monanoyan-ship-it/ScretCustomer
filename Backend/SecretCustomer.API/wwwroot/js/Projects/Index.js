@@ -132,7 +132,8 @@ function ProjectsViewModel() {
         'OnlineSurvey': ['Survey', 'Enneagram', 'OnlineEvaluation'],
         'CustomerSatisfaction': ['Survey', 'CallPerformance'],
         'TrainingEvaluation': ['OnlineEvaluation'],
-        'QualityControl': ['CallPerformance', 'PhysicalAudit']
+        'QualityControl': ['CallPerformance', 'PhysicalAudit'],
+        'PersonnelAssessment': ['PersonnelAssessment']
     };
 
     // View mode
@@ -457,13 +458,13 @@ function ProjectsViewModel() {
     // Project Type mappings (EnumsService'de yok, burada kalabilir)
     self.projectTypeById = {
         1: 'MysteryShopping', 2: 'CallAuditing', 3: 'PhysicalAudit', 4: 'OnlineSurvey',
-        5: 'CustomerSatisfaction', 6: 'TrainingEvaluation', 7: 'QualityControl'
+        5: 'CustomerSatisfaction', 6: 'TrainingEvaluation', 7: 'QualityControl', 8: 'PersonnelAssessment'
     };
     self.projectTypeTexts = {
         'MysteryShopping': 'Gizli Müşteri', 'CallAuditing': 'Çağrı Denetimi',
         'PhysicalAudit': 'Fiziksel Denetim', 'OnlineSurvey': 'Online Anket',
         'CustomerSatisfaction': 'Müşteri Memnuniyeti', 'TrainingEvaluation': 'Eğitim Değerlendirme',
-        'QualityControl': 'Kalite Kontrol'
+        'QualityControl': 'Kalite Kontrol', 'PersonnelAssessment': 'Personel Değerlendirme'
     };
     // Sabitlenmiş proje tipi varsa string değerini hesapla
     self.pageProjectType = self.pageProjectTypeId ? self.projectTypeById[self.pageProjectTypeId] : null;
@@ -471,7 +472,7 @@ function ProjectsViewModel() {
         'MysteryShopping': 'bg-primary', 'CallAuditing': 'bg-info',
         'PhysicalAudit': 'bg-secondary', 'OnlineSurvey': 'bg-success',
         'CustomerSatisfaction': 'bg-warning text-dark', 'TrainingEvaluation': 'bg-dark',
-        'QualityControl': 'bg-danger'
+        'QualityControl': 'bg-danger', 'PersonnelAssessment': 'bg-teal'
     };
     self.roleTexts = { 'Evaluator': 'Değerlendirici', 'Manager': 'Yönetici', 'Observer': 'Gözlemci' };
 

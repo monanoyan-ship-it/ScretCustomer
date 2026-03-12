@@ -9087,6 +9087,12 @@
   <LocaleResource Name="ScoringMethod.SurveyDescription">
     <Value>Survey scoring method</Value>
   </LocaleResource>
+  <LocaleResource Name="ScoringMethod.Assessment">
+    <Value>Personnel Assessment</Value>
+  </LocaleResource>
+  <LocaleResource Name="ScoringMethod.AssessmentDescription">
+    <Value>180°/360° assessment - Separate question texts for self-assessment and other roles</Value>
+  </LocaleResource>
   <LocaleResource Name="SelectionType.Multiple">
     <Value>Multiple Selection</Value>
   </LocaleResource>

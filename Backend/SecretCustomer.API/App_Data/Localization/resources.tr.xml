@@ -9084,6 +9084,12 @@
   <LocaleResource Name="ScoringMethod.SurveyDescription">
     <Value>Anket puanlama yöntemi</Value>
   </LocaleResource>
+  <LocaleResource Name="ScoringMethod.Assessment">
+    <Value>Personel Değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="ScoringMethod.AssessmentDescription">
+    <Value>180°/360° değerlendirme - Öz değerlendirme ve diğer roller için ayrı soru metinleri</Value>
+  </LocaleResource>
   <LocaleResource Name="SelectionType.Multiple">
     <Value>Çoklu Seçim</Value>
   </LocaleResource>

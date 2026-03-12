@@ -9078,6 +9078,12 @@
   <LocaleResource Name="ScoringMethod.SurveyDescription">
     <Value>Método de puntuación de encuesta</Value>
   </LocaleResource>
+  <LocaleResource Name="ScoringMethod.Assessment">
+    <Value>Evaluación de Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="ScoringMethod.AssessmentDescription">
+    <Value>Evaluación 180°/360° - Textos separados para autoevaluación y otros roles</Value>
+  </LocaleResource>
   <LocaleResource Name="SelectionType.Multiple">
     <Value>Selección Múltiple</Value>
   </LocaleResource>

@@ -38,14 +38,12 @@ function AssessmentReportViewModel() {
 
     // Load projects (only PersonnelAssessment type)
     self.loadProjects = function () {
-        fetch('/api/projects')
+        fetch('/api/projects?projectTypes=PersonnelAssessment')
             .then(function (res) { return res.json(); })
             .then(function (data) {
-                var items = (data.items || data || []).filter(function (p) {
-                    return p.checklistType === 'PersonnelAssessment' || p.projectTypeName === 'PersonnelAssessment';
-                });
+                var items = data.items || data || [];
                 self.projects(items.map(function (p) {
-                    return { id: p.id, name: p.name || p.projectName };
+                    return { id: p.id, name: p.name };
                 }));
             })
             .catch(function () {

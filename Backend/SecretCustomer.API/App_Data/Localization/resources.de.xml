@@ -9080,6 +9080,12 @@
   <LocaleResource Name="ScoringMethod.SurveyDescription">
     <Value>Umfrage-Bewertungsmethode</Value>
   </LocaleResource>
+  <LocaleResource Name="ScoringMethod.Assessment">
+    <Value>Personalbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="ScoringMethod.AssessmentDescription">
+    <Value>180°/360° Bewertung - Separate Fragetexte für Selbst- und Fremdbewertung</Value>
+  </LocaleResource>
   <LocaleResource Name="SelectionType.Multiple">
     <Value>Mehrfachauswahl</Value>
   </LocaleResource>
