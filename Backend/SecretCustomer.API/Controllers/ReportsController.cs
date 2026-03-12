@@ -90,4 +90,13 @@ public class ReportsController : Controller
     {
         return View();
     }
+
+    /// <summary>
+    /// Personel Değerlendirme Raporu (180°/360°)
+    /// </summary>
+    [Authorize(Roles = "Admin")]
+    public IActionResult AssessmentReport()
+    {
+        return View();
+    }
 }

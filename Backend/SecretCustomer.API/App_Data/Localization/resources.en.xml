@@ -4802,6 +4802,78 @@
   <LocaleResource Name="Assessment.Completed.CloseWindow">
     <Value>Thank you for your participation. You may close this window.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Report.PersonTab">
+    <Value>Person Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SummaryTab">
+    <Value>Period Summary</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Evaluations">
+    <Value>evaluations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.AnonymityWarning">
+    <Value>Some roles are hidden due to anonymity threshold.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.RoleScores">
+    <Value>Role-Based Scores</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Hidden">
+    <Value>Hidden</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.EvalCount">
+    <Value>eval.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.CompetencyScores">
+    <Value>Competency-Based Scores</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Competency">
+    <Value>Competency</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Gap">
+    <Value>Gap</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.BlindSpots">
+    <Value>Blind Spots</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelfScore">
+    <Value>Self Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersScore">
+    <Value>Others Score</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Direction">
+    <Value>Direction</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Overestimate">
+    <Value>Overestimate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Underestimate">
+    <Value>Underestimate</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectPersonnel">
+    <Value>Select a project and personnel to view report.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersAvg">
+    <Value>Others Avg.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.ViewPerson">
+    <Value>Person Report</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectProjectForSummary">
+    <Value>Select a project and period for period summary.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoData">
+    <Value>No data available yet.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoCompetencyData">
+    <Value>No competency data available.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.LoadError">
+    <Value>Error loading report.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.AssessmentReport">
+    <Value>Assessment Report</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Multiple Choice</Value>

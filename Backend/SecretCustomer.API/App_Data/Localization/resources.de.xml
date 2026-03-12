@@ -6825,6 +6825,78 @@
   <LocaleResource Name="Assessment.Completed.CloseWindow">
     <Value>Vielen Dank für Ihre Teilnahme. Sie können dieses Fenster schließen.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Report.PersonTab">
+    <Value>Personenbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SummaryTab">
+    <Value>Periodenübersicht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Evaluations">
+    <Value>Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.AnonymityWarning">
+    <Value>Einige Rollen sind aufgrund der Anonymitätsschwelle verborgen.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.RoleScores">
+    <Value>Rollenbasierte Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Hidden">
+    <Value>Verborgen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.EvalCount">
+    <Value>Bew.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.CompetencyScores">
+    <Value>Kompetenzbasierte Bewertungen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Competency">
+    <Value>Kompetenz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Gap">
+    <Value>Abweichung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.BlindSpots">
+    <Value>Blinde Flecken</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelfScore">
+    <Value>Selbstbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersScore">
+    <Value>Fremdbewertung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Direction">
+    <Value>Richtung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Overestimate">
+    <Value>Überschätzung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Underestimate">
+    <Value>Unterschätzung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectPersonnel">
+    <Value>Wählen Sie ein Projekt und Personal für den Bericht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersAvg">
+    <Value>Andere Durchschn.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.ViewPerson">
+    <Value>Personenbericht</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectProjectForSummary">
+    <Value>Wählen Sie Projekt und Periode für die Übersicht.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoData">
+    <Value>Noch keine Daten verfügbar.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoCompetencyData">
+    <Value>Keine Kompetenzdaten verfügbar.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.LoadError">
+    <Value>Fehler beim Laden des Berichts.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.AssessmentReport">
+    <Value>Bewertungsbericht</Value>
+  </LocaleResource>
   <LocaleResource Name="QuestionType.Likert">
     <Value>Likert-Skala</Value>
   </LocaleResource>

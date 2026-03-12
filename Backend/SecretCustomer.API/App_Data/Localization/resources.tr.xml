@@ -2757,6 +2757,78 @@
   <LocaleResource Name="Assessment.Completed.CloseWindow">
     <Value>Katılımınız için teşekkür ederiz. Bu pencereyi kapatabilirsiniz.</Value>
   </LocaleResource>
+  <LocaleResource Name="Assessment.Report.PersonTab">
+    <Value>Kişi Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SummaryTab">
+    <Value>Dönem Özeti</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Evaluations">
+    <Value>değerlendirme</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.AnonymityWarning">
+    <Value>Bazı roller anonimlik eşiği nedeniyle gizlenmiştir.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.RoleScores">
+    <Value>Rol Bazlı Puanlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Hidden">
+    <Value>Gizli</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.EvalCount">
+    <Value>değ.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.CompetencyScores">
+    <Value>Yetkinlik Bazlı Puanlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Competency">
+    <Value>Yetkinlik</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Gap">
+    <Value>Fark</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.BlindSpots">
+    <Value>Kör Noktalar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelfScore">
+    <Value>Öz Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersScore">
+    <Value>Diğerleri Puan</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Direction">
+    <Value>Yön</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Overestimate">
+    <Value>Yüksek Algı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.Underestimate">
+    <Value>Düşük Algı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectPersonnel">
+    <Value>Rapor görmek için proje ve personel seçin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.OthersAvg">
+    <Value>Diğerleri Ort.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.ViewPerson">
+    <Value>Kişi Raporu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.SelectProjectForSummary">
+    <Value>Dönem özeti için proje ve dönem seçin.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoData">
+    <Value>Henüz veri bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.NoCompetencyData">
+    <Value>Yetkinlik verisi bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Report.LoadError">
+    <Value>Rapor yüklenirken hata oluştu.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Menu.AssessmentReport">
+    <Value>Değerlendirme Raporu</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Çoktan Seçmeli</Value>

@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = Html.T("Menu.AssessmentReport", "Değerlendirme Raporu");
+}
+
+<div id="assessment-report-app">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clipboard-check text-teal"></i> @Html.T("Menu.AssessmentReport", "Değerlendirme Raporu")</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">@Html.T("Common.Project", "Proje")</label>
+                    <select class="form-select" data-bind="options: projects, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', value: selectedProjectId" autocomplete="off"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Period", "Dönem")</label>
+                    <select class="form-select" data-bind="options: periods, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.AllPeriods", "Tüm Dönemler")', value: selectedPeriodId, enable: periods().length > 0" autocomplete="off"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Html.T("Common.Personnel", "Personel")</label>
+                    <select class="form-select" data-bind="options: personnel, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")', value: selectedPersonnelId, enable: personnel().length > 0" autocomplete="off"></select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100" data-bind="click: loadPersonReport, enable: selectedProjectId() && selectedPersonnelId()">
+                        <i class="bi bi-search me-1"></i> @Html.T("Common.View", "Görüntüle")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div data-bind="visible: isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="mt-2 text-muted">@Html.T("Common.Loading", "Veriler yükleniyor...")</p>
+    </div>
+
+    <!-- Tabs -->
+    <div data-bind="visible: !isLoading() && (personReport() || periodSummary())">
+        <ul class="nav nav-tabs mb-3" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="person-tab" data-bs-toggle="tab" data-bs-target="#person-pane" type="button" role="tab">
+                    <i class="bi bi-person me-1"></i> @Html.T("Assessment.Report.PersonTab", "Kişi Raporu")
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="summary-tab" data-bs-toggle="tab" data-bs-target="#summary-pane" type="button" role="tab"
+                        data-bind="click: loadPeriodSummary">
+                    <i class="bi bi-table me-1"></i> @Html.T("Assessment.Report.SummaryTab", "Dönem Özeti")
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Person Report Tab -->
+            <div class="tab-pane fade show active" id="person-pane" role="tabpanel">
+                <!-- ko if: personReport() -->
+                <div data-bind="with: personReport">
+                    <!-- Personnel Name -->
+                    <div class="alert alert-info d-flex align-items-center mb-3">
+                        <i class="bi bi-person-badge fs-4 me-2"></i>
+                        <div>
+                            <strong data-bind="text: personnelName"></strong>
+                            <span class="ms-2 text-muted">
+                                (<span data-bind="text: totalEvaluationCount"></span> @Html.T("Assessment.Report.Evaluations", "değerlendirme"))
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Hidden Roles Warning -->
+                    <!-- ko if: hiddenRoleIds && hiddenRoleIds.length > 0 -->
+                    <div class="alert alert-warning">
+                        <i class="bi bi-shield-exclamation me-1"></i>
+                        @Html.T("Assessment.Report.AnonymityWarning", "Bazı roller anonimlik eşiği nedeniyle gizlenmiştir.")
+                    </div>
+                    <!-- /ko -->
+
+                    <!-- Role Scores -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-bar-chart me-1"></i> @Html.T("Assessment.Report.RoleScores", "Rol Bazlı Puanlar")
+                        </div>
+                        <div class="card-body">
+                            <!-- ko if: roleScores && roleScores.length > 0 -->
+                            <div class="row" data-bind="foreach: roleScores">
+                                <div class="col-md-3 col-6 mb-3">
+                                    <div class="card h-100 text-center" data-bind="css: { 'opacity-50': isHidden }">
+                                        <div class="card-body py-3">
+                                            <!-- ko if: isHidden -->
+                                            <div class="fs-2 text-muted"><i class="bi bi-eye-slash"></i></div>
+                                            <div class="text-muted small">@Html.T("Assessment.Report.Hidden", "Gizli")</div>
+                                            <!-- /ko -->
+                                            <!-- ko ifnot: isHidden -->
+                                            <div class="fs-2 fw-bold" data-bind="text: averageScorePercentage.toFixed(1) + '%', css: { 'text-success': averageScorePercentage >= 70, 'text-warning': averageScorePercentage >= 40 && averageScorePercentage < 70, 'text-danger': averageScorePercentage < 40 }"></div>
+                                            <!-- /ko -->
+                                            <div class="fw-bold" data-bind="text: roleName"></div>
+                                            <small class="text-muted">
+                                                <span data-bind="text: evaluationCount"></span> @Html.T("Assessment.Report.EvalCount", "değ.")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: !roleScores || roleScores.length === 0 -->
+                            <p class="text-muted text-center mb-0">@Html.T("Assessment.Report.NoData", "Henüz veri bulunmuyor.")</p>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+
+                    <!-- Competency Scores -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-success text-white">
+                            <i class="bi bi-grid-3x3 me-1"></i> @Html.T("Assessment.Report.CompetencyScores", "Yetkinlik Bazlı Puanlar")
+                        </div>
+                        <div class="card-body p-0">
+                            <!-- ko if: competencyScores && competencyScores.length > 0 -->
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>@Html.T("Assessment.Report.Competency", "Yetkinlik")</th>
+                                            <!-- ko foreach: $root.feedbackRoleNames() -->
+                                            <th class="text-center" data-bind="text: $data"></th>
+                                            <!-- /ko -->
+                                            <th class="text-center">@Html.T("Assessment.Report.Gap", "Fark")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: competencyScores">
+                                        <tr>
+                                            <td class="fw-bold" data-bind="text: competencyName"></td>
+                                            <!-- ko foreach: roleScores -->
+                                            <td class="text-center">
+                                                <!-- ko if: isHidden -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                                <!-- ko ifnot: isHidden -->
+                                                <span data-bind="text: averageScorePercentage.toFixed(1) + '%', css: { 'text-success fw-bold': averageScorePercentage >= 70, 'text-warning': averageScorePercentage >= 40 && averageScorePercentage < 70, 'text-danger': averageScorePercentage < 40 }"></span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <!-- /ko -->
+                                            <td class="text-center">
+                                                <!-- ko if: gap !== null && gap !== undefined -->
+                                                <span class="badge" data-bind="text: (gap > 0 ? '+' : '') + gap.toFixed(1) + '%', css: { 'bg-danger': Math.abs(gap) >= 15, 'bg-warning text-dark': Math.abs(gap) >= 5 && Math.abs(gap) < 15, 'bg-light text-dark': Math.abs(gap) < 5 }"></span>
+                                                <!-- /ko -->
+                                                <!-- ko if: gap === null || gap === undefined -->
+                                                <span class="text-muted">-</span>
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: !competencyScores || competencyScores.length === 0 -->
+                            <p class="text-muted text-center py-3 mb-0">@Html.T("Assessment.Report.NoCompetencyData", "Yetkinlik verisi bulunmuyor.")</p>
+                            <!-- /ko -->
+                        </div>
+                    </div>
+
+                    <!-- Blind Spots -->
+                    <!-- ko if: blindSpots && blindSpots.length > 0 -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <i class="bi bi-exclamation-triangle me-1"></i> @Html.T("Assessment.Report.BlindSpots", "Kör Noktalar")
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>@Html.T("Assessment.Report.Competency", "Yetkinlik")</th>
+                                            <th class="text-center">@Html.T("Assessment.Report.SelfScore", "Öz Puan")</th>
+                                            <th class="text-center">@Html.T("Assessment.Report.OthersScore", "Diğerleri Puan")</th>
+                                            <th class="text-center">@Html.T("Assessment.Report.Gap", "Fark")</th>
+                                            <th class="text-center">@Html.T("Assessment.Report.Direction", "Yön")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: blindSpots">
+                                        <tr>
+                                            <td class="fw-bold" data-bind="text: competencyName"></td>
+                                            <td class="text-center" data-bind="text: selfScore.toFixed(1) + '%'"></td>
+                                            <td class="text-center" data-bind="text: othersScore.toFixed(1) + '%'"></td>
+                                            <td class="text-center">
+                                                <span class="badge bg-danger" data-bind="text: (gap > 0 ? '+' : '') + gap.toFixed(1) + '%'"></span>
+                                            </td>
+                                            <td class="text-center">
+                                                <!-- ko if: direction === 'Overestimate' -->
+                                                <span class="text-danger"><i class="bi bi-arrow-up"></i> @Html.T("Assessment.Report.Overestimate", "Yüksek Algı")</span>
+                                                <!-- /ko -->
+                                                <!-- ko if: direction === 'Underestimate' -->
+                                                <span class="text-info"><i class="bi bi-arrow-down"></i> @Html.T("Assessment.Report.Underestimate", "Düşük Algı")</span>
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /ko -->
+                </div>
+                <!-- /ko -->
+
+                <!-- ko ifnot: personReport() -->
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-person-lines-fill fs-1"></i>
+                    <p class="mt-2">@Html.T("Assessment.Report.SelectPersonnel", "Rapor görmek için proje ve personel seçin.")</p>
+                </div>
+                <!-- /ko -->
+            </div>
+
+            <!-- Period Summary Tab -->
+            <div class="tab-pane fade" id="summary-pane" role="tabpanel">
+                <!-- Loading -->
+                <div data-bind="visible: isSummaryLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+
+                <!-- ko if: periodSummary() && !isSummaryLoading() -->
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@Html.T("Common.Personnel", "Personel")</th>
+                                        <th class="text-center">@Html.T("FeedbackRole.Self", "Öz Değerlendirme")</th>
+                                        <th class="text-center">@Html.T("FeedbackRole.Manager", "Yönetici")</th>
+                                        <th class="text-center">@Html.T("FeedbackRole.Peer", "Eş Düzey")</th>
+                                        <th class="text-center">@Html.T("FeedbackRole.Subordinate", "Ast")</th>
+                                        <th class="text-center">@Html.T("Assessment.Report.OthersAvg", "Diğerleri Ort.")</th>
+                                        <th class="text-center">@Html.T("Assessment.Report.Gap", "Fark")</th>
+                                        <th class="text-center">@Html.T("Assessment.Report.EvalCount", "Değ.")</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody data-bind="foreach: periodSummary().personnelSummaries">
+                                    <tr>
+                                        <td class="fw-bold" data-bind="text: personnelName"></td>
+                                        <td class="text-center" data-bind="text: selfScore !== null ? selfScore.toFixed(1) + '%' : '-'"></td>
+                                        <td class="text-center" data-bind="text: managerScore !== null ? managerScore.toFixed(1) + '%' : '-'"></td>
+                                        <td class="text-center" data-bind="text: peerScore !== null ? peerScore.toFixed(1) + '%' : '-'"></td>
+                                        <td class="text-center" data-bind="text: subordinateScore !== null ? subordinateScore.toFixed(1) + '%' : '-'"></td>
+                                        <td class="text-center">
+                                            <!-- ko if: othersAverage !== null -->
+                                            <span class="fw-bold" data-bind="text: othersAverage.toFixed(1) + '%', css: { 'text-success': othersAverage >= 70, 'text-warning': othersAverage >= 40 && othersAverage < 70, 'text-danger': othersAverage < 40 }"></span>
+                                            <!-- /ko -->
+                                            <!-- ko if: othersAverage === null --><span>-</span><!-- /ko -->
+                                        </td>
+                                        <td class="text-center">
+                                            <!-- ko if: gap !== null -->
+                                            <span class="badge" data-bind="text: (gap > 0 ? '+' : '') + gap.toFixed(1) + '%', css: { 'bg-danger': Math.abs(gap) >= 15, 'bg-warning text-dark': Math.abs(gap) >= 5 && Math.abs(gap) < 15, 'bg-light text-dark': Math.abs(gap) < 5 }"></span>
+                                            <!-- /ko -->
+                                            <!-- ko if: gap === null --><span>-</span><!-- /ko -->
+                                        </td>
+                                        <td class="text-center" data-bind="text: totalEvaluationCount"></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bind="click: $root.viewPersonFromSummary" title="@Html.T("Assessment.Report.ViewPerson", "Kişi Raporu")">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- /ko -->
+
+                <!-- ko if: !periodSummary() && !isSummaryLoading() -->
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-table fs-1"></i>
+                    <p class="mt-2">@Html.T("Assessment.Report.SelectProjectForSummary", "Dönem özeti için proje ve dönem seçin.")</p>
+                </div>
+                <!-- /ko -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Reports/assessmentReport.js" asp-append-version="true"></script>
+}
