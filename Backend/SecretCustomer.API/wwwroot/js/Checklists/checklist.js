@@ -435,6 +435,8 @@ function ChecklistViewModel() {
 
         // scoringMethod'a göre ilgili editör URL'ini belirle
         var scoringMethod = checklist.scoringMethod || 'Maximum';
+        // PersonnelAssessment checklistleri Assessment editörüne yönlendir
+        if (checklist.checklistType === 'PersonnelAssessment') scoringMethod = 'Assessment';
         var editorUrl = '/Checklists/' + scoringMethod + '?id=' + checklist.id;
 
         window.open(editorUrl, 'ChecklistEditor',
@@ -450,6 +452,8 @@ function ChecklistViewModel() {
 
         // scoringMethod'a göre ilgili editör URL'ini belirle
         var scoringMethod = checklist.scoringMethod || 'Maximum';
+        // PersonnelAssessment checklistleri Assessment editörüne yönlendir
+        if (checklist.checklistType === 'PersonnelAssessment') scoringMethod = 'Assessment';
         var editorUrl = '/Checklists/' + scoringMethod + '?clone=' + checklist.id;
 
         window.open(editorUrl, 'ChecklistEditor',

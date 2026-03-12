@@ -10404,6 +10404,18 @@
   <LocaleResource Name="Checklist.Survey">
     <Value>Survey</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.SelfText">
+    <Value>Self-Assessment Text</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfTextPlaceholder">
+    <Value>Question text shown during self-assessment (empty = default text)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescription">
+    <Value>Self-Assessment Description</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescriptionPlaceholder">
+    <Value>Description shown during self-assessment (empty = default description)</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Adding">
     <Value>Adding...</Value>
   </LocaleResource>

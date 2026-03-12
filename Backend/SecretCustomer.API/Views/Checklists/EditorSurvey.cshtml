@@ -2,6 +2,7 @@
     Layout = "_LayoutPopup";
     var checklistId = ViewBag.ChecklistId;
     var cloneId = ViewBag.CloneId;
+    var isAssessment = ViewBag.IsAssessment == true;
     var scoringMethod = "Survey";
     var isNew = checklistId == null && cloneId == null;
     var isClone = cloneId != null;
@@ -196,10 +197,17 @@
 
                                 <!-- Soru Metni -->
                                 <div class="row">
-                                    <div class="col-12 mb-2">
+                                    <div class="@(isAssessment ? "col-md-6" : "col-12") mb-2">
                                         <label class="form-label form-label-sm mb-1">@Html.T("Excel.QuestionText", "Soru Metni") <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control form-control-sm" data-bind="value: text" placeholder="@Html.T("Checklist.QuestionTextPlaceholder", "Soru metni")" />
                                     </div>
+                                    @if (isAssessment)
+                                    {
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label form-label-sm mb-1"><i class="bi bi-person text-teal"></i> @Html.T("Checklist.SelfText", "Öz Değerlendirme Metni")</label>
+                                            <input type="text" class="form-control form-control-sm" data-bind="value: selfText" placeholder="@Html.T("Checklist.SelfTextPlaceholder", "Boş bırakılırsa soru metni kullanılır")" autocomplete="off" />
+                                        </div>
+                                    }
                                 </div>
 
                                 <!-- Puanlama - Ağırlık Puanı - Maks Puan - Ceza Tipi - Sıra - Zorunlu -->
@@ -322,7 +330,11 @@
                                         <div class="mt-2" data-bind="visible: _showSubCriteria">
                                             <!-- Alt Kriterler Başlık -->
                                             <div class="row mb-1 text-muted small fw-bold" data-bind="visible: subCriteria && subCriteria().length > 0">
-                                                <div class="col-md-6">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
+                                                <div class="@(isAssessment ? "col-md-3" : "col-md-6")">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
+                                                @if (isAssessment)
+                                                {
+                                                    <div class="col-md-3"><i class="bi bi-person text-teal"></i> @Html.T("Checklist.SelfDescription", "Öz Değ. Açıklaması")</div>
+                                                }
                                                 <div class="col-md-2">@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")</div>
                                                 <div class="col-md-2">@Html.T("Language.Order", "Sıra")</div>
                                                 <div class="col-md-2"></div>
@@ -330,9 +342,15 @@
                                             <!-- Mevcut Alt Kriterler -->
                                             <div data-bind="foreach: subCriteria">
                                                 <div class="row mb-1 align-items-center">
-                                                    <div class="col-md-6">
+                                                    <div class="@(isAssessment ? "col-md-3" : "col-md-6")">
                                                         <input type="text" class="form-control form-control-sm" data-bind="value: description" placeholder="@Html.T("Checklist.SubCriteriaDescription", "Alt kriter açıklaması")" />
                                                     </div>
+                                                    @if (isAssessment)
+                                                    {
+                                                        <div class="col-md-3">
+                                                            <input type="text" class="form-control form-control-sm" data-bind="value: selfDescription" placeholder="@Html.T("Checklist.SelfDescriptionPlaceholder", "Boşsa açıklama kullanılır")" autocomplete="off" />
+                                                        </div>
+                                                    }
                                                     <div class="col-md-2">
                                                         <input type="number" class="form-control form-control-sm" data-bind="value: weightPoints" min="0" step="0.1" title="@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")" />
                                                     </div>
@@ -526,7 +544,8 @@
         isClone: @(isClone ? "true" : "false"),
         scoringMethod: 'Survey',
         isCriteriaTotal: false,
-        isSurvey: true
+        isSurvey: true,
+        isAssessment: @(isAssessment ? "true" : "false")
     };
 </script>
 

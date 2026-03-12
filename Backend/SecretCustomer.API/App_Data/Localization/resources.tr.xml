@@ -10401,6 +10401,18 @@
   <LocaleResource Name="Checklist.Survey">
     <Value>Anket</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.SelfText">
+    <Value>Öz Değerlendirme Metni</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfTextPlaceholder">
+    <Value>Kendini değerlendirirken görülecek soru metni (boş = varsayılan metin)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescription">
+    <Value>Öz Değerlendirme Açıklaması</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescriptionPlaceholder">
+    <Value>Kendini değerlendirirken görülecek açıklama (boş = varsayılan açıklama)</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Adding">
     <Value>Ekleniyor...</Value>
   </LocaleResource>

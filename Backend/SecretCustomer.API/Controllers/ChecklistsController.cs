@@ -46,4 +46,15 @@ public class ChecklistsController : Controller
         ViewBag.CloneId = clone;
         return View("EditorSurvey");
     }
+
+    /// <summary>
+    /// Personel Değerlendirme Editörü (EditorSurvey + SelfText/SelfDescription)
+    /// </summary>
+    public IActionResult Assessment(int? id, int? clone)
+    {
+        ViewBag.ChecklistId = id;
+        ViewBag.CloneId = clone;
+        ViewBag.IsAssessment = true;
+        return View("EditorSurvey");
+    }
 }

@@ -10397,6 +10397,18 @@
   <LocaleResource Name="Checklist.Survey">
     <Value>Umfrage</Value>
   </LocaleResource>
+  <LocaleResource Name="Checklist.SelfText">
+    <Value>Selbstbewertungstext</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfTextPlaceholder">
+    <Value>Fragentext bei Selbstbewertung (leer = Standardtext)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescription">
+    <Value>Selbstbewertungsbeschreibung</Value>
+  </LocaleResource>
+  <LocaleResource Name="Checklist.SelfDescriptionPlaceholder">
+    <Value>Beschreibung bei Selbstbewertung (leer = Standardbeschreibung)</Value>
+  </LocaleResource>
   <LocaleResource Name="Common.Adding">
     <Value>Wird hinzugefügt...</Value>
   </LocaleResource>

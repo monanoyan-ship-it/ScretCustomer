@@ -8,6 +8,7 @@ var SubCriteriaModel = function (data) {
 
     base.id = ko.observable(data.id || null);
     base.description = ko.observable(data.description || '');
+    base.selfDescription = ko.observable(data.selfDescription || '');
     base.order = ko.observable(data.order || 0);
     base.weightPoints = ko.observable(data.weightPoints !== undefined ? data.weightPoints : 1);
     base.isActive = ko.observable(data.isActive !== false);
@@ -20,6 +21,7 @@ var QuestionModel = function (data, loadAttachmentsFn) {
 
     base.id = ko.observable(data.id || null);
     base.text = ko.observable(data.text || '');
+    base.selfText = ko.observable(data.selfText || '');
     base.order = ko.observable(data.order || 0);
     base.isRequired = ko.observable(data.isRequired !== false);
 
@@ -270,7 +272,7 @@ function ChecklistEditorViewModel() {
             var newChecklistData = {
                 id: 0,
                 scoringMethod: config.scoringMethod || 'Maximum',
-                checklistType: config.isSurvey ? 'Survey' : 'CallPerformance'
+                checklistType: config.isAssessment ? 'PersonnelAssessment' : (config.isSurvey ? 'Survey' : 'CallPerformance')
             };
             self.checklist(new ChecklistModel(newChecklistData));
             return;
