@@ -22,6 +22,12 @@ public class QuestionSubCriteria : BaseEntity
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
+    /// Öz değerlendirme açıklaması (PersonnelAssessment için)
+    /// Örnek: "Fikirlerimi açık ve net ifade ederim" (Self rolünde gösterilir, boşsa Description kullanılır)
+    /// </summary>
+    public string? SelfDescription { get; set; }
+
+    /// <summary>
     /// Sıralama
     /// </summary>
     [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Number,

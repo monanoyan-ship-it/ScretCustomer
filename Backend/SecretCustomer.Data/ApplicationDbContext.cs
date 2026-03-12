@@ -142,6 +142,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<EvaluationImportPendingRow> EvaluationImportPendingRows { get; set; }
     public DbSet<EvaluationImportUnmatchedItem> EvaluationImportUnmatchedItems { get; set; }
 
+    // Personnel Assessment (Personel Değerlendirme)
+    public DbSet<AssessmentParticipant> AssessmentParticipants { get; set; }
+    public DbSet<AssessmentTask> AssessmentTasks { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -243,6 +247,10 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<EvaluationImportSession>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<EvaluationImportPendingRow>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<EvaluationImportUnmatchedItem>().HasQueryFilter(e => !e.IsDeleted);
+
+        // Personnel Assessment (Personel Değerlendirme)
+        modelBuilder.Entity<AssessmentParticipant>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<AssessmentTask>().HasQueryFilter(e => !e.IsDeleted);
 
         // ===== Customer - EmailTemplate İlişkileri =====
 

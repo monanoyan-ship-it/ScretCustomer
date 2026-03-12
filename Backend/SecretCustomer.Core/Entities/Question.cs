@@ -20,6 +20,12 @@ public class Question : BaseEntity
         Description = "Sorunun/kriterin tam metni", SampleValue = "Çağrı standartlarına uyum")]
     public string Text { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Öz değerlendirme soru metni (PersonnelAssessment için)
+    /// Örnek: "İletişim becerinizi değerlendirin" (Self rolünde gösterilir, boşsa Text kullanılır)
+    /// </summary>
+    public string? SelfText { get; set; }
+
     [ExcelColumn("Sıra", 2, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Number,
         Description = "Sorunun sırası", SampleValue = "1")]
     public int Order { get; set; }

@@ -130,6 +130,11 @@ public class Evaluation : BaseEntity
     // ===== YENİ: Müşteri Personeli Değerlendirmesi =====
 
     /// <summary>
+    /// Geri bildirim rolü (PersonnelAssessment için) - Self=1, Manager=2, Peer=3, Subordinate=4
+    /// </summary>
+    public int? FeedbackRoleId { get; set; }
+
+    /// <summary>
     /// Değerlendirilen müşteri personeli ID (CustomerPersonnel - firma personeli)
     /// </summary>
     public int? EvaluatedCustomerPersonnelId { get; set; }

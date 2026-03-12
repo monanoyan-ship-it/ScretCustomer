@@ -169,6 +169,25 @@ public class Project : BaseEntity
     public int? OrganizationId { get; set; }
     public CustomerOrganization? Organization { get; set; }
 
+    // ===== PERSONEL DEĞERLENDİRME AYARLARI (PersonnelAssessment Settings) =====
+
+    /// <summary>
+    /// Değerlendirme modu (180° veya 360°) - Sadece PersonnelAssessment projelerinde kullanılır
+    /// </summary>
+    public int? AssessmentModeId { get; set; }
+
+    /// <summary>
+    /// Anonim mod - Peer/Subordinate değerlendirmeleri anonim mi?
+    /// Anonim: Peer ve Subordinate toplu tek form doldurur, isimli: her kişi için ayrı form
+    /// </summary>
+    public bool IsAnonymous { get; set; } = false;
+
+    /// <summary>
+    /// Anonimlik koruması için minimum yanıtlayıcı sayısı
+    /// Grupta bu sayıdan az kişi varsa raporda o grubun sonucu gizlenir
+    /// </summary>
+    public int MinRespondentsForAnonymity { get; set; } = 2;
+
     // ===== ANKET AYARLARI (Survey Settings) =====
 
     /// <summary>
