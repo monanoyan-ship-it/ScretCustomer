@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace SecretCustomer.Core.Entities;
 
 /// <summary>
@@ -12,6 +14,7 @@ public class AssessmentParticipant : BaseEntity
     /// Hangi döneme ait
     /// </summary>
     public int AssignmentPeriodId { get; set; }
+    [JsonIgnore]
     public AssignmentPeriod AssignmentPeriod { get; set; } = null!;
 
     /// <summary>
@@ -24,6 +27,7 @@ public class AssessmentParticipant : BaseEntity
     /// Üst katılımcı (null = en tepedeki yönetici)
     /// </summary>
     public int? ParentId { get; set; }
+    [JsonIgnore]
     public AssessmentParticipant? Parent { get; set; }
 
     /// <summary>

@@ -77,6 +77,14 @@ public interface IAssessmentService
     /// </summary>
     Task<AssessmentTask?> GetNextPendingTaskAsync(int surveyInvitationId);
 
+    // ===== Davetiye Yönetimi =====
+
+    /// <summary>
+    /// Proje için açık davetiyeleri getir (personnelId → invitation eşlemesi)
+    /// Görev oluşturma ile oluşturulan davetiyeleri email gönderiminde yeniden kullanmak için
+    /// </summary>
+    Task<Dictionary<int, SurveyInvitation>> GetOpenInvitationsByProjectAsync(int projectId);
+
     // ===== Tek Link Doldurma Akışı =====
 
     /// <summary>

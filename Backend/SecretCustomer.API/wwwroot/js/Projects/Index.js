@@ -854,23 +854,35 @@ function ProjectsViewModel() {
         return result;
     });
 
-    // Tree data: supervisors (top-level with children) + independents (top-level without children)
+    // Tree data: root nodes only (parentId == null)
     self.participantTreeData = ko.computed(function() {
         var all = self.participants();
-        var supervisors = [];
-        var independents = [];
+        var roots = [];
         for (var i = 0; i < all.length; i++) {
-            var p = all[i];
-            if (!p.parentId) {
-                if (p.children && p.children.length > 0) {
-                    supervisors.push(p);
-                } else {
-                    independents.push(p);
-                }
-            }
+            if (!all[i].parentId) roots.push(all[i]);
         }
-        return { supervisors: supervisors, independents: independents };
+        return { roots: roots };
     });
+
+    // Participant role helpers (RoleId: 1=Manager, 2=Supervisor, 3=Operator)
+    var roleNames = { 1: 'Yönetici', 2: 'Süpervizör', 3: 'Operatör' };
+    var roleBadges = { 1: 'bg-primary', 2: 'bg-warning text-dark', 3: 'bg-secondary' };
+    var roleIcons = { 1: 'bi-person-fill-gear text-primary', 2: 'bi-person-badge text-warning', 3: 'bi-person text-secondary' };
+
+    self.getParticipantRoleName = function(cp) {
+        if (!cp) return '';
+        return roleNames[cp.roleId] || cp.title || '';
+    };
+
+    self.getParticipantRoleBadge = function(cp) {
+        if (!cp) return 'bg-secondary';
+        return roleBadges[cp.roleId] || 'bg-secondary';
+    };
+
+    self.getParticipantIcon = function(cp) {
+        if (!cp) return 'bi-person text-secondary';
+        return roleIcons[cp.roleId] || 'bi-person text-secondary';
+    };
 
     // Move participant modal
     self.isMoveParticipantModalOpen = ko.observable(false);

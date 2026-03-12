@@ -1157,90 +1157,41 @@
                     <!-- /ko -->
 
                     <!-- ko if: !isParticipantsLoading() && participants().length > 0 -->
-                    <div class="personnel-tree">
-                        <!-- Yöneticiler (üst düzey katılımcılar + ekipleri) -->
-                        <!-- ko foreach: participantTreeData().supervisors -->
-                        <div class="tree-item tree-supervisor" data-bind="attr: { 'data-id': id }">
-                            <!-- Supervisor Row -->
-                            <div class="d-flex align-items-center justify-content-between px-3 py-2">
-                                <div>
-                                    <i class="bi bi-person-badge text-primary me-2"></i>
-                                    <span class="fw-semibold" data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
-                                    <!-- ko if: customerPersonnel && customerPersonnel.title -->
-                                    <span class="badge bg-primary ms-2" data-bind="text: customerPersonnel.title"></span>
-                                    <!-- /ko -->
-                                    <span class="badge bg-info ms-1" data-bind="visible: children && children.length, text: children ? children.length + ' ekip' : ''"></span>
-                                </div>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
-                                        <i class="bi bi-arrows-move"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
-                                        <i class="bi bi-box-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Team Members (indented) -->
-                            <!-- ko if: children && children.length > 0 -->
-                            <div data-bind="foreach: children" class="tree-children">
-                                <div class="tree-item tree-operator d-flex align-items-center justify-content-between px-3 py-1">
-                                    <div>
-                                        <span class="tree-connector me-2">└─</span>
-                                        <i class="bi bi-person text-secondary me-2"></i>
-                                        <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
-                                        <!-- ko if: customerPersonnel && customerPersonnel.title -->
-                                        <span class="badge bg-secondary ms-2 small" data-bind="text: customerPersonnel.title"></span>
-                                        <!-- /ko -->
-                                    </div>
-                                    <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
-                                            <i class="bi bi-arrows-move"></i>
-                                        </button>
-                                        <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
-                                            <i class="bi bi-box-arrow-right"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- /ko -->
-                        </div>
-                        <!-- /ko -->
-
-                        <!-- Bağımsız Katılımcılar (üst yok, alt yok) -->
-                        <!-- ko if: participantTreeData().independents.length > 0 -->
-                        <div class="tree-group">
-                            <div class="tree-section-header px-3 py-1 bg-light border-top">
-                                <small class="text-muted"><i class="bi bi-people me-1"></i>@Html.T("Assessment.IndependentParticipants", "Bağımsız Katılımcılar")</small>
-                            </div>
-                            <!-- ko foreach: participantTreeData().independents -->
-                            <div class="tree-item tree-independent d-flex align-items-center justify-content-between px-3 py-2">
-                                <div>
-                                    <i class="bi bi-person text-secondary me-2"></i>
-                                    <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
-                                    <!-- ko if: customerPersonnel && customerPersonnel.title -->
-                                    <span class="badge bg-secondary ms-2" data-bind="text: customerPersonnel.title"></span>
-                                    <!-- /ko -->
-                                </div>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
-                                        <i class="bi bi-arrows-move"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
-                                        <i class="bi bi-box-arrow-right"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- /ko -->
-                        </div>
-                        <!-- /ko -->
-                    </div>
+                    <div class="personnel-tree" data-bind="template: { name: 'participant-node-template', foreach: participantTreeData().roots }"></div>
                     <!-- /ko -->
                 </div>
             </div>
         </div>
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isParticipantsModalOpen }, style: { display: isParticipantsModalOpen() ? 'block' : 'none' }" style="z-index: 1055;"></div>
+
+    <!-- Participant Recursive Tree Template -->
+    <script type="text/html" id="participant-node-template">
+        <div class="tree-item" data-bind="css: { 'tree-supervisor': !parentId, 'tree-operator': !!parentId }, attr: { 'data-id': id }">
+            <div class="d-flex align-items-center justify-content-between px-3 py-2">
+                <div>
+                    <!-- ko if: parentId --><span class="tree-connector me-2">└─</span><!-- /ko -->
+                    <i class="bi me-2" data-bind="css: $root.getParticipantIcon(customerPersonnel)"></i>
+                    <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-', css: { 'fw-semibold': !parentId }"></span>
+                    <span class="badge ms-2" data-bind="text: $root.getParticipantRoleName(customerPersonnel), css: $root.getParticipantRoleBadge(customerPersonnel)"></span>
+                    <!-- ko if: children && children.length > 0 -->
+                    <span class="badge bg-info ms-1" data-bind="text: children.length + ' ekip'"></span>
+                    <!-- /ko -->
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
+                        <i class="bi bi-arrows-move"></i>
+                    </button>
+                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- ko if: children && children.length > 0 -->
+        <div class="tree-children" data-bind="template: { name: 'participant-node-template', foreach: children }"></div>
+        <!-- /ko -->
+    </script>
 
     <!-- ==================== MOVE PARTICIPANT MODAL ==================== -->
     <div class="modal fade" data-bind="css: { show: isMoveParticipantModalOpen }, style: { display: isMoveParticipantModalOpen() ? 'block' : 'none' }" tabindex="-1" style="z-index: 1070;">

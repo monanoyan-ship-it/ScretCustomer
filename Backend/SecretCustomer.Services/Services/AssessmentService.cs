@@ -367,21 +367,33 @@ public class AssessmentService : IAssessmentService
         foreach (var participant in participants)
         {
             // Bu katılımcı için mevcut davetiye var mı kontrol et
-            var existingInvitation = await _context.SurveyInvitations
-                .AnyAsync(x => x.ProjectId == projectId
+            var existingInv = await _context.SurveyInvitations
+                .FirstOrDefaultAsync(x => x.ProjectId == projectId
                             && x.CustomerPersonnelId == participant.CustomerPersonnelId
                             && !x.IsCompleted);
-            if (existingInvitation) continue;
 
-            // Davetiye oluştur
-            var invitation = new SurveyInvitation
+            SurveyInvitation invitation;
+            if (existingInv != null)
             {
-                ProjectId = projectId,
-                CustomerPersonnelId = participant.CustomerPersonnelId,
-                StatusId = SurveyInvitationStatuses.Ids.Pending
-            };
-            _context.SurveyInvitations.Add(invitation);
-            await _context.SaveChangesAsync();
+                // Mevcut davetiyede task var mı?
+                var hasExistingTasks = await _context.AssessmentTasks.AnyAsync(t => t.SurveyInvitationId == existingInv.Id);
+                if (hasExistingTasks) continue; // Zaten task'ları olan davetiye, atla
+
+                // Task'sız davetiye var (SendInvitations ile oluşturulmuş olabilir), task'ları ekle
+                invitation = existingInv;
+            }
+            else
+            {
+                // Yeni davetiye oluştur
+                invitation = new SurveyInvitation
+                {
+                    ProjectId = projectId,
+                    CustomerPersonnelId = participant.CustomerPersonnelId,
+                    StatusId = SurveyInvitationStatuses.Ids.Pending
+                };
+                _context.SurveyInvitations.Add(invitation);
+                await _context.SaveChangesAsync();
+            }
 
             var order = 1;
 
@@ -508,6 +520,20 @@ public class AssessmentService : IAssessmentService
             .FirstOrDefaultAsync();
     }
 
+    // ===== Davetiye Yönetimi =====
+
+    public async Task<Dictionary<int, SurveyInvitation>> GetOpenInvitationsByProjectAsync(int projectId)
+    {
+        var invitations = await _context.SurveyInvitations
+            .Where(x => x.ProjectId == projectId && !x.IsCompleted)
+            .ToListAsync();
+
+        // Group by personnel and take the oldest invitation per person (from task generation)
+        return invitations
+            .GroupBy(x => x.CustomerPersonnelId)
+            .ToDictionary(g => g.Key, g => g.OrderBy(x => x.Id).First());
+    }
+
     // ===== Tek Link Doldurma Akışı =====
 
     public async Task<AssessmentFillContext?> GetFillContextByTokenAsync(string token)
@@ -529,14 +555,25 @@ public class AssessmentService : IAssessmentService
         if (tokenData.IsExpiredByDate(project.EndDate))
             return null;
 
-        // SurveyInvitation bul
-        var invitation = await _context.SurveyInvitations
+        // SurveyInvitation bul — task'ları olan davetiyeyi tercih et
+        var invitations = await _context.SurveyInvitations
             .Include(x => x.CustomerPersonnel)
-            .FirstOrDefaultAsync(x => x.ProjectId == tokenData.ProjectId
-                                   && x.CustomerPersonnelId == tokenData.PersonnelId
-                                   && !x.IsCompleted);
+            .Where(x => x.ProjectId == tokenData.ProjectId
+                      && x.CustomerPersonnelId == tokenData.PersonnelId
+                      && !x.IsCompleted)
+            .ToListAsync();
 
-        if (invitation == null) return null;
+        if (!invitations.Any()) return null;
+
+        // Task'ları olan davetiyeyi bul (GenerateAssessmentTasks ile oluşturulan)
+        SurveyInvitation? invitation = null;
+        foreach (var inv in invitations.OrderBy(x => x.Id))
+        {
+            var hasAnyTask = await _context.AssessmentTasks.AnyAsync(t => t.SurveyInvitationId == inv.Id);
+            if (hasAnyTask) { invitation = inv; break; }
+        }
+        // Hiç task'ı olan davetiye yoksa ilkini kullan
+        invitation ??= invitations.OrderBy(x => x.Id).First();
 
         // Açıldı olarak işaretle
         if (!invitation.IsOpened)
@@ -559,6 +596,12 @@ public class AssessmentService : IAssessmentService
 
         if (currentTask == null)
         {
+            if (totalCount == 0)
+            {
+                // Davetiye var ama task zinciri oluşturulmamış
+                return null;
+            }
+
             // Tüm task'lar tamamlanmış
             return new AssessmentFillContext
             {

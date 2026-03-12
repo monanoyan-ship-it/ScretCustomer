@@ -309,12 +309,14 @@ public class AssessmentApiController : BaseApiController
             if (period == null)
                 return BadRequest(new { message = "Değerlendirme dönemi bulunamadı." });
 
-            // Katılımcıları getir (hiyerarşiden flat listeye)
+            // Katılımcıları getir (zaten flat liste — EF fix-up ile Children populate edilir)
             var participants = await _assessmentService.GetParticipantsAsync(period.Id);
-            var flatParticipants = FlattenParticipants(participants);
 
-            if (!flatParticipants.Any())
+            if (!participants.Any())
                 return BadRequest(new { message = "Dönemde katılımcı bulunamadı. Önce katılımcı ekleyin." });
+
+            // Mevcut davetiyeleri getir (görev oluşturma ile oluşturulanları yeniden kullan)
+            var existingInvitations = await _assessmentService.GetOpenInvitationsByProjectAsync(dto.ProjectId);
 
             // Email gönderim sonuçları
             var successCount = 0;
@@ -322,7 +324,7 @@ public class AssessmentApiController : BaseApiController
             var skippedCount = 0;
             var errors = new List<string>();
 
-            foreach (var participant in flatParticipants)
+            foreach (var participant in participants)
             {
                 try
                 {
@@ -343,8 +345,16 @@ public class AssessmentApiController : BaseApiController
                     var subject = ReplaceAssessmentPlaceholders(emailTemplate.Subject, project, person, assessmentUrl, period.Name, project.IsAnonymous);
                     var body = ReplaceAssessmentPlaceholders(emailTemplate.Body, project, person, assessmentUrl, period.Name, project.IsAnonymous);
 
-                    // SurveyInvitation kaydı oluştur
-                    var invitation = await _surveyService.CreateSurveyInvitationAsync(dto.ProjectId, person.Id, person.Email, false);
+                    // Mevcut davetiyeyi kullan (görev oluşturma ile oluşturulan) veya yeni oluştur
+                    SurveyInvitation invitation;
+                    if (existingInvitations.TryGetValue(person.Id, out var existing))
+                    {
+                        invitation = existing;
+                    }
+                    else
+                    {
+                        invitation = await _surveyService.CreateSurveyInvitationAsync(dto.ProjectId, person.Id, person.Email, false);
+                    }
 
                     var result = await _emailService.SendEmailAsync(person.Email, subject, body, true);
 
@@ -373,7 +383,7 @@ public class AssessmentApiController : BaseApiController
             return Ok(new
             {
                 success = true,
-                totalPersonnel = flatParticipants.Count,
+                totalPersonnel = participants.Count,
                 successCount,
                 failCount,
                 skippedCount,
