@@ -1150,6 +1150,10 @@ public class ProjectService : IProjectService
             ReminderEmailTemplateName = dto.ReminderEmailTemplateName,
             SendReminderEmails = dto.SendReminderEmails,
             ReminderDaysBeforeEnd = dto.ReminderDaysBeforeEnd,
+            // Assessment Settings
+            AssessmentModeId = dto.AssessmentModeId,
+            IsAnonymous = dto.IsAnonymous,
+            MinRespondentsForAnonymity = dto.MinRespondentsForAnonymity,
             TotalYellowCards = dto.TotalYellowCards,
             TotalRedCards = dto.TotalRedCards,
             TeamMemberCount = dto.TeamMemberCount,

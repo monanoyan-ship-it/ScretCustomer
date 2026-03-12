@@ -472,7 +472,7 @@ function ProjectsViewModel() {
         'MysteryShopping': 'bg-primary', 'CallAuditing': 'bg-info',
         'PhysicalAudit': 'bg-secondary', 'OnlineSurvey': 'bg-success',
         'CustomerSatisfaction': 'bg-warning text-dark', 'TrainingEvaluation': 'bg-dark',
-        'QualityControl': 'bg-danger', 'PersonnelAssessment': 'bg-teal'
+        'QualityControl': 'bg-danger', 'PersonnelAssessment': 'bg-info'
     };
     self.roleTexts = { 'Evaluator': 'Değerlendirici', 'Manager': 'Yönetici', 'Observer': 'Gözlemci' };
 
@@ -854,20 +854,98 @@ function ProjectsViewModel() {
         return result;
     });
 
+    // Tree data: supervisors (top-level with children) + independents (top-level without children)
+    self.participantTreeData = ko.computed(function() {
+        var all = self.participants();
+        var supervisors = [];
+        var independents = [];
+        for (var i = 0; i < all.length; i++) {
+            var p = all[i];
+            if (!p.parentId) {
+                if (p.children && p.children.length > 0) {
+                    supervisors.push(p);
+                } else {
+                    independents.push(p);
+                }
+            }
+        }
+        return { supervisors: supervisors, independents: independents };
+    });
+
+    // Move participant modal
+    self.isMoveParticipantModalOpen = ko.observable(false);
+    self.movingParticipant = ko.observable(null);
+    self.moveTargetParentId = ko.observable('');
+
+    self.moveParentOptions = ko.computed(function() {
+        var moving = self.movingParticipant();
+        if (!moving) return [];
+        var flat = self.flatParticipants();
+        return flat.filter(function(p) {
+            // Exclude self and own children
+            if (p.id === moving.id) return false;
+            if (p.parentId === moving.id) return false;
+            return true;
+        });
+    });
+
+    self.openMoveParticipantModal = function(participant) {
+        self.movingParticipant(participant);
+        self.moveTargetParentId(participant.parentId ? String(participant.parentId) : '');
+        self.isMoveParticipantModalOpen(true);
+    };
+
+    self.closeMoveParticipantModal = function() {
+        self.isMoveParticipantModalOpen(false);
+        self.movingParticipant(null);
+        self.moveTargetParentId('');
+    };
+
+    self.confirmMoveParticipant = function() {
+        var participant = self.movingParticipant();
+        var period = self.participantsPeriod();
+        if (!participant || !period) return;
+
+        var newParentId = self.moveTargetParentId() ? parseInt(self.moveTargetParentId()) : null;
+
+        fetch('/api/assessment/participants/' + participant.id + '/move', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ newParentId: newParentId })
+        })
+        .then(function(res) {
+            if (!res.ok) return res.json().then(function(e) { throw new Error(e.message || 'Hata'); });
+            return res.json();
+        })
+        .then(function() {
+            toastr.success('Katılımcı taşındı.');
+            self.closeMoveParticipantModal();
+            self.loadParticipants(period.id);
+        })
+        .catch(function(err) { toastr.error(err.message || 'Katılımcı taşınamadı.'); });
+    };
+
     self.openAssessmentPanel = function(project) {
         self.isLoadingModal(true);
         fetch('/api/projects/' + project.id + '/detail', { credentials: 'include' })
-            .then(function(res) { return res.json(); })
+            .then(function(res) {
+                if (!res.ok) throw new Error('Proje yüklenemedi');
+                return res.json();
+            })
             .then(function(data) {
                 self.assessmentProject(data);
                 self.isAssessmentPanelOpen(true);
                 self.loadAssessmentPeriods(data.id);
-                // Müşteri personelini yükle (katılımcı ekleme için)
+                // Organizasyon personelini yükle (katılımcı ekleme için)
                 if (data.customerId) {
-                    self.loadAvailablePersonnel(data.customerId);
+                    self.loadAvailablePersonnel(data.customerId, data.organizationId);
                 }
             })
-            .catch(function() { toastr.error('Proje detayı yüklenemedi.'); })
+            .catch(function(err) {
+                console.error('Assessment panel error:', err);
+                toastr.error('Proje detayı yüklenemedi: ' + (err.message || ''));
+            })
             .finally(function() { self.isLoadingModal(false); });
     };
 
@@ -974,11 +1052,37 @@ function ProjectsViewModel() {
 
     // ===== Katılımcı Yönetimi =====
 
-    self.loadAvailablePersonnel = function(customerId) {
-        fetch('/api/customer-personnel/by-customer/' + customerId, { credentials: 'include' })
-            .then(function(res) { return res.json(); })
-            .then(function(data) { self.availablePersonnel(data || []); })
-            .catch(function() { console.error('Personel listesi yüklenemedi'); });
+    self.loadAvailablePersonnel = function(customerId, organizationId) {
+        if (organizationId) {
+            // Organizasyon endpoint: supervisor/team yapısı
+            fetch('/api/customer-organizations/' + organizationId + '/personnel', { credentials: 'include' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var flat = [];
+                    (data.supervisors || []).forEach(function(s) {
+                        flat.push({ id: s.id, displayName: s.fullName, roleName: s.roleName, isSupervisor: true });
+                        (s.teamMembers || []).forEach(function(tm) {
+                            flat.push({ id: tm.id, displayName: tm.fullName, roleName: tm.roleName, isSupervisor: false });
+                        });
+                    });
+                    (data.operators || []).forEach(function(o) {
+                        flat.push({ id: o.id, displayName: o.fullName, roleName: o.roleName, isSupervisor: false });
+                    });
+                    self.availablePersonnel(flat);
+                })
+                .catch(function() { console.error('Organizasyon personel listesi yüklenemedi'); });
+        } else {
+            // Fallback: tüm müşteri personeli
+            fetch('/api/customer-personnel/by-customer/' + customerId, { credentials: 'include' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var mapped = (data || []).map(function(p) {
+                        return { id: p.id, displayName: (p.firstName + ' ' + p.lastName).trim(), roleName: p.title || '', isSupervisor: false };
+                    });
+                    self.availablePersonnel(mapped);
+                })
+                .catch(function() { console.error('Personel listesi yüklenemedi'); });
+        }
     };
 
     self.openParticipantsModal = function(period) {
@@ -1123,7 +1227,7 @@ function ProjectsViewModel() {
             title: 'Davetiye Gönder',
             message: 'Tüm katılımcılara değerlendirme davetiyesi gönderilecek. Devam etmek istiyor musunuz?',
             confirmText: 'Gönder',
-            confirmClass: 'btn-teal',
+            confirmClass: 'btn-info',
             onConfirm: function() {
                 self.isEmailSending(true);
                 self.emailSendResult(null);
@@ -1169,7 +1273,7 @@ function ProjectsViewModel() {
             title: 'Değerlendirme Görevleri Oluştur',
             message: 'Tüm katılımcılar için değerlendirme görevleri ve davetiyeler oluşturulacak. Devam etmek istiyor musunuz?',
             confirmText: 'Oluştur',
-            confirmClass: 'btn-teal',
+            confirmClass: 'btn-info',
             onConfirm: function() {
                 self.isParticipantsLoading(true);
                 fetch('/api/assessment/generate-tasks', {

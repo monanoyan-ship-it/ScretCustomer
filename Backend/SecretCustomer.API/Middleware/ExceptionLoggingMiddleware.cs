@@ -45,6 +45,10 @@ public class ExceptionLoggingMiddleware
             // Loglama başarısız olursa sessizce devam et
         }
 
+        // Response zaten başladıysa header değiştirilemez
+        if (context.Response.HasStarted)
+            return;
+
         // Response hazırla
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;

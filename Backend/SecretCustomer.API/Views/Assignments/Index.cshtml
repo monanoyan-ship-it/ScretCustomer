@@ -743,7 +743,7 @@
                                         </td>
                                         <!-- ko if: $parents[1].projectType === 'PersonnelAssessment' -->
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-outline-teal" data-bind="click: function() { $root.openParticipantsModal($data); }">
+                                            <button class="btn btn-sm btn-outline-info" data-bind="click: function() { $root.openParticipantsModal($data); }">
                                                 <i class="bi bi-people"></i> @Html.T("Assessment.ManageParticipants", "Yönet")
                                             </button>
                                         </td>
@@ -1056,7 +1056,7 @@
     <div class="modal fade" id="participantsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-teal text-white">
+                <div class="modal-header bg-info text-white">
                     <h5 class="modal-title"><i class="bi bi-people"></i> @Html.T("Assessment.Participants", "Katılımcılar")</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -1128,7 +1128,7 @@
                 <i class="bi bi-person-fill text-muted me-1"></i>
                 <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : 'ID: ' + customerPersonnelId"></span>
                 <!-- ko if: $data.level === 0 -->
-                <span class="badge bg-teal ms-1">@Html.T("Assessment.Root", "Kök")</span>
+                <span class="badge bg-info ms-1">@Html.T("Assessment.Root", "Kök")</span>
                 <!-- /ko -->
             </div>
             <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.removeParticipant($data); }">

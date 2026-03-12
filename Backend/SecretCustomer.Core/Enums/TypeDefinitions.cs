@@ -206,7 +206,7 @@ public static class ProjectTypes
     public static readonly TypeItem CustomerSatisfaction = new(5, "CustomerSatisfaction", "ProjectType.CustomerSatisfaction", "Müşteri Memnuniyeti", "bi-emoji-smile", "bg-warning text-dark", 5);
     public static readonly TypeItem TrainingEvaluation = new(6, "TrainingEvaluation", "ProjectType.TrainingEvaluation", "Eğitim Değerlendirmesi", "bi-mortarboard", "bg-purple", 6);
     public static readonly TypeItem QualityControl = new(7, "QualityControl", "ProjectType.QualityControl", "Kalite Kontrol", "bi-patch-check", "bg-danger", 7);
-    public static readonly TypeItem PersonnelAssessment = new(8, "PersonnelAssessment", "ProjectType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-teal", 8);
+    public static readonly TypeItem PersonnelAssessment = new(8, "PersonnelAssessment", "ProjectType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-info", 8);
 
     public static IEnumerable<TypeItem> All => new[] { MysteryShopping, CallAuditing, PhysicalAudit, OnlineSurvey, CustomerSatisfaction, TrainingEvaluation, QualityControl, PersonnelAssessment };
     public static TypeItem Default => All.First(x => x.IsDefault);
@@ -511,7 +511,7 @@ public static class NotificationTypes
     public static readonly TypeItem ApprovalRequest = new(4, "ApprovalRequest", "NotificationType.ApprovalRequest", "Onay talebi", "bi-check2-square", "bg-primary", 4);
     public static readonly TypeItem Assignment = new(5, "Assignment", "NotificationType.Assignment", "Atama bildirimi", "bi-person-plus", "bg-secondary", 5);
     public static readonly TypeItem MeetingInvite = new(6, "MeetingInvite", "NotificationType.MeetingInvite", "Toplanti daveti", "bi-calendar-event", "bg-purple", 6);
-    public static readonly TypeItem TrainingInvite = new(7, "TrainingInvite", "NotificationType.TrainingInvite", "Egitim daveti", "bi-mortarboard", "bg-teal", 7);
+    public static readonly TypeItem TrainingInvite = new(7, "TrainingInvite", "NotificationType.TrainingInvite", "Egitim daveti", "bi-mortarboard", "bg-info", 7);
     public static readonly TypeItem Reminder = new(8, "Reminder", "NotificationType.Reminder", "Hatirlatma", "bi-bell", "bg-orange", 8);
     public static readonly TypeItem System = new(9, "System", "NotificationType.System", "Sistem bildirimi", "bi-gear", "bg-dark", 9);
 
@@ -621,7 +621,7 @@ public static class ChecklistTypes
     public static readonly TypeItem MysteryShopping = new(3, "MysteryShopping", "ChecklistType.MysteryShopping", "Gizli Müşteri", "bi-incognito", "bg-warning text-dark", 3);
     public static readonly TypeItem OnlineEvaluation = new(4, "OnlineEvaluation", "ChecklistType.OnlineEvaluation", "Online Değerlendirme", "bi-globe", "bg-success", 4);
     public static readonly TypeItem Survey = new(5, "Survey", "ChecklistType.Survey", "Anket", "bi-clipboard-data", "bg-secondary", 5);
-    public static readonly TypeItem PersonnelAssessment = new(6, "PersonnelAssessment", "ChecklistType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-teal", 6);
+    public static readonly TypeItem PersonnelAssessment = new(6, "PersonnelAssessment", "ChecklistType.PersonnelAssessment", "Personel Değerlendirme", "bi-person-check", "bg-info", 6);
     public static readonly TypeItem Enneagram = new(7, "Enneagram", "ChecklistType.Enneagram", "Enneagram Kisilik Testi", "bi-people", "bg-purple", 7);
 
     public static IEnumerable<TypeItem> All => new[] { CallPerformance, PhysicalAudit, MysteryShopping, OnlineEvaluation, Survey, PersonnelAssessment, Enneagram };
@@ -1577,7 +1577,7 @@ public static class EmailTemplateTypes
     public static readonly TypeItem Custom = new(7, "Custom", "EmailTemplateType.Custom", "Özel Şablon", "bi-palette", "bg-dark", 7);
     public static readonly TypeItem EvaluationNotification = new(8, "EvaluationNotification", "EmailTemplateType.EvaluationNotification", "Değerlendirme Bildirimi", "bi-clipboard-check", "bg-purple", 8);
     public static readonly TypeItem TrainingVideo = new(9, "TrainingVideo", "EmailTemplateType.TrainingVideo", "Eğitim Videosu", "bi-play-circle", "bg-danger", 9);
-    public static readonly TypeItem AssessmentInvitation = new(10, "AssessmentInvitation", "EmailTemplateType.AssessmentInvitation", "Değerlendirme Davetiyesi", "bi-people", "bg-teal", 10);
+    public static readonly TypeItem AssessmentInvitation = new(10, "AssessmentInvitation", "EmailTemplateType.AssessmentInvitation", "Değerlendirme Davetiyesi", "bi-people", "bg-info", 10);
 
     public static IEnumerable<TypeItem> All => new[] { SurveyInvitation, SurveyReminder, SurveyThankYou, ReportNotification, PasswordReset, WelcomeEmail, Custom, EvaluationNotification, TrainingVideo, AssessmentInvitation };
     public static TypeItem Default => All.First(x => x.IsDefault);

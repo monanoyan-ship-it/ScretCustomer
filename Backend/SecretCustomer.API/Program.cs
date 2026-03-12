@@ -76,6 +76,7 @@ builder.Services.AddAuthentication(options =>
         {
             OnRedirectToLogin = context =>
             {
+                if (context.Response.HasStarted) return Task.CompletedTask;
                 if (context.Request.Path.StartsWithSegments("/api"))
                 {
                     context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -87,6 +88,7 @@ builder.Services.AddAuthentication(options =>
             },
             OnRedirectToAccessDenied = context =>
             {
+                if (context.Response.HasStarted) return Task.CompletedTask;
                 if (context.Request.Path.StartsWithSegments("/api"))
                 {
                     context.Response.StatusCode = StatusCodes.Status403Forbidden;

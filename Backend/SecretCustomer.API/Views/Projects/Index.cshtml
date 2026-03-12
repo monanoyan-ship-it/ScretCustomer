@@ -548,7 +548,7 @@
                             </div>
                             <!-- Assessment Settings (PersonnelAssessment için) -->
                             <div class="card mb-3" data-bind="visible: projectType() === 'PersonnelAssessment'">
-                                <div class="card-header py-2 bg-teal text-white"><i class="bi bi-person-check"></i> @Html.T("Project.AssessmentSettings", "Değerlendirme Ayarları")</div>
+                                <div class="card-header py-2 bg-info text-white"><i class="bi bi-person-check"></i> @Html.T("Project.AssessmentSettings", "Değerlendirme Ayarları")</div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
@@ -897,7 +897,7 @@
     <div class="modal fade" data-bind="css: { show: isAssessmentPanelOpen }, style: { display: isAssessmentPanelOpen() ? 'block' : 'none' }" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content" data-bind="with: assessmentProject">
-                <div class="modal-header bg-teal text-white">
+                <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-people me-2"></i><span data-bind="text: name"></span> — @Html.T("Assessment.PeriodManagement", "Dönem Yönetimi")
                     </h5>
@@ -920,7 +920,7 @@
                         </div>
                         <div class="col-md-3">
                             <small class="text-muted">@Html.T("Common.Status", "Durum")</small>
-                            <div><span class="badge" data-bind="text: statusName, css: statusBadge || 'bg-secondary'"></span></div>
+                            <div><span class="badge" data-bind="text: $root.getStatusText(status), css: $root.getStatusBadge(status)"></span></div>
                         </div>
                     </div>
                     <hr />
@@ -928,14 +928,14 @@
                     <!-- Dönemler Başlığı + Ekle Butonu -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0"><i class="bi bi-calendar3 me-1"></i>@Html.T("Assessment.Periods", "Dönemler")</h6>
-                        <button class="btn btn-sm btn-teal" data-bind="click: $root.openAddPeriodForm">
+                        <button class="btn btn-sm btn-info" data-bind="click: $root.openAddPeriodForm">
                             <i class="bi bi-plus-lg me-1"></i>@Html.T("Assessment.AddPeriod", "Dönem Ekle")
                         </button>
                     </div>
 
                     <!-- Dönem Formu (Ekle/Düzenle) -->
                     <!-- ko if: $root.isPeriodFormOpen() -->
-                    <div class="card mb-3 border-teal">
+                    <div class="card mb-3 border-info">
                         <div class="card-body">
                             <h6 class="card-title" data-bind="text: $root.isEditingPeriod() ? '@Html.T("Assessment.EditPeriod", "Dönem Düzenle")' : '@Html.T("Assessment.NewPeriod", "Yeni Dönem")'"></h6>
                             <div class="row g-2">
@@ -951,12 +951,8 @@
                                     <label class="form-label form-label-sm">@Html.T("Period.EndDate", "Bitiş") <span class="text-danger">*</span></label>
                                     <input type="date" class="form-control form-control-sm" data-bind="value: $root.periodForm.endDate" autocomplete="off" />
                                 </div>
-                                <div class="col-md-2">
-                                    <label class="form-label form-label-sm">@Html.T("Period.TargetCount", "Hedef")</label>
-                                    <input type="number" class="form-control form-control-sm" data-bind="value: $root.periodForm.targetCount" min="0" autocomplete="off" />
-                                </div>
-                                <div class="col-md-2 d-flex align-items-end gap-1">
-                                    <button class="btn btn-sm btn-teal" data-bind="click: $root.savePeriod">
+                                <div class="col-md-4 d-flex align-items-end gap-1">
+                                    <button class="btn btn-sm btn-info" data-bind="click: $root.savePeriod">
                                         <i class="bi bi-check-lg"></i> @Html.T("Common.Save", "Kaydet")
                                     </button>
                                     <button class="btn btn-sm btn-outline-secondary" data-bind="click: $root.closePeriodForm">
@@ -974,7 +970,7 @@
 
                     <!-- Dönem Listesi -->
                     <!-- ko if: $root.isAssessmentLoading() -->
-                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-teal"></div></div>
+                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-info"></div></div>
                     <!-- /ko -->
 
                     <!-- ko if: !$root.isAssessmentLoading() && $root.assessmentPeriods().length === 0 -->
@@ -1013,7 +1009,7 @@
                                         <span class="badge" data-bind="text: statusName, css: status === 'Open' ? 'bg-success' : 'bg-secondary'"></span>
                                     </td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-outline-teal" data-bind="click: $root.openParticipantsModal">
+                                        <button class="btn btn-sm btn-outline-info" data-bind="click: $root.openParticipantsModal">
                                             <i class="bi bi-people me-1"></i>@Html.T("Assessment.Manage", "Yönet")
                                         </button>
                                     </td>
@@ -1042,7 +1038,7 @@
     <div class="modal fade" data-bind="css: { show: isParticipantsModalOpen }, style: { display: isParticipantsModalOpen() ? 'block' : 'none' }" tabindex="-1" style="z-index: 1060;">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-                <div class="modal-header bg-teal text-white">
+                <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
                         <i class="bi bi-diagram-3 me-2"></i>@Html.T("Assessment.Participants", "Katılımcılar")
                         <!-- ko with: participantsPeriod -->
@@ -1054,10 +1050,10 @@
                 <div class="modal-body">
                     <!-- Araç Çubuğu -->
                     <div class="d-flex gap-2 mb-3 flex-wrap">
-                        <button class="btn btn-sm btn-outline-teal" data-bind="click: importFromOrganization, disable: isParticipantsLoading">
+                        <button class="btn btn-sm btn-outline-info" data-bind="click: importFromOrganization, disable: isParticipantsLoading">
                             <i class="bi bi-building me-1"></i>@Html.T("Assessment.ImportOrg", "Organizasyondan Aktar")
                         </button>
-                        <button class="btn btn-sm btn-teal" data-bind="click: generateAssessmentTasks, disable: isParticipantsLoading">
+                        <button class="btn btn-sm btn-info" data-bind="click: generateAssessmentTasks, disable: isParticipantsLoading">
                             <i class="bi bi-lightning me-1"></i>@Html.T("Assessment.GenerateTasks", "Görevleri Oluştur")
                         </button>
                         <button class="btn btn-sm btn-outline-success" data-bind="click: toggleEmailPanel, disable: isParticipantsLoading">
@@ -1132,14 +1128,14 @@
                             <div class="row g-2 align-items-end">
                                 <div class="col-md-5">
                                     <label class="form-label form-label-sm mb-0">@Html.T("Assessment.Personnel", "Personel")</label>
-                                    <select class="form-select form-select-sm" data-bind="value: newParticipantPersonnelId, options: availablePersonnel, optionsText: function(p) { return p.firstName + ' ' + p.lastName; }, optionsValue: 'id', optionsCaption: '-- Personel Seç --'" autocomplete="off"></select>
+                                    <select class="form-select form-select-sm" data-bind="value: newParticipantPersonnelId, options: availablePersonnel, optionsText: function(p) { return p.displayName + (p.roleName ? ' (' + p.roleName + ')' : ''); }, optionsValue: 'id', optionsCaption: '-- Personel Seç --'" autocomplete="off"></select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label form-label-sm mb-0">@Html.T("Assessment.Parent", "Üst (Yönetici)")</label>
                                     <select class="form-select form-select-sm" data-bind="value: newParticipantParentId, options: flatParticipants, optionsText: function(p) { return p.customerPersonnel ? (p.customerPersonnel.firstName + ' ' + p.customerPersonnel.lastName) : '-'; }, optionsValue: 'id', optionsCaption: '-- Üst Yok (En Üst) --'" autocomplete="off"></select>
                                 </div>
                                 <div class="col-md-3">
-                                    <button class="btn btn-sm btn-teal w-100" data-bind="click: addParticipant">
+                                    <button class="btn btn-sm btn-info w-100" data-bind="click: addParticipant">
                                         <i class="bi bi-plus-lg me-1"></i>@Html.T("Common.Add", "Ekle")
                                     </button>
                                 </div>
@@ -1149,7 +1145,7 @@
 
                     <!-- Loading -->
                     <!-- ko if: isParticipantsLoading() -->
-                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-teal"></div></div>
+                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-info"></div></div>
                     <!-- /ko -->
 
                     <!-- Hiyerarşi Ağacı -->
@@ -1161,7 +1157,84 @@
                     <!-- /ko -->
 
                     <!-- ko if: !isParticipantsLoading() && participants().length > 0 -->
-                    <div class="list-group" data-bind="template: { name: 'participant-tree-template', foreach: participants }"></div>
+                    <div class="personnel-tree">
+                        <!-- Yöneticiler (üst düzey katılımcılar + ekipleri) -->
+                        <!-- ko foreach: participantTreeData().supervisors -->
+                        <div class="tree-item tree-supervisor" data-bind="attr: { 'data-id': id }">
+                            <!-- Supervisor Row -->
+                            <div class="d-flex align-items-center justify-content-between px-3 py-2">
+                                <div>
+                                    <i class="bi bi-person-badge text-primary me-2"></i>
+                                    <span class="fw-semibold" data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
+                                    <!-- ko if: customerPersonnel && customerPersonnel.title -->
+                                    <span class="badge bg-primary ms-2" data-bind="text: customerPersonnel.title"></span>
+                                    <!-- /ko -->
+                                    <span class="badge bg-info ms-1" data-bind="visible: children && children.length, text: children ? children.length + ' ekip' : ''"></span>
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
+                                        <i class="bi bi-arrows-move"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Team Members (indented) -->
+                            <!-- ko if: children && children.length > 0 -->
+                            <div data-bind="foreach: children" class="tree-children">
+                                <div class="tree-item tree-operator d-flex align-items-center justify-content-between px-3 py-1">
+                                    <div>
+                                        <span class="tree-connector me-2">└─</span>
+                                        <i class="bi bi-person text-secondary me-2"></i>
+                                        <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
+                                        <!-- ko if: customerPersonnel && customerPersonnel.title -->
+                                        <span class="badge bg-secondary ms-2 small" data-bind="text: customerPersonnel.title"></span>
+                                        <!-- /ko -->
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
+                                            <i class="bi bi-arrows-move"></i>
+                                        </button>
+                                        <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
+                                            <i class="bi bi-box-arrow-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
+
+                        <!-- Bağımsız Katılımcılar (üst yok, alt yok) -->
+                        <!-- ko if: participantTreeData().independents.length > 0 -->
+                        <div class="tree-group">
+                            <div class="tree-section-header px-3 py-1 bg-light border-top">
+                                <small class="text-muted"><i class="bi bi-people me-1"></i>@Html.T("Assessment.IndependentParticipants", "Bağımsız Katılımcılar")</small>
+                            </div>
+                            <!-- ko foreach: participantTreeData().independents -->
+                            <div class="tree-item tree-independent d-flex align-items-center justify-content-between px-3 py-2">
+                                <div>
+                                    <i class="bi bi-person text-secondary me-2"></i>
+                                    <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
+                                    <!-- ko if: customerPersonnel && customerPersonnel.title -->
+                                    <span class="badge bg-secondary ms-2" data-bind="text: customerPersonnel.title"></span>
+                                    <!-- /ko -->
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
+                                        <i class="bi bi-arrows-move"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
+                                        <i class="bi bi-box-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>
+                        <!-- /ko -->
+                    </div>
                     <!-- /ko -->
                 </div>
             </div>
@@ -1169,25 +1242,35 @@
     </div>
     <div class="modal-backdrop fade" data-bind="css: { show: isParticipantsModalOpen }, style: { display: isParticipantsModalOpen() ? 'block' : 'none' }" style="z-index: 1055;"></div>
 
-    <!-- Participant Tree Template -->
-    <script type="text/html" id="participant-tree-template">
-        <div class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
-                <!-- ko if: $index() > 0 || $parent.parentId --><span class="text-muted me-1" style="font-size:0.75rem;">└</span><!-- /ko -->
-                <i class="bi bi-person-fill text-teal me-1"></i>
-                <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></span>
-                <!-- ko if: customerPersonnel && customerPersonnel.title -->
-                <small class="text-muted ms-1" data-bind="text: '(' + customerPersonnel.title + ')'"></small>
-                <!-- /ko -->
+    <!-- ==================== MOVE PARTICIPANT MODAL ==================== -->
+    <div class="modal fade" data-bind="css: { show: isMoveParticipantModalOpen }, style: { display: isMoveParticipantModalOpen() ? 'block' : 'none' }" tabindex="-1" style="z-index: 1070;">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark py-2">
+                    <h6 class="modal-title mb-0">
+                        <i class="bi bi-arrows-move me-1"></i>@Html.T("Assessment.MoveParticipant", "Katılımcı Taşı")
+                    </h6>
+                    <button type="button" class="btn-close" data-bind="click: closeMoveParticipantModal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- ko with: movingParticipant -->
+                    <div class="mb-3">
+                        <small class="text-muted">@Html.T("Assessment.Moving", "Taşınıyor")</small>
+                        <div class="fw-semibold" data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : '-'"></div>
+                    </div>
+                    <!-- /ko -->
+                    <div class="mb-3">
+                        <label class="form-label form-label-sm mb-1">@Html.T("Assessment.NewParent", "Yeni Üst (Yönetici)")</label>
+                        <select class="form-select form-select-sm" data-bind="value: moveTargetParentId, options: moveParentOptions, optionsText: function(p) { return p.customerPersonnel ? (p.customerPersonnel.firstName + ' ' + p.customerPersonnel.lastName) : '-'; }, optionsValue: 'id', optionsCaption: '-- Üst Yok (En Üst) --'" autocomplete="off"></select>
+                    </div>
+                    <button class="btn btn-sm btn-warning w-100" data-bind="click: confirmMoveParticipant">
+                        <i class="bi bi-check-lg me-1"></i>@Html.T("Common.Move", "Taşı")
+                    </button>
+                </div>
             </div>
-            <button class="btn btn-sm btn-outline-danger" data-bind="click: $root.removeParticipant" title="Çıkar">
-                <i class="bi bi-x-lg"></i>
-            </button>
         </div>
-        <!-- ko if: children && children.length > 0 -->
-        <div class="ms-4" data-bind="template: { name: 'participant-tree-template', foreach: children }"></div>
-        <!-- /ko -->
-    </script>
+    </div>
+    <div class="modal-backdrop fade" data-bind="css: { show: isMoveParticipantModalOpen }, style: { display: isMoveParticipantModalOpen() ? 'block' : 'none' }" style="z-index: 1065;"></div>
 
     <partial name="_DeleteConfirmationModal" />
 
@@ -1563,6 +1646,10 @@
     <div class="modal-backdrop fade" data-bind="css: { show: isSurveyModalOpen }, style: { display: isSurveyModalOpen() ? 'block' : 'none' }"></div>
 
 </div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/pages/organizations.css" asp-append-version="true" />
+}
 
 @section Scripts {
     <script>

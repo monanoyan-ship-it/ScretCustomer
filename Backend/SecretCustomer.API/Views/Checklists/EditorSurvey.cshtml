@@ -211,7 +211,7 @@
                                     @if (isAssessment)
                                     {
                                         <div class="col-md-6 mb-2">
-                                            <label class="form-label form-label-sm mb-1"><i class="bi bi-person text-teal"></i> @Html.T("Checklist.SelfText", "Öz Değerlendirme Metni")</label>
+                                            <label class="form-label form-label-sm mb-1"><i class="bi bi-person text-info"></i> @Html.T("Checklist.SelfText", "Öz Değerlendirme Metni")</label>
                                             <input type="text" class="form-control form-control-sm" data-bind="value: selfText" placeholder="@Html.T("Checklist.SelfTextPlaceholder", "Boş bırakılırsa soru metni kullanılır")" autocomplete="off" />
                                         </div>
                                     }
@@ -340,7 +340,7 @@
                                                 <div class="@(isAssessment ? "col-md-3" : "col-md-6")">@Html.T("Checklist.SubCriteriaDescription", "Açıklama")</div>
                                                 @if (isAssessment)
                                                 {
-                                                    <div class="col-md-3"><i class="bi bi-person text-teal"></i> @Html.T("Checklist.SelfDescription", "Öz Değ. Açıklaması")</div>
+                                                    <div class="col-md-3"><i class="bi bi-person text-info"></i> @Html.T("Checklist.SelfDescription", "Öz Değ. Açıklaması")</div>
                                                 }
                                                 <div class="col-md-2">@Html.T("Checklist.WeightPointsSurvey", "Ağırlık (Anket)")</div>
                                                 <div class="col-md-2">@Html.T("Language.Order", "Sıra")</div>

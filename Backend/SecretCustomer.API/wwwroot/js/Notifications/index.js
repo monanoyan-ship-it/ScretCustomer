@@ -202,7 +202,7 @@ function NotificationsIndexViewModel() {
             'ApprovalRequest': 'bg-primary text-white',
             'Assignment': 'bg-secondary text-white',
             'MeetingInvite': 'bg-purple text-white',
-            'TrainingInvite': 'bg-teal text-white',
+            'TrainingInvite': 'bg-info text-white',
             'Reminder': 'bg-orange text-white',
             'System': 'bg-dark text-white'
         };

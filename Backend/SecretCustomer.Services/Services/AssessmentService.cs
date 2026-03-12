@@ -149,12 +149,22 @@ public class AssessmentService : IAssessmentService
 
     public async Task<AssessmentParticipant> AddParticipantAsync(int assignmentPeriodId, int customerPersonnelId, int? parentId)
     {
-        // Aynı dönemde aynı kişi olmamalı
-        var exists = await _context.AssessmentParticipants
-            .AnyAsync(x => x.AssignmentPeriodId == assignmentPeriodId
+        // Aynı dönemde aynı kişi olmamalı (soft-deleted dahil kontrol - unique constraint IsDeleted filtresiz)
+        var existing = await _context.AssessmentParticipants
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(x => x.AssignmentPeriodId == assignmentPeriodId
                         && x.CustomerPersonnelId == customerPersonnelId);
-        if (exists)
-            throw new InvalidOperationException("Bu kişi zaten bu dönemde katılımcı olarak eklenmiş.");
+        if (existing != null)
+        {
+            if (!existing.IsDeleted)
+                throw new InvalidOperationException("Bu kişi zaten bu dönemde katılımcı olarak eklenmiş.");
+            // Soft-deleted kaydı geri getir
+            existing.IsDeleted = false;
+            existing.ParentId = parentId;
+            existing.UpdatedAt = Core.Helpers.TurkeyTime.Now;
+            await _context.SaveChangesAsync();
+            return existing;
+        }
 
         // ParentId döngüsel olmamalı (parent da aynı döneme ait olmalı)
         if (parentId.HasValue)
@@ -192,7 +202,7 @@ public class AssessmentService : IAssessmentService
 
         if (participant == null) return;
 
-        // Alt katılımcıları da sil (recursive soft delete)
+        // Alt katılımcıları da soft-delete
         await RemoveChildrenRecursiveAsync(participantId);
 
         participant.IsDeleted = true;
@@ -251,10 +261,14 @@ public class AssessmentService : IAssessmentService
 
         if (!personnelOrgs.Any()) return 0;
 
-        // Mevcut dönem katılımcılarını temizle (varsa)
+        // Mevcut dönem katılımcılarını soft-delete yap
         var existingParticipants = await _context.AssessmentParticipants
+            .IgnoreQueryFilters()
             .Where(x => x.AssignmentPeriodId == assignmentPeriodId)
             .ToListAsync();
+        // Soft-deleted kayıt index'i (geri getirmek için)
+        var softDeletedMap = existingParticipants
+            .ToDictionary(x => x.CustomerPersonnelId, x => x);
         foreach (var ep in existingParticipants)
             ep.IsDeleted = true;
 
@@ -278,17 +292,29 @@ public class AssessmentService : IAssessmentService
         var participantMap = new Dictionary<int, AssessmentParticipant>();
         var order = 1;
 
-        // Önce tüm katılımcıları oluştur (ParentId'siz)
+        // Soft-deleted varsa geri getir, yoksa yeni oluştur
         foreach (var personnelId in personnelIds)
         {
-            var participant = new AssessmentParticipant
+            if (softDeletedMap.TryGetValue(personnelId, out var existing))
             {
-                AssignmentPeriodId = assignmentPeriodId,
-                CustomerPersonnelId = personnelId,
-                Order = order++
-            };
-            _context.AssessmentParticipants.Add(participant);
-            participantMap[personnelId] = participant;
+                // Geri getir
+                existing.IsDeleted = false;
+                existing.ParentId = null; // Sonra set edilecek
+                existing.Order = order++;
+                existing.UpdatedAt = Core.Helpers.TurkeyTime.Now;
+                participantMap[personnelId] = existing;
+            }
+            else
+            {
+                var participant = new AssessmentParticipant
+                {
+                    AssignmentPeriodId = assignmentPeriodId,
+                    CustomerPersonnelId = personnelId,
+                    Order = order++
+                };
+                _context.AssessmentParticipants.Add(participant);
+                participantMap[personnelId] = participant;
+            }
         }
 
         await _context.SaveChangesAsync();
