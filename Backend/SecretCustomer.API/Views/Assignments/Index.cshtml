@@ -720,6 +720,9 @@
                                         <th>@Html.T("Period.DateRange", "Tarih Aralığı")</th>
                                         <th class="text-center">@Html.T("Period.DailyTarget", "Günlük Hedef")</th>
                                         <th>@Html.T("Common.Status", "Durum")</th>
+                                        <!-- ko if: $parent.projectType === 'PersonnelAssessment' -->
+                                        <th class="text-center">@Html.T("Assessment.Participants", "Katılımcılar")</th>
+                                        <!-- /ko -->
                                     </tr>
                                 </thead>
                                 <tbody data-bind="foreach: periods">
@@ -738,6 +741,13 @@
                                         <td>
                                             <span class="badge" data-bind="css: status === 'Open' ? 'bg-success' : 'bg-secondary', text: status === 'Open' ? '@Html.T("Period.Open", "Açık")' : '@Html.T("Period.Closed", "Kapalı")'"></span>
                                         </td>
+                                        <!-- ko if: $parents[1].projectType === 'PersonnelAssessment' -->
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-teal" data-bind="click: function() { $root.openParticipantsModal($data); }">
+                                                <i class="bi bi-people"></i> @Html.T("Assessment.ManageParticipants", "Yönet")
+                                            </button>
+                                        </td>
+                                        <!-- /ko -->
                                     </tr>
                                 </tbody>
                             </table>
@@ -1041,6 +1051,96 @@
             </div>
         </div>
     </div>
+
+    <!-- Assessment Participants Modal -->
+    <div class="modal fade" id="participantsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-teal text-white">
+                    <h5 class="modal-title"><i class="bi bi-people"></i> @Html.T("Assessment.Participants", "Katılımcılar")</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Toolbar -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary" data-bind="click: importParticipantsFromOrg, disable: participantsLoading()">
+                                <i class="bi bi-diagram-3"></i> @Html.T("Assessment.ImportFromOrg", "Organizasyondan Aktar")
+                            </button>
+                            <button class="btn btn-sm btn-outline-success ms-1" data-bind="click: showAddParticipant, disable: participantsLoading()">
+                                <i class="bi bi-person-plus"></i> @Html.T("Assessment.AddParticipant", "Katılımcı Ekle")
+                            </button>
+                        </div>
+                        <span class="badge bg-secondary" data-bind="text: participantsList().length + ' @Html.T("Assessment.Person", "kişi")'"></span>
+                    </div>
+
+                    <!-- Add participant form -->
+                    <div class="card mb-3" data-bind="visible: showAddParticipantForm()">
+                        <div class="card-body py-2">
+                            <div class="row align-items-end">
+                                <div class="col-md-5">
+                                    <label class="form-label small">@Html.T("Assessment.Personnel", "Personel")</label>
+                                    <select class="form-select form-select-sm" data-bind="value: newParticipantPersonnelId, options: availablePersonnel, optionsText: function(p) { return p.firstName + ' ' + p.lastName; }, optionsValue: 'id', optionsCaption: '@Html.T("Common.Select", "Seçiniz...")'"></select>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label small">@Html.T("Assessment.ParentParticipant", "Üstü")</label>
+                                    <select class="form-select form-select-sm" data-bind="value: newParticipantParentId, options: participantsList, optionsText: function(p) { return p.customerPersonnel ? (p.customerPersonnel.firstName + ' ' + p.customerPersonnel.lastName) : 'ID: ' + p.id; }, optionsValue: 'id', optionsCaption: '@Html.T("Assessment.NoParent", "Üst yok (Kök)")'"></select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button class="btn btn-sm btn-success w-100" data-bind="click: addParticipant"><i class="bi bi-check"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loading -->
+                    <div data-bind="visible: participantsLoading()" class="text-center py-4">
+                        <div class="spinner-border text-primary"></div>
+                    </div>
+
+                    <!-- Tree view -->
+                    <div data-bind="visible: !participantsLoading() && participantsList().length > 0">
+                        <div class="list-group" data-bind="foreach: participantsTree">
+                            <div class="participant-node" data-bind="template: { name: 'participant-node-template', data: $data }"></div>
+                        </div>
+                    </div>
+
+                    <!-- Empty -->
+                    <div data-bind="visible: !participantsLoading() && participantsList().length === 0" class="text-center text-muted py-4">
+                        <i class="bi bi-people fs-1"></i>
+                        <p class="mt-2">@Html.T("Assessment.NoParticipants", "Henüz katılımcı eklenmemiş")</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">@Html.T("Common.Close", "Kapat")</button>
+                    <button class="btn btn-primary" data-bind="click: generateAssessmentTasks, disable: participantsLoading() || participantsList().length === 0">
+                        <i class="bi bi-play-circle"></i> @Html.T("Assessment.GenerateTasks", "Değerlendirmeleri Başlat")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participant Node Template (recursive tree) -->
+    <script type="text/html" id="participant-node-template">
+        <div class="list-group-item d-flex justify-content-between align-items-center" data-bind="style: { paddingLeft: (($data.level || 0) * 24 + 12) + 'px' }">
+            <div>
+                <i class="bi bi-person-fill text-muted me-1"></i>
+                <span data-bind="text: customerPersonnel ? (customerPersonnel.firstName + ' ' + customerPersonnel.lastName) : 'ID: ' + customerPersonnelId"></span>
+                <!-- ko if: $data.level === 0 -->
+                <span class="badge bg-teal ms-1">@Html.T("Assessment.Root", "Kök")</span>
+                <!-- /ko -->
+            </div>
+            <button class="btn btn-sm btn-outline-danger" data-bind="click: function() { $root.removeParticipant($data); }">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+        <!-- ko if: $data.children && $data.children.length > 0 -->
+        <!-- ko foreach: children -->
+        <div data-bind="template: { name: 'participant-node-template', data: Object.assign({}, $data, { level: ($parent.level || 0) + 1 }) }"></div>
+        <!-- /ko -->
+        <!-- /ko -->
+    </script>
 
 </div> <!-- End of assignments-app -->
 

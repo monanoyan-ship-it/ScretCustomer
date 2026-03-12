@@ -6672,6 +6672,40 @@
   <LocaleResource Name="AssessmentMode.Mode360">
     <Value>360 Grados</Value>
   </LocaleResource>
+  <!-- Assessment UI Keys -->
+  <LocaleResource Name="Assessment.Participants">
+    <Value>Participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ManageParticipants">
+    <Value>Gestionar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ImportFromOrg">
+    <Value>Importar desde Organización</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.AddParticipant">
+    <Value>Agregar Participante</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ParentParticipant">
+    <Value>Superior</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParent">
+    <Value>Sin superior (Raíz)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParticipants">
+    <Value>Aún no se han agregado participantes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Root">
+    <Value>Raíz</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Person">
+    <Value>persona(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.GenerateTasks">
+    <Value>Iniciar Evaluaciones</Value>
+  </LocaleResource>
   <LocaleResource Name="Question.GroupNamePlaceholder">
     <Value>Nombre del grupo...</Value>
   </LocaleResource>

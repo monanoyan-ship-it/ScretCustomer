@@ -103,7 +103,11 @@ public class AssignmentService : IAssignmentService
             RedCardCount = dto.RedCardCount,
             // Proje Firma/Organizasyon Bilgileri
             CustomerName = assignment.Project?.Customer?.CompanyName,
-            OrganizationName = assignment.Project?.Organization?.Name
+            OrganizationName = assignment.Project?.Organization?.Name,
+            CustomerId = assignment.Project?.CustomerId,
+            ProjectType = assignment.Project != null
+                ? ProjectTypes.GetById(assignment.Project.ProjectTypeId)?.SystemName
+                : null
         };
 
         // Get evaluation details

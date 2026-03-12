@@ -1308,6 +1308,197 @@ function AssignmentsViewModel() {
         return self.isEditing() ? T('Common.Update', 'Güncelle') : T('Common.Create', 'Oluştur');
     };
 
+    // ===== Assessment Participants Management =====
+    self.participantsLoading = ko.observable(false);
+    self.participantsList = ko.observableArray([]);
+    self.participantsTree = ko.observableArray([]);
+    self.showAddParticipantForm = ko.observable(false);
+    self.newParticipantPersonnelId = ko.observable(null);
+    self.newParticipantParentId = ko.observable(null);
+    self.availablePersonnel = ko.observableArray([]);
+    self.currentPeriodId = ko.observable(null);
+    self.currentProjectId = ko.observable(null);
+
+    self.openParticipantsModal = function(period) {
+        var detail = self.selectedDetail();
+        self.currentPeriodId(period.id);
+        self.currentProjectId(detail.projectId);
+        self.showAddParticipantForm(false);
+        self.loadParticipants(period.id);
+
+        var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('participantsModal'));
+        modal.show();
+    };
+
+    self.loadParticipants = function(periodId) {
+        self.participantsLoading(true);
+        fetch('/api/assessment/participants/' + periodId, { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                self.participantsList(data);
+                self.participantsTree(self.buildTree(data));
+            })
+            .catch(function(error) {
+                console.error('Error loading participants:', error);
+                toastr.error(T('Assessment.LoadError', 'Katılımcılar yüklenirken hata oluştu.'));
+            })
+            .finally(function() {
+                self.participantsLoading(false);
+            });
+    };
+
+    self.buildTree = function(participants) {
+        var map = {};
+        participants.forEach(function(p) { map[p.id] = Object.assign({}, p, { children: [], level: 0 }); });
+        var roots = [];
+        participants.forEach(function(p) {
+            if (p.parentId && map[p.parentId]) {
+                map[p.id].level = (map[p.parentId].level || 0) + 1;
+                map[p.parentId].children.push(map[p.id]);
+            } else {
+                roots.push(map[p.id]);
+            }
+        });
+        return roots;
+    };
+
+    self.showAddParticipant = function() {
+        self.showAddParticipantForm(true);
+        self.newParticipantPersonnelId(null);
+        self.newParticipantParentId(null);
+
+        // Load available personnel for this customer
+        var detail = self.selectedDetail();
+        if (detail && detail.customerId) {
+            fetch('/api/customer-personnel?customerId=' + detail.customerId + '&pageSize=1000', { credentials: 'include' })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    var items = data.items || data;
+                    self.availablePersonnel(items);
+                });
+        }
+    };
+
+    self.addParticipant = function() {
+        var personnelId = self.newParticipantPersonnelId();
+        if (!personnelId) {
+            toastr.warning(T('Assessment.SelectPersonnel', 'Personel seçiniz.'));
+            return;
+        }
+
+        fetch('/api/assessment/participants', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                assignmentPeriodId: self.currentPeriodId(),
+                customerPersonnelId: parseInt(personnelId),
+                parentId: self.newParticipantParentId() ? parseInt(self.newParticipantParentId()) : null
+            })
+        })
+            .then(function(res) {
+                if (!res.ok) return res.json().then(function(err) { throw new Error(err.message); });
+                return res.json();
+            })
+            .then(function() {
+                toastr.success(T('Assessment.ParticipantAdded', 'Katılımcı eklendi.'));
+                self.showAddParticipantForm(false);
+                self.loadParticipants(self.currentPeriodId());
+            })
+            .catch(function(error) {
+                toastr.error(error.message || T('Assessment.AddError', 'Katılımcı eklenirken hata oluştu.'));
+            });
+    };
+
+    self.removeParticipant = function(participant) {
+        showConfirmModal({
+            title: T('Assessment.RemoveTitle', 'Katılımcı Çıkar'),
+            message: T('Assessment.RemoveConfirm', 'Bu katılımcıyı ve alt katılımcılarını çıkarmak istediğinizden emin misiniz?'),
+            type: 'danger',
+            confirmText: T('Common.Remove', 'Çıkar'),
+            confirmIcon: 'bi-trash',
+            onConfirm: function() {
+                fetch('/api/assessment/participants/' + participant.id, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                })
+                    .then(function(res) {
+                        if (!res.ok) throw new Error('Delete failed');
+                        return res.json();
+                    })
+                    .then(function() {
+                        toastr.success(T('Assessment.ParticipantRemoved', 'Katılımcı çıkarıldı.'));
+                        self.loadParticipants(self.currentPeriodId());
+                    })
+                    .catch(function(error) {
+                        toastr.error(T('Assessment.RemoveError', 'Katılımcı çıkarılırken hata oluştu.'));
+                    });
+            }
+        });
+    };
+
+    self.importParticipantsFromOrg = function() {
+        var periodId = self.currentPeriodId();
+        var projectId = self.currentProjectId();
+        if (!periodId || !projectId) return;
+
+        self.participantsLoading(true);
+        fetch('/api/assessment/participants/import/' + periodId, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ projectId: projectId })
+        })
+            .then(function(res) {
+                if (!res.ok) return res.json().then(function(err) { throw new Error(err.message); });
+                return res.json();
+            })
+            .then(function(data) {
+                toastr.success(data.message || T('Assessment.ImportSuccess', 'Organizasyon aktarıldı.'));
+                self.loadParticipants(periodId);
+            })
+            .catch(function(error) {
+                self.participantsLoading(false);
+                toastr.error(error.message || T('Assessment.ImportError', 'Organizasyon aktarılırken hata oluştu.'));
+            });
+    };
+
+    self.generateAssessmentTasks = function() {
+        var periodId = self.currentPeriodId();
+        var projectId = self.currentProjectId();
+        if (!periodId || !projectId) return;
+
+        showConfirmModal({
+            title: T('Assessment.GenerateTasksTitle', 'Değerlendirmeleri Başlat'),
+            message: T('Assessment.GenerateTasksConfirm', 'Tüm katılımcılar için değerlendirme görevleri oluşturulacak. Devam etmek istiyor musunuz?'),
+            type: 'primary',
+            confirmText: T('Assessment.Generate', 'Başlat'),
+            confirmIcon: 'bi-play-circle',
+            onConfirm: function() {
+                self.participantsLoading(true);
+                fetch('/api/assessment/generate-tasks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ assignmentPeriodId: periodId, projectId: projectId })
+                })
+                    .then(function(res) {
+                        if (!res.ok) return res.json().then(function(err) { throw new Error(err.message); });
+                        return res.json();
+                    })
+                    .then(function(data) {
+                        toastr.success(data.message || T('Assessment.TasksGenerated', 'Değerlendirme görevleri oluşturuldu.'));
+                    })
+                    .catch(function(error) {
+                        toastr.error(error.message || T('Assessment.GenerateError', 'Görevler oluşturulurken hata oluştu.'));
+                    })
+                    .finally(function() {
+                        self.participantsLoading(false);
+                    });
+            }
+        });
+    };
+
     // ===== Initialize =====
     // Once EnumsService'i yukle, sonra diger verileri cek
     EnumsService.load().then(function() {

@@ -2666,6 +2666,40 @@
   <LocaleResource Name="AssessmentMode.Mode360">
     <Value>360 Derece</Value>
   </LocaleResource>
+  <!-- Assessment UI Keys -->
+  <LocaleResource Name="Assessment.Participants">
+    <Value>Katılımcılar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ManageParticipants">
+    <Value>Yönet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ImportFromOrg">
+    <Value>Organizasyondan Aktar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.AddParticipant">
+    <Value>Katılımcı Ekle</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Personnel">
+    <Value>Personel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ParentParticipant">
+    <Value>Üstü</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParent">
+    <Value>Üst yok (Kök)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParticipants">
+    <Value>Henüz katılımcı eklenmemiş</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Root">
+    <Value>Kök</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Person">
+    <Value>kişi</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.GenerateTasks">
+    <Value>Değerlendirmeleri Başlat</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Çoktan Seçmeli</Value>

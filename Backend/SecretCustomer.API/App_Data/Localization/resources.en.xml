@@ -4711,6 +4711,40 @@
   <LocaleResource Name="AssessmentMode.Mode360">
     <Value>360 Degree</Value>
   </LocaleResource>
+  <!-- Assessment UI Keys -->
+  <LocaleResource Name="Assessment.Participants">
+    <Value>Participants</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ManageParticipants">
+    <Value>Manage</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ImportFromOrg">
+    <Value>Import from Organization</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.AddParticipant">
+    <Value>Add Participant</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Personnel">
+    <Value>Personnel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ParentParticipant">
+    <Value>Superior</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParent">
+    <Value>No parent (Root)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParticipants">
+    <Value>No participants added yet</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Root">
+    <Value>Root</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Person">
+    <Value>person(s)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.GenerateTasks">
+    <Value>Start Assessments</Value>
+  </LocaleResource>
   <!-- TypeDefinitions - Question Types -->
   <LocaleResource Name="QuestionType.MultipleChoice">
     <Value>Multiple Choice</Value>

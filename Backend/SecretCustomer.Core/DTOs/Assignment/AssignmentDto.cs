@@ -129,6 +129,11 @@ public class AssignmentDetailDto : AssignmentDto
     /// Proje müşteri ID (şube ekleme için gerekli)
     /// </summary>
     public int? CustomerId { get; set; }
+
+    /// <summary>
+    /// Proje tipi (PersonnelAssessment ise katılımcılar bölümü gösterilir)
+    /// </summary>
+    public string? ProjectType { get; set; }
 }
 
 /// <summary>

@@ -6734,6 +6734,40 @@
   <LocaleResource Name="AssessmentMode.Mode360">
     <Value>360 Grad</Value>
   </LocaleResource>
+  <!-- Assessment UI Keys -->
+  <LocaleResource Name="Assessment.Participants">
+    <Value>Teilnehmer</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ManageParticipants">
+    <Value>Verwalten</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ImportFromOrg">
+    <Value>Aus Organisation importieren</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.AddParticipant">
+    <Value>Teilnehmer hinzufügen</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Personnel">
+    <Value>Personal</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.ParentParticipant">
+    <Value>Vorgesetzter</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParent">
+    <Value>Kein Vorgesetzter (Wurzel)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.NoParticipants">
+    <Value>Noch keine Teilnehmer hinzugefügt</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Root">
+    <Value>Wurzel</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.Person">
+    <Value>Person(en)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Assessment.GenerateTasks">
+    <Value>Bewertungen starten</Value>
+  </LocaleResource>
   <LocaleResource Name="QuestionType.Likert">
     <Value>Likert-Skala</Value>
   </LocaleResource>
