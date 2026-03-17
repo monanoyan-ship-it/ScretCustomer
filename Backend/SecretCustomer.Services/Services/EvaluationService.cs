@@ -704,7 +704,9 @@ public class EvaluationService : IEvaluationService
         return new EvaluationFormDto
         {
             ProjectId = project.Id,
+            AssignmentId = evaluation.AssignmentId,
             EvaluationId = evaluation.Id,
+            CustomerDealerId = evaluation.CustomerDealerId,
             Status = EvaluationStatuses.GetById(evaluation.StatusId)?.SystemName ?? "",
             ProjectName = !string.IsNullOrEmpty(project.Code) ? $"{project.Code} - {project.Name}" : (project.Name ?? ""),
             CustomerName = project.Customer?.CompanyName,
@@ -714,8 +716,8 @@ public class EvaluationService : IEvaluationService
             ScoringMethod = project.Checklist?.ScoringMethodId.ToString(),
             MaxTotalPoints = project.Checklist?.MaxTotalPoints ?? 100,
             CallId = evaluation.CallId,
-            CallDate = evaluation.CallDate,
-            CallTime = evaluation.CallTime,
+            CallDate = evaluation.ControlDate ?? evaluation.CallDate,
+            CallTime = evaluation.ControlTime ?? evaluation.CallTime,
             Duration = evaluation.Duration,
             Descriptions = DeserializeDescriptions(evaluation.DescriptionsJson),
             // Frontend'e CustomerPersonnel ID'sini evaluatedPersonnelId olarak gönder

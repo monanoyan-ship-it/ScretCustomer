@@ -121,7 +121,9 @@ public class FieldWorkerApiController : BaseApiController
     /// Atama için erişilebilir bayiler (ziyaret edilmemiş olanlar)
     /// </summary>
     [HttpGet("dealers-for-assignment")]
-    public async Task<IActionResult> GetDealersForAssignment([FromQuery] int assignmentId)
+    public async Task<IActionResult> GetDealersForAssignment(
+        [FromQuery] int assignmentId,
+        [FromQuery] int? includeCurrentDealerId = null)
     {
         try
         {
@@ -129,7 +131,7 @@ public class FieldWorkerApiController : BaseApiController
             if (userId == 0)
                 return Unauthorized(CreateErrorResponse("Kullanıcı kimliği bulunamadı"));
 
-            var dealers = await _fieldWorkerService.GetDealersForAssignmentAsync(userId, assignmentId);
+            var dealers = await _fieldWorkerService.GetDealersForAssignmentAsync(userId, assignmentId, includeCurrentDealerId);
             return Ok(dealers);
         }
         catch (Exception ex)

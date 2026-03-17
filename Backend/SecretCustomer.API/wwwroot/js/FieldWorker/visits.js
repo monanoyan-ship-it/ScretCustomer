@@ -523,6 +523,9 @@ function FieldWorkerVisitsViewModel() {
 
     self.openVisitInPopup = function(visit) {
         var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+        if (visit.assignmentId) {
+            url += '&assignmentId=' + visit.assignmentId;
+        }
         var width = 1200;
         var height = 800;
         var left = (screen.width - width) / 2;
@@ -571,6 +574,9 @@ function FieldWorkerVisitsViewModel() {
     self.editVisit = function(visit) {
         if (visit.evaluationId) {
             var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+            if (visit.assignmentId) {
+                url += '&assignmentId=' + visit.assignmentId;
+            }
             var width = 1200;
             var height = 800;
             var left = (screen.width - width) / 2;
@@ -604,6 +610,9 @@ function FieldWorkerVisitsViewModel() {
         var visit = self.selectedVisit();
         if (visit && visit.evaluationId) {
             var url = '/FieldWorker/VisitPopup?evaluationId=' + visit.evaluationId;
+            if (visit.assignmentId) {
+                url += '&assignmentId=' + visit.assignmentId;
+            }
             var width = 1200;
             var height = 800;
             var left = (screen.width - width) / 2;

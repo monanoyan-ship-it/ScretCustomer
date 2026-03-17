@@ -244,6 +244,7 @@ public class EvaluationFormDto
     public int ProjectId { get; set; }
     public int? AssignmentId { get; set; }
     public int? EvaluationId { get; set; }
+    public int? CustomerDealerId { get; set; }
     public string Status { get; set; } = "New";
 
     // Proje/Atama bilgileri

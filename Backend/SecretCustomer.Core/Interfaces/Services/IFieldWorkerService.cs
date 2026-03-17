@@ -22,7 +22,7 @@ public interface IFieldWorkerService
     /// <summary>
     /// Atama için erişilebilir bayileri getir (ziyaret edilmemiş olanlar)
     /// </summary>
-    Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId);
+    Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId, int? includeCurrentDealerId = null);
 
     /// <summary>
     /// Tüm atamalardaki ziyaret bekleyen şubeleri getir (Dashboard için)

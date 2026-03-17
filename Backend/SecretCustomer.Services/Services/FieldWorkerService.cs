@@ -206,7 +206,7 @@ public class FieldWorkerService : IFieldWorkerService
         }).ToList();
     }
 
-    public async Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId)
+    public async Task<List<FieldWorkerDealerDto>> GetDealersForAssignmentAsync(int userId, int assignmentId, int? includeCurrentDealerId = null)
     {
         // Atamayı bul
         var assignment = await _context.Assignments
@@ -216,10 +216,13 @@ public class FieldWorkerService : IFieldWorkerService
             return new List<FieldWorkerDealerDto>();
 
         // AssignmentCustomerDealers üzerinden atamaya eklenmiş ve henüz ziyaret edilmemiş bayileri getir
+        // includeCurrentDealerId: edit modunda mevcut bayi zaten EvaluationId'ye bağlı olduğundan listeye dahil et
         var dealers = await _context.Set<AssignmentCustomerDealer>()
             .Include(acd => acd.CustomerDealer)
                 .ThenInclude(d => d.Customer)
-            .Where(acd => acd.AssignmentId == assignmentId && acd.EvaluationId == null)
+            .Where(acd => acd.AssignmentId == assignmentId
+                       && (acd.EvaluationId == null
+                           || (includeCurrentDealerId.HasValue && acd.CustomerDealerId == includeCurrentDealerId.Value)))
             .Where(acd => acd.CustomerDealer.IsActive)
             .OrderBy(acd => acd.CustomerDealer.Name)
             .ToListAsync();
@@ -337,6 +340,7 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 EvaluationId = e.Id,
                 VisitId = e.VisitId,
+                AssignmentId = e.AssignmentId,
                 CustomerDealerId = e.CustomerDealerId,
                 CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,
@@ -379,6 +383,7 @@ public class FieldWorkerService : IFieldWorkerService
             {
                 EvaluationId = e.Id,
                 VisitId = e.VisitId,
+                AssignmentId = e.AssignmentId,
                 CustomerDealerId = e.CustomerDealerId,
                 CustomerDealerName = e.CustomerDealer != null ? e.CustomerDealer.Name : null,
                 CustomerDealerCity = e.CustomerDealer != null ? e.CustomerDealer.City : null,

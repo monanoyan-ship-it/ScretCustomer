@@ -81,6 +81,7 @@ public class VisitSummaryDto
     public DateTime CreatedAt { get; set; }
     public DateTime? ControlDate { get; set; }
     public string? PeriodName { get; set; }
+    public int? AssignmentId { get; set; }
 }
 
 /// <summary>

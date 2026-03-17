@@ -1,7 +1,7 @@
 ﻿// FieldWorker Visit Popup ViewModel
 // popup-maximum.js'den kopyalandı - şube seçimi eklendi
 
-var FieldWorkerVisitPopupViewModel = function() {
+var FieldWorkerVisitPopupViewModel = function () {
     var self = this;
     var config = window.popupConfig || {};
 
@@ -27,7 +27,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     self.callTime = ko.observable('');
     self.duration = ko.observable('');
     self.controlTime = ko.observable('');
-    self.descriptions = ko.observableArray([{text: ko.observable('')}]); // Wrapper object pattern
+    self.descriptions = ko.observableArray([{ text: ko.observable('') }]); // Wrapper object pattern
     self.pastDescriptions = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
     self.isLoadingPersonnel = ko.observable(false);
@@ -53,18 +53,18 @@ var FieldWorkerVisitPopupViewModel = function() {
     self._personnelDropdownTimeout = null;
 
     // Filtered personnel based on search text (startsWith pattern - Index.js ile aynı)
-    self.filteredPersonnel = ko.computed(function() {
+    self.filteredPersonnel = ko.computed(function () {
         var search = self.personnelSearchText().toLowerCase().trim();
         var personnel = self.availablePersonnel();
         if (search.length < 1) return personnel.slice(0, 20); // Show first 20 if no search
-        return personnel.filter(function(p) {
+        return personnel.filter(function (p) {
             // startsWith - isim veya sicil no ile başlayanlar
             return (p.name || '').toLowerCase().indexOf(search) === 0 ||
-                   (p.sicilNo || '').toLowerCase().indexOf(search) === 0;
+                (p.sicilNo || '').toLowerCase().indexOf(search) === 0;
         }).slice(0, 20); // Limit to 20 results
     });
 
-    self.showPersonnelDropdown = function() {
+    self.showPersonnelDropdown = function () {
         if (self._personnelDropdownTimeout) {
             clearTimeout(self._personnelDropdownTimeout);
             self._personnelDropdownTimeout = null;
@@ -72,56 +72,56 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.isPersonnelDropdownVisible(true);
     };
 
-    self.hidePersonnelDropdownDelayed = function() {
-        self._personnelDropdownTimeout = setTimeout(function() {
+    self.hidePersonnelDropdownDelayed = function () {
+        self._personnelDropdownTimeout = setTimeout(function () {
             self.isPersonnelDropdownVisible(false);
         }, 200);
     };
 
-    self.selectPersonnel = function(personnel) {
+    self.selectPersonnel = function (personnel) {
         self.evaluatedPersonnelId(personnel.id);
         self.selectedPersonnelName(personnel.name);
         self.personnelSearchText(personnel.name); // Input'a seçilen adı yaz
         self.isPersonnelDropdownVisible(false);
     };
 
-    self.clearSelectedPersonnel = function() {
+    self.clearSelectedPersonnel = function () {
         self.evaluatedPersonnelId(null);
         self.selectedPersonnelName('');
         self.personnelSearchText('');
     };
 
-    self.enableNewPersonnelMode = function() {
+    self.enableNewPersonnelMode = function () {
         self.isNewPersonnelMode(true);
         self.evaluatedPersonnelId(null);
         self.selectedPersonnelName('');
         self.personnelSearchText('');
     };
 
-    self.cancelNewPersonnelMode = function() {
+    self.cancelNewPersonnelMode = function () {
         self.isNewPersonnelMode(false);
         self.newPersonnelFirstName('');
         self.newPersonnelLastName('');
     };
 
     // Açıklama ekle
-    self.addDescription = function() {
-        self.descriptions.push({text: ko.observable('')});
+    self.addDescription = function () {
+        self.descriptions.push({ text: ko.observable('') });
     };
 
     // Açıklama kaldır
-    self.removeDescription = function(index) {
+    self.removeDescription = function (index) {
         if (self.descriptions().length > 1) {
             self.descriptions.splice(index, 1);
         }
     };
 
     // Geçmiş açıklamalar (autocomplete)
-    self.loadPastDescriptions = function() {
+    self.loadPastDescriptions = function () {
         fetch('/api/evaluations/past-descriptions', { credentials: 'include' })
-            .then(function(r) { return r.ok ? r.json() : []; })
-            .then(function(data) { self.pastDescriptions(data); })
-            .catch(function() { /* ignore */ });
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (data) { self.pastDescriptions(data); })
+            .catch(function () { /* ignore */ });
     };
     self.loadPastDescriptions();
 
@@ -145,7 +145,7 @@ var FieldWorkerVisitPopupViewModel = function() {
 
     // Helper: Generate score options array [0, 1, 2, ..., maxPoints]
     // Müşteri isteği: ağırlık=15, max=2 ise → 0,1,2 seçenekleri
-    self.getScoreOptions = function(maxPoints) {
+    self.getScoreOptions = function (maxPoints) {
         var max = parseInt(maxPoints) || 5;
         if (max > 10) max = 10; // Max 10 seçenek göster (UI için)
         var options = [];
@@ -160,7 +160,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // ========================
 
     // Get or create answer for a question
-    self.getAnswer = function(questionId, isRequired) {
+    self.getAnswer = function (questionId, isRequired) {
         if (!self.answers[questionId]) {
             self.answers[questionId] = {
                 questionId: questionId,
@@ -178,24 +178,24 @@ var FieldWorkerVisitPopupViewModel = function() {
             };
 
             // Subscribe to changes to recalculate scores
-            self.answers[questionId].answerNumeric.subscribe(function(newValue) {
+            self.answers[questionId].answerNumeric.subscribe(function (newValue) {
                 // Puan seçildiğinde otomatik "Dahil" yap
                 if (newValue !== null && newValue !== '') {
                     self.answers[questionId].isIncluded(true);
                 }
                 self.calculateScores();
             });
-            self.answers[questionId].answerText.subscribe(function() { self.calculateScores(); });
-            self.answers[questionId].givenPoints.subscribe(function(newValue) {
+            self.answers[questionId].answerText.subscribe(function () { self.calculateScores(); });
+            self.answers[questionId].givenPoints.subscribe(function (newValue) {
                 // Puan girildiğinde otomatik "Dahil" yap
                 if (newValue !== null && newValue !== '') {
                     self.answers[questionId].isIncluded(true);
                 }
                 self.calculateScores();
             });
-            self.answers[questionId].applyPenalty.subscribe(function() { self.calculateScores(); });
-            self.answers[questionId].selectedPenaltyType.subscribe(function() { self.calculateScores(); });
-            self.answers[questionId].isIncluded.subscribe(function(newValue) {
+            self.answers[questionId].applyPenalty.subscribe(function () { self.calculateScores(); });
+            self.answers[questionId].selectedPenaltyType.subscribe(function () { self.calculateScores(); });
+            self.answers[questionId].isIncluded.subscribe(function (newValue) {
                 // "Hariç"e geçirildiğinde puanları temizle
                 if (!newValue) {
                     self.answers[questionId].answerNumeric(null);
@@ -208,7 +208,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     };
 
     // Toggle sub-criteria selection
-    self.toggleSubCriteria = function(questionId, subCriteriaId) {
+    self.toggleSubCriteria = function (questionId, subCriteriaId) {
         var answer = self.getAnswer(questionId);
         var arr = answer.selectedSubCriteria();
         var idx = arr.indexOf(subCriteriaId);
@@ -220,7 +220,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     };
 
     // Check if sub-criteria is selected
-    self.isSubCriteriaSelected = function(questionId, subCriteriaId) {
+    self.isSubCriteriaSelected = function (questionId, subCriteriaId) {
         var answer = self.getAnswer(questionId);
         return answer.selectedSubCriteria().indexOf(subCriteriaId) >= 0;
     };
@@ -242,7 +242,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     }
 
     // Dosya seçildiğinde bekleyenler listesine ekle
-    self.selectAttachment = function(data, event) {
+    self.selectAttachment = function (data, event) {
         var files = event.target.files;
         if (!files || files.length === 0) return;
 
@@ -262,45 +262,45 @@ var FieldWorkerVisitPopupViewModel = function() {
     };
 
     // Bekleyen dosyayı kaldır
-    self.removePendingAttachment = function(attachment) {
+    self.removePendingAttachment = function (attachment) {
         self.pendingAttachments.remove(attachment);
     };
 
     // Yüklenmiş dosyayı sil
-    self.deleteAttachment = function(attachment) {
+    self.deleteAttachment = function (attachment) {
         showConfirmModal({
             title: T('Common.Delete', 'Sil'),
             message: T('Evaluation.ConfirmDeleteAttachment', 'Dosyayı silmek istediğinize emin misiniz?'),
             confirmText: T('Common.Delete', 'Sil'),
             confirmClass: 'btn-danger',
-            onConfirm: function() {
+            onConfirm: function () {
                 fetch('/api/evaluations/attachments/' + attachment.id, {
                     method: 'DELETE',
                     credentials: 'include'
                 })
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Delete failed');
-                    return response.json();
-                })
-                .then(function() {
-                    self.uploadedAttachments.remove(attachment);
-                    toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
-                })
-                .catch(function(error) {
-                    console.error('Delete error:', error);
-                    toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
-                });
+                    .then(function (response) {
+                        if (!response.ok) throw new Error('Delete failed');
+                        return response.json();
+                    })
+                    .then(function () {
+                        self.uploadedAttachments.remove(attachment);
+                        toastr.success(T('Evaluation.FileDeleted', 'Dosya silindi'));
+                    })
+                    .catch(function (error) {
+                        console.error('Delete error:', error);
+                        toastr.error(T('Evaluation.FileDeleteError', 'Dosya silinirken hata oluştu'));
+                    });
             }
         });
     };
 
     // Dosya indir
-    self.downloadAttachment = function(attachment) {
+    self.downloadAttachment = function (attachment) {
         window.open('/api/evaluations/attachments/' + attachment.id + '/download', '_blank');
     };
 
     // Tüm bekleyen dosyaları yükle (form kaydedildikten sonra çağrılır)
-    self.uploadPendingAttachments = function(evaluationId) {
+    self.uploadPendingAttachments = function (evaluationId) {
         var pending = self.pendingAttachments();
         if (pending.length === 0) {
             return Promise.resolve();
@@ -308,7 +308,7 @@ var FieldWorkerVisitPopupViewModel = function() {
 
         self.isUploadingFile(true);
 
-        var uploadPromises = pending.map(function(attachment) {
+        var uploadPromises = pending.map(function (attachment) {
             var formData = new FormData();
             formData.append('file', attachment.file);
 
@@ -317,44 +317,44 @@ var FieldWorkerVisitPopupViewModel = function() {
                 credentials: 'include',
                 body: formData
             })
-            .then(function(response) {
-                if (!response.ok) throw new Error('Upload failed');
-                return response.json();
-            })
-            .then(function(result) {
-                // Yüklenen dosyayı listeye ekle
-                self.uploadedAttachments.push({
-                    id: result.attachmentId,
-                    fileName: result.fileName,
-                    fileSize: result.fileSize,
-                    sizeDisplay: formatFileSize(result.fileSize)
+                .then(function (response) {
+                    if (!response.ok) throw new Error('Upload failed');
+                    return response.json();
+                })
+                .then(function (result) {
+                    // Yüklenen dosyayı listeye ekle
+                    self.uploadedAttachments.push({
+                        id: result.attachmentId,
+                        fileName: result.fileName,
+                        fileSize: result.fileSize,
+                        sizeDisplay: formatFileSize(result.fileSize)
+                    });
+                })
+                .catch(function (error) {
+                    console.error('Upload error for ' + attachment.name + ':', error);
+                    toastr.error(T('Evaluation.FileUploadError', 'Dosya yüklenemedi: ') + attachment.name);
                 });
-            })
-            .catch(function(error) {
-                console.error('Upload error for ' + attachment.name + ':', error);
-                toastr.error(T('Evaluation.FileUploadError', 'Dosya yüklenemedi: ') + attachment.name);
-            });
         });
 
-        return Promise.all(uploadPromises).then(function() {
+        return Promise.all(uploadPromises).then(function () {
             // Başarılı yüklenen dosyaları bekleyenlerden temizle
             self.pendingAttachments([]);
-        }).finally(function() {
+        }).finally(function () {
             self.isUploadingFile(false);
         });
     };
 
     // Mevcut değerlendirmenin dosyalarını yükle
-    self.loadExistingAttachments = function(evaluationId) {
+    self.loadExistingAttachments = function (evaluationId) {
         if (!evaluationId) return;
 
         fetch('/api/evaluations/' + evaluationId + '/attachments', { credentials: 'include' })
-            .then(function(response) {
+            .then(function (response) {
                 if (!response.ok) throw new Error('Load failed');
                 return response.json();
             })
-            .then(function(attachments) {
-                self.uploadedAttachments(attachments.map(function(a) {
+            .then(function (attachments) {
+                self.uploadedAttachments(attachments.map(function (a) {
                     return {
                         id: a.id,
                         fileName: a.fileName,
@@ -363,13 +363,13 @@ var FieldWorkerVisitPopupViewModel = function() {
                     };
                 }));
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error('Load attachments error:', error);
             });
     };
 
     // Input mask başlatma
-    self.initTimePickers = function() {
+    self.initTimePickers = function () {
         Inputmask('99:99', { insertMode: false }).mask('.time-mask');
         Inputmask('99:99:99', { insertMode: false }).mask('.duration-mask');
 
@@ -379,12 +379,12 @@ var FieldWorkerVisitPopupViewModel = function() {
         }
     };
 
-    self.resetFormFields = function() {
+    self.resetFormFields = function () {
         self.callDate('');
         self.callTime('');
         self.duration('');
         self.controlTime('');
-        self.descriptions([{text: ko.observable('')}]); // Wrapper object pattern
+        self.descriptions([{ text: ko.observable('') }]); // Wrapper object pattern
         self.availablePersonnel([]);
         self.evaluatedPersonnelId(null);
         self.evaluatedUnknownPersonnel('');
@@ -418,25 +418,34 @@ var FieldWorkerVisitPopupViewModel = function() {
     // LOAD DEALERS (FieldWorker için şube listesi)
     // ========================
 
-    self.loadDealers = function() {
+    self.loadDealers = function (currentDealerId) {
         if (!config.assignmentId) return;
 
         self.isLoadingDealers(true);
-        // projectId ile çağır - ziyaret edilmiş bayileri hariç tutar
-        fetch('/api/fieldworker/dealers-for-assignment?assignmentId=' + config.assignmentId, { credentials: 'include' })
-            .then(function(response) { return response.json(); })
-            .then(function(data) {
+
+        var url = '/api/fieldworker/dealers-for-assignment?assignmentId=' + config.assignmentId;
+        if (currentDealerId) {
+            url += '&includeCurrentDealerId=' + currentDealerId;
+        }
+
+        fetch(url, { credentials: 'include' })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
                 self.availableDealers(data || []);
-                // Config'de dealerId varsa seç ve kilitle
-                if (config.dealerId) {
+                // Edit modu: form'dan gelen mevcut bayi seçili + kilitli
+                if (currentDealerId) {
+                    self.selectedDealerId(currentDealerId);
+                    self.isDealerLocked(true);
+                    // Yeni ziyaret: dashboard'dan gelen dealerId ile seç + kilitle
+                } else if (config.dealerId) {
                     self.selectedDealerId(config.dealerId);
                     self.isDealerLocked(true);
                 }
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error('Error loading dealers:', error);
             })
-            .finally(function() {
+            .finally(function () {
                 self.isLoadingDealers(false);
             });
     };
@@ -445,7 +454,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // LOAD FORM (Index.js loadForm ile birebir aynı)
     // ========================
 
-    self.loadForm = function() {
+    self.loadForm = function () {
         self.isLoading(true);
         self.formData(null);
         self.answers = {};
@@ -454,10 +463,10 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.resetFormFields();
 
         var url = '';
-        if (config.assignmentId) {
-            url = '/api/evaluations/form/' + config.assignmentId;
-        } else if (config.evaluationId) {
+        if (config.evaluationId) {
             url = '/api/evaluations/form/edit/' + config.evaluationId;
+        } else if (config.assignmentId) {
+            url = '/api/evaluations/form/' + config.assignmentId;
         } else {
             toastr.error(T('Evaluation.InvalidParams', 'Geçersiz parametreler'));
             self.isLoading(false);
@@ -466,34 +475,35 @@ var FieldWorkerVisitPopupViewModel = function() {
 
         // Önce kullanıcı bilgisini al
         fetch('/api/auth/me', { credentials: 'include' })
-            .then(function(response) { return response.json(); })
-            .then(function(userData) {
+            .then(function (response) { return response.json(); })
+            .then(function (userData) {
                 self.currentUserId(parseInt(userData.id) || null);
             })
-            .catch(function() {
+            .catch(function () {
                 console.warn('Could not fetch current user');
             });
 
-        // FieldWorker için şubeleri yükle
-        self.loadDealers();
-
         fetch(url, { credentials: 'include' })
-            .then(function(response) {
+            .then(function (response) {
                 if (!response.ok) throw new Error(T('Evaluation.FormLoadError', 'Form yüklenemedi'));
                 return response.json();
             })
-            .then(function(data) {
+            .then(function (data) {
                 self.formData(data);
 
+                // FieldWorker: bayi listesini form datasındaki customerDealerId ile yükle
+                self.loadDealers(data.customerDealerId || null);
+
                 // Load existing values if any
+                // Backend EvaluationFormDto'da ControlDate ?? CallDate coalesce yapıyor, callDate alanında geliyor
                 if (data.callDate) self.callDate(data.callDate.split('T')[0]);
                 if (data.callTime) self.callTime(data.callTime);
                 if (data.duration) self.duration(data.duration);
                 if (data.descriptions && data.descriptions.length > 0) {
                     // Her string'i observable'a çevir
-                    self.descriptions(data.descriptions.map(function(d) { return {text: ko.observable(d)}; }));
+                    self.descriptions(data.descriptions.map(function (d) { return { text: ko.observable(d) }; }));
                 } else {
-                    self.descriptions([{text: ko.observable('')}]); // Wrapper object pattern
+                    self.descriptions([{ text: ko.observable('') }]); // Wrapper object pattern
                 }
                 if (data.evaluatedUnknownPersonnel) self.evaluatedUnknownPersonnel(data.evaluatedUnknownPersonnel);
                 if (data.evaluationComment) self.evaluationComment(data.evaluationComment);
@@ -504,7 +514,7 @@ var FieldWorkerVisitPopupViewModel = function() {
                     self.selectedPeriodId(data.selectedPeriodId);
                 } else if (data.availablePeriods && data.availablePeriods.length > 0) {
                     // Aktif dönemi otomatik seç
-                    var activePeriod = data.availablePeriods.find(function(p) { return p.status === 'Open'; });
+                    var activePeriod = data.availablePeriods.find(function (p) { return p.status === 'Open'; });
                     if (activePeriod) {
                         self.selectedPeriodId(activePeriod.id);
                     }
@@ -515,7 +525,7 @@ var FieldWorkerVisitPopupViewModel = function() {
                 if (data.evaluatedPersonnelId) {
                     self.evaluatedPersonnelId(data.evaluatedPersonnelId);
                     // Seçili personelin adını göster
-                    var selectedPerson = (data.availablePersonnel || []).find(function(p) { return p.id === data.evaluatedPersonnelId; });
+                    var selectedPerson = (data.availablePersonnel || []).find(function (p) { return p.id === data.evaluatedPersonnelId; });
                     if (selectedPerson) {
                         self.personnelSearchText(selectedPerson.name);
                         self.selectedPersonnelName(selectedPerson.name);
@@ -526,13 +536,13 @@ var FieldWorkerVisitPopupViewModel = function() {
                 var hasExistingAnswers = data.existingAnswers && data.existingAnswers.length > 0;
                 var existingAnswerMap = {};
                 if (hasExistingAnswers) {
-                    data.existingAnswers.forEach(function(a) {
+                    data.existingAnswers.forEach(function (a) {
                         existingAnswerMap[a.questionId] = a;
                     });
                 }
 
-                data.penaltyGroups.forEach(function(section) {
-                    section.questions.forEach(function(q) {
+                data.penaltyGroups.forEach(function (section) {
+                    section.questions.forEach(function (q) {
                         // isRequired bilgisini geç - zorunlu sorular varsayılan dahil, opsiyonel sorular varsayılan hariç
                         var answer = self.getAnswer(q.id, q.isRequired);
 
@@ -579,15 +589,20 @@ var FieldWorkerVisitPopupViewModel = function() {
                     self.loadExistingAttachments(data.evaluationId);
                 }
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error('Form loading error:', error);
                 toastr.error(T('Evaluation.FormLoadError', 'Form yüklenirken bir hata oluştu.'));
             })
-            .finally(function() {
+            .finally(function () {
                 self.isLoading(false);
-                // Flatpickr 24h time picker başlat (DOM güncellenince)
-                setTimeout(function() {
+                // Input mask başlat - sonra mevcut değerleri tekrar set et (mask değerleri eziyor)
+                var savedCallDate = self.callDate();
+                var savedCallTime = self.callTime();
+                setTimeout(function () {
                     self.initTimePickers();
+                    // Mask uygulandıktan sonra değerleri geri yükle
+                    if (savedCallDate) self.callDate(savedCallDate);
+                    if (savedCallTime) self.callTime(savedCallTime);
                 }, 100);
             });
     };
@@ -596,7 +611,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // CALCULATE SCORES (Index.js ile birebir aynı)
     // ========================
 
-    self.calculateScores = function() {
+    self.calculateScores = function () {
         if (!self.formData()) return;
 
         var total = 0;
@@ -608,8 +623,8 @@ var FieldWorkerVisitPopupViewModel = function() {
         var yellowCardWeight = 0;
         var redCardWeight = 0;
 
-        self.formData().penaltyGroups.forEach(function(section) {
-            section.questions.forEach(function(q) {
+        self.formData().penaltyGroups.forEach(function (section) {
+            section.questions.forEach(function (q) {
                 var weight = q.weightPoints || q.points || 0;
                 var answer = self.answers[q.id];
 
@@ -697,20 +712,20 @@ var FieldWorkerVisitPopupViewModel = function() {
     // PREPARE DATA (Index.js ile birebir aynı)
     // ========================
 
-    self.prepareData = function(isDraft) {
+    self.prepareData = function (isDraft) {
         var answers = [];
 
         // Soruları map'e al (penaltyType için)
         var questionMap = {};
         if (self.formData()) {
-            self.formData().penaltyGroups.forEach(function(section) {
-                section.questions.forEach(function(q) {
+            self.formData().penaltyGroups.forEach(function (section) {
+                section.questions.forEach(function (q) {
                     questionMap[q.id] = q;
                 });
             });
         }
 
-        Object.keys(self.answers).forEach(function(questionId) {
+        Object.keys(self.answers).forEach(function (questionId) {
             var a = self.answers[questionId];
             var q = questionMap[questionId];
 
@@ -745,16 +760,16 @@ var FieldWorkerVisitPopupViewModel = function() {
         });
 
         // Boş olmayan açıklamaları filtrele (observable'ları unwrap et)
-        var filteredDescriptions = self.descriptions().map(function(d) {
+        var filteredDescriptions = self.descriptions().map(function (d) {
             return d.text();
-        }).filter(function(d) {
+        }).filter(function (d) {
             return d && d.trim().length > 0;
         });
 
         // CreateVisitDto formatında döndür
         return {
             assignmentId: config.assignmentId,
-            evaluationId: self.formData().evaluationId || null,
+            evaluationId: config.evaluationId || self.formData().evaluationId || null,
             customerDealerId: self.selectedDealerId() ? parseInt(self.selectedDealerId()) : 0,
             controlDate: self.callDate() || null,
             controlTime: self.callTime() || null,
@@ -769,7 +784,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // VALIDATION (Index.js ile birebir aynı)
     // ========================
 
-    self.validateRequiredFields = function() {
+    self.validateRequiredFields = function () {
         var errors = [];
 
         // FieldWorker için bayi seçimi zorunlu
@@ -792,7 +807,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // SAVE DRAFT (FieldWorker için özelleştirildi)
     // ========================
 
-    self.saveDraft = function(callback) {
+    self.saveDraft = function (callback) {
         // Zorunlu alan kontrolü
         var validationErrors = self.validateRequiredFields();
         if (validationErrors.length > 0) {
@@ -803,21 +818,21 @@ var FieldWorkerVisitPopupViewModel = function() {
         self.isSavingForm(true);
         var data = self.prepareData(true); // isDraft = true
 
-            fetch('/api/fieldworker/visits', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(data)
-            })
-            .then(function(response) {
+        fetch('/api/fieldworker/visits', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify(data)
+        })
+            .then(function (response) {
                 if (!response.ok) {
-                    return response.json().then(function(err) {
+                    return response.json().then(function (err) {
                         throw new Error(err.message || T('FieldWorker.DraftSaveError', 'Taslak kaydedilemedi'));
                     });
                 }
                 return response.json();
             })
-            .then(function(result) {
+            .then(function (result) {
                 // API { evaluationId, message } döndürüyor
                 var evaluationId = result.evaluationId;
 
@@ -827,7 +842,7 @@ var FieldWorkerVisitPopupViewModel = function() {
                 }
 
                 // Pending dosyaları yükle
-                return self.uploadPendingAttachments(evaluationId).then(function() {
+                return self.uploadPendingAttachments(evaluationId).then(function () {
                     if (typeof callback === 'function') {
                         callback();
                     } else {
@@ -837,11 +852,11 @@ var FieldWorkerVisitPopupViewModel = function() {
                     }
                 });
             })
-            .catch(function(error) {
+            .catch(function (error) {
                 console.error('Draft save error:', error);
                 toastr.error(error.message || T('FieldWorker.DraftSaveErrorMessage', 'Taslak kaydedilirken bir hata oluştu.'));
             })
-            .finally(function() {
+            .finally(function () {
                 self.isSavingForm(false);
             });
     };
@@ -850,7 +865,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // SHOW SUMMARY (FieldWorker için özelleştirildi)
     // ========================
 
-    self.showSummary = function() {
+    self.showSummary = function () {
         // Zorunlu alan kontrolü
         var validationErrors = self.validateRequiredFields();
         if (validationErrors.length > 0) {
@@ -861,8 +876,8 @@ var FieldWorkerVisitPopupViewModel = function() {
         // Cevapları hazırla (sorular + verilen cevaplar)
         var answersForSummary = [];
         if (self.formData()) {
-            self.formData().penaltyGroups.forEach(function(section) {
-                section.questions.forEach(function(q) {
+            self.formData().penaltyGroups.forEach(function (section) {
+                section.questions.forEach(function (q) {
                     var answer = self.answers[q.id];
                     if (!answer) return;
 
@@ -881,8 +896,8 @@ var FieldWorkerVisitPopupViewModel = function() {
                     // Seçili alt kriterleri al
                     var selectedSubCriteriaNames = [];
                     if (answer.selectedSubCriteria && answer.selectedSubCriteria().length > 0 && q.subCriteria) {
-                        answer.selectedSubCriteria().forEach(function(scId) {
-                            var sc = q.subCriteria.find(function(s) { return s.id === scId; });
+                        answer.selectedSubCriteria().forEach(function (scId) {
+                            var sc = q.subCriteria.find(function (s) { return s.id === scId; });
                             if (sc) selectedSubCriteriaNames.push(sc.description);
                         });
                     }
@@ -904,14 +919,14 @@ var FieldWorkerVisitPopupViewModel = function() {
         }
 
         // Açıklamaları al (boş olmayanlar)
-        var filteredDescriptions = self.descriptions().map(function(d) {
+        var filteredDescriptions = self.descriptions().map(function (d) {
             return d.text();
-        }).filter(function(d) {
+        }).filter(function (d) {
             return d && d.trim().length > 0;
         });
 
         // Seçili bayi bilgisi
-        var selectedDealer = self.availableDealers().find(function(d) {
+        var selectedDealer = self.availableDealers().find(function (d) {
             return String(d.id) === String(self.selectedDealerId());
         });
 
@@ -938,7 +953,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     };
 
     // Go back to form from summary (özetten forma geri dön)
-    self.backToForm = function() {
+    self.backToForm = function () {
         self.isShowingSummary(false);
     };
 
@@ -946,7 +961,7 @@ var FieldWorkerVisitPopupViewModel = function() {
     // CONFIRM SUBMIT (Index.js ile birebir aynı)
     // ========================
 
-    self.confirmSubmit = function() {
+    self.confirmSubmit = function () {
         self.isSavingForm(true);
         var data = self.prepareData(false); // isDraft = false
 
@@ -956,33 +971,33 @@ var FieldWorkerVisitPopupViewModel = function() {
             credentials: 'include',
             body: JSON.stringify(data)
         })
-        .then(function(response) {
-            if (!response.ok) {
-                return response.json().then(function(err) {
-                    throw new Error(err.message || T('FieldWorker.SubmitError', 'Ziyaret kaydedilemedi'));
-                });
-            }
-            return response.json();
-        })
-        .then(function(result) {
-            // API { evaluationId, message } döndürüyor
-            var evaluationId = result.evaluationId;
+            .then(function (response) {
+                if (!response.ok) {
+                    return response.json().then(function (err) {
+                        throw new Error(err.message || T('FieldWorker.SubmitError', 'Ziyaret kaydedilemedi'));
+                    });
+                }
+                return response.json();
+            })
+            .then(function (result) {
+                // API { evaluationId, message } döndürüyor
+                var evaluationId = result.evaluationId;
 
-            // Pending dosyaları yükle
-            return self.uploadPendingAttachments(evaluationId).then(function() {
-                toastr.success(T('FieldWorker.SubmitSuccess', 'Ziyaret başarıyla kaydedildi.'));
-                // Opener'ı bilgilendir ve pencereyi kapat
-                self.notifyOpener();
-                window.close();
+                // Pending dosyaları yükle
+                return self.uploadPendingAttachments(evaluationId).then(function () {
+                    toastr.success(T('FieldWorker.SubmitSuccess', 'Ziyaret başarıyla kaydedildi.'));
+                    // Opener'ı bilgilendir ve pencereyi kapat
+                    self.notifyOpener();
+                    window.close();
+                });
+            })
+            .catch(function (error) {
+                console.error('Submit error:', error);
+                toastr.error(error.message || T('FieldWorker.SubmitErrorMessage', 'Ziyaret kaydedilirken bir hata oluştu.'));
+            })
+            .finally(function () {
+                self.isSavingForm(false);
             });
-        })
-        .catch(function(error) {
-            console.error('Submit error:', error);
-            toastr.error(error.message || T('FieldWorker.SubmitErrorMessage', 'Ziyaret kaydedilirken bir hata oluştu.'));
-        })
-        .finally(function() {
-            self.isSavingForm(false);
-        });
     };
 
     // ========================
@@ -990,12 +1005,12 @@ var FieldWorkerVisitPopupViewModel = function() {
     // ========================
 
     // Tamamla butonuna tıklandığında önce özet göster
-    self.submitEvaluation = function() {
+    self.submitEvaluation = function () {
         self.showSummary();
     };
 
     // Opener pencereyi bilgilendir (filtreleri bozmadan)
-    self.notifyOpener = function() {
+    self.notifyOpener = function () {
         if (!window.opener || window.opener.closed) return;
         try {
             // Dashboard için postMessage kullan
@@ -1058,8 +1073,8 @@ var TRANSLATION_KEYS = [
 ];
 
 // Apply bindings when DOM is ready
-document.addEventListener('DOMContentLoaded', function() {
-    Localization.loadKeys(TRANSLATION_KEYS).then(function() {
+document.addEventListener('DOMContentLoaded', function () {
+    Localization.loadKeys(TRANSLATION_KEYS).then(function () {
         var container = document.getElementById('evaluation-popup');
         if (container) {
             ko.applyBindings(new FieldWorkerVisitPopupViewModel(), container);
