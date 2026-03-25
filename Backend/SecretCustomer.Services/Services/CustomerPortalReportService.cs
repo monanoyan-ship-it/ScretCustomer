@@ -1057,6 +1057,12 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             parts.Add(evaluation.Notes.Trim());
         }
 
+        // Denetim Yorumu
+        if (!string.IsNullOrWhiteSpace(evaluation.EvaluationComment))
+        {
+            parts.Add(evaluation.EvaluationComment.Trim());
+        }
+
         return parts.Count > 0 ? string.Join("\n", parts) : null;
     }
 
@@ -1878,7 +1884,26 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             for (int c = 0; c < 4; c++)
             {
                 var cell = dataRow.GetCell(c);
-                cell.SetText(values[c]);
+
+                // Denetim Yorumu sütunu (index 2): \n karakterlerini Word satır kırılmasına çevir
+                if (c == 2 && !string.IsNullOrEmpty(values[c]) && values[c].Contains('\n'))
+                {
+                    // Mevcut boş paragrafı kullan
+                    var para = cell.Paragraphs[0];
+                    var lines = values[c].Split('\n');
+                    for (int j = 0; j < lines.Length; j++)
+                    {
+                        var run = para.CreateRun();
+                        run.SetText(lines[j]);
+                        if (j < lines.Length - 1)
+                            run.AddBreak(NPOI.XWPF.UserModel.BreakType.TEXTWRAPPING);
+                    }
+                }
+                else
+                {
+                    cell.SetText(values[c]);
+                }
+
                 // Hücre genişliği ayarla (word wrap otomatik olur)
                 var tcPr = cell.GetCTTc().AddNewTcPr();
                 tcPr.AddNewTcW().w = colWidths[c].ToString();
