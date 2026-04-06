@@ -3734,6 +3734,9 @@
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
     <Value>Operatör</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Inspector">
+    <Value>Denetmen</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ResetPasswordInfo">
     <Value>Admin olarak personelin şifresini sıfırlayabilirsiniz.</Value>
   </LocaleResource>
@@ -4859,6 +4862,9 @@
   <LocaleResource Name="Import.Role.CustomerOperator">
     <Value>Müşteri Temsilcisi (Değerlendirilecek personel)</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerInspector">
+    <Value>Denetmen (Atandığı projeleri görebilir)</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.OrganizationNote">
     <Value>Belirtilmezse "Merkez" olarak atanır.</Value>
   </LocaleResource>
@@ -5455,6 +5461,9 @@
   </LocaleResource>
   <LocaleResource Name="Role.CustomerSupervisor">
     <Value>Takım Lideri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerInspector">
+    <Value>Denetmen</Value>
   </LocaleResource>
   <LocaleResource Name="Training.DeleteSuccess">
     <Value>Eğitim başarıyla silindi.</Value>

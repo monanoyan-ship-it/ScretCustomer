@@ -47,8 +47,8 @@
                 </a>
             </li>
 
-            <!-- Aramalarım - QualitySpecialist, Inspector & Admin -->
-            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isInspector() || isAdmin()">
+            <!-- Aramalarım - QualitySpecialist & Admin -->
+            <li class="nav-item" data-bind="visible: isQualitySpecialist() || isAdmin()">
                 <a href="/GolgeMusteri/Aramalarim" class="nav-link text-white" data-bind="click: closeSidebar">
                     <i class="bi bi-telephone me-2"></i>
                     @Html.T("GolgeMusteri.Aramalarim", "Aramalarım")
@@ -175,8 +175,8 @@
                 </div>
             </li>
 
-            <!-- ==================== GÖLGE MÜŞTERİ (Admin & Inspector) ==================== -->
-            <li class="nav-item" data-bind="visible: isAdmin() || isInspector()">
+            <!-- ==================== GÖLGE MÜŞTERİ (Admin Only) ==================== -->
+            <li class="nav-item" data-bind="visible: isAdmin()">
                 <a class="nav-link text-white d-flex justify-content-between align-items-center collapsed"
                    data-bs-toggle="collapse" href="#menuGolgeMusteri" role="button" aria-expanded="false">
                     <span><i class="bi bi-telephone-outbound me-2"></i>@Html.T("Menu.GolgeMusteri", "Gölge Müşteri")</span>

@@ -186,7 +186,7 @@ public class CustomerPersonnelApiController : BaseApiController
     }
 
     [HttpPost("{id}/change-password")]
-    [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
+    [Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator,CustomerInspector")]
     public async Task<IActionResult> ChangePassword(int id, [FromBody] CustomerPersonnelChangePasswordDto dto)
     {
         if (!ModelState.IsValid)

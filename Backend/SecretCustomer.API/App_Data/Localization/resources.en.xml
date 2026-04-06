@@ -3357,6 +3357,9 @@
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
     <Value>Customer Operator</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Inspector">
+    <Value>Inspector</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ResetPasswordInfo">
     <Value>As admin, you can reset the personnel's password.</Value>
   </LocaleResource>
@@ -4484,6 +4487,9 @@
   <LocaleResource Name="Import.Role.CustomerOperator">
     <Value>Customer Representative (Personnel to be evaluated)</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerInspector">
+    <Value>Inspector (Can view assigned projects)</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.OrganizationNote">
     <Value>If not specified, assigned as "Headquarters".</Value>
   </LocaleResource>
@@ -5457,6 +5463,9 @@
   </LocaleResource>
   <LocaleResource Name="Role.CustomerSupervisor">
     <Value>Customer Supervisor</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerInspector">
+    <Value>Inspector</Value>
   </LocaleResource>
   <LocaleResource Name="Training.DeleteSuccess">
     <Value>Training deleted successfully.</Value>

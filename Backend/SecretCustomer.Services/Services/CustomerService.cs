@@ -492,7 +492,8 @@ public class CustomerService : ICustomerService
         {
             { CustomerPersonnelRoles.Ids.Manager, await _localizationService.GetResourceAsync("Role.CustomerManager") },
             { CustomerPersonnelRoles.Ids.Supervisor, await _localizationService.GetResourceAsync("Role.CustomerSupervisor") },
-            { CustomerPersonnelRoles.Ids.Operator, await _localizationService.GetResourceAsync("Role.CustomerOperator") }
+            { CustomerPersonnelRoles.Ids.Operator, await _localizationService.GetResourceAsync("Role.CustomerOperator") },
+            { CustomerPersonnelRoles.Ids.Inspector, await _localizationService.GetResourceAsync("Role.CustomerInspector") }
         };
 
         using var workbook = new XLWorkbook();

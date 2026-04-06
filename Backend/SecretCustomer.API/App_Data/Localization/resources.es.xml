@@ -3354,6 +3354,9 @@
   <LocaleResource Name="CustomerPersonnel.Role.Operator">
     <Value>Operador de Cliente</Value>
   </LocaleResource>
+  <LocaleResource Name="CustomerPersonnel.Role.Inspector">
+    <Value>Inspector</Value>
+  </LocaleResource>
   <LocaleResource Name="CustomerPersonnel.ResetPasswordInfo">
     <Value>Como administrador, puede restablecer la contraseña del personal.</Value>
   </LocaleResource>
@@ -4419,6 +4422,9 @@
   <LocaleResource Name="Import.Role.CustomerOperator">
     <Value>Representante del Cliente (Personal a evaluar)</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.Role.CustomerInspector">
+    <Value>Inspector (Puede ver proyectos asignados)</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.OrganizationNote">
     <Value>Si no se especifica, se asigna como "Central".</Value>
   </LocaleResource>
@@ -5120,6 +5126,9 @@
   </LocaleResource>
   <LocaleResource Name="Role.CustomerSupervisor">
     <Value>Supervisor de Cliente</Value>
+  </LocaleResource>
+  <LocaleResource Name="Role.CustomerInspector">
+    <Value>Inspector</Value>
   </LocaleResource>
   <LocaleResource Name="Training.DeleteSuccess">
     <Value>Capacitación eliminada exitosamente.</Value>

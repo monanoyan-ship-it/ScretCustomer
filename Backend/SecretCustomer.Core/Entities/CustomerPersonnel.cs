@@ -41,7 +41,7 @@ public class CustomerPersonnel : BaseEntity
 
     [ExcelColumn("Rol", 8, IsRequired = true, ColumnType = ExcelColumnTypes.Ids.Dropdown,
         Description = "Personelin sistem rolü",
-        DropdownOptions = "[\"CustomerManager\", \"CustomerSupervisor\", \"CustomerOperator\"]",
+        DropdownOptions = "[\"CustomerManager\", \"CustomerSupervisor\", \"CustomerOperator\", \"CustomerInspector\"]",
         SampleValue = "CustomerManager")]
     public int RoleId { get; set; } = CustomerPersonnelRoles.Ids.Operator;
 

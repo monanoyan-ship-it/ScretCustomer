@@ -622,7 +622,7 @@ public class DashboardService : IDashboardService
             }
             showPersonnelName = true;
         }
-        else if (role == "CustomerSupervisor")
+        else if (role == "CustomerSupervisor" || role == "CustomerInspector")
         {
             // Junction table'dan bu personelin supervisor olduğu kişileri say
             var teamMemberCount = await _context.CustomerPersonnelOrganizations

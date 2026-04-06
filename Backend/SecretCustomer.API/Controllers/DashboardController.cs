@@ -25,7 +25,7 @@ public class DashboardController : Controller
 
         // Müşteri personelini CustomerPortal dashboard'una yönlendir
         if (User.IsInRole("CustomerManager") || User.IsInRole("CustomerSupervisor") ||
-            User.IsInRole("CustomerOperator"))
+            User.IsInRole("CustomerOperator") || User.IsInRole("CustomerInspector"))
         {
             return RedirectToAction("Dashboard", "CustomerPortal");
         }
@@ -40,7 +40,7 @@ public class DashboardController : Controller
     /// <summary>
     /// Müşteri personeli için basit dashboard
     /// </summary>
-    [Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator")]
+    [Authorize(Roles = "CustomerManager,CustomerSupervisor,CustomerOperator,CustomerInspector")]
     public IActionResult MyDashboard()
     {
         return View();

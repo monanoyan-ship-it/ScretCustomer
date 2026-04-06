@@ -150,7 +150,9 @@
             </div>
         </div>
 
-        <!-- Top Evaluators Row -->
+        <!-- Top Evaluators Row - Admin & QualitySpecialist only -->
+        @if (!User.IsInRole("Inspector"))
+        {
         <div class="row mb-4">
             <!-- Bugün En Çok Dinleyen -->
             <div class="col-md-6 mb-4">
@@ -236,6 +238,7 @@
                 </div>
             </div>
         </div>
+        }
 
         <!-- Scorecard & Announcements Row -->
         <div class="row mb-4">
@@ -536,5 +539,8 @@
 </div>
 
 @section Scripts {
+    <script>
+        var DASHBOARD_USER_ROLE = '@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value';
+    </script>
     <script src="~/js/Dashboard/Index.js" asp-append-version="true"></script>
 }

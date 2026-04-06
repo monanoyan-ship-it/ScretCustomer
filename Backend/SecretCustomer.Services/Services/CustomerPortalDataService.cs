@@ -1418,7 +1418,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         {
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
         }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        else if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             if (allowedPersonnelIds != null)
             {
@@ -1493,7 +1493,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         if (role == "CustomerOperator" && personnelId.HasValue)
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        else if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             if (allowedPersonnelIds != null)
                 query = query.Where(e =>
@@ -1845,7 +1845,7 @@ public class CustomerPortalDataService : ICustomerPortalDataService
     // ==================== INTERNAL EVALUATIONS ====================
 
     /// <summary>
-    /// Supervisor rolü için allowedPersonnelIds hesaplar (controller'daki GetAllowedPersonnelIdsAsync mantığının aynısı)
+    /// Supervisor/Inspector rolü için allowedPersonnelIds hesaplar (controller'daki GetAllowedPersonnelIdsAsync mantığının aynısı)
     /// </summary>
     private async Task<List<int>?> ComputeAllowedPersonnelIdsAsync(string? role, int? personnelId)
     {
@@ -1853,8 +1853,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (role == "Admin" || role == "CustomerManager")
             return null;
 
-        // CustomerSupervisor - Organizasyon bazında hibrit kontrol
-        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        // CustomerSupervisor / CustomerInspector - Organizasyon bazında hibrit kontrol
+        if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             // 1. Süpervizörün atandığı organizasyonları bul
             var myOrgIds = await _context.CustomerPersonnelOrganizations
@@ -1939,12 +1939,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         // Rol bazlı filtreleme (İç Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar
-        // Supervisor: Kendi yaptığı değerlendirmeler + takımındaki personelin değerlendirildiği kayıtlar
+        // Supervisor/Inspector: Kendi yaptığı değerlendirmeler + takımındaki personelin değerlendirildiği kayıtlar
         if (role == "CustomerOperator" && personnelId.HasValue)
         {
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
         }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        else if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             var allowedPersonnelIds = await ComputeAllowedPersonnelIdsAsync(role, personnelId);
             if (allowedPersonnelIds != null)
@@ -2151,12 +2151,12 @@ public class CustomerPortalDataService : ICustomerPortalDataService
 
         // Rol bazlı filtreleme (Dış Dinlemeler)
         // Operator: Sadece kendisinin değerlendirildiği kayıtlar
-        // Supervisor: Takımındaki personelin değerlendirildiği kayıtlar
+        // Supervisor/Inspector: Takımındaki personelin değerlendirildiği kayıtlar
         if (role == "CustomerOperator" && personnelId.HasValue)
         {
             query = query.Where(e => e.EvaluatedCustomerPersonnelId == personnelId.Value);
         }
-        else if (role == "CustomerSupervisor" && personnelId.HasValue)
+        else if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             var allowedPersonnelIds = await ComputeAllowedPersonnelIdsAsync(role, personnelId);
             if (allowedPersonnelIds != null)
@@ -3834,8 +3834,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (role == "Admin" || role == "CustomerManager")
             return null;
 
-        // CustomerSupervisor - Organizasyon bazında hibrit kontrol
-        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        // CustomerSupervisor / CustomerInspector - Organizasyon bazında hibrit kontrol
+        if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             // 1. Süpervizörün atandığı organizasyonları bul
             var myOrgIds = await _context.CustomerPersonnelOrganizations
@@ -3903,8 +3903,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         if (role == "Admin" || role == "CustomerManager")
             return null;
 
-        // CustomerSupervisor - Organizasyon bazında kontrol
-        if (role == "CustomerSupervisor" && personnelId.HasValue)
+        // CustomerSupervisor / CustomerInspector - Organizasyon bazında kontrol
+        if ((role == "CustomerSupervisor" || role == "CustomerInspector") && personnelId.HasValue)
         {
             // Süpervizörün atandığı organizasyonları bul
             var myOrgIds = await _context.CustomerPersonnelOrganizations

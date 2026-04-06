@@ -74,8 +74,9 @@ public static class CustomerPersonnelRoles
     public static readonly TypeItem Manager = new(1, "CustomerManager", "CustomerPersonnel.Role.Manager", "Musteri yoneticisi - tum raporlari gorebilir", "bi-person-fill-gear", "bg-info", 1, isDefault: true);
     public static readonly TypeItem Supervisor = new(2, "CustomerSupervisor", "CustomerPersonnel.Role.Supervisor", "Takim lideri - kendi takiminin raporlarini gorebilir", "bi-person-lines-fill", "bg-warning text-dark", 2);
     public static readonly TypeItem Operator = new(3, "CustomerOperator", "CustomerPersonnel.Role.Operator", "Musteri operatoru - sadece kendi raporlarini gorebilir", "bi-person", "bg-secondary", 3);
+    public static readonly TypeItem Inspector = new(4, "CustomerInspector", "CustomerPersonnel.Role.Inspector", "Denetmen - atandigi projeleri gorebilir", "bi-shield-check", "bg-success", 4);
 
-    public static IEnumerable<TypeItem> All => new[] { Manager, Supervisor, Operator };
+    public static IEnumerable<TypeItem> All => new[] { Manager, Supervisor, Operator, Inspector };
     public static TypeItem Default => All.First(x => x.IsDefault);
     public static TypeItem? GetById(int id) => All.FirstOrDefault(x => x.Id == id);
     public static TypeItem? GetBySystemName(string systemName) => All.FirstOrDefault(x => x.SystemName == systemName);
@@ -85,6 +86,7 @@ public static class CustomerPersonnelRoles
         public const int Manager = 1;
         public const int Supervisor = 2;
         public const int Operator = 3;
+        public const int Inspector = 4;
     }
 }
 

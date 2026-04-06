@@ -102,6 +102,7 @@ function DashboardViewModel() {
 
     // Flag to track if user has admin access
     self.hasAdminAccess = ko.observable(true);
+    self.isInspector = (typeof DASHBOARD_USER_ROLE !== 'undefined' && DASHBOARD_USER_ROLE === 'Inspector');
 
     // Load dashboard data
     self.loadDashboard = function() {
@@ -528,9 +529,11 @@ function DashboardViewModel() {
     self.loadScorecard();
     self.loadAnnouncements();
     self.loadDailyMetrics();
-    self.loadUserPerformance();
     self.loadTargetProgress();
-    self.loadCustomerTrend();
+    if (!self.isInspector) {
+        self.loadUserPerformance();
+        self.loadCustomerTrend();
+    }
 }
 
 // Translation keys

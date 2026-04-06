@@ -297,7 +297,7 @@ public class EvaluationsApiController : BaseApiController
     /// CustomerOperator'ın kendi performansını görmesi için kullanılır
     /// </summary>
     [HttpGet("my-evaluations")]
-    [Authorize(Roles = "CustomerOperator,CustomerSupervisor,CustomerManager,Admin")]
+    [Authorize(Roles = "CustomerOperator,CustomerSupervisor,CustomerManager,CustomerInspector,Admin")]
     public async Task<IActionResult> GetMyEvaluations(
         [FromQuery] List<int>? projectIds,
         [FromQuery] List<DateRangeFilter>? dateRanges,

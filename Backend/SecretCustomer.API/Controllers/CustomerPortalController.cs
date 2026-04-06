@@ -9,7 +9,7 @@ namespace SecretCustomer.API.Controllers;
 /// Müşteri Portalı - MVC Controller
 /// Müşteri personelinin giriş yapıp değerlendirme sonuçlarını görüntüleyeceği portal
 /// </summary>
-[Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator")]
+[Authorize(Roles = "Admin,CustomerManager,CustomerSupervisor,CustomerOperator,CustomerInspector")]
 public class CustomerPortalController : Controller
 {
     private readonly ISystemSettingService _systemSettingService;
