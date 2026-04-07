@@ -2884,6 +2884,19 @@ public class CustomerPortalDataService : ICustomerPortalDataService
             return new { periods = new List<object>(), data = new List<object>() };
         }
 
+        // Determine grouping mode: dealer-based if evaluations have no personnel but have dealer
+        var hasDealerEvals = await _context.Evaluations
+            .AnyAsync(e => filteredProjectIds.Contains(e.ProjectId) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue &&
+                           !e.EvaluatedCustomerPersonnelId.HasValue &&
+                           e.CustomerDealerId.HasValue);
+
+        if (hasDealerEvals)
+        {
+            return await GetPerformanceByPeriodDealerBasedAsync(customerId, filteredProjectIds, startDate, endDate);
+        }
+
         // Personelleri al (organizasyon filtresiyle)
         var personnelQuery = _context.CustomerPersonnel
             .Include(cp => cp.OrganizationAssignments)
@@ -3122,6 +3135,19 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         }
 
         var filteredProjectIds = await projectsQuery.Select(p => p.Id).ToListAsync();
+
+        // Determine grouping mode: dealer-based if evaluations have no personnel but have dealer
+        var hasDealerExportEvals = await _context.Evaluations
+            .AnyAsync(e => filteredProjectIds.Contains(e.ProjectId) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue &&
+                           !e.EvaluatedCustomerPersonnelId.HasValue &&
+                           e.CustomerDealerId.HasValue);
+
+        if (hasDealerExportEvals)
+        {
+            return await ExportPerformanceByPeriodDealerBasedAsync(customerId, filteredProjectIds, startDate, endDate, excelSuccessThreshold, excelWarningThreshold);
+        }
 
         // Personel filtresi
         var personnelQuery = _context.CustomerPersonnel
@@ -3780,6 +3806,678 @@ public class CustomerPortalDataService : ICustomerPortalDataService
         workbook.SaveAs(stream);
 
         return (stream.ToArray(), $"SurecAnalizi_{TurkeyTime.Now:dd.MM.yyyyHHmmss}.xlsx");
+    }
+
+    // ===== DEALER-BASED PERFORMANCE BY PERIOD =====
+
+    /// <summary>
+    /// Şube (dealer) bazlı dönemsel performans - EvaluatedCustomerPersonnelId olmayan projeler için
+    /// </summary>
+    private async Task<object> GetPerformanceByPeriodDealerBasedAsync(int customerId, List<int> filteredProjectIds, DateTime? startDate, DateTime? endDate)
+    {
+        var dealers = await _context.CustomerDealers
+            .Where(d => d.CustomerId == customerId && !d.IsDeleted)
+            .OrderBy(d => d.Name)
+            .Select(d => new { d.Id, d.Name, Code = d.Code ?? "-" })
+            .ToListAsync();
+
+        var dealerIds = dealers.Select(d => d.Id).ToList();
+
+        // AssignmentPeriod kontrolü
+        var assignmentPeriodsQuery = _context.AssignmentPeriods
+            .Include(ap => ap.Assignment)
+                .ThenInclude(a => a.Project)
+            .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
+
+        if (startDate.HasValue)
+            assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
+        if (endDate.HasValue)
+            assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
+
+        var assignmentPeriods = await assignmentPeriodsQuery
+            .OrderBy(ap => ap.StartDate)
+            .Select(ap => new
+            {
+                ap.Id,
+                ap.Name,
+                ap.StartDate,
+                ap.EndDate,
+                ProjectName = ap.Assignment.Project.Code != null ? ap.Assignment.Project.Code + " - " + ap.Assignment.Project.Name : ap.Assignment.Project.Name
+            })
+            .ToListAsync();
+
+        if (assignmentPeriods.Any())
+        {
+            var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
+
+            var evaluations = await _context.Evaluations
+                .Where(e => e.AssignmentPeriodId.HasValue &&
+                           periodIds.Contains(e.AssignmentPeriodId.Value) &&
+                           e.CustomerDealerId.HasValue &&
+                           dealerIds.Contains(e.CustomerDealerId.Value) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue)
+                .Select(e => new
+                {
+                    e.AssignmentPeriodId,
+                    e.CustomerDealerId,
+                    e.ScorePercentage,
+                    e.YellowCardCount,
+                    e.RedCardCount
+                })
+                .ToListAsync();
+
+            var data = dealers.Select(d => new
+            {
+                personnelId = d.Id,
+                personnelName = d.Name,
+                organizationName = d.Code,
+                periodScores = assignmentPeriods.Select(period =>
+                {
+                    var periodEvals = evaluations
+                        .Where(e => e.AssignmentPeriodId == period.Id && e.CustomerDealerId == d.Id)
+                        .ToList();
+
+                    return new
+                    {
+                        periodId = period.Id,
+                        periodName = period.Name,
+                        evaluationCount = periodEvals.Count,
+                        averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : (double?)null,
+                        yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
+                        redCardCount = periodEvals.Sum(e => e.RedCardCount)
+                    };
+                }).ToList(),
+                overallAverage = evaluations
+                    .Where(e => e.CustomerDealerId == d.Id)
+                    .Select(e => (double)e.ScorePercentage!.Value)
+                    .DefaultIfEmpty()
+                    .Average(),
+                totalEvaluations = evaluations.Count(e => e.CustomerDealerId == d.Id)
+            })
+            .Where(d => d.totalEvaluations > 0)
+            .OrderByDescending(d => d.overallAverage)
+            .ToList();
+
+            return new
+            {
+                periods = assignmentPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
+                data
+            };
+        }
+
+        // AssignmentPeriod yoksa ControlDate/CallDate'e göre aylık dönemler
+        var dealerEvalsQuery = _context.Evaluations
+            .Include(e => e.Project)
+            .Where(e => e.Project != null &&
+                       filteredProjectIds.Contains(e.ProjectId) &&
+                       e.CustomerDealerId.HasValue &&
+                       dealerIds.Contains(e.CustomerDealerId.Value) &&
+                       e.StatusId == EvaluationStatuses.Ids.Completed &&
+                       e.ScorePercentage.HasValue &&
+                       (e.ControlDate.HasValue || e.CallDate.HasValue));
+
+        if (startDate.HasValue)
+            dealerEvalsQuery = dealerEvalsQuery.Where(e => (e.ControlDate ?? e.CallDate) >= startDate.Value);
+        if (endDate.HasValue)
+            dealerEvalsQuery = dealerEvalsQuery.Where(e => (e.ControlDate ?? e.CallDate) <= endDate.Value);
+
+        var allEvaluations = await dealerEvalsQuery
+            .Select(e => new
+            {
+                e.CustomerDealerId,
+                e.ScorePercentage,
+                e.YellowCardCount,
+                e.RedCardCount,
+                EffectiveDate = e.ControlDate ?? e.CallDate,
+                ProjectName = e.Project!.Code != null ? e.Project.Code + " - " + e.Project.Name : e.Project.Name
+            })
+            .ToListAsync();
+
+        if (!allEvaluations.Any())
+        {
+            return new { periods = new List<object>(), data = new List<object>() };
+        }
+
+        var monthlyPeriods = allEvaluations
+            .GroupBy(e => new { Year = e.EffectiveDate!.Value.Year, Month = e.EffectiveDate!.Value.Month })
+            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+            .Select((g, idx) => new
+            {
+                Id = -(idx + 1),
+                Name = $"{g.Key.Year}-{g.Key.Month:D2}",
+                StartDate = new DateTime(g.Key.Year, g.Key.Month, 1),
+                EndDate = new DateTime(g.Key.Year, g.Key.Month, DateTime.DaysInMonth(g.Key.Year, g.Key.Month)),
+                ProjectName = g.Select(e => e.ProjectName).FirstOrDefault() ?? "-",
+                Evaluations = g.ToList()
+            })
+            .ToList();
+
+        var monthlyData = dealers.Select(d => new
+        {
+            personnelId = d.Id,
+            personnelName = d.Name,
+            organizationName = d.Code,
+            periodScores = monthlyPeriods.Select(period =>
+            {
+                var periodEvals = period.Evaluations
+                    .Where(e => e.CustomerDealerId == d.Id)
+                    .ToList();
+
+                return new
+                {
+                    periodId = period.Id,
+                    periodName = period.Name,
+                    evaluationCount = periodEvals.Count,
+                    averageScore = periodEvals.Any() ? Math.Round(periodEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : (double?)null,
+                    yellowCardCount = periodEvals.Sum(e => e.YellowCardCount),
+                    redCardCount = periodEvals.Sum(e => e.RedCardCount)
+                };
+            }).ToList(),
+            overallAverage = allEvaluations
+                .Where(e => e.CustomerDealerId == d.Id)
+                .Select(e => (double)e.ScorePercentage!.Value)
+                .DefaultIfEmpty()
+                .Average(),
+            totalEvaluations = allEvaluations.Count(e => e.CustomerDealerId == d.Id)
+        })
+        .Where(d => d.totalEvaluations > 0)
+        .OrderByDescending(d => d.overallAverage)
+        .ToList();
+
+        return new
+        {
+            periods = monthlyPeriods.Select(p => new { p.Id, p.Name, p.ProjectName, p.StartDate, p.EndDate }),
+            data = monthlyData
+        };
+    }
+
+    /// <summary>
+    /// Şube (dealer) bazlı dönemsel performans Excel export
+    /// </summary>
+    private async Task<(byte[] FileContent, string FileName)?> ExportPerformanceByPeriodDealerBasedAsync(int customerId, List<int> filteredProjectIds, DateTime? startDate, DateTime? endDate, double excelSuccessThreshold, double excelWarningThreshold)
+    {
+        var dealers = await _context.CustomerDealers
+            .Where(d => d.CustomerId == customerId && !d.IsDeleted)
+            .OrderBy(d => d.Name)
+            .Select(d => new { d.Id, d.Name, Code = d.Code ?? "-" })
+            .ToListAsync();
+
+        var dealerIds = dealers.Select(d => d.Id).ToList();
+
+        // AssignmentPeriod kontrolü
+        var assignmentPeriodsQuery = _context.AssignmentPeriods
+            .Include(ap => ap.Assignment)
+                .ThenInclude(a => a.Project)
+            .Where(ap => filteredProjectIds.Contains(ap.Assignment.ProjectId) && !ap.IsDeleted);
+
+        if (startDate.HasValue)
+            assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.EndDate >= startDate.Value);
+        if (endDate.HasValue)
+            assignmentPeriodsQuery = assignmentPeriodsQuery.Where(ap => ap.StartDate <= endDate.Value);
+
+        var assignmentPeriods = await assignmentPeriodsQuery
+            .OrderBy(ap => ap.StartDate)
+            .Select(ap => new { ap.Id, ap.Name })
+            .ToListAsync();
+
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var sheet = workbook.Worksheets.Add("Dönem Bazlı Başarı");
+
+        if (assignmentPeriods.Any())
+        {
+            var periodIds = assignmentPeriods.Select(p => p.Id).ToList();
+
+            var evaluations = await _context.Evaluations
+                .Include(e => e.Project)
+                .Where(e => e.AssignmentPeriodId.HasValue &&
+                           periodIds.Contains(e.AssignmentPeriodId.Value) &&
+                           e.CustomerDealerId.HasValue &&
+                           dealerIds.Contains(e.CustomerDealerId.Value) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue)
+                .Select(e => new
+                {
+                    e.AssignmentPeriodId,
+                    e.CustomerDealerId,
+                    e.ScorePercentage,
+                    IsInternal = e.EvaluatorCustomerPersonnelId != null,
+                    ProjectCode = e.Project.Code ?? ""
+                })
+                .ToListAsync();
+
+            // Headers
+            sheet.Cell(1, 1).Value = "Şube";
+            sheet.Cell(1, 1).Style.Font.Bold = true;
+            sheet.Range(1, 1, 2, 1).Merge();
+            sheet.Cell(1, 2).Value = "Kod";
+            sheet.Cell(1, 2).Style.Font.Bold = true;
+            sheet.Range(1, 2, 2, 2).Merge();
+            sheet.Cell(1, 3).Value = "Projeler";
+            sheet.Cell(1, 3).Style.Font.Bold = true;
+            sheet.Range(1, 3, 2, 3).Merge();
+
+            int col = 4;
+            foreach (var period in assignmentPeriods)
+            {
+                sheet.Cell(1, col).Value = period.Name;
+                sheet.Cell(1, col).Style.Font.Bold = true;
+                sheet.Range(1, col, 1, col + 2).Merge();
+                sheet.Cell(2, col).Value = "Genel";
+                sheet.Cell(2, col).Style.Font.Bold = true;
+                sheet.Cell(2, col + 1).Value = "İç";
+                sheet.Cell(2, col + 1).Style.Font.Bold = true;
+                sheet.Cell(2, col + 2).Value = "Dış";
+                sheet.Cell(2, col + 2).Style.Font.Bold = true;
+                col += 3;
+            }
+            sheet.Cell(1, col).Value = "Genel Ortalama";
+            sheet.Cell(1, col).Style.Font.Bold = true;
+            sheet.Range(1, col, 2, col).Merge();
+            sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+            sheet.Cell(1, col + 1).Style.Font.Bold = true;
+            sheet.Range(1, col + 1, 2, col + 1).Merge();
+
+            int row = 3;
+            foreach (var d in dealers)
+            {
+                var dealerEvals = evaluations.Where(e => e.CustomerDealerId == d.Id).ToList();
+                if (!dealerEvals.Any()) continue;
+
+                sheet.Cell(row, 1).Value = d.Name;
+                sheet.Cell(row, 2).Value = d.Code;
+
+                var projectCodes = dealerEvals
+                    .Where(e => !string.IsNullOrEmpty(e.ProjectCode))
+                    .Select(e => e.ProjectCode)
+                    .Distinct()
+                    .OrderBy(c => c);
+                sheet.Cell(row, 3).Value = string.Join(", ", projectCodes);
+
+                col = 4;
+                foreach (var period in assignmentPeriods)
+                {
+                    var periodEvals = dealerEvals.Where(e => e.AssignmentPeriodId == period.Id).ToList();
+                    var internalEvals = periodEvals.Where(e => e.IsInternal).ToList();
+                    var externalEvals = periodEvals.Where(e => !e.IsInternal).ToList();
+
+                    if (periodEvals.Any())
+                    {
+                        var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col).Value = Math.Round(avg, 2);
+                        if (avg >= excelSuccessThreshold)
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
+                        else if (avg >= excelWarningThreshold)
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
+                        else
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
+                    }
+                    else
+                        sheet.Cell(row, col).Value = "-";
+
+                    sheet.Cell(row, col + 1).Value = internalEvals.Any() ? Math.Round(internalEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : "-";
+                    sheet.Cell(row, col + 2).Value = externalEvals.Any() ? Math.Round(externalEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : "-";
+                    col += 3;
+                }
+
+                var overallAvg = dealerEvals.Average(e => (double)e.ScorePercentage!.Value);
+                sheet.Cell(row, col).Value = Math.Round(overallAvg, 2);
+                sheet.Cell(row, col).Style.Font.Bold = true;
+                sheet.Cell(row, col + 1).Value = dealerEvals.Count;
+                row++;
+            }
+        }
+        else
+        {
+            // AssignmentPeriod yoksa ControlDate/CallDate'e göre
+            var dealerEvalsQuery = _context.Evaluations
+                .Include(e => e.Project)
+                .Where(e => e.Project != null &&
+                           filteredProjectIds.Contains(e.ProjectId) &&
+                           e.CustomerDealerId.HasValue &&
+                           dealerIds.Contains(e.CustomerDealerId.Value) &&
+                           e.StatusId == EvaluationStatuses.Ids.Completed &&
+                           e.ScorePercentage.HasValue &&
+                           (e.ControlDate.HasValue || e.CallDate.HasValue));
+
+            if (startDate.HasValue)
+                dealerEvalsQuery = dealerEvalsQuery.Where(e => (e.ControlDate ?? e.CallDate) >= startDate.Value);
+            if (endDate.HasValue)
+                dealerEvalsQuery = dealerEvalsQuery.Where(e => (e.ControlDate ?? e.CallDate) <= endDate.Value);
+
+            var allEvaluations = await dealerEvalsQuery
+                .Select(e => new
+                {
+                    e.CustomerDealerId,
+                    e.ScorePercentage,
+                    EffectiveDate = e.ControlDate ?? e.CallDate,
+                    IsInternal = e.EvaluatorCustomerPersonnelId != null,
+                    ProjectCode = e.Project!.Code ?? ""
+                })
+                .ToListAsync();
+
+            var monthlyPeriods = allEvaluations
+                .GroupBy(e => new { Year = e.EffectiveDate!.Value.Year, Month = e.EffectiveDate!.Value.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new { Name = $"{g.Key.Year}-{g.Key.Month:D2}", g.Key.Year, g.Key.Month })
+                .ToList();
+
+            // Headers
+            sheet.Cell(1, 1).Value = "Şube";
+            sheet.Cell(1, 1).Style.Font.Bold = true;
+            sheet.Range(1, 1, 2, 1).Merge();
+            sheet.Cell(1, 2).Value = "Kod";
+            sheet.Cell(1, 2).Style.Font.Bold = true;
+            sheet.Range(1, 2, 2, 2).Merge();
+            sheet.Cell(1, 3).Value = "Projeler";
+            sheet.Cell(1, 3).Style.Font.Bold = true;
+            sheet.Range(1, 3, 2, 3).Merge();
+
+            int col = 4;
+            foreach (var period in monthlyPeriods)
+            {
+                sheet.Cell(1, col).Value = period.Name;
+                sheet.Cell(1, col).Style.Font.Bold = true;
+                sheet.Range(1, col, 1, col + 2).Merge();
+                sheet.Cell(2, col).Value = "Genel";
+                sheet.Cell(2, col).Style.Font.Bold = true;
+                sheet.Cell(2, col + 1).Value = "İç";
+                sheet.Cell(2, col + 1).Style.Font.Bold = true;
+                sheet.Cell(2, col + 2).Value = "Dış";
+                sheet.Cell(2, col + 2).Style.Font.Bold = true;
+                col += 3;
+            }
+            sheet.Cell(1, col).Value = "Genel Ortalama";
+            sheet.Cell(1, col).Style.Font.Bold = true;
+            sheet.Range(1, col, 2, col).Merge();
+            sheet.Cell(1, col + 1).Value = "Toplam Değerlendirme";
+            sheet.Cell(1, col + 1).Style.Font.Bold = true;
+            sheet.Range(1, col + 1, 2, col + 1).Merge();
+
+            int row = 3;
+            foreach (var d in dealers)
+            {
+                var dealerEvals = allEvaluations.Where(e => e.CustomerDealerId == d.Id).ToList();
+                if (!dealerEvals.Any()) continue;
+
+                sheet.Cell(row, 1).Value = d.Name;
+                sheet.Cell(row, 2).Value = d.Code;
+
+                var projectCodes = dealerEvals
+                    .Where(e => !string.IsNullOrEmpty(e.ProjectCode))
+                    .Select(e => e.ProjectCode)
+                    .Distinct()
+                    .OrderBy(c => c);
+                sheet.Cell(row, 3).Value = string.Join(", ", projectCodes);
+
+                col = 4;
+                foreach (var period in monthlyPeriods)
+                {
+                    var periodEvals = dealerEvals
+                        .Where(e => e.EffectiveDate!.Value.Year == period.Year && e.EffectiveDate!.Value.Month == period.Month)
+                        .ToList();
+                    var internalEvals = periodEvals.Where(e => e.IsInternal).ToList();
+                    var externalEvals = periodEvals.Where(e => !e.IsInternal).ToList();
+
+                    if (periodEvals.Any())
+                    {
+                        var avg = periodEvals.Average(e => (double)e.ScorePercentage!.Value);
+                        sheet.Cell(row, col).Value = Math.Round(avg, 2);
+                        if (avg >= excelSuccessThreshold)
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGreen;
+                        else if (avg >= excelWarningThreshold)
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightYellow;
+                        else
+                            sheet.Cell(row, col).Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightCoral;
+                    }
+                    else
+                        sheet.Cell(row, col).Value = "-";
+
+                    sheet.Cell(row, col + 1).Value = internalEvals.Any() ? Math.Round(internalEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : "-";
+                    sheet.Cell(row, col + 2).Value = externalEvals.Any() ? Math.Round(externalEvals.Average(e => (double)e.ScorePercentage!.Value), 2) : "-";
+                    col += 3;
+                }
+
+                var overallAvg = dealerEvals.Average(e => (double)e.ScorePercentage!.Value);
+                sheet.Cell(row, col).Value = Math.Round(overallAvg, 2);
+                sheet.Cell(row, col).Style.Font.Bold = true;
+                sheet.Cell(row, col + 1).Value = dealerEvals.Count;
+                row++;
+            }
+        }
+
+        sheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(sheet);
+
+        // ===== GENEL RAPOR SHEET (Soru Grubu bazlı - Dealer) =====
+        var genelRaporQuery = _context.Answers
+            .Include(a => a.Question)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.Project)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.AssignmentPeriod)
+            .Include(a => a.Evaluation)
+                .ThenInclude(e => e.CustomerDealer)
+            .Where(a => a.Evaluation.Project != null &&
+                       a.Evaluation.Project.CustomerId == customerId &&
+                       filteredProjectIds.Contains(a.Evaluation.ProjectId) &&
+                       a.Evaluation.CustomerDealerId.HasValue &&
+                       dealerIds.Contains(a.Evaluation.CustomerDealerId.Value) &&
+                       a.Evaluation.StatusId == EvaluationStatuses.Ids.Completed &&
+                       a.Question.GroupName != null &&
+                       a.Question.WeightPoints > 0);
+
+        if (startDate.HasValue)
+        {
+            var startUtc = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Utc);
+            genelRaporQuery = genelRaporQuery.Where(a =>
+                (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.EndDate >= startUtc) ||
+                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) >= startUtc));
+        }
+        if (endDate.HasValue)
+        {
+            var endUtc = DateTime.SpecifyKind(endDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            genelRaporQuery = genelRaporQuery.Where(a =>
+                (a.Evaluation.AssignmentPeriod != null && a.Evaluation.AssignmentPeriod.StartDate <= endUtc) ||
+                (a.Evaluation.AssignmentPeriod == null && (a.Evaluation.CallDate ?? a.Evaluation.ControlDate) <= endUtc));
+        }
+
+        var genelRaporAnswers = await genelRaporQuery
+            .Select(a => new
+            {
+                ProjectName = a.Evaluation.Project.Code != null ? a.Evaluation.Project.Code + " - " + a.Evaluation.Project.Name : a.Evaluation.Project.Name,
+                DealerId = a.Evaluation.CustomerDealerId,
+                DealerName = a.Evaluation.CustomerDealer != null ? a.Evaluation.CustomerDealer.Name : "-",
+                DealerCode = a.Evaluation.CustomerDealer != null ? (a.Evaluation.CustomerDealer.Code ?? "-") : "-",
+                GroupName = a.Question.GroupName!,
+                EarnedPoints = a.EarnedPoints ?? 0,
+                WeightPoints = a.Question.WeightPoints,
+                PeriodName = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.Name : null,
+                PeriodStartDate = a.Evaluation.AssignmentPeriod != null ? a.Evaluation.AssignmentPeriod.StartDate : (DateTime?)null,
+                EvalDate = a.Evaluation.CallDate ?? a.Evaluation.ControlDate
+            })
+            .ToListAsync();
+
+        // Genel Rapor sheet'i - PIVOT TABLO FORMATI
+        var genelSheet = workbook.Worksheets.Add("Genel Rapor");
+
+        if (genelRaporAnswers.Any())
+        {
+            var pivotData = genelRaporAnswers
+                .GroupBy(a => new { a.GroupName, a.DealerId, a.DealerName })
+                .Select(g =>
+                {
+                    var answers = g.ToList();
+                    var sumWeight = answers.Sum(a => a.WeightPoints);
+                    var sumEarned = answers.Sum(a => a.EarnedPoints);
+                    return new
+                    {
+                        g.Key.GroupName,
+                        g.Key.DealerId,
+                        g.Key.DealerName,
+                        AvgScore = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
+                        ErrorCount = answers.Count(a => a.EarnedPoints < a.WeightPoints)
+                    };
+                })
+                .ToList();
+
+            var groupNames = pivotData.Select(p => p.GroupName).Distinct().OrderBy(g => g).ToList();
+            var dealerListPivot = pivotData
+                .Select(p => new { p.DealerId, p.DealerName })
+                .Distinct()
+                .OrderBy(p => p.DealerName)
+                .ToList();
+
+            genelSheet.Cell(1, 1).Value = "Kontrol Sorusu";
+            genelSheet.Cell(1, 1).Style.Font.Bold = true;
+            int colG = 2;
+            foreach (var dealer in dealerListPivot)
+            {
+                genelSheet.Cell(1, colG).Value = dealer.DealerName;
+                genelSheet.Cell(1, colG).Style.Font.Bold = true;
+                genelSheet.Range(1, colG, 1, colG + 1).Merge();
+                genelSheet.Cell(1, colG).Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
+                colG += 2;
+            }
+            int totalColStart = colG;
+            genelSheet.Cell(1, colG).Value = "Ortalama Puan Toplamı";
+            genelSheet.Cell(1, colG).Style.Font.Bold = true;
+            genelSheet.Cell(1, colG + 1).Value = "Hata Sayısı Toplamı";
+            genelSheet.Cell(1, colG + 1).Style.Font.Bold = true;
+
+            genelSheet.Cell(2, 1).Value = "";
+            colG = 2;
+            foreach (var _ in dealerListPivot)
+            {
+                genelSheet.Cell(2, colG).Value = "Ortalama Puan";
+                genelSheet.Cell(2, colG).Style.Font.Bold = true;
+                genelSheet.Cell(2, colG + 1).Value = "Hata Sayısı";
+                genelSheet.Cell(2, colG + 1).Style.Font.Bold = true;
+                colG += 2;
+            }
+            genelSheet.Cell(2, totalColStart).Value = "";
+            genelSheet.Cell(2, totalColStart + 1).Value = "";
+
+            int rowG = 3;
+            foreach (var groupName in groupNames)
+            {
+                genelSheet.Cell(rowG, 1).Value = groupName;
+                colG = 2;
+                var rowScores = new List<decimal>();
+                var rowErrors = 0;
+                foreach (var dealer in dealerListPivot)
+                {
+                    var data = pivotData.FirstOrDefault(p => p.GroupName == groupName && p.DealerId == dealer.DealerId);
+                    if (data != null)
+                    {
+                        genelSheet.Cell(rowG, colG).Value = (double)data.AvgScore;
+                        genelSheet.Cell(rowG, colG + 1).Value = data.ErrorCount;
+                        rowScores.Add(data.AvgScore);
+                        rowErrors += data.ErrorCount;
+                    }
+                    else
+                    {
+                        genelSheet.Cell(rowG, colG).Value = "-";
+                        genelSheet.Cell(rowG, colG + 1).Value = "-";
+                    }
+                    colG += 2;
+                }
+                if (rowScores.Any())
+                {
+                    genelSheet.Cell(rowG, totalColStart).Value = (double)Math.Round(rowScores.Average(), 2);
+                    genelSheet.Cell(rowG, totalColStart).Style.Font.Bold = true;
+                }
+                else
+                {
+                    genelSheet.Cell(rowG, totalColStart).Value = "-";
+                }
+                genelSheet.Cell(rowG, totalColStart + 1).Value = rowErrors;
+                genelSheet.Cell(rowG, totalColStart + 1).Style.Font.Bold = true;
+                rowG++;
+            }
+        }
+        else
+        {
+            genelSheet.Cell(1, 1).Value = "Veri bulunamadı";
+        }
+
+        genelSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(genelSheet);
+
+        // ===== SÜREÇ ANALİZİ SHEET (Flat Data Format - Dealer) =====
+        var surecSheet = workbook.Worksheets.Add("Süreç Analizi");
+
+        var surecData = genelRaporAnswers
+            .GroupBy(a => new
+            {
+                ProjectPeriod = a.PeriodName != null
+                    ? $"{a.ProjectName} {a.PeriodName}"
+                    : $"{a.ProjectName} {a.EvalDate?.Year}-{a.EvalDate?.Month:D2}",
+                a.DealerId,
+                a.DealerName,
+                a.DealerCode,
+                a.GroupName,
+                Year = a.PeriodStartDate?.Year ?? a.EvalDate?.Year ?? 0,
+                YearMonth = a.PeriodStartDate != null
+                    ? $"{a.PeriodStartDate.Value.Year}{a.PeriodStartDate.Value.Month:D2}"
+                    : $"{a.EvalDate?.Year}{a.EvalDate?.Month:D2}"
+            })
+            .Select(g =>
+            {
+                var answers = g.ToList();
+                var sumWeight = answers.Sum(a => a.WeightPoints);
+                var sumEarned = answers.Sum(a => a.EarnedPoints);
+                return new
+                {
+                    g.Key.ProjectPeriod,
+                    g.Key.DealerName,
+                    g.Key.DealerCode,
+                    KontrolSorusu = g.Key.GroupName,
+                    Periyot = g.Key.Year,
+                    PeriyotAy = g.Key.YearMonth,
+                    OrtalamaPuan = sumWeight > 0 ? Math.Round(sumEarned / sumWeight * 100, 2) : 0,
+                    HataSayisi = answers.Count(a => a.EarnedPoints < a.WeightPoints)
+                };
+            })
+            .OrderBy(x => x.ProjectPeriod)
+            .ThenBy(x => x.DealerName)
+            .ThenBy(x => x.KontrolSorusu)
+            .ToList();
+
+        surecSheet.Cell(1, 1).Value = "Proje";
+        surecSheet.Cell(1, 2).Value = "Şube";
+        surecSheet.Cell(1, 3).Value = "Şube Kodu";
+        surecSheet.Cell(1, 4).Value = "Kontrol Sorusu";
+        surecSheet.Cell(1, 5).Value = "Periyot";
+        surecSheet.Cell(1, 6).Value = "Periyot (Ay)";
+        surecSheet.Cell(1, 7).Value = "Ortalama Puan";
+        surecSheet.Cell(1, 8).Value = "Hata Sayısı";
+
+        var surecHeaderRange = surecSheet.Range(1, 1, 1, 8);
+        surecHeaderRange.Style.Font.Bold = true;
+        surecHeaderRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
+
+        int surecRow = 2;
+        foreach (var item in surecData)
+        {
+            surecSheet.Cell(surecRow, 1).Value = item.ProjectPeriod;
+            surecSheet.Cell(surecRow, 2).Value = item.DealerName;
+            surecSheet.Cell(surecRow, 3).Value = item.DealerCode;
+            surecSheet.Cell(surecRow, 4).Value = item.KontrolSorusu;
+            surecSheet.Cell(surecRow, 5).Value = item.Periyot;
+            surecSheet.Cell(surecRow, 6).Value = item.PeriyotAy;
+            surecSheet.Cell(surecRow, 7).Value = (double)item.OrtalamaPuan;
+            surecSheet.Cell(surecRow, 8).Value = item.HataSayisi;
+            surecRow++;
+        }
+
+        surecSheet.Columns().AdjustToContents();
+        ExcelHelper.ApplyLongTextColumnStyles(surecSheet);
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+
+        return (stream.ToArray(), $"SubeBasariAnalizi_{TurkeyTime.Now:dd.MM.yyyyHHmmss}.xlsx");
     }
 
     // ===== ADMIN CUSTOMER SELECTION =====

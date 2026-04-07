@@ -2832,6 +2832,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.CustomerOrganization)
             .Include(e => e.EvaluatedPersonnel)
+            .Include(e => e.CustomerDealer)
+                .ThenInclude(d => d!.Customer)
             .Include(e => e.Answers)
             .Where(e => e.StatusId == EvaluationStatuses.Ids.Completed)
             .AsQueryable();
@@ -2916,7 +2918,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         if (filter.PeriodIds?.Any() == true)
             query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
 
-        // Evaluated Personnel name search (çoklu - OR mantığı)
+        // Evaluated Personnel name search (çoklu - OR mantığı) - dealer adı da aransın
         if (filter.PersonnelNames?.Any() == true)
         {
             query = query.Where(e =>
@@ -2924,7 +2926,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     (e.EvaluatedCustomerPersonnel != null &&
                         (EF.Functions.ILike(e.EvaluatedCustomerPersonnel.FirstName, $"%{name}%") ||
                          EF.Functions.ILike(e.EvaluatedCustomerPersonnel.LastName, $"%{name}%"))) ||
-                    (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{name}%"))));
+                    (e.EvaluatedUnknownPersonnel != null && EF.Functions.ILike(e.EvaluatedUnknownPersonnel, $"%{name}%")) ||
+                    (e.CustomerDealer != null && EF.Functions.ILike(e.CustomerDealer.Name, $"%{name}%"))));
         }
 
         // CallId search (çoklu - OR mantığı)
@@ -2975,8 +2978,10 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         int row = 2;
         foreach (var e in evaluations)
         {
-            // Firma
-            var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName ?? "";
+            // Firma - personel yoksa dealer'ın müşterisinden al
+            var customerName = e.EvaluatedCustomerPersonnel?.Customer?.CompanyName
+                ?? e.CustomerDealer?.Customer?.CompanyName
+                ?? "";
 
             // Değerlendirilen: Period varsa period adı, yoksa AyYıl + Company
             var evalDate = e.CallDate ?? e.ControlDate ?? e.CreatedAt;
@@ -2984,19 +2989,39 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 ? e.AssignmentPeriod.Name
                 : $"{FormatMonthYear(evalDate)} - {customerName}";
 
-            // Kişi
-            var personnelName = e.EvaluatedCustomerPersonnel != null
-                ? $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}"
-                : (e.EvaluatedPersonnel != null
-                    ? $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}"
-                    : e.EvaluatedUnknownPersonnel ?? "");
+            // Kişi - personel yoksa dealer adı veya "Şube Denetlemesi"
+            string personnelName;
+            if (e.EvaluatedCustomerPersonnel != null)
+                personnelName = $"{e.EvaluatedCustomerPersonnel.FirstName} {e.EvaluatedCustomerPersonnel.LastName}";
+            else if (e.EvaluatedPersonnel != null)
+                personnelName = $"{e.EvaluatedPersonnel.FirstName} {e.EvaluatedPersonnel.LastName}";
+            else if (!string.IsNullOrWhiteSpace(e.EvaluatedUnknownPersonnel))
+                personnelName = e.EvaluatedUnknownPersonnel;
+            else if (e.CustomerDealer != null)
+                personnelName = $"{e.CustomerDealer.Name} (Şube Denetlemesi)";
+            else
+                personnelName = "";
 
-            // Departman
-            var departmentName = e.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
-                ? string.Join(", ", e.EvaluatedCustomerPersonnel.OrganizationAssignments
+            // Departman - personel yoksa dealer şehir/ilçe bilgisi
+            string departmentName;
+            if (e.EvaluatedCustomerPersonnel?.OrganizationAssignments != null &&
+                e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganization != null))
+            {
+                departmentName = string.Join(", ", e.EvaluatedCustomerPersonnel.OrganizationAssignments
                     .Where(oa => oa.CustomerOrganization != null)
-                    .Select(oa => oa.CustomerOrganization!.Name))
-                : "";
+                    .Select(oa => oa.CustomerOrganization!.Name));
+            }
+            else if (e.CustomerDealer != null)
+            {
+                var parts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(e.CustomerDealer.City)) parts.Add(e.CustomerDealer.City);
+                if (!string.IsNullOrWhiteSpace(e.CustomerDealer.District)) parts.Add(e.CustomerDealer.District);
+                departmentName = parts.Count > 0 ? string.Join(" / ", parts) : e.CustomerDealer.Name;
+            }
+            else
+            {
+                departmentName = "";
+            }
 
             // Yorum: Tüm answer notes + genel yorum (virgülle birleşik)
             var allComments = new List<string>();
