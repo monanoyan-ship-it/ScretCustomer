@@ -2208,7 +2208,28 @@ public class CustomerPortalApiController : ControllerBase
     private string GenerateReportCardHtml(PersonnelReportCardDto report)
     {
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>");
+        var successThreshold = report.SuccessThreshold;
+        var warningThreshold = report.WarningThreshold;
+        string BadgeClass(decimal score) => score >= successThreshold ? "bg-success" : score >= warningThreshold ? "bg-warning" : "bg-danger";
+        string ScoreClass(decimal score) => score >= successThreshold ? "text-success" : score >= warningThreshold ? "text-warning" : "text-danger";
+
+        sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'>");
+        sb.AppendLine("<style>");
+        sb.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #333; margin: 20px; }");
+        sb.AppendLine("h1 { color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 8px; }");
+        sb.AppendLine("h2 { color: #495057; margin-top: 5px; }");
+        sb.AppendLine("table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }");
+        sb.AppendLine("th, td { border: 1px solid #dee2e6; padding: 6px 10px; text-align: left; }");
+        sb.AppendLine("th { background-color: #f8f9fa; font-weight: 600; }");
+        sb.AppendLine(".text-center { text-align: center; }");
+        sb.AppendLine(".text-success { color: #198754; } .text-warning { color: #ffc107; } .text-danger { color: #dc3545; }");
+        sb.AppendLine(".badge { display: inline-block; padding: 3px 8px; border-radius: 4px; color: #fff; font-size: 10pt; }");
+        sb.AppendLine(".bg-success { background-color: #198754; } .bg-warning { background-color: #ffc107; color: #000; } .bg-danger { background-color: #dc3545; }");
+        sb.AppendLine(".card { border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 15px; }");
+        sb.AppendLine(".card-header { background-color: #f8f9fa; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #dee2e6; }");
+        sb.AppendLine(".page-break { page-break-before: always; }");
+        sb.AppendLine(".notes-cell { font-size: 9pt; color: #555; max-width: 300px; word-wrap: break-word; }");
+        sb.AppendLine("</style></head><body>");
 
         // Başlık
         sb.AppendLine($"<h1>Temsilci Karnesi</h1>");
@@ -2220,7 +2241,7 @@ public class CustomerPortalApiController : ControllerBase
         sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
         sb.AppendLine("<table>");
         sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
-        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{GetScoreClass(report.AverageScore)}'>{report.AverageScore:F2}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{ScoreClass(report.AverageScore)}'>{report.AverageScore:F2}%</strong></td></tr>");
         sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
@@ -2233,9 +2254,7 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
             sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
             foreach (var trend in report.MonthlyTrend)
-            {
-                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {GetBadgeClass(trend.AverageScore)}'>{trend.AverageScore:F2}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
-            }
+                sb.AppendLine($"<tr><td>{trend.MonthName}</td><td class='text-center'>{trend.EvaluationCount}</td><td class='text-center'><span class='badge {BadgeClass(trend.AverageScore)}'>{trend.AverageScore:F2}%</span></td><td class='text-center'>{trend.YellowCards}</td><td class='text-center'>{trend.RedCards}</td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
@@ -2245,42 +2264,16 @@ public class CustomerPortalApiController : ControllerBase
             sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
             sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
             foreach (var group in report.GroupPerformances)
-            {
-                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {GetBadgeClass(group.PercentageScore)}'>{group.PercentageScore:F2}%</span></td></tr>");
-            }
+                sb.AppendLine($"<tr><td>{group.GroupName}</td><td class='text-center'><span class='badge {BadgeClass(group.PercentageScore)}'>{group.PercentageScore:F2}%</span></td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
-        // Güçlü/Zayıf Yönler
-        if (report.Strengths.Any() || report.Weaknesses.Any())
-        {
-            sb.AppendLine("<div class='card'><div class='card-header'>Güçlü ve Zayıf Yönler</div>");
-
-            if (report.Strengths.Any())
-            {
-                sb.AppendLine("<h3 class='text-success'>Güçlü Yönler</h3><ul>");
-                foreach (var s in report.Strengths.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F2}%</span> {s.QuestionText}</li>");
-                sb.AppendLine("</ul>");
-            }
-
-            if (report.Weaknesses.Any())
-            {
-                sb.AppendLine("<h3 class='text-danger'>Geliştirilmeli</h3><ul>");
-                foreach (var w in report.Weaknesses.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F2}%</span> {w.QuestionText}</li>");
-                sb.AppendLine("</ul>");
-            }
-
-            sb.AppendLine("</div>");
-        }
-
-        // Son Değerlendirmeler
+        // Son Değerlendirmeler (yorumlarıyla)
         if (report.RecentEvaluations.Any())
         {
             sb.AppendLine("<div class='page-break'></div>");
             sb.AppendLine("<div class='card'><div class='card-header'>Son Değerlendirmeler</div>");
-            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th>Kontrol Listesi</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th></tr></thead><tbody>");
+            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th><th>Yorum</th></tr></thead><tbody>");
             foreach (var eval in report.RecentEvaluations.Take(20))
             {
                 var cards = "";
@@ -2288,9 +2281,32 @@ public class CustomerPortalApiController : ControllerBase
                 if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
                 if (string.IsNullOrEmpty(cards)) cards = "-";
 
-                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {GetBadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td></tr>");
+                var notes = !string.IsNullOrWhiteSpace(eval.Notes) ? eval.Notes.Replace("\n", "<br/>") : "-";
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td class='text-center'><span class='badge {BadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td><td class='notes-cell'>{notes}</td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Güçlü/Zayıf Yönler
+        if (report.Strengths.Any() || report.Weaknesses.Any())
+        {
+            if (report.Strengths.Any())
+            {
+                sb.AppendLine("<div class='card'><div class='card-header' style='color:#198754;'>Güçlü Yönler</div>");
+                sb.AppendLine("<table><thead><tr><th>Soru</th><th class='text-center' style='width:100px;'>Puan</th></tr></thead><tbody>");
+                foreach (var s in report.Strengths.Take(5))
+                    sb.AppendLine($"<tr><td>{s.QuestionText}</td><td class='text-center'><span class='badge bg-success'>{s.PercentageScore:F2}%</span></td></tr>");
+                sb.AppendLine("</tbody></table></div>");
+            }
+
+            if (report.Weaknesses.Any())
+            {
+                sb.AppendLine("<div class='card'><div class='card-header' style='color:#dc3545;'>Geliştirilmeli</div>");
+                sb.AppendLine("<table><thead><tr><th>Soru</th><th class='text-center' style='width:100px;'>Puan</th></tr></thead><tbody>");
+                foreach (var w in report.Weaknesses.Take(5))
+                    sb.AppendLine($"<tr><td>{w.QuestionText}</td><td class='text-center'><span class='badge bg-danger'>{w.PercentageScore:F2}%</span></td></tr>");
+                sb.AppendLine("</tbody></table></div>");
+            }
         }
 
         sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");
@@ -3101,6 +3117,11 @@ public class CustomerPortalApiController : ControllerBase
     private string GenerateDealerReportCardHtml(DealerReportCardDto report)
     {
         var sb = new System.Text.StringBuilder();
+        var successThreshold = report.SuccessThreshold;
+        var warningThreshold = report.WarningThreshold;
+        string BadgeClass(decimal score) => score >= successThreshold ? "bg-success" : score >= warningThreshold ? "bg-warning" : "bg-danger";
+        string ScoreClass(decimal score) => score >= successThreshold ? "text-success" : score >= warningThreshold ? "text-warning" : "text-danger";
+
         sb.AppendLine("<!DOCTYPE html><html><head><meta charset='utf-8'>");
         sb.AppendLine("<style>");
         sb.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 11pt; color: #333; margin: 20px; }");
@@ -3116,6 +3137,7 @@ public class CustomerPortalApiController : ControllerBase
         sb.AppendLine(".card { border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 15px; }");
         sb.AppendLine(".card-header { background-color: #f8f9fa; padding: 8px 12px; font-weight: 600; border-bottom: 1px solid #dee2e6; }");
         sb.AppendLine(".page-break { page-break-before: always; }");
+        sb.AppendLine(".notes-cell { font-size: 9pt; color: #555; max-width: 300px; word-wrap: break-word; }");
         sb.AppendLine("</style></head><body>");
 
         sb.AppendLine($"<h1>Şube Karnesi</h1>");
@@ -3125,68 +3147,74 @@ public class CustomerPortalApiController : ControllerBase
         if (!string.IsNullOrEmpty(report.City))
             sb.AppendLine($"<p><strong>Konum:</strong> {report.City}{(string.IsNullOrEmpty(report.District) ? "" : " / " + report.District)}</p>");
 
+        // Performans Özeti
         sb.AppendLine("<div class='card'><div class='card-header'>Performans Özeti</div>");
         sb.AppendLine("<table>");
         sb.AppendLine($"<tr><td>Toplam Değerlendirme</td><td><strong>{report.TotalEvaluations}</strong></td></tr>");
-        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{(report.AverageScore >= 80 ? "text-success" : report.AverageScore >= 60 ? "text-warning" : "text-danger")}'>{report.AverageScore:F2}%</strong></td></tr>");
+        sb.AppendLine($"<tr><td>Ortalama Puan</td><td><strong class='{ScoreClass(report.AverageScore)}'>{report.AverageScore:F2}%</strong></td></tr>");
         sb.AppendLine($"<tr><td>En Yüksek Puan</td><td class='text-success'>{report.BestScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>En Düşük Puan</td><td class='text-danger'>{report.WorstScore:F2}%</td></tr>");
         sb.AppendLine($"<tr><td>Sarı Kart</td><td>{report.TotalYellowCards}</td></tr>");
         sb.AppendLine($"<tr><td>Kırmızı Kart</td><td>{report.TotalRedCards}</td></tr>");
         sb.AppendLine("</table></div>");
 
+        // Aylık Performans
         if (report.MonthlyTrend.Any())
         {
             sb.AppendLine("<div class='card'><div class='card-header'>Aylık Performans</div>");
             sb.AppendLine("<table><thead><tr><th>Dönem</th><th class='text-center'>Değerlendirme</th><th class='text-center'>Ort. Puan</th><th class='text-center'>S.Kart</th><th class='text-center'>K.Kart</th></tr></thead><tbody>");
             foreach (var t in report.MonthlyTrend)
-                sb.AppendLine($"<tr><td>{t.MonthName}</td><td class='text-center'>{t.EvaluationCount}</td><td class='text-center'><span class='badge {(t.AverageScore >= 80 ? "bg-success" : t.AverageScore >= 60 ? "bg-warning" : "bg-danger")}'>{t.AverageScore:F2}%</span></td><td class='text-center'>{t.YellowCards}</td><td class='text-center'>{t.RedCards}</td></tr>");
+                sb.AppendLine($"<tr><td>{t.MonthName}</td><td class='text-center'>{t.EvaluationCount}</td><td class='text-center'><span class='badge {BadgeClass(t.AverageScore)}'>{t.AverageScore:F2}%</span></td><td class='text-center'>{t.YellowCards}</td><td class='text-center'>{t.RedCards}</td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
+        // Grup Performansı
         if (report.GroupPerformances.Any())
         {
             sb.AppendLine("<div class='card'><div class='card-header'>Grup Performansı</div>");
             sb.AppendLine("<table><thead><tr><th>Grup</th><th class='text-center'>Başarı</th></tr></thead><tbody>");
             foreach (var g in report.GroupPerformances)
-                sb.AppendLine($"<tr><td>{g.GroupName}</td><td class='text-center'><span class='badge {(g.PercentageScore >= 80 ? "bg-success" : g.PercentageScore >= 60 ? "bg-warning" : "bg-danger")}'>{g.PercentageScore:F2}%</span></td></tr>");
+                sb.AppendLine($"<tr><td>{g.GroupName}</td><td class='text-center'><span class='badge {BadgeClass(g.PercentageScore)}'>{g.PercentageScore:F2}%</span></td></tr>");
             sb.AppendLine("</tbody></table></div>");
         }
 
-        if (report.Strengths.Any() || report.Weaknesses.Any())
-        {
-            sb.AppendLine("<div class='card'><div class='card-header'>Güçlü ve Zayıf Yönler</div>");
-            if (report.Strengths.Any())
-            {
-                sb.AppendLine("<h3 style='color:#198754;margin:10px 12px 5px;'>Güçlü Yönler</h3><ul style='margin:0 12px 10px;'>");
-                foreach (var s in report.Strengths.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-success'>{s.PercentageScore:F2}%</span> {s.QuestionText}</li>");
-                sb.AppendLine("</ul>");
-            }
-            if (report.Weaknesses.Any())
-            {
-                sb.AppendLine("<h3 style='color:#dc3545;margin:10px 12px 5px;'>Geliştirilmeli</h3><ul style='margin:0 12px 10px;'>");
-                foreach (var w in report.Weaknesses.Take(5))
-                    sb.AppendLine($"<li><span class='badge bg-danger'>{w.PercentageScore:F2}%</span> {w.QuestionText}</li>");
-                sb.AppendLine("</ul>");
-            }
-            sb.AppendLine("</div>");
-        }
-
+        // Son Değerlendirmeler (yorumlarıyla)
         if (report.RecentEvaluations.Any())
         {
             sb.AppendLine("<div class='page-break'></div>");
             sb.AppendLine("<div class='card'><div class='card-header'>Son Değerlendirmeler</div>");
-            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th>Kontrol Listesi</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th><th>Personel</th></tr></thead><tbody>");
+            sb.AppendLine("<table><thead><tr><th>Tarih</th><th>Proje</th><th class='text-center'>Puan</th><th class='text-center'>Kartlar</th><th>Personel</th><th>Yorum</th></tr></thead><tbody>");
             foreach (var eval in report.RecentEvaluations.Take(20))
             {
                 var cards = "";
                 if (eval.YellowCards > 0) cards += $"<span class='badge bg-warning'>{eval.YellowCards}</span> ";
                 if (eval.RedCards > 0) cards += $"<span class='badge bg-danger'>{eval.RedCards}</span>";
                 if (string.IsNullOrEmpty(cards)) cards = "-";
-                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td>{eval.ChecklistName}</td><td class='text-center'><span class='badge {(eval.ScorePercentage >= 80 ? "bg-success" : eval.ScorePercentage >= 60 ? "bg-warning" : "bg-danger")}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td><td>{eval.PersonnelName ?? "-"}</td></tr>");
+                var notes = !string.IsNullOrWhiteSpace(eval.Notes) ? eval.Notes.Replace("\n", "<br/>") : "-";
+                sb.AppendLine($"<tr><td>{eval.EvaluationDate?.ToString("dd.MM.yyyy") ?? "-"}</td><td>{eval.ProjectName}</td><td class='text-center'><span class='badge {BadgeClass(eval.ScorePercentage)}'>{eval.ScorePercentage:F2}%</span></td><td class='text-center'>{cards}</td><td>{eval.PersonnelName ?? "-"}</td><td class='notes-cell'>{notes}</td></tr>");
             }
             sb.AppendLine("</tbody></table></div>");
+        }
+
+        // Güçlü/Zayıf Yönler
+        if (report.Strengths.Any() || report.Weaknesses.Any())
+        {
+            if (report.Strengths.Any())
+            {
+                sb.AppendLine("<div class='card'><div class='card-header' style='color:#198754;'>Güçlü Yönler</div>");
+                sb.AppendLine("<table><thead><tr><th>Soru</th><th class='text-center' style='width:100px;'>Puan</th></tr></thead><tbody>");
+                foreach (var s in report.Strengths.Take(5))
+                    sb.AppendLine($"<tr><td>{s.QuestionText}</td><td class='text-center'><span class='badge bg-success'>{s.PercentageScore:F2}%</span></td></tr>");
+                sb.AppendLine("</tbody></table></div>");
+            }
+            if (report.Weaknesses.Any())
+            {
+                sb.AppendLine("<div class='card'><div class='card-header' style='color:#dc3545;'>Geliştirilmeli</div>");
+                sb.AppendLine("<table><thead><tr><th>Soru</th><th class='text-center' style='width:100px;'>Puan</th></tr></thead><tbody>");
+                foreach (var w in report.Weaknesses.Take(5))
+                    sb.AppendLine($"<tr><td>{w.QuestionText}</td><td class='text-center'><span class='badge bg-danger'>{w.PercentageScore:F2}%</span></td></tr>");
+                sb.AppendLine("</tbody></table></div>");
+            }
         }
 
         sb.AppendLine($"<p style='text-align:right;font-size:9pt;color:#999;margin-top:20px;'>Oluşturulma: {TurkeyTime.Now:dd.MM.yyyy HH:mm}</p>");

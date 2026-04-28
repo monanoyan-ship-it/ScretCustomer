@@ -63,6 +63,12 @@ public class QuestionDto
 {
     public int Id { get; set; }
     public string Text { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Personel değerlendirme: öz değerlendirme rolünde gösterilecek soru metni (boşsa Text kullanılır)
+    /// </summary>
+    public string? SelfText { get; set; }
+
     public int Order { get; set; }
 
     /// <summary>
@@ -124,6 +130,12 @@ public class SubCriteriaDto
 {
     public int Id { get; set; }
     public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Öz değerlendirme rolünde gösterilecek alt kriter metni (boşsa Description kullanılır)
+    /// </summary>
+    public string? SelfDescription { get; set; }
+
     public int Order { get; set; }
     public decimal WeightPoints { get; set; } = 1;
     public bool IsActive { get; set; } = true;

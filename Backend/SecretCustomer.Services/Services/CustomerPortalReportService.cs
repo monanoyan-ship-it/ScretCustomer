@@ -1051,12 +1051,6 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             }
         }
 
-        // Genel yorum
-        if (!string.IsNullOrWhiteSpace(evaluation.Notes))
-        {
-            parts.Add(evaluation.Notes.Trim());
-        }
-
         // Denetim Yorumu
         if (!string.IsNullOrWhiteSpace(evaluation.EvaluationComment))
         {
@@ -1378,7 +1372,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     : 0,
                 EvaluationCount = g.Count()
             })
-            .Where(q => q.EvaluationCount >= 2) // En az 2 kez değerlendirilmiş sorular
+            .Where(q => q.EvaluationCount >= 1)
             .ToList();
 
         var strengths = questionPerformance.OrderByDescending(q => q.PercentageScore).Take(5).ToList();
@@ -4850,7 +4844,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                 Status = EvaluationStatuses.GetById(e.StatusId)?.SystemName ?? "",
                 ControlDate = e.ControlDate?.ToString("dd.MM.yyyy"),
                 ControlTime = e.ControlTime,
-                Notes = e.Notes
+                Notes = BuildCombinedNotes(e)
             })
             .ToList();
 
@@ -4872,7 +4866,7 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                     : 0,
                 EvaluationCount = g.Count()
             })
-            .Where(q => q.EvaluationCount >= 2)
+            .Where(q => q.EvaluationCount >= 1)
             .ToList();
 
         var strengths = questionPerformance.OrderByDescending(q => q.PercentageScore).Take(5).ToList();

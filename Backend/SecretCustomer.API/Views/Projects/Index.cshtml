@@ -508,8 +508,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Survey Settings (OnlineSurvey için) -->
-                            <div class="card mb-3" data-bind="visible: projectType() === 'OnlineSurvey'">
+                            <!-- Survey Settings (OnlineSurvey için) — ko if: gizli kartın select'i aynı observables'e bağlanmasın (Knockout seçimi sıfırlıyor) -->
+                            <!-- ko if: projectType() === 'OnlineSurvey' -->
+                            <div class="card mb-3">
                                 <div class="card-header py-2 bg-success text-white"><i class="bi bi-clipboard-data"></i> @Html.T("Project.SurveySettings", "Anket Ayarları")</div>
                                 <div class="card-body">
                                     <div class="row">
@@ -546,8 +547,10 @@
                                     </div>
                                 </div>
                             </div>
+                            <!-- /ko -->
                             <!-- Assessment Settings (PersonnelAssessment için) -->
-                            <div class="card mb-3" data-bind="visible: projectType() === 'PersonnelAssessment'">
+                            <!-- ko if: projectType() === 'PersonnelAssessment' -->
+                            <div class="card mb-3">
                                 <div class="card-header py-2 bg-info text-white"><i class="bi bi-person-check"></i> @Html.T("Project.AssessmentSettings", "Değerlendirme Ayarları")</div>
                                 <div class="card-body">
                                     <div class="row">
@@ -574,8 +577,33 @@
                                             <small class="text-muted">@Html.T("Project.MinRespondentsHint", "Raporda sonuç göstermek için gereken minimum değerlendirici sayısı")</small>
                                         </div>
                                     </div>
+                                    <div class="row mt-1 border-top pt-3">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.EmailTemplate", "Davetiye Şablonu")</label>
+                                            <select class="form-select" data-bind="value: emailTemplateId, options: $parent.assessmentEmailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.SelectTemplate", "Şablon Seçin...")'"></select>
+                                            <small class="text-muted">@Html.T("Project.AssessmentEmailTemplateHint", "Personel değerlendirme davetiye e-postalarında kullanılacak şablon")</small>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="form-check form-switch mt-md-4">
+                                                <input class="form-check-input" type="checkbox" id="sendReminderAssessment" data-bind="checked: sendReminderEmails">
+                                                <label class="form-check-label" for="sendReminderAssessment">@Html.T("Project.SendReminderEmails", "Hatırlatma Maili Gönder")</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row" data-bind="visible: sendReminderEmails()">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.ReminderEmailTemplate", "Hatırlatma Şablonu")</label>
+                                            <select class="form-select" data-bind="value: reminderEmailTemplateId, options: $parent.assessmentEmailTemplates, optionsText: 'name', optionsValue: 'id', optionsCaption: '@Html.T("Project.SelectTemplate", "Şablon Seçin...")'"></select>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">@Html.T("Project.ReminderDays", "Hatırlatma (Gün Önce)")</label>
+                                            <input type="number" class="form-control" data-bind="value: reminderDaysBeforeEnd" min="1" max="30" placeholder="3">
+                                            <small class="text-muted">@Html.T("Project.ReminderDaysHint", "Bitiş tarihinden kaç gün önce")</small>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <!-- /ko -->
                             <!-- Other -->
                             <div class="card mb-3">
                                 <div class="card-header py-2"><i class="bi bi-gear"></i> @Html.T("Project.OtherSettings", "Diğer Ayarlar")</div>
@@ -1071,6 +1099,23 @@
                             </div>
                         </div>
                         <div class="card-body py-2">
+                            <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link py-2" role="tab"
+                                            data-bind="click: function() { selectParticipantEmailTab('send'); }, css: { active: participantEmailTab() === 'send' }">
+                                        <i class="bi bi-send me-1"></i>@Html.T("Assessment.TabSendInvite", "Davetiye Gönder")
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button type="button" class="nav-link py-2" role="tab"
+                                            data-bind="click: function() { selectParticipantEmailTab('status'); }, css: { active: participantEmailTab() === 'status' }">
+                                        <i class="bi bi-list-check me-1"></i>@Html.T("Assessment.TabInvitationStatus", "Gönderim Durumu")
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Sekme: Gönder -->
+                            <!-- ko if: participantEmailTab() === 'send' -->
                             <!-- Şablon Seçimi -->
                             <div class="mb-2">
                                 <label class="form-label form-label-sm mb-1">@Html.T("Assessment.SelectTemplate", "Email Şablonu Seç")</label>
@@ -1100,7 +1145,7 @@
                             <!-- Gönderim Sonucu -->
                             <!-- ko with: emailSendResult -->
                             <div class="mt-2 small">
-                                <div class="d-flex gap-3">
+                                <div class="d-flex gap-3 flex-wrap">
                                     <!-- ko if: successCount > 0 -->
                                     <span class="text-success"><i class="bi bi-check-circle me-1"></i><span data-bind="text: successCount"></span> başarılı</span>
                                     <!-- /ko -->
@@ -1117,6 +1162,71 @@
                                 </div>
                                 <!-- /ko -->
                             </div>
+                            <!-- /ko -->
+                            <!-- /ko -->
+
+                            <!-- Sekme: Durum listesi -->
+                            <!-- ko if: participantEmailTab() === 'status' -->
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">@Html.T("Assessment.InvitationStatusHint", "Bu dönemdeki katılımcılar için proje bazlı gönderim kayıtları")</small>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0" data-bind="click: loadParticipantInvitationList, disable: participantInvitationsLoading">
+                                    <!-- ko if: participantInvitationsLoading -->
+                                    <span class="spinner-border spinner-border-sm"></span>
+                                    <!-- /ko -->
+                                    <!-- ko ifnot: participantInvitationsLoading -->
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                    <!-- /ko -->
+                                </button>
+                            </div>
+                            <!-- ko if: participantInvitationsError -->
+                            <div class="alert alert-danger py-1 small mb-2" data-bind="text: participantInvitationsError"></div>
+                            <!-- /ko -->
+                            <!-- ko if: participantInvitationsLoading() && participantInvitationRows().length === 0 -->
+                            <div class="text-center py-3 text-muted small">@Html.T("Common.Loading", "Yükleniyor...")</div>
+                            <!-- /ko -->
+                            <!-- ko if: !participantInvitationsLoading() && participantInvitationRows().length === 0 && !participantInvitationsError() -->
+                            <div class="text-muted small">@Html.T("Assessment.NoInvitationRows", "Kayıtlı gönderim yok veya katılımcı listesi boş.")</div>
+                            <!-- /ko -->
+                            <!-- ko if: participantInvitationRows().length > 0 -->
+                            <div class="table-responsive border rounded" style="max-height: 320px; overflow-y: auto;">
+                                <table class="table table-sm table-striped mb-0 small align-middle">
+                                    <thead class="position-sticky top-0 table-light shadow-sm">
+                                        <tr>
+                                            <th>@Html.T("Assessment.ColPersonnel", "Personel")</th>
+                                            <th>@Html.T("Common.Email", "E-posta")</th>
+                                            <th>@Html.T("Common.Status", "Durum")</th>
+                                            <th>@Html.T("Assessment.ColSentAt", "Gönderim")</th>
+                                            <th class="text-center">@Html.T("Assessment.ColOpened", "Açıldı")</th>
+                                            <th>@Html.T("Assessment.ColError", "Hata")</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: participantInvitationRows">
+                                        <tr>
+                                            <td data-bind="text: personnelName"></td>
+                                            <td data-bind="text: email || '—'"></td>
+                                            <td><span class="badge" data-bind="text: statusText, css: statusBadge"></span></td>
+                                            <td data-bind="text: sentAtText"></td>
+                                            <td class="text-center">
+                                                <!-- ko if: hasInvitation -->
+                                                <i class="bi" data-bind="css: isOpened ? 'bi-check-circle-fill text-success' : 'bi-circle text-muted'"></i>
+                                                <!-- /ko -->
+                                                <!-- ko ifnot: hasInvitation -->
+                                                <span class="text-muted">—</span>
+                                                <!-- /ko -->
+                                            </td>
+                                            <td class="text-danger text-break small" style="max-width: 160px;">
+                                                <!-- ko if: errorMessage -->
+                                                <span data-bind="text: errorMessage, attr: { title: errorMessage }"></span>
+                                                <!-- /ko -->
+                                                <!-- ko ifnot: errorMessage -->
+                                                <span class="text-muted">—</span>
+                                                <!-- /ko -->
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- /ko -->
                             <!-- /ko -->
                         </div>
                     </div>
@@ -1182,7 +1292,7 @@
                     <button class="btn btn-outline-warning" title="@Html.T("Common.Move", "Taşı")" data-bind="click: function() { $root.openMoveParticipantModal($data); }">
                         <i class="bi bi-arrows-move"></i>
                     </button>
-                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: $root.removeParticipant">
+                    <button class="btn btn-outline-danger" title="@Html.T("Common.Remove", "Çıkar")" data-bind="click: function() { $root.removeParticipant($data); }">
                         <i class="bi bi-box-arrow-right"></i>
                     </button>
                 </div>

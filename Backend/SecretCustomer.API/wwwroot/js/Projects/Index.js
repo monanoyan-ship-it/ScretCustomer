@@ -86,10 +86,14 @@ function ProjectEditViewModel(data) {
             notes: self.notes() || null,
             // Survey Settings
             surveyIdentityType: self.projectType() === 'OnlineSurvey' ? self.surveyIdentityType() : null,
-            emailTemplateId: self.projectType() === 'OnlineSurvey' ? self.emailTemplateId() : null,
-            reminderEmailTemplateId: self.projectType() === 'OnlineSurvey' ? self.reminderEmailTemplateId() : null,
-            sendReminderEmails: self.projectType() === 'OnlineSurvey' ? self.sendReminderEmails() : false,
-            reminderDaysBeforeEnd: self.projectType() === 'OnlineSurvey' ? self.reminderDaysBeforeEnd() : null,
+            emailTemplateId: self.projectType() === 'OnlineSurvey' || self.projectType() === 'PersonnelAssessment'
+                ? self.emailTemplateId() : null,
+            reminderEmailTemplateId: self.projectType() === 'OnlineSurvey' || self.projectType() === 'PersonnelAssessment'
+                ? self.reminderEmailTemplateId() : null,
+            sendReminderEmails: self.projectType() === 'OnlineSurvey' || self.projectType() === 'PersonnelAssessment'
+                ? self.sendReminderEmails() : false,
+            reminderDaysBeforeEnd: self.projectType() === 'OnlineSurvey' || self.projectType() === 'PersonnelAssessment'
+                ? self.reminderDaysBeforeEnd() : null,
             // Assessment Settings
             assessmentModeId: self.projectType() === 'PersonnelAssessment' ? parseInt(self.assessmentModeId()) : null,
             isAnonymous: self.projectType() === 'PersonnelAssessment' ? self.isAnonymous() : false,
@@ -123,6 +127,8 @@ function ProjectsViewModel() {
     self.users = ko.observableArray([]);
     self.availableOrganizations = ko.observableArray([]);
     self.emailTemplates = ko.observableArray([]);
+    /** Personel değerlendirme davetiye şablonları (EmailTemplateCategory Assessment ~ templateTypeId 10) */
+    self.assessmentEmailTemplates = ko.observableArray([]);
 
     // Proje tipi - Checklist tipi eslesmesi
     var projectChecklistRelations = {
@@ -563,11 +569,17 @@ function ProjectsViewModel() {
             .then(function(data) { self.users(data || []); })
             .catch(function() { console.error('Users could not be loaded'); });
 
-        // Load email templates (for survey projects)
+        // Online anket davetiye şablonları
         fetch('/api/email-templates?templateTypeId=1', { credentials: 'include' })
             .then(function(res) { return res.json(); })
             .then(function(data) { self.emailTemplates(data || []); })
             .catch(function() { console.error('Email templates could not be loaded'); });
+
+        // Personel değerlendirme davetiye şablonları (AssessmentInvitation vb.)
+        fetch('/api/email-templates?templateTypeId=10', { credentials: 'include' })
+            .then(function(res) { return res.json(); })
+            .then(function(data) { self.assessmentEmailTemplates(data || []); })
+            .catch(function() { console.error('Assessment email templates could not be loaded'); });
     };
 
     // Load organizations by customer
@@ -1043,9 +1055,12 @@ function ProjectsViewModel() {
     };
 
     self.deletePeriod = function(period) {
-        showDeleteConfirm({
+        showConfirmModal({
             title: 'Dönem Sil',
-            message: '"' + period.name + '" dönemi silinecek. Emin misiniz?',
+            message: '"' + (period.name || '') + '" dönemi silinecek. Emin misiniz?',
+            type: 'danger',
+            confirmText: T('Common.YesDelete', 'Evet, Sil'),
+            confirmIcon: 'bi-trash',
             onConfirm: function() {
                 fetch('/api/assessment/periods/' + period.id, {
                     method: 'DELETE',
@@ -1109,6 +1124,10 @@ function ProjectsViewModel() {
         self.participants([]);
         self.newParticipantPersonnelId('');
         self.newParticipantParentId('');
+        self.isEmailPanelOpen(false);
+        self.participantEmailTab('send');
+        self.participantInvitationRows([]);
+        self.participantInvitationsError('');
     };
 
     self.loadParticipants = function(periodId) {
@@ -1153,14 +1172,21 @@ function ProjectsViewModel() {
     };
 
     self.removeParticipant = function(participant) {
+        if (!participant || !participant.id) return;
         var period = self.participantsPeriod();
-        var name = participant.customerPersonnel
-            ? (participant.customerPersonnel.firstName + ' ' + participant.customerPersonnel.lastName).trim()
-            : 'Katılımcı';
+        var cp = participant.customerPersonnel;
+        var name = cp
+            ? String((cp.firstName || '').trim() + ' ' + (cp.lastName || '').trim()).trim()
+            : '';
+        if (!name && cp && cp.fullName) name = String(cp.fullName).trim();
+        if (!name) name = 'Katılımcı';
 
-        showDeleteConfirm({
+        showConfirmModal({
             title: 'Katılımcı Çıkar',
             message: '"' + name + '" katılımcı listesinden çıkarılacak. Emin misiniz?',
+            type: 'danger',
+            confirmText: 'Evet, çıkar',
+            confirmIcon: 'bi-person-x',
             onConfirm: function() {
                 fetch('/api/assessment/participants/' + participant.id, {
                     method: 'DELETE',
@@ -1203,17 +1229,102 @@ function ProjectsViewModel() {
     // ===== Email Gönderimi =====
 
     self.isEmailPanelOpen = ko.observable(false);
+    self.participantEmailTab = ko.observable('send'); // 'send' | 'status'
     self.assessmentEmailTemplates = ko.observableArray([]);
     self.selectedEmailTemplateId = ko.observable('');
     self.isEmailSending = ko.observable(false);
     self.emailSendResult = ko.observable(null);
+    self.participantInvitationRows = ko.observableArray([]);
+    self.participantInvitationsLoading = ko.observable(false);
+    self.participantInvitationsError = ko.observable('');
 
     self.toggleEmailPanel = function() {
         var open = !self.isEmailPanelOpen();
         self.isEmailPanelOpen(open);
-        if (open && self.assessmentEmailTemplates().length === 0) {
-            self.loadAssessmentEmailTemplates();
+        if (open) {
+            self.participantEmailTab('send');
+            if (self.assessmentEmailTemplates().length === 0) {
+                self.loadAssessmentEmailTemplates();
+            }
         }
+    };
+
+    self.selectParticipantEmailTab = function(tab) {
+        self.participantEmailTab(tab);
+        if (tab === 'status') {
+            self.loadParticipantInvitationList();
+        }
+    };
+
+    self.invitationStatusMeta = function(statusId, hasInvitation) {
+        if (!hasInvitation || statusId === 0 || statusId === undefined || statusId === null) {
+            return { text: 'Gönderilmedi', badge: 'bg-secondary' };
+        }
+        switch (statusId) {
+            case 1: return { text: 'Bekliyor', badge: 'bg-warning text-dark' };
+            case 2: return { text: 'Gönderildi', badge: 'bg-success' };
+            case 3: return { text: 'Başarısız', badge: 'bg-danger' };
+            default: return { text: '-', badge: 'bg-secondary' };
+        }
+    };
+
+    self.formatInvitationDateTime = function(iso) {
+        if (!iso) return '—';
+        try {
+            return new Date(iso).toLocaleString('tr-TR');
+        } catch (e) {
+            return '—';
+        }
+    };
+
+    self.loadParticipantInvitationList = function() {
+        var project = self.assessmentProject();
+        if (!project) return;
+        self.participantInvitationsLoading(true);
+        self.participantInvitationsError('');
+        fetch('/api/surveys/' + project.id + '/invitations', { credentials: 'include' })
+            .then(function(res) {
+                if (!res.ok) throw new Error();
+                return res.json();
+            })
+            .then(function(allInv) {
+                var byPid = {};
+                (allInv || []).forEach(function(inv) {
+                    var pid = inv.customerPersonnelId != null ? inv.customerPersonnelId : null;
+                    if (pid != null) byPid[pid] = inv;
+                });
+                var rows = [];
+                self.flatParticipants().forEach(function(p) {
+                    var cp = p.customerPersonnel;
+                    if (!cp || !cp.id) return;
+                    var inv = byPid[cp.id];
+                    var name = (((cp.firstName || '') + ' ' + (cp.lastName || '')).trim()) || cp.fullName || '';
+                    var meta = self.invitationStatusMeta(inv ? inv.statusId : 0, !!inv);
+                    rows.push({
+                        personnelName: name || '-',
+                        email: (inv && inv.email) ? inv.email : (cp.email || ''),
+                        hasInvitation: !!inv,
+                        statusId: inv ? inv.statusId : 0,
+                        statusText: meta.text,
+                        statusBadge: meta.badge,
+                        sentAt: inv ? inv.sentAt : null,
+                        sentAtText: inv && inv.sentAt ? self.formatInvitationDateTime(inv.sentAt) : '—',
+                        isOpened: inv ? !!inv.isOpened : false,
+                        errorMessage: inv && inv.errorMessage ? inv.errorMessage : ''
+                    });
+                });
+                rows.sort(function(a, b) {
+                    return (a.personnelName || '').localeCompare(b.personnelName || '', 'tr');
+                });
+                self.participantInvitationRows(rows);
+            })
+            .catch(function() {
+                self.participantInvitationsError(T('Assessment.InvitationListLoadError', 'Liste yüklenemedi.'));
+                self.participantInvitationRows([]);
+            })
+            .finally(function() {
+                self.participantInvitationsLoading(false);
+            });
     };
 
     self.loadAssessmentEmailTemplates = function() {
@@ -1269,6 +1380,7 @@ function ProjectsViewModel() {
                     if (data.failCount > 0) {
                         toastr.warning(data.failCount + ' davetiye gönderilemedi.');
                     }
+                    self.loadParticipantInvitationList();
                 })
                 .catch(function(err) { toastr.error(err.message || 'Davetiyeler gönderilemedi.'); })
                 .finally(function() { self.isEmailSending(false); });

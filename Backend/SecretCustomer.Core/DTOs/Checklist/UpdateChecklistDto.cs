@@ -54,6 +54,9 @@ public class UpdateQuestionDto
     [MaxLength(1000)]
     public string Text { get; set; } = string.Empty;
 
+    [MaxLength(1000)]
+    public string? SelfText { get; set; }
+
     public int Order { get; set; }
 
     /// <summary>
@@ -117,9 +120,11 @@ public class UpdateSubCriteriaDto
 {
     public int? Id { get; set; }
 
-    [Required]
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? SelfDescription { get; set; }
 
     public int Order { get; set; }
 

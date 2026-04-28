@@ -366,10 +366,15 @@ function ChecklistEditorViewModel() {
             delete q._showSubCriteria;
             delete q.addSubCriteria;
             delete q.removeSubCriteria;
-            // Boş description'lı SubCriteria'ları filtrele
+            // Boş alt kriter satırlarını filtrele (PersonnelAssessment: sadece öz açıklama da dolu olabilir)
             if (q.subCriteria && q.subCriteria.length > 0) {
                 q.subCriteria = q.subCriteria.filter(function(sc) {
-                    return sc.description && sc.description.trim() !== '';
+                    var desc = (sc.description || '').trim();
+                    var selfDesc = (sc.selfDescription || '').trim();
+                    if (config.isAssessment) {
+                        return desc !== '' || selfDesc !== '';
+                    }
+                    return desc !== '';
                 });
             }
             if (!q.subCriteria || q.subCriteria.length === 0) {

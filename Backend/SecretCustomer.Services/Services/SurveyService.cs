@@ -535,6 +535,7 @@ public class SurveyService : ISurveyService
             .Select(si => new
             {
                 si.Id,
+                si.CustomerPersonnelId,
                 si.Email,
                 PersonnelName = si.CustomerPersonnel != null
                     ? $"{si.CustomerPersonnel.FirstName} {si.CustomerPersonnel.LastName}".Trim()

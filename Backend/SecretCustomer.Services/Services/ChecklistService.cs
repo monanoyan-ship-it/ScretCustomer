@@ -184,6 +184,7 @@ public class ChecklistService : IChecklistService
             Questions = dto.Questions.Select(q => new Question
             {
                 Text = q.Text,
+                SelfText = q.SelfText,
                 Order = q.Order,
                 ScoringTypeId = ScoringTypes.GetBySystemName(q.ScoringType)?.Id ?? ScoringTypes.Ids.Scored,
                 WeightPoints = q.WeightPoints,
@@ -200,6 +201,7 @@ public class ChecklistService : IChecklistService
                 SubCriteria = q.SubCriteria?.Select(sc => new QuestionSubCriteria
                 {
                     Description = sc.Description,
+                    SelfDescription = sc.SelfDescription,
                     Order = sc.Order,
                     WeightPoints = sc.WeightPoints,
                     IsActive = sc.IsActive
@@ -290,6 +292,7 @@ public class ChecklistService : IChecklistService
             Questions = original.Questions.Select(q => new Question
             {
                 Text = q.Text,
+                SelfText = q.SelfText,
                 Order = q.Order,
                 ScoringTypeId = q.ScoringTypeId,
                 WeightPoints = q.WeightPoints,
@@ -303,6 +306,7 @@ public class ChecklistService : IChecklistService
                 SubCriteria = q.SubCriteria.Select(sc => new QuestionSubCriteria
                 {
                     Description = sc.Description,
+                    SelfDescription = sc.SelfDescription,
                     Order = sc.Order,
                     WeightPoints = sc.WeightPoints,
                     IsActive = sc.IsActive
@@ -336,6 +340,7 @@ public class ChecklistService : IChecklistService
                 if (question != null)
                 {
                     question.Text = questionDto.Text;
+                    question.SelfText = questionDto.SelfText;
                     question.Order = questionDto.Order;
                     question.ScoringTypeId = ScoringTypes.GetBySystemName(questionDto.ScoringType)?.Id ?? question.ScoringTypeId;
                     question.WeightPoints = questionDto.WeightPoints;
@@ -362,6 +367,7 @@ public class ChecklistService : IChecklistService
                     Id = 0,
                     ChecklistId = checklist.Id,
                     Text = questionDto.Text,
+                    SelfText = questionDto.SelfText,
                     Order = questionDto.Order,
                     ScoringTypeId = ScoringTypes.GetBySystemName(questionDto.ScoringType)?.Id ?? ScoringTypes.Ids.Scored,
                     WeightPoints = questionDto.WeightPoints,
@@ -380,6 +386,7 @@ public class ChecklistService : IChecklistService
                     {
                         Id = 0,
                         Description = sc.Description,
+                        SelfDescription = sc.SelfDescription,
                         Order = sc.Order,
                         WeightPoints = sc.WeightPoints,
                         IsActive = sc.IsActive
@@ -421,6 +428,7 @@ public class ChecklistService : IChecklistService
                 if (subCriteria != null)
                 {
                     subCriteria.Description = scDto.Description;
+                    subCriteria.SelfDescription = scDto.SelfDescription;
                     subCriteria.Order = scDto.Order;
                     subCriteria.WeightPoints = scDto.WeightPoints;
                     subCriteria.IsActive = scDto.IsActive;
@@ -433,6 +441,7 @@ public class ChecklistService : IChecklistService
                 {
                     Id = 0,
                     Description = scDto.Description,
+                    SelfDescription = scDto.SelfDescription,
                     Order = scDto.Order,
                     WeightPoints = scDto.WeightPoints,
                     IsActive = scDto.IsActive
@@ -450,6 +459,7 @@ public class ChecklistService : IChecklistService
             {
                 Id = q.Id,
                 Text = q.Text,
+                SelfText = q.SelfText,
                 Order = q.Order,
                 ScoringType = ScoringTypes.GetById(q.ScoringTypeId)?.SystemName ?? "Scored",
                 ScoringTypeName = await GetScoringTypeNameAsync(q.ScoringTypeId),
@@ -468,6 +478,7 @@ public class ChecklistService : IChecklistService
                 {
                     Id = sc.Id,
                     Description = sc.Description,
+                    SelfDescription = sc.SelfDescription,
                     Order = sc.Order,
                     WeightPoints = sc.WeightPoints,
                     IsActive = sc.IsActive

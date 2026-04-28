@@ -34,7 +34,8 @@ function showConfirmModal(options) {
     _confirmModalCallback = options.onConfirm;
 
     // Show modal
-    var modal = new bootstrap.Modal(document.getElementById('sharedConfirmModal'));
+    var modalEl = document.getElementById('sharedConfirmModal');
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
 }
 
@@ -50,6 +51,19 @@ function getDefaultIcon(type) {
 
 // Handle confirm button click
 document.addEventListener('DOMContentLoaded', function() {
+    var scm = document.getElementById('sharedConfirmModal');
+    if (scm) {
+        // Başka bir bootstrap modalının (örn. Katılımcılar paneli z-index ~1060) üstünde açılınca sırayı düzelt
+        scm.addEventListener('shown.bs.modal', function() {
+            scm.style.zIndex = '200050';
+            var bds = document.querySelectorAll('.modal-backdrop');
+            if (bds.length > 0) {
+                var top = bds[bds.length - 1];
+                top.style.zIndex = '200049';
+            }
+        });
+    }
+
     var confirmBtn = document.getElementById('confirmModalBtn');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function() {
