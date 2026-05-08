@@ -47,15 +47,7 @@ public class ImportService : IImportService
 
         try
         {
-            using var reader = new StreamReader(csvStream, Encoding.UTF8);
-            var lines = new List<string>();
-
-            while (!reader.EndOfStream)
-            {
-                var line = await reader.ReadLineAsync();
-                if (!string.IsNullOrWhiteSpace(line))
-                    lines.Add(line);
-            }
+            var lines = await ReadNonEmptyCsvLinesAsync(csvStream);
 
             if (lines.Count < 2)
             {
@@ -476,6 +468,72 @@ public class ImportService : IImportService
         };
     }
 
+    private static readonly Lazy<Encoding> TurkWindows1254Lazy = new(() =>
+    {
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        return Encoding.GetEncoding(1254);
+    });
+
+    /// <summary>
+    /// UTF-8 (BOM'lu/-sız), UTF-16 LE/BE ve Türk Excel (CP1254, çoğu BOM'suz ve geçersiz UTF-8) için metin döndürür.
+    /// Script çıktısı utf-8-sig ise ilk dal UTF-8 ile doğru okunur.
+    /// </summary>
+    private static string DecodeCsvFileBytes(byte[] bytes)
+    {
+        if (bytes.Length == 0)
+            return string.Empty;
+
+        // UTF-8 BOM
+        if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+            return StrictUtf8GetString(bytes, 3, bytes.Length - 3);
+
+        // UTF-16 LE BOM
+        if (bytes.Length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xFE)
+            return Encoding.Unicode.GetString(bytes, 2, bytes.Length - 2);
+
+        // UTF-16 BE BOM
+        if (bytes.Length >= 2 && bytes[0] == 0xFE && bytes[1] == 0xFF)
+            return Encoding.BigEndianUnicode.GetString(bytes, 2, bytes.Length - 2);
+
+        try
+        {
+            return StrictUtf8GetString(bytes, 0, bytes.Length);
+        }
+        catch (DecoderFallbackException)
+        {
+            return TurkWindows1254Lazy.Value.GetString(bytes);
+        }
+        catch (ArgumentException)
+        {
+            // Bazı sürümlerde geçersiz UTF-8 için ArgumentException
+            return TurkWindows1254Lazy.Value.GetString(bytes);
+        }
+    }
+
+    private static string StrictUtf8GetString(byte[] bytes, int index, int count)
+    {
+        var utf8 = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
+        return utf8.GetString(bytes, index, count);
+    }
+
+    private static async Task<List<string>> ReadNonEmptyCsvLinesAsync(Stream csvStream)
+    {
+        await using var ms = new MemoryStream();
+        await csvStream.CopyToAsync(ms);
+        var text = DecodeCsvFileBytes(ms.ToArray());
+
+        var lines = new List<string>();
+        foreach (var line in text.Split(NewLineSplits, StringSplitOptions.None))
+        {
+            if (!string.IsNullOrWhiteSpace(line))
+                lines.Add(line);
+        }
+
+        return lines;
+    }
+
+    private static readonly string[] NewLineSplits = ["\r\n", "\r", "\n"];
+
     private static string[] ParseCsvLine(string line)
     {
         var result = new List<string>();
@@ -519,7 +577,7 @@ public class ImportService : IImportService
 
         for (int i = 0; i < header.Length; i++)
         {
-            var columnName = header[i].Trim().ToLowerInvariant();
+            var columnName = header[i].Trim().TrimStart('\uFEFF').ToLowerInvariant();
             map[columnName] = i;
         }
 
@@ -600,16 +658,8 @@ public class ImportService : IImportService
             result.ChecklistId = checklist.Id;
             result.ChecklistName = checklist.Name;
 
-            // CSV'yi oku
-            using var reader = new StreamReader(csvStream, Encoding.UTF8);
-            var lines = new List<string>();
-
-            while (!reader.EndOfStream)
-            {
-                var line = await reader.ReadLineAsync();
-                if (!string.IsNullOrWhiteSpace(line))
-                    lines.Add(line);
-            }
+            // CSV'yi oku (UTF-8 BOM / UTF-16 / Türk CP1254)
+            var lines = await ReadNonEmptyCsvLinesAsync(csvStream);
 
             if (lines.Count < 2)
             {
@@ -663,6 +713,10 @@ public class ImportService : IImportService
                         PenaltyTypeId = ParsePenaltyType(importDto.PenaltyType),
                         IsRequired = importDto.IsRequired,
                         HelpText = string.IsNullOrWhiteSpace(importDto.HelpText) ? null : importDto.HelpText,
+                        SelectionTypeId = !string.IsNullOrWhiteSpace(importDto.SubCriteria)
+                            ? SelectionTypes.Ids.Single
+                            : SelectionTypes.Ids.Multiple,
+                        ShowScoreInput = string.IsNullOrWhiteSpace(importDto.SubCriteria),
                         CreatedAt = TurkeyTime.Now
                     };
 
@@ -675,6 +729,9 @@ public class ImportService : IImportService
                     if (!string.IsNullOrWhiteSpace(importDto.SubCriteria))
                     {
                         var subCriteriaList = importDto.SubCriteria.Split('|', StringSplitOptions.RemoveEmptyEntries);
+                        string[] weightParts = [];
+                        if (!string.IsNullOrWhiteSpace(importDto.SubCriteriaWeights))
+                            weightParts = importDto.SubCriteriaWeights.Split('|', StringSplitOptions.None);
                         var subOrder = 0;
 
                         foreach (var subText in subCriteriaList)
@@ -683,11 +740,20 @@ public class ImportService : IImportService
                             if (string.IsNullOrWhiteSpace(trimmedText)) continue;
 
                             subOrder++;
+                            decimal subWeight = 0;
+                            if (weightParts.Length > 0)
+                            {
+                                var wi = subOrder - 1;
+                                if (wi < weightParts.Length && decimal.TryParse(weightParts[wi].Trim(),
+                                        NumberStyles.Any, CultureInfo.InvariantCulture, out var wp))
+                                    subWeight = wp;
+                            }
+
                             var subCriteria = new QuestionSubCriteria
                             {
                                 QuestionId = question.Id,
                                 Description = trimmedText,
-                                WeightPoints = 0,
+                                WeightPoints = subWeight,
                                 Order = subOrder,
                                 CreatedAt = TurkeyTime.Now
                             };
@@ -752,6 +818,7 @@ public class ImportService : IImportService
             ScoringType = GetValue(values, columnMap, "scoringtype", "Scored"),
             PenaltyType = GetValue(values, columnMap, "penaltytype", "None"),
             SubCriteria = GetValue(values, columnMap, "subcriteria"),
+            SubCriteriaWeights = GetValue(values, columnMap, "subcriteriaweights"),
             Order = int.TryParse(GetValue(values, columnMap, "order"), out var order) ? order : null,
             IsRequired = bool.TryParse(GetValue(values, columnMap, "isrequired", "false"), out var req) && req,
             HelpText = GetValue(values, columnMap, "helptext")

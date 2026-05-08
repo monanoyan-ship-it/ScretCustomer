@@ -1099,6 +1099,7 @@ public class ReportService : IReportService
             .Include(e => e.Project)
                 .ThenInclude(p => p.Checklist)
             .Include(e => e.Evaluator)
+            .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.Answers)
                 .ThenInclude(a => a.Question)
@@ -1133,6 +1134,32 @@ public class ReportService : IReportService
 
         var evaluations = await query.Take(1000).ToListAsync();
 
+        // PersonnelAssessment'ta Evaluation.EvaluatorId/EvaluatorCustomerPersonnelId doldurulmaz;
+        // gerçek değerlendirici AssessmentTask -> SurveyInvitation -> CustomerPersonnel zincirinde tutulur.
+        var assessmentEvalIds = evaluations
+            .Where(e => e.Project?.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment)
+            .Select(e => e.Id)
+            .ToList();
+
+        var assessmentEvaluatorByEvalId = new Dictionary<int, string>();
+        if (assessmentEvalIds.Any())
+        {
+            var tasks = await _context.AssessmentTasks
+                .Include(at => at.SurveyInvitation)
+                    .ThenInclude(si => si.CustomerPersonnel)
+                .Where(at => at.EvaluationId.HasValue && assessmentEvalIds.Contains(at.EvaluationId.Value))
+                .ToListAsync();
+
+            foreach (var task in tasks)
+            {
+                var cp = task.SurveyInvitation?.CustomerPersonnel;
+                if (cp != null && task.EvaluationId.HasValue && !assessmentEvaluatorByEvalId.ContainsKey(task.EvaluationId.Value))
+                {
+                    assessmentEvaluatorByEvalId[task.EvaluationId.Value] = $"{cp.FirstName} {cp.LastName}";
+                }
+            }
+        }
+
         using var workbook = new XLWorkbook();
 
         // Summary sheet
@@ -1162,11 +1189,39 @@ public class ReportService : IReportService
         int detailRow = 2;
         foreach (var evaluation in evaluations)
         {
+            // ProjectTypeId 4 (OnlineSurvey) veya 8 (PersonnelAssessment) ve anonim değilse A kolonunda Değerlendiren ismi göster
+            var projectTypeId = evaluation.Project?.ProjectTypeId ?? 0;
+            var isAnonymous = evaluation.Project?.IsAnonymous ?? false;
+            var showEvaluatorName = !isAnonymous &&
+                (projectTypeId == ProjectTypes.Ids.OnlineSurvey || projectTypeId == ProjectTypes.Ids.PersonnelAssessment);
+
+            string firstColumnValue;
+            if (showEvaluatorName)
+            {
+                if (projectTypeId == ProjectTypes.Ids.PersonnelAssessment
+                    && assessmentEvaluatorByEvalId.TryGetValue(evaluation.Id, out var assessmentEvaluator))
+                {
+                    firstColumnValue = assessmentEvaluator;
+                }
+                else
+                {
+                    firstColumnValue = evaluation.Evaluator != null
+                        ? $"{evaluation.Evaluator.FirstName} {evaluation.Evaluator.LastName}"
+                        : (evaluation.EvaluatorCustomerPersonnel != null
+                            ? $"{evaluation.EvaluatorCustomerPersonnel.FirstName} {evaluation.EvaluatorCustomerPersonnel.LastName}"
+                            : evaluation.Id.ToString());
+                }
+            }
+            else
+            {
+                firstColumnValue = evaluation.Id.ToString();
+            }
+
             foreach (var answer in evaluation.Answers.OrderBy(a => a.Question?.GroupName).ThenBy(a => a.Question?.Order))
             {
                 if (answer.Question == null) continue;
 
-                detailSheet.Cell(detailRow, 1).Value = evaluation.Id.ToString();
+                detailSheet.Cell(detailRow, 1).Value = firstColumnValue;
                 detailSheet.Cell(detailRow, 2).Value = evaluation.Project?.Name ?? "";
                 detailSheet.Cell(detailRow, 3).Value = "";
                 detailSheet.Cell(detailRow, 4).Value = answer.Question.GroupName ?? "";

@@ -186,6 +186,7 @@ function AssessmentFillViewModel() {
                     return;
                 }
 
+                self.hideGroupNames(data.hideGroupNames === true);
                 self.currentContext(data);
                 self.loadQuestions(data.questions || []);
             })
@@ -377,6 +378,7 @@ function AssessmentFillViewModel() {
                     return;
                 }
 
+                self.hideGroupNames(data.hideGroupNames === true);
                 self.currentContext(data);
                 self.loadQuestions(data.questions || []);
             })

@@ -3529,7 +3529,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .Include(e => e.Answers)
                 .ThenInclude(a => a.SubCriteriaSelections)
                     .ThenInclude(s => s.SubCriteria)
-            .Where(e => e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+            .Where(e => (e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                        e.Project.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
                    !e.Project.IsDeleted &&
                    !enneagramChecklistIds.Contains(e.Project.ChecklistId))
@@ -3925,7 +3926,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .Include(p => p.Checklist)
             .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
 
-        if (project == null || project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey)
+        if (project == null || (project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey &&
+                                project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment))
             return null;
 
         // Sorular
@@ -5605,7 +5607,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
 
         var projects = await _context.Projects
             .Where(p => p.CustomerId == customerId &&
-                   p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                   (p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                    p.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                    p.IsActive && !p.IsDeleted &&
                    !enneagramChecklistIds.Contains(p.ChecklistId))
             .OrderByDescending(p => p.CreatedAt)
@@ -5679,7 +5682,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .Include(e => e.Project)
             .Include(e => e.EvaluatedCustomerPersonnel)
             .Where(e => e.Project.CustomerId == customerId &&
-                   e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                   (e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                    e.Project.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                    e.StatusId == EvaluationStatuses.Ids.Completed &&
                    !e.Project.IsDeleted &&
                    !enneagramChecklistIds.Contains(e.Project.ChecklistId))
@@ -5758,7 +5762,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
                    p.CustomerId == customerId &&
                    !p.IsDeleted);
 
-        if (project == null || project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey)
+        if (project == null || (project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey &&
+                                project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment))
             return null;
 
         // Sorular
@@ -5905,7 +5910,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         var project = await _context.Projects
             .FirstOrDefaultAsync(p => p.Id == projectId.Value &&
                    p.CustomerId == customerId &&
-                   p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                   (p.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                    p.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                    !p.IsDeleted);
 
         if (project == null)
@@ -5915,7 +5921,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
         var evaluationIds = await _context.Evaluations
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                        (e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                         e.Project.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                         e.ProjectId == projectId.Value)
             .Select(e => e.Id)
             .ToListAsync();
@@ -6436,7 +6443,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .Include(p => p.Checklist)
             .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
 
-        if (project == null || project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey)
+        if (project == null || (project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey &&
+                                project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment))
             return null;
 
         // Sorular
@@ -6642,7 +6650,8 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             .Include(p => p.Checklist)
             .FirstOrDefaultAsync(p => p.Id == projectId && !p.IsDeleted);
 
-        if (project == null || project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey)
+        if (project == null || (project.ProjectTypeId != ProjectTypes.Ids.OnlineSurvey &&
+                                project.ProjectTypeId != ProjectTypes.Ids.PersonnelAssessment))
             return null;
 
         // Sorular
@@ -6791,11 +6800,12 @@ public class CustomerPortalReportService : ICustomerPortalReportService
             };
         }
 
-        // Online anket projesindeki tamamlanmış değerlendirmeler
+        // Online anket veya personel değerlendirme projesindeki tamamlanmış değerlendirmeler
         var evalQuery = _context.Evaluations
             .Where(e => !e.IsDeleted &&
                         e.StatusId == EvaluationStatuses.Ids.Completed &&
-                        e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey &&
+                        (e.Project.ProjectTypeId == ProjectTypes.Ids.OnlineSurvey ||
+                         e.Project.ProjectTypeId == ProjectTypes.Ids.PersonnelAssessment) &&
                         e.ProjectId == projectId.Value);
 
         var evaluationIds = await evalQuery.Select(e => e.Id).ToListAsync();

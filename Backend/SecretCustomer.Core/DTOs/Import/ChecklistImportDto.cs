@@ -41,6 +41,11 @@ public class ChecklistQuestionImportDto
     public string SubCriteria { get; set; } = string.Empty;
 
     /// <summary>
+    /// Alt kriter ağırlık puanları (SubCriteria ile aynı sıra, | ile; örn. Likert 5→1: "5|4|3|2|1")
+    /// </summary>
+    public string SubCriteriaWeights { get; set; } = string.Empty;
+
+    /// <summary>
     /// Sıra numarası (opsiyonel, verilmezse otomatik atanır)
     /// </summary>
     public int? Order { get; set; }

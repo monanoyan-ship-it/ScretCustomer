@@ -82,6 +82,9 @@ tmpclaude*
 # Storage/ScreenShots (test dosyaları - repo şişmesin)
 Storage/ScreenShots/
 
+# LGA/script ile üretilen içe aktarma çıktıları — repoda tutulmasın (build_lga_checklist_import.py ile üretilir)
+Storage/Imports/LGA/
+
 # Local test migrations (commit edilmeyecek)
 **/Migrations/*LocalTest*
 

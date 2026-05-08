@@ -198,7 +198,7 @@ public class ImportApiController : BaseApiController
         var ws = workbook.Worksheets.Add("Checklist");
 
         // Header
-        var headers = new[] { "GroupName", "QuestionText", "WeightPoints", "MaxPoints", "ScoringType", "PenaltyType", "SubCriteria", "Order", "IsRequired", "HelpText" };
+        var headers = new[] { "GroupName", "QuestionText", "WeightPoints", "MaxPoints", "ScoringType", "PenaltyType", "SubCriteria", "SubCriteriaWeights", "Order", "IsRequired", "HelpText" };
         for (int i = 0; i < headers.Length; i++)
         {
             ws.Cell(1, i + 1).Value = headers[i];
@@ -217,9 +217,10 @@ public class ImportApiController : BaseApiController
         ws.Cell(2, 5).Value = "Scored";
         ws.Cell(2, 6).Value = "None";
         ws.Cell(2, 7).Value = "Aynı anda konuşuldu.|Müşterinin sözü kesildi.";
-        ws.Cell(2, 8).Value = 1;
-        ws.Cell(2, 9).Value = "false";
-        ws.Cell(2, 10).Value = "";
+        ws.Cell(2, 8).Value = "1|1";
+        ws.Cell(2, 9).Value = 1;
+        ws.Cell(2, 10).Value = "false";
+        ws.Cell(2, 11).Value = "";
 
         // Sample data row 2
         ws.Cell(3, 1).Value = "Prosedür";
@@ -229,9 +230,10 @@ public class ImportApiController : BaseApiController
         ws.Cell(3, 5).Value = "Scored";
         ws.Cell(3, 6).Value = "None";
         ws.Cell(3, 7).Value = "Adres teyidi eksik.|Teknik adımlar uygulanmadı.";
-        ws.Cell(3, 8).Value = 2;
-        ws.Cell(3, 9).Value = "false";
-        ws.Cell(3, 10).Value = "";
+        ws.Cell(3, 8).Value = "1|1";
+        ws.Cell(3, 9).Value = 2;
+        ws.Cell(3, 10).Value = "false";
+        ws.Cell(3, 11).Value = "";
 
         // Sample data row 3
         ws.Cell(4, 1).Value = "Kritik Hata";
@@ -241,9 +243,10 @@ public class ImportApiController : BaseApiController
         ws.Cell(4, 5).Value = "Penalty";
         ws.Cell(4, 6).Value = "RedCard";
         ws.Cell(4, 7).Value = "KVKK ihlali.|Müşteri ile polemiğe girme.|Sebepsiz görüşme sonlandırma.";
-        ws.Cell(4, 8).Value = 3;
-        ws.Cell(4, 9).Value = "true";
-        ws.Cell(4, 10).Value = "Kırmızı kart gerektiren durumlar";
+        ws.Cell(4, 8).Value = "1|1|1";
+        ws.Cell(4, 9).Value = 3;
+        ws.Cell(4, 10).Value = "true";
+        ws.Cell(4, 11).Value = "Kırmızı kart gerektiren durumlar";
 
         ws.Columns().AdjustToContents();
 

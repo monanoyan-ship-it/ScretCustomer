@@ -2588,7 +2588,8 @@ public class CustomerPortalDataService : ICustomerPortalDataService
     {
         return await _context.Projects.AnyAsync(p => p.Id == projectId &&
             p.CustomerId == customerId &&
-            p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey &&
+            (p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.OnlineSurvey ||
+             p.ProjectTypeId == Core.Enums.ProjectTypes.Ids.PersonnelAssessment) &&
             p.IsActive && !p.IsDeleted);
     }
 

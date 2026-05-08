@@ -612,7 +612,7 @@
                                 </div>
                                 <div class="text-center">
                                     <small class="text-muted d-block">@Html.T("Report.OverallAverage", "Genel Ortalama")</small>
-                                    <span class="badge fs-6" data-bind="text: overallAverageScore !== null ? overallAverageScore.toFixed(2) + '%' : '-', css: { 'bg-success': overallAverageScore >= 70, 'bg-warning text-dark': overallAverageScore >= 40 && overallAverageScore < 70, 'bg-danger': overallAverageScore < 40, 'bg-secondary': overallAverageScore === null }"></span>
+                                    <span class="badge fs-6" data-bind="text: overallAverageScore != null ? Number(overallAverageScore).toFixed(2) + '%' : '-', css: { 'bg-success': overallAverageScore != null && overallAverageScore >= 70, 'bg-warning text-dark': overallAverageScore != null && overallAverageScore >= 40 && overallAverageScore < 70, 'bg-danger': overallAverageScore != null && overallAverageScore < 40, 'bg-secondary': overallAverageScore == null }"></span>
                                 </div>
                             </div>
                         </div>
@@ -629,7 +629,7 @@
                                     <th class="text-center" style="width: 10%">@Html.T("Report.ResponseCount", "Yanit")</th>
                                 </tr>
                             </thead>
-                            <tbody data-bind="foreach: questions">
+                            <tbody data-bind="foreach: questions || []">
                                 <tr>
                                     <td>
                                         <div data-bind="text: questionText"></div>
@@ -638,10 +638,10 @@
                                         <!-- /ko -->
                                     </td>
                                     <td class="text-center">
-                                        <!-- ko if: averageScorePercentage !== null -->
-                                        <span class="badge" data-bind="text: averageScorePercentage.toFixed(2) + '%', css: { 'bg-success': averageScorePercentage >= 70, 'bg-warning text-dark': averageScorePercentage >= 40 && averageScorePercentage < 70, 'bg-danger': averageScorePercentage < 40 }"></span>
+                                        <!-- ko if: averageScorePercentage != null -->
+                                        <span class="badge" data-bind="text: Number(averageScorePercentage).toFixed(2) + '%', css: { 'bg-success': averageScorePercentage >= 70, 'bg-warning text-dark': averageScorePercentage >= 40 && averageScorePercentage < 70, 'bg-danger': averageScorePercentage < 40 }"></span>
                                         <!-- /ko -->
-                                        <!-- ko if: averageScorePercentage === null -->
+                                        <!-- ko if: averageScorePercentage == null -->
                                         <span class="badge bg-secondary">-</span>
                                         <!-- /ko -->
                                     </td>
@@ -651,7 +651,7 @@
                                             <div class="d-flex align-items-center mb-1">
                                                 <div class="flex-grow-1 text-truncate me-2" data-bind="text: answerText, attr: { title: answerText }"></div>
                                                 <span class="badge bg-secondary me-1" data-bind="text: selectionCount"></span>
-                                                <span class="badge bg-primary" style="min-width: 50px" data-bind="text: percentage.toFixed(2) + '%'"></span>
+                                                <span class="badge bg-primary" style="min-width: 50px" data-bind="text: (percentage != null ? Number(percentage).toFixed(2) : '0') + '%'"></span>
                                             </div>
                                         </div>
                                         <!-- /ko -->
@@ -666,7 +666,7 @@
                             </tbody>
                         </table>
                         <!-- Empty -->
-                        <div data-bind="visible: questions.length === 0" class="text-center py-4 text-muted">
+                        <div data-bind="visible: !questions || questions.length === 0" class="text-center py-4 text-muted">
                             <i class="bi bi-inbox fs-1"></i>
                             <p class="mt-2">@Html.T("Report.NoQuestionData", "Soru verisi bulunamadi.")</p>
                         </div>

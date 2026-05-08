@@ -248,18 +248,33 @@ function CustomerSurveyResultsViewModel() {
 
     // Show Score Detail Modal
     self.showScoreDetail = function(project) {
+        if (!project || project.projectId == null || project.projectId === '') {
+            toastr.error('Gecersiz proje.');
+            return;
+        }
+
         self.scoreDetail(null);
         self.isLoadingScoreDetail(true);
         self.scoreDetailModal.show();
 
-        customerApiFetch('/api/customer/portal/reports/survey-projects/' + project.projectId + '/score-detail')
-            .then(function(r) { return r.json(); })
+        customerApiFetch('/api/customer/portal/reports/survey-projects/' + encodeURIComponent(project.projectId) + '/score-detail')
+            .then(function(r) {
+                return r.json().then(function(data) {
+                    if (!r.ok) {
+                        throw new Error(data.message || ('HTTP ' + r.status));
+                    }
+                    return data;
+                });
+            })
             .then(function(data) {
                 self.scoreDetail(data);
             })
             .catch(function(error) {
                 console.error('Error loading score detail:', error);
-                toastr.error('Puan detayi yuklenirken hata olustu.');
+                toastr.error(error.message || 'Puan detayi yuklenirken hata olustu.');
+                try {
+                    self.scoreDetailModal.hide();
+                } catch (e) { /* ignore */ }
             })
             .finally(function() {
                 self.isLoadingScoreDetail(false);

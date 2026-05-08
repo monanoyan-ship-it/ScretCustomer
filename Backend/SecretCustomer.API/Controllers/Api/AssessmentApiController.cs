@@ -505,6 +505,7 @@ public class AssessmentApiController : BaseApiController
                 totalTaskCount = context.TotalTaskCount,
                 completedTaskCount = context.CompletedTaskCount,
                 useSelfText = context.UseSelfText,
+                hideGroupNames = project.Checklist?.HideGroupNames ?? false,
                 currentTask = new
                 {
                     id = currentTask.Id,
