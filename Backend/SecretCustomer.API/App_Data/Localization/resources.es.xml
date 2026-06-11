@@ -4461,6 +4461,48 @@
   <LocaleResource Name="Import.CustomersCreated">
     <Value>Empresas Creadas</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.DealerImport">
+    <Value>Importar Distribuidores</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealerInfo">
+    <Value>Información de Columnas CSV</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Company">
+    <Value>Nombre de empresa (obligatorio, se crea si no existe)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Name">
+    <Value>Nombre del distribuidor (obligatorio)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Contact">
+    <Value>Información de contacto y ubicación</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Type">
+    <Value>Minorista, Mayorista, Franquicia, Autorizado (predeterminado: Minorista)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Organizations">
+    <Value>Nombres de organizaciones, separados por | (se crean si no existen)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Notes">
+    <Value>Notas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealersCreated">
+    <Value>Distribuidores Creados</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.OrganizationsLinked">
+    <Value>Organizaciones Vinculadas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ProcessedDealers">
+    <Value>Distribuidores Procesados (Primeros 50)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.CustomerNote">
+    <Value>La empresa se selecciona de la lista anterior; no hay columna de empresa en el CSV.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomer">
+    <Value>-- Seleccionar Empresa --</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomerWarning">
+    <Value>Por favor seleccione una empresa.</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.PersonnelCreated">
     <Value>Personal Creado</Value>
   </LocaleResource>
@@ -8060,6 +8102,15 @@
   </LocaleResource>
   <LocaleResource Name="Dealer.Notes">
     <Value>Notas</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NoOrganizations">
+    <Value>No se encontraron organizaciones para este cliente.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.Organizations">
+    <Value>Organizaciones</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.OrganizationsHint">
+    <Value>Seleccione las organizaciones a las que pertenece este distribuidor</Value>
   </LocaleResource>
   <LocaleResource Name="Dealer.Phone">
     <Value>Teléfono</Value>

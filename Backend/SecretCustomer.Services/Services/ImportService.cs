@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
+using SecretCustomer.Core.DTOs.Dealer;
 using SecretCustomer.Core.DTOs.Import;
 using SecretCustomer.Core.Entities;
 using SecretCustomer.Core.Enums;
@@ -16,17 +17,20 @@ public class ImportService : IImportService
     private readonly ICustomerRepository _customerRepository;
     private readonly ICustomerPersonnelRepository _customerPersonnelRepository;
     private readonly ICustomerPersonnelOrganizationRepository _personnelOrgRepository;
+    private readonly IDealerService _dealerService;
     private readonly ApplicationDbContext _context;
 
     public ImportService(
         ICustomerRepository customerRepository,
         ICustomerPersonnelRepository customerPersonnelRepository,
         ICustomerPersonnelOrganizationRepository personnelOrgRepository,
+        IDealerService dealerService,
         ApplicationDbContext context)
     {
         _customerRepository = customerRepository;
         _customerPersonnelRepository = customerPersonnelRepository;
         _personnelOrgRepository = personnelOrgRepository;
+        _dealerService = dealerService;
         _context = context;
     }
 
@@ -374,12 +378,40 @@ public class ImportService : IImportService
         Dictionary<string, Customer> cache,
         ImportResultDto result)
     {
-        if (string.IsNullOrWhiteSpace(companyName))
+        var resolution = await ResolveCustomerAsync(companyName, cache);
+
+        if (resolution.Ambiguous != null)
+        {
+            // Birden fazla eşleşme - AmbiguousMatches'a ekle, kullanıcı seçecek
+            result.AmbiguousCompanyMatches[companyName] = resolution.Ambiguous;
             return null;
+        }
+
+        if (resolution.Existed) result.CustomersExisted++;
+        if (resolution.Created) result.CustomersCreated++;
+
+        return resolution.Customer;
+    }
+
+    /// <summary>
+    /// Firma adından müşteriyi çözer (tam eşleşme -> contains -> yeni oluştur).
+    /// Sonuç DTO'sundan bağımsız çekirdek mantık; personel ve bayi importu paylaşır.
+    /// </summary>
+    private async Task<CustomerResolution> ResolveCustomerAsync(
+        string companyName,
+        Dictionary<string, Customer> cache)
+    {
+        var res = new CustomerResolution();
+
+        if (string.IsNullOrWhiteSpace(companyName))
+            return res;
 
         // Check cache first
         if (cache.TryGetValue(companyName, out var cachedCustomer))
-            return cachedCustomer;
+        {
+            res.Customer = cachedCustomer;
+            return res;
+        }
 
         // 1. Önce tam eşleşme ara
         var existingCustomer = await _customerRepository.GetByNameAsync(companyName);
@@ -398,19 +430,20 @@ public class ImportService : IImportService
             }
             else if (matches.Count > 1)
             {
-                // Birden fazla eşleşme - AmbiguousMatches'a ekle, kullanıcı seçecek
-                result.AmbiguousCompanyMatches[companyName] = matches
+                // Birden fazla eşleşme - kullanıcı seçmeli
+                res.Ambiguous = matches
                     .Select(c => new CompanyMatchInfo { Id = c.Id, Name = c.CompanyName })
                     .ToList();
-                return null; // Bu firma için personel eklenmeyecek, kullanıcı seçim yapmalı
+                return res;
             }
         }
 
         if (existingCustomer != null)
         {
             cache[companyName] = existingCustomer;
-            result.CustomersExisted++;
-            return existingCustomer;
+            res.Customer = existingCustomer;
+            res.Existed = true;
+            return res;
         }
 
         // Hiç eşleşme yok - yeni firma oluştur
@@ -425,9 +458,18 @@ public class ImportService : IImportService
 
         var created = await _customerRepository.CreateAsync(newCustomer);
         cache[companyName] = created;
-        result.CustomersCreated++;
+        res.Customer = created;
+        res.Created = true;
 
-        return created;
+        return res;
+    }
+
+    private sealed class CustomerResolution
+    {
+        public Customer? Customer { get; set; }
+        public List<CompanyMatchInfo>? Ambiguous { get; set; }
+        public bool Created { get; set; }
+        public bool Existed { get; set; }
     }
 
     private static string GenerateTempTaxNumber(string companyName)
@@ -628,6 +670,189 @@ public class ImportService : IImportService
         var value = values[index].Trim();
         return string.IsNullOrWhiteSpace(value) ? defaultValue : value;
     }
+
+    #region Dealer Import
+
+    public async Task<DealerImportResultDto> ImportDealersFromCsvAsync(string csvContent, int customerId)
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
+        return await ImportDealersFromCsvAsync(stream, customerId);
+    }
+
+    public async Task<DealerImportResultDto> ImportDealersFromCsvAsync(Stream csvStream, int customerId)
+    {
+        var result = new DealerImportResultDto { Success = true };
+        var organizationCache = new Dictionary<string, CustomerOrganization>(StringComparer.OrdinalIgnoreCase);
+
+        try
+        {
+            // Firma formdan seçilir - bir kez yükle ve doğrula
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
+            if (customer == null)
+            {
+                result.Success = false;
+                result.Errors.Add("Geçerli bir firma seçilmedi.");
+                return result;
+            }
+
+            var lines = await ReadNonEmptyCsvLinesAsync(csvStream);
+
+            if (lines.Count < 2)
+            {
+                result.Success = false;
+                result.Errors.Add("CSV dosyası boş veya sadece başlık satırı içeriyor.");
+                return result;
+            }
+
+            // Parse header
+            var header = ParseCsvLine(lines[0]);
+            var columnMap = CreateColumnMap(header);
+
+            if (!ValidateDealerColumns(columnMap, result))
+            {
+                result.Success = false;
+                return result;
+            }
+
+            result.TotalRows = lines.Count - 1;
+
+            // Process each row
+            for (int i = 1; i < lines.Count; i++)
+            {
+                var rowNumber = i + 1;
+                try
+                {
+                    var values = ParseCsvLine(lines[i]);
+                    var importDto = MapToDealerDto(values, columnMap);
+
+                    if (string.IsNullOrWhiteSpace(importDto.Name))
+                    {
+                        result.Warnings.Add($"Satır {rowNumber}: Bayi adı boş, atlandı.");
+                        result.DealersSkipped++;
+                        continue;
+                    }
+
+                    // Aynı firmada aynı isimde bayi var mı?
+                    var dealerExists = await _context.CustomerDealers
+                        .AnyAsync(d => d.CustomerId == customer.Id &&
+                                       d.Name.ToLower() == importDto.Name.ToLower() &&
+                                       !d.IsDeleted);
+
+                    if (dealerExists)
+                    {
+                        result.DealersSkipped++;
+                        result.Warnings.Add($"Satır {rowNumber}: '{importDto.Name}' bayisi zaten mevcut, atlandı.");
+                        continue;
+                    }
+
+                    // Organizasyonları çöz (| ile ayrılmış isimler -> get-or-create)
+                    var organizationIds = new List<int>();
+                    var organizationNames = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(importDto.Organizations))
+                    {
+                        foreach (var orgNameRaw in importDto.Organizations.Split('|', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            var orgName = orgNameRaw.Trim();
+                            if (string.IsNullOrWhiteSpace(orgName)) continue;
+
+                            var org = await GetOrCreateOrganizationAsync(orgName, customer.Id, organizationCache);
+                            if (org != null && !organizationIds.Contains(org.Id))
+                            {
+                                organizationIds.Add(org.Id);
+                                organizationNames.Add(org.Name);
+                            }
+                        }
+                    }
+
+                    // Bayiyi oluştur (kod üretimi + organizasyon junction'ı DealerService'te)
+                    var created = await _dealerService.CreateAsync(new CreateDealerDto
+                    {
+                        Name = importDto.Name,
+                        Address = string.IsNullOrWhiteSpace(importDto.Address) ? null : importDto.Address,
+                        City = string.IsNullOrWhiteSpace(importDto.City) ? null : importDto.City,
+                        District = string.IsNullOrWhiteSpace(importDto.District) ? null : importDto.District,
+                        Phone = string.IsNullOrWhiteSpace(importDto.Phone) ? null : importDto.Phone,
+                        Email = string.IsNullOrWhiteSpace(importDto.Email) ? null : importDto.Email,
+                        ContactPerson = string.IsNullOrWhiteSpace(importDto.ContactPerson) ? null : importDto.ContactPerson,
+                        DealerTypeId = ParseDealerType(importDto.DealerType),
+                        Notes = string.IsNullOrWhiteSpace(importDto.Notes) ? null : importDto.Notes,
+                        CustomerId = customer.Id,
+                        OrganizationIds = organizationIds.Count > 0 ? organizationIds : null
+                    });
+
+                    result.DealersCreated++;
+                    result.OrganizationsLinked += organizationIds.Count;
+
+                    result.ImportedDealers.Add(new ImportedDealerInfo
+                    {
+                        Id = created.Id,
+                        Code = created.Code,
+                        Name = created.Name,
+                        Company = customer.CompanyName,
+                        Organizations = string.Join(", ", organizationNames),
+                        Status = "Created"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"Satır {rowNumber}: {GetDeepestExceptionMessage(ex)}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            result.Success = false;
+            result.Errors.Add($"Import hatası: {GetDeepestExceptionMessage(ex)}");
+        }
+
+        result.Success = result.Errors.Count == 0;
+        return result;
+    }
+
+    private static bool ValidateDealerColumns(Dictionary<string, int> columnMap, DealerImportResultDto result)
+    {
+        var requiredColumns = new[] { "name" };
+        var missingColumns = requiredColumns.Where(c => !columnMap.ContainsKey(c)).ToList();
+
+        if (missingColumns.Any())
+        {
+            result.Errors.Add($"Eksik kolonlar: {string.Join(", ", missingColumns)}");
+            return false;
+        }
+
+        return true;
+    }
+
+    private static CustomerDealerImportDto MapToDealerDto(string[] values, Dictionary<string, int> columnMap)
+    {
+        return new CustomerDealerImportDto
+        {
+            Name = GetValue(values, columnMap, "name"),
+            Address = GetValue(values, columnMap, "address"),
+            City = GetValue(values, columnMap, "city"),
+            District = GetValue(values, columnMap, "district"),
+            Phone = GetValue(values, columnMap, "phone"),
+            Email = GetValue(values, columnMap, "email"),
+            ContactPerson = GetValue(values, columnMap, "contactperson"),
+            DealerType = GetValue(values, columnMap, "dealertype", "Retail"),
+            Organizations = GetValue(values, columnMap, "organizations"),
+            Notes = GetValue(values, columnMap, "notes")
+        };
+    }
+
+    private static int ParseDealerType(string value)
+    {
+        return value.Trim().ToLowerInvariant() switch
+        {
+            "retail" or "perakende" => CustomerDealerTypes.Ids.Retail,
+            "wholesale" or "toptan" => CustomerDealerTypes.Ids.Wholesale,
+            "franchise" => CustomerDealerTypes.Ids.Franchise,
+            "authorized" or "yetkili" or "yetkili bayi" => CustomerDealerTypes.Ids.Authorized,
+            _ => CustomerDealerTypes.Ids.Retail
+        };
+    }
+
+    #endregion
 
     #region Checklist Import
 

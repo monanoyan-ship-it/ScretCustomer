@@ -13,12 +13,16 @@ function DealersViewModel() {
     // Data
     self.dealers = ko.observableArray([]);
     self.availablePersonnel = ko.observableArray([]);
+    self.availableOrganizations = ko.observableArray([]);
+    // Modaldaki organizasyon secimi (wrapper obje: { id, name, selected })
+    self.editingOrganizations = ko.observableArray([]);
 
     // Filter object (used in view)
     self.filter = {
         searchTerm: ko.observable(''),
         dealerTypeId: ko.observable(''),
-        isActive: ko.observable('')
+        isActive: ko.observable(''),
+        organizationId: ko.observable('')
     };
 
     // ========== CHIP-BASED FILTER SYSTEM ==========
@@ -134,6 +138,7 @@ function DealersViewModel() {
         self.filter.searchTerm('');
         self.filter.dealerTypeId('');
         self.filter.isActive('');
+        self.filter.organizationId('');
     };
 
     // Apply filters (triggers computed update)
@@ -147,6 +152,7 @@ function DealersViewModel() {
         var search = (self.filter.searchTerm() || '').toLowerCase().trim();
         var typeId = self.filter.dealerTypeId();
         var isActive = self.filter.isActive();
+        var orgId = self.filter.organizationId();
 
         if (search) {
             list = list.filter(function(d) {
@@ -167,6 +173,13 @@ function DealersViewModel() {
             var active = isActive === 'true' || isActive === true;
             list = list.filter(function(d) {
                 return d.isActive === active;
+            });
+        }
+
+        var oid = parseInt(orgId);
+        if (!isNaN(oid)) {
+            list = list.filter(function(d) {
+                return (d.organizationIds || []).indexOf(oid) >= 0;
             });
         }
 
@@ -223,6 +236,32 @@ function DealersViewModel() {
                 console.error('Error loading personnel:', error);
                 self.availablePersonnel([]);
             });
+    };
+
+    // Load organizations for customer (bayi organizasyon ataması için)
+    self.loadOrganizations = function() {
+        if (!self.customerId) return;
+
+        ApiService.get('/customer-organizations/by-customer/' + self.customerId)
+            .then(function(data) {
+                self.availableOrganizations(data || []);
+            })
+            .catch(function(error) {
+                console.error('Error loading organizations:', error);
+                self.availableOrganizations([]);
+            });
+    };
+
+    // Modal için organizasyon checkbox listesi üret (wrapper obje + selected observable)
+    self.buildOrgSelection = function(selectedIds) {
+        selectedIds = selectedIds || [];
+        return self.availableOrganizations().map(function(org) {
+            return {
+                id: org.id,
+                name: org.name,
+                selected: ko.observable(selectedIds.indexOf(org.id) >= 0)
+            };
+        });
     };
 
     // Build filter params from active filters (çoklu değer desteği)
@@ -318,6 +357,7 @@ function DealersViewModel() {
             notes: ko.observable(''),
             isActive: ko.observable(true)
         });
+        self.editingOrganizations(self.buildOrgSelection([]));
         self.showModal();
     };
 
@@ -339,6 +379,7 @@ function DealersViewModel() {
             notes: ko.observable(dealer.notes || ''),
             isActive: ko.observable(dealer.isActive)
         });
+        self.editingOrganizations(self.buildOrgSelection(dealer.organizationIds || []));
         self.showModal();
     };
 
@@ -371,7 +412,10 @@ function DealersViewModel() {
             longitude: (typeof editing.longitude === 'function' ? editing.longitude() : editing.longitude) || null,
             notes: (typeof editing.notes === 'function' ? editing.notes() : editing.notes) || null,
             isActive: typeof editing.isActive === 'function' ? editing.isActive() : editing.isActive,
-            customerId: self.customerId
+            customerId: self.customerId,
+            organizationIds: self.editingOrganizations()
+                .filter(function(o) { return o.selected(); })
+                .map(function(o) { return o.id; })
         };
 
         var isNew = !editing.id;
@@ -453,6 +497,7 @@ function DealersViewModel() {
         self.loadCustomer();
         self.loadDealers();
         self.loadPersonnel();
+        self.loadOrganizations();
     };
 
     // Start

@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext
     // Customer Organization DbSets (Yeni Hiyerarşi)
     public DbSet<CustomerOrganization> CustomerOrganizations { get; set; }
     public DbSet<CustomerPersonnelOrganization> CustomerPersonnelOrganizations { get; set; }
+    public DbSet<CustomerDealerOrganization> CustomerDealerOrganizations { get; set; }
     public DbSet<CustomerPersonnelNotificationLog> CustomerPersonnelNotificationLogs { get; set; }
     public DbSet<CustomerNotificationRule> CustomerNotificationRules { get; set; }
 
@@ -174,6 +175,7 @@ public class ApplicationDbContext : DbContext
         // Customer Organization Entities (Yeni Hiyerarşi)
         modelBuilder.Entity<CustomerOrganization>().HasQueryFilter(e => !e.IsDeleted);
         modelBuilder.Entity<CustomerPersonnelOrganization>().HasQueryFilter(e => !e.IsDeleted);
+        modelBuilder.Entity<CustomerDealerOrganization>().HasQueryFilter(e => !e.IsDeleted);
 
         // Permission Management Entities
         modelBuilder.Entity<Permission>().HasQueryFilter(e => !e.IsDeleted);

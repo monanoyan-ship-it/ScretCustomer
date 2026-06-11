@@ -4,6 +4,8 @@
     var customerId = ViewBag.CustomerId;
 }
 
+<link rel="stylesheet" href="~/css/pages/dealers.css" asp-append-version="true" />
+
 <div id="dealers-app">
     <!-- Page Header -->
     <div class="popup-header">
@@ -25,7 +27,7 @@
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">@Html.T("Common.Search", "Arama")</label>
                     <input type="text" class="form-control" placeholder="@Html.T("Dealer.SearchPlaceholder", "Bayi adı, kod, adres, yetkili...")"
                            data-bind="value: filter.searchTerm, valueUpdate: 'afterkeydown'">
@@ -41,6 +43,10 @@
                     </select>
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label">@Html.T("Dealer.Organizations", "Organizasyonlar")</label>
+                    <select class="form-select" data-bind="value: filter.organizationId, options: availableOrganizations, optionsValue: 'id', optionsText: 'name', optionsCaption: '@Html.T("Common.All", "Tümü")'"></select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">@Html.T("Common.Status", "Durum")</label>
                     <select class="form-select" data-bind="value: filter.isActive">
                         <option value="">@Html.T("Common.All", "Tümü")</option>
@@ -48,7 +54,7 @@
                         <option value="false">@Html.T("Common.Inactive", "Pasif")</option>
                     </select>
                 </div>
-                <div class="col-md-4 d-flex align-items-end gap-2">
+                <div class="col-md-3 d-flex align-items-end gap-2">
                     <button class="btn btn-primary" data-bind="click: applyFilters">
                         <i class="bi bi-search me-1"></i>@Html.T("Common.Filter", "Filtrele")
                     </button>
@@ -227,6 +233,24 @@
                         <div class="col-md-6">
                             <label class="form-label">@Html.T("Dealer.Longitude", "Boylam (GPS)")</label>
                             <input type="number" step="0.000001" class="form-control" data-bind="value: longitude" placeholder="28.9784">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">@Html.T("Dealer.Organizations", "Organizasyonlar")</label>
+                            <!-- ko if: $parent.editingOrganizations().length > 0 -->
+                            <div class="border rounded p-2 overflow-auto dealer-org-list">
+                                <!-- ko foreach: $parent.editingOrganizations -->
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" data-bind="checked: selected, attr: { id: 'dealer-org-' + id }">
+                                    <label class="form-check-label" data-bind="text: name, attr: { for: 'dealer-org-' + id }"></label>
+                                </div>
+                                <!-- /ko -->
+                            </div>
+                            <small class="text-muted">@Html.T("Dealer.OrganizationsHint", "Bayinin bağlı olduğu organizasyonları seçin")</small>
+                            <!-- /ko -->
+                            <!-- ko if: $parent.editingOrganizations().length === 0 -->
+                            <p class="text-muted mb-0">@Html.T("Dealer.NoOrganizations", "Bu müşteriye ait organizasyon bulunmuyor.")</p>
+                            <!-- /ko -->
                         </div>
 
                         <div class="col-12">

@@ -109,12 +109,25 @@ public class ReportService : IReportService
             .Include(e => e.Project)
             .Include(e => e.Project)
                 .ThenInclude(p => p.Checklist)
+            .Include(e => e.Project)
+                .ThenInclude(p => p.Customer)
             .Include(e => e.Evaluator)
             .Include(e => e.EvaluatorCustomerPersonnel)
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.OrganizationAssignments)
                     .ThenInclude(oa => oa.Supervisor)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.OrganizationAssignments)
+                    .ThenInclude(oa => oa.CustomerOrganization)
+            .Include(e => e.EvaluatedCustomerPersonnel)
+                .ThenInclude(p => p!.Customer)
+            .Include(e => e.EvaluatedOrganization)
+            .Include(e => e.CustomerDealer)
+                .ThenInclude(d => d!.Customer)
+            .Include(e => e.CustomerDealer)
+                .ThenInclude(d => d!.OrganizationAssignments)
+                    .ThenInclude(da => da.CustomerOrganization)
             .Include(e => e.AssignmentPeriod)
             .AsQueryable();
 
@@ -263,9 +276,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -497,9 +513,12 @@ public class ReportService : IReportService
                 filter.ProjectCustomerIds.Contains(e.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         if (filter.PeriodIds?.Any() == true)
             query = query.Where(e => e.AssignmentPeriodId.HasValue && filter.PeriodIds.Contains(e.AssignmentPeriodId.Value));
@@ -548,6 +567,10 @@ public class ReportService : IReportService
             .Include(e => e.EvaluatedPersonnel)
             .Include(e => e.EvaluatedOrganization)
             .Include(e => e.CustomerDealer)
+                .ThenInclude(d => d!.Customer)
+            .Include(e => e.CustomerDealer)
+                .ThenInclude(d => d!.OrganizationAssignments)
+                    .ThenInclude(da => da.CustomerOrganization)
             .Include(e => e.EvaluatedCustomerPersonnel)
                 .ThenInclude(p => p!.Customer)
             .Include(e => e.EvaluatedCustomerPersonnel)
@@ -585,12 +608,18 @@ public class ReportService : IReportService
                     : evaluation.EvaluatedUnknownPersonnel
                         ?? evaluation.EvaluatedOrganization?.Name),
             CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName
-                ?? evaluation.Project?.Customer?.CompanyName,
+                ?? evaluation.Project?.Customer?.CompanyName
+                ?? evaluation.CustomerDealer?.Customer?.CompanyName,
             OrganizationName = evaluation.EvaluatedOrganization?.Name
                 ?? (evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments?.Any() == true
                     ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
                         .Where(oa => oa.CustomerOrganization != null)
                         .Select(oa => oa.CustomerOrganization!.Name))
+                    : null)
+                ?? (evaluation.CustomerDealer?.OrganizationAssignments?.Any() == true
+                    ? string.Join(", ", evaluation.CustomerDealer.OrganizationAssignments
+                        .Where(da => da.CustomerOrganization != null)
+                        .Select(da => da.CustomerOrganization!.Name))
                     : null),
             DealerName = evaluation.CustomerDealer?.Name,
             SupervisorName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments?.Any() == true
@@ -1291,6 +1320,20 @@ public class ReportService : IReportService
                     ? $"{evaluation.EvaluatedPersonnel.FirstName} {evaluation.EvaluatedPersonnel.LastName}"
                     : evaluation.EvaluatedUnknownPersonnel),
             DealerName = evaluation.CustomerDealer?.Name,
+            CustomerName = evaluation.EvaluatedCustomerPersonnel?.Customer?.CompanyName
+                ?? evaluation.Project?.Customer?.CompanyName
+                ?? evaluation.CustomerDealer?.Customer?.CompanyName,
+            OrganizationName = evaluation.EvaluatedOrganization?.Name
+                ?? (evaluation.EvaluatedCustomerPersonnel != null && evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa => oa.CustomerOrganization != null)
+                    ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
+                        .Where(oa => oa.CustomerOrganization != null)
+                        .Select(oa => oa.CustomerOrganization!.Name).Distinct())
+                    : null)
+                ?? (evaluation.CustomerDealer != null && evaluation.CustomerDealer.OrganizationAssignments.Any(da => da.CustomerOrganization != null)
+                    ? string.Join(", ", evaluation.CustomerDealer.OrganizationAssignments
+                        .Where(da => da.CustomerOrganization != null)
+                        .Select(da => da.CustomerOrganization!.Name).Distinct())
+                    : null),
             SupervisorName = evaluation.EvaluatedCustomerPersonnel?.OrganizationAssignments != null
                 ? string.Join(", ", evaluation.EvaluatedCustomerPersonnel.OrganizationAssignments
                     .Where(oa => oa.Supervisor != null)
@@ -1360,7 +1403,8 @@ public class ReportService : IReportService
             query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
+            query = query.Where(a => (a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value))
+                || (a.Evaluation.CustomerDealer != null && a.Evaluation.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(a => filter.ChecklistIds.Contains(a.Question.ChecklistId));
@@ -1596,7 +1640,8 @@ public class ReportService : IReportService
             query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
+            query = query.Where(a => (a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value))
+                || (a.Evaluation.CustomerDealer != null && a.Evaluation.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(a => filter.ChecklistIds.Contains(a.Question.ChecklistId));
@@ -2920,7 +2965,8 @@ public class ReportService : IReportService
             query = query.Where(a => a.Evaluation.Project.CustomerId.HasValue && filter.CustomerIds.Contains(a.Evaluation.Project.CustomerId.Value));
 
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(a => a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value));
+            query = query.Where(a => (a.Evaluation.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(a.Evaluation.EvaluatedOrganizationId.Value))
+                || (a.Evaluation.CustomerDealer != null && a.Evaluation.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         if (filter.ChecklistIds?.Any() == true)
             query = query.Where(a => filter.ChecklistIds.Contains(a.Evaluation.Project.ChecklistId));
@@ -3055,7 +3101,8 @@ public class ReportService : IReportService
 
         // Organization filter (Supervisor için gerekli)
         if (filter.OrganizationIds?.Any() == true)
-            evaluationNotesQuery = evaluationNotesQuery.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+            evaluationNotesQuery = evaluationNotesQuery.Where(e => (e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value))
+                || (e.CustomerDealer != null && e.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         if (filter.DateRanges?.Any() == true)
         {
@@ -3639,9 +3686,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -3918,9 +3968,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -4175,9 +4228,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -4401,9 +4457,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -4553,8 +4612,9 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue &&
-                filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+            query = query.Where(e => (e.EvaluatedOrganizationId.HasValue &&
+                filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value))
+                || (e.CustomerDealer != null && e.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -6909,7 +6969,8 @@ public class ReportService : IReportService
 
         if (filter.OrganizationIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+            query = query.Where(e => (e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value))
+                || (e.CustomerDealer != null && e.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
         }
 
         if (filter.PersonnelIds?.Any() == true)
@@ -7063,7 +7124,8 @@ public class ReportService : IReportService
 
         if (filter.OrganizationIds?.Any() == true)
         {
-            query = query.Where(e => e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value));
+            query = query.Where(e => (e.EvaluatedOrganizationId.HasValue && filter.OrganizationIds.Contains(e.EvaluatedOrganizationId.Value))
+                || (e.CustomerDealer != null && e.CustomerDealer.OrganizationAssignments.Any(da => filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
         }
 
         if (filter.PersonnelIds?.Any() == true)
@@ -8019,9 +8081,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)
@@ -9200,9 +9265,12 @@ public class ReportService : IReportService
 
         // Organization filter (çoklu)
         if (filter.OrganizationIds?.Any() == true)
-            query = query.Where(e => e.EvaluatedCustomerPersonnel != null &&
+            query = query.Where(e => (e.EvaluatedCustomerPersonnel != null &&
                 e.EvaluatedCustomerPersonnel.OrganizationAssignments.Any(oa =>
-                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)));
+                    filter.OrganizationIds.Contains(oa.CustomerOrganizationId)))
+                || (e.CustomerDealer != null &&
+                    e.CustomerDealer.OrganizationAssignments.Any(da =>
+                        filter.OrganizationIds.Contains(da.CustomerOrganizationId))));
 
         // Period filter (çoklu)
         if (filter.PeriodIds?.Any() == true)

@@ -4526,6 +4526,48 @@
   <LocaleResource Name="Import.CustomersCreated">
     <Value>Companies Created</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.DealerImport">
+    <Value>Dealer Import</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealerInfo">
+    <Value>CSV Column Information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Company">
+    <Value>Company name (required, created if missing)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Name">
+    <Value>Dealer name (required)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Contact">
+    <Value>Contact and location information</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Type">
+    <Value>Retail, Wholesale, Franchise, Authorized (default: Retail)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Organizations">
+    <Value>Organization names, separated by | (created if missing)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Notes">
+    <Value>Notes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealersCreated">
+    <Value>Dealers Created</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.OrganizationsLinked">
+    <Value>Organizations Linked</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ProcessedDealers">
+    <Value>Processed Dealers (First 50)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.CustomerNote">
+    <Value>The company is selected from the list above; there is no company column in the CSV.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomer">
+    <Value>-- Select Company --</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomerWarning">
+    <Value>Please select a company.</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.PersonnelCreated">
     <Value>Personnel Created</Value>
   </LocaleResource>
@@ -8069,6 +8111,15 @@
   </LocaleResource>
   <LocaleResource Name="Dealer.Notes">
     <Value>Notes</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NoOrganizations">
+    <Value>No organizations found for this customer.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.Organizations">
+    <Value>Organizations</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.OrganizationsHint">
+    <Value>Select the organizations this dealer belongs to</Value>
   </LocaleResource>
   <LocaleResource Name="Dealer.Phone">
     <Value>Phone</Value>

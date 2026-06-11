@@ -30,4 +30,14 @@ public interface IImportService
     /// CSV içeriğinden yeni checklist oluşturur ve soruları import eder
     /// </summary>
     Task<ChecklistImportResultDto> ImportChecklistFromCsvAsync(string csvContent, string checklistName, string? description = null);
+
+    /// <summary>
+    /// CSV dosyasından bayi verilerini import eder (firma formdan seçilir, organizasyon bağlama dahil)
+    /// </summary>
+    Task<DealerImportResultDto> ImportDealersFromCsvAsync(Stream csvStream, int customerId);
+
+    /// <summary>
+    /// CSV içeriğinden bayi verilerini import eder (firma formdan seçilir)
+    /// </summary>
+    Task<DealerImportResultDto> ImportDealersFromCsvAsync(string csvContent, int customerId);
 }

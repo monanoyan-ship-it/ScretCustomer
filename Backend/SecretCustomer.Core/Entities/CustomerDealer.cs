@@ -97,4 +97,7 @@ public class CustomerDealer : BaseEntity
     // Navigation Properties
     public ICollection<Evaluation> Evaluations { get; set; } = new List<Evaluation>();
     public ICollection<AssignmentCustomerDealer> AssignmentCustomerDealers { get; set; } = new List<AssignmentCustomerDealer>();
+
+    // Navigation - Bu bayinin bagli oldugu organizasyonlar (many-to-many)
+    public ICollection<CustomerDealerOrganization> OrganizationAssignments { get; set; } = new List<CustomerDealerOrganization>();
 }

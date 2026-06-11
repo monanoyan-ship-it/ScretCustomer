@@ -21,6 +21,8 @@ public class DealerService : IDealerService
         var query = _context.CustomerDealers
             .Include(d => d.Customer)
             .Include(d => d.ContactPersonnel)
+            .Include(d => d.OrganizationAssignments)
+                .ThenInclude(oa => oa.CustomerOrganization)
             .AsQueryable();
 
         // Apply filters
@@ -98,6 +100,8 @@ public class DealerService : IDealerService
         var dealer = await _context.CustomerDealers
             .Include(d => d.Customer)
             .Include(d => d.ContactPersonnel)
+            .Include(d => d.OrganizationAssignments)
+                .ThenInclude(oa => oa.CustomerOrganization)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (dealer == null)
@@ -142,6 +146,15 @@ public class DealerService : IDealerService
             CustomerId = dto.CustomerId
         };
 
+        // Organizasyon atamalari (coklu)
+        if (dto.OrganizationIds != null && dto.OrganizationIds.Any())
+        {
+            dealer.OrganizationAssignments = dto.OrganizationIds
+                .Distinct()
+                .Select(orgId => new CustomerDealerOrganization { CustomerOrganizationId = orgId })
+                .ToList();
+        }
+
         _context.CustomerDealers.Add(dealer);
         await _context.SaveChangesAsync();
 
@@ -150,7 +163,9 @@ public class DealerService : IDealerService
 
     public async Task<DealerDto?> UpdateAsync(int id, UpdateDealerDto dto)
     {
-        var dealer = await _context.CustomerDealers.FindAsync(id);
+        var dealer = await _context.CustomerDealers
+            .Include(d => d.OrganizationAssignments)
+            .FirstOrDefaultAsync(d => d.Id == id);
         if (dealer == null)
             return null;
 
@@ -168,6 +183,32 @@ public class DealerService : IDealerService
         dealer.DealerTypeId = dto.DealerTypeId;
         dealer.IsActive = dto.IsActive;
         dealer.Notes = dto.Notes;
+
+        // Organizasyon atamalarini senkronla (null = degisiklik yok)
+        if (dto.OrganizationIds != null)
+        {
+            var desired = dto.OrganizationIds.Distinct().ToList();
+            var existing = dealer.OrganizationAssignments.ToList();
+
+            // Istenmeyen atamalari kaldir (hard remove - junction pattern)
+            foreach (var assignment in existing)
+            {
+                if (!desired.Contains(assignment.CustomerOrganizationId))
+                    _context.CustomerDealerOrganizations.Remove(assignment);
+            }
+
+            // Yeni atamalari ekle
+            var existingIds = existing.Select(a => a.CustomerOrganizationId).ToHashSet();
+            foreach (var orgId in desired)
+            {
+                if (!existingIds.Contains(orgId))
+                    dealer.OrganizationAssignments.Add(new CustomerDealerOrganization
+                    {
+                        CustomerDealerId = dealer.Id,
+                        CustomerOrganizationId = orgId
+                    });
+            }
+        }
 
         await _context.SaveChangesAsync();
 
@@ -190,6 +231,8 @@ public class DealerService : IDealerService
         var dealers = await _context.CustomerDealers
             .Include(d => d.Customer)
             .Include(d => d.ContactPersonnel)
+            .Include(d => d.OrganizationAssignments)
+                .ThenInclude(oa => oa.CustomerOrganization)
             .Where(d => d.CustomerId == customerId)
             .OrderBy(d => d.Name)
             .ToListAsync();
@@ -260,6 +303,13 @@ public class DealerService : IDealerService
             Notes = dealer.Notes,
             CustomerId = dealer.CustomerId,
             CustomerName = dealer.Customer?.CompanyName,
+            OrganizationIds = dealer.OrganizationAssignments
+                .Select(oa => oa.CustomerOrganizationId)
+                .ToList(),
+            OrganizationNames = dealer.OrganizationAssignments
+                .Where(oa => oa.CustomerOrganization != null)
+                .Select(oa => oa.CustomerOrganization.Name)
+                .ToList(),
             EvaluationCount = evaluationCount,
             AverageScore = averageScore,
             CreatedAt = dealer.CreatedAt

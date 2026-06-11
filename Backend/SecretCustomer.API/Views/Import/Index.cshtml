@@ -16,6 +16,11 @@
                     <i class="bi bi-list-check me-2"></i>@Html.T("Import.ChecklistImport", "Checklist İçe Aktarma")
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dealer-tab" type="button" role="tab">
+                    <i class="bi bi-shop me-2"></i>@Html.T("Import.DealerImport", "Bayi İçe Aktarma")
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -384,6 +389,178 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Dealer Tab -->
+            <div class="tab-pane fade" id="dealer-tab" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-upload me-2"></i>@Html.T("Import.DealerImport", "Bayi İçe Aktarma")
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Info Box -->
+                        <div class="alert alert-info mb-4">
+                            <h6><i class="bi bi-info-circle me-2"></i>@Html.T("Import.DealerInfo", "CSV Kolon Bilgileri")</h6>
+                            <ul class="mb-0">
+                                <li><strong>Name</strong> = @Html.T("Import.Dealer.Name", "Bayi adı (zorunlu)")</li>
+                                <li><strong>Address, City, District, Phone, Email, ContactPerson</strong> = @Html.T("Import.Dealer.Contact", "İletişim ve konum bilgileri")</li>
+                                <li><strong>DealerType</strong> = @Html.T("Import.Dealer.Type", "Perakende, Toptan, Franchise, Yetkili Bayi (varsayılan: Perakende)")</li>
+                                <li><strong>Organizations</strong> = @Html.T("Import.Dealer.Organizations", "Organizasyon adları, | ile ayrılmış (yoksa oluşturulur)")</li>
+                                <li><strong>Notes</strong> = @Html.T("Import.Dealer.Notes", "Notlar")</li>
+                            </ul>
+                            <hr>
+                            <small>@Html.T("Import.Dealer.CustomerNote", "Firma yukarıdaki listeden seçilir; CSV'de firma kolonu bulunmaz.")</small>
+                        </div>
+
+                        <!-- Upload Form -->
+                        <form id="dealerUploadForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.Customer", "Müşteri") <span class="text-danger">*</span></label>
+                                        <select class="form-select" data-bind="value: dealerCustomerId, options: availableCustomers, optionsValue: 'id', optionsText: 'companyName', optionsCaption: '@Html.T("Import.SelectCustomer", "-- Firma Seçin --")'"></select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">@Html.T("Import.SelectCsvFile", "CSV Dosyası Seçin") <span class="text-danger">*</span></label>
+                                        <input type="file" class="form-control" id="dealerCsvFile" accept=".csv" data-bind="event: { change: onDealerFileSelected }">
+                                        <div class="form-text">@Html.T("Import.CsvFileNote", "Sadece .csv dosyaları kabul edilir (max 10MB)")</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-info text-white" data-bind="click: importDealers, disable: isLoading() || !dealerFile() || !dealerCustomerId()">
+                                    <span data-bind="visible: !isLoading()">
+                                        <i class="bi bi-upload me-2"></i>@Html.T("Common.Import", "İçe Aktar")
+                                    </span>
+                                    <span data-bind="visible: isLoading">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>@Html.T("Import.Processing", "İşleniyor...")
+                                    </span>
+                                </button>
+                                <a href="/api/import/dealers/template" class="btn btn-outline-secondary" download>
+                                    <i class="bi bi-download me-2"></i>@Html.T("Import.DownloadTemplate", "Örnek Şablon İndir")
+                                </a>
+                            </div>
+                        </form>
+
+                        <!-- Selected File Info -->
+                        <div data-bind="visible: dealerFile" class="mt-3">
+                            <div class="alert alert-secondary">
+                                <i class="bi bi-file-earmark-text me-2"></i>
+                                <strong>@Html.T("Import.SelectedFile", "Seçili Dosya"):</strong> <span data-bind="text: dealerFileName"></span>
+                                (<span data-bind="text: dealerFileSize"></span>)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dealer Result Section -->
+                <div class="mt-4" data-bind="visible: dealerResult">
+                    <div class="card shadow-sm">
+                        <div class="card-header" data-bind="css: { 'bg-success text-white': dealerResult() && dealerResult().success, 'bg-danger text-white': dealerResult() && !dealerResult().success }">
+                            <h5 class="mb-0">
+                                <i class="bi me-2" data-bind="css: { 'bi-check-circle': dealerResult() && dealerResult().success, 'bi-x-circle': dealerResult() && !dealerResult().success }"></i>
+                                @Html.T("Import.ImportResult", "İçe Aktarma Sonucu")
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <!-- Summary Stats -->
+                            <div class="row mb-4">
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0" data-bind="text: dealerResult() ? dealerResult().totalRows : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.TotalRows", "Toplam Satır")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-success" data-bind="text: dealerResult() ? dealerResult().dealersCreated : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.DealersCreated", "Bayi Oluşturuldu")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-primary" data-bind="text: dealerResult() ? dealerResult().organizationsLinked : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.OrganizationsLinked", "Organizasyon Bağlandı")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-warning" data-bind="text: dealerResult() ? dealerResult().dealersSkipped : 0"></h3>
+                                        <small class="text-muted">@Html.T("Import.Skipped", "Atlandı")</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center p-3 bg-light rounded">
+                                        <h3 class="mb-0 text-danger" data-bind="text: dealerResult() && dealerResult().errors ? dealerResult().errors.length : 0"></h3>
+                                        <small class="text-muted">@Html.T("Common.Error", "Hata")</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Errors -->
+                            <div data-bind="visible: dealerResult() && dealerResult().errors && dealerResult().errors.length > 0" class="mb-3">
+                                <h6 class="text-danger"><i class="bi bi-exclamation-triangle me-2"></i>@Html.T("Import.Errors", "Hatalar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: dealerResult() ? dealerResult().errors : [] -->
+                                    <li class="list-group-item list-group-item-danger" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                </ul>
+                            </div>
+
+                            <!-- Warnings -->
+                            <div data-bind="visible: dealerResult() && dealerResult().warnings && dealerResult().warnings.length > 0" class="mb-3">
+                                <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>@Html.T("Import.Warnings", "Uyarılar")</h6>
+                                <ul class="list-group">
+                                    <!-- ko foreach: dealerResult() ? dealerResult().warnings.slice(0, 20) : [] -->
+                                    <li class="list-group-item list-group-item-warning" data-bind="text: $data"></li>
+                                    <!-- /ko -->
+                                    <li class="list-group-item list-group-item-light" data-bind="visible: dealerResult() && dealerResult().warnings && dealerResult().warnings.length > 20">
+                                        ... @Html.T("Import.AndMore", "ve") <span data-bind="text: dealerResult() && dealerResult().warnings ? dealerResult().warnings.length - 20 : 0"></span> @Html.T("Import.MoreWarnings", "uyarı daha")
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Imported Dealers Table -->
+                            <div data-bind="visible: dealerResult() && dealerResult().importedDealers && dealerResult().importedDealers.length > 0">
+                                <h6><i class="bi bi-table me-2"></i>@Html.T("Import.ProcessedDealers", "İşlenen Bayiler (İlk 50)")</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>@Html.T("Dealer.Code", "Kod")</th>
+                                                <th>@Html.T("Dealer.Name", "Bayi Adı")</th>
+                                                <th>@Html.T("Import.Company", "Firma")</th>
+                                                <th>@Html.T("Dealer.Organizations", "Organizasyonlar")</th>
+                                                <th>@Html.T("Common.Status", "Durum")</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody data-bind="foreach: dealerResult() ? dealerResult().importedDealers.slice(0, 50) : []">
+                                            <tr>
+                                                <td data-bind="text: code"></td>
+                                                <td data-bind="text: name"></td>
+                                                <td data-bind="text: company"></td>
+                                                <td data-bind="text: organizations"></td>
+                                                <td>
+                                                    <span class="badge" data-bind="
+                                                        text: status,
+                                                        css: {
+                                                            'bg-success': status === 'Created',
+                                                            'bg-secondary': status === 'Skipped'
+                                                        }"></span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -412,9 +589,16 @@
         self.selectedCustomerId = ko.observable(null);
         self.availableCustomers = ko.observableArray([]);
 
-        // Load customers
+        // Dealer Import
+        self.dealerFile = ko.observable(null);
+        self.dealerFileName = ko.observable('');
+        self.dealerFileSize = ko.observable('');
+        self.dealerResult = ko.observable(null);
+        self.dealerCustomerId = ko.observable(null);
+
+        // Load customers (aktif müşteriler - düz dizi döner; /api/customers paged döndüğü için kullanılmaz)
         self.loadCustomers = function() {
-            fetch('/api/customers', { credentials: 'include' })
+            fetch('/api/customers/active', { credentials: 'include' })
                 .then(function(res) { return res.json(); })
                 .then(function(data) {
                     self.availableCustomers(data || []);
@@ -447,6 +631,19 @@
                 self.checklistResult(null);
             } else {
                 self.checklistFile(null);
+            }
+        };
+
+        // Dealer file selected
+        self.onDealerFileSelected = function(vm, event) {
+            var file = event.target.files[0];
+            if (file) {
+                self.dealerFile(file);
+                self.dealerFileName(file.name);
+                self.dealerFileSize(formatFileSize(file.size));
+                self.dealerResult(null);
+            } else {
+                self.dealerFile(null);
             }
         };
 
@@ -547,6 +744,58 @@
                     self.checklistFileName('');
                     self.checklistFileSize('');
                     document.getElementById('checklistCsvFile').value = '';
+                } else if (result.ok && !result.data.success) {
+                    toastr.warning(T('Import.SuccessWithErrors', 'İçe aktarma tamamlandı ancak hatalar var.'));
+                } else {
+                    toastr.error(T('Import.Failed', 'İçe aktarma başarısız.'));
+                }
+            })
+            .catch(function(error) {
+                console.error('Import error:', error);
+                toastr.error(T('Common.Error', 'İçe aktarma sırasında bir hata oluştu.'));
+            })
+            .finally(function() {
+                self.isLoading(false);
+            });
+        };
+
+        // Import Dealers
+        self.importDealers = function() {
+            if (!self.dealerFile()) {
+                toastr.warning(T('Import.SelectFileWarning', 'Lütfen bir CSV dosyası seçin.'));
+                return;
+            }
+
+            if (!self.dealerCustomerId()) {
+                toastr.warning(T('Import.SelectCustomerWarning', 'Lütfen bir firma seçin.'));
+                return;
+            }
+
+            self.isLoading(true);
+            self.dealerResult(null);
+
+            var formData = new FormData();
+            formData.append('file', self.dealerFile());
+
+            fetch('/api/import/dealers?customerId=' + self.dealerCustomerId(), {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            })
+            .then(function(response) {
+                return response.json().then(function(data) {
+                    return { ok: response.ok, data: data };
+                });
+            })
+            .then(function(result) {
+                self.dealerResult(result.data);
+
+                if (result.ok && result.data.success) {
+                    toastr.success(T('Import.Success', 'İçe aktarma başarıyla tamamlandı!'));
+                    self.dealerFile(null);
+                    self.dealerFileName('');
+                    self.dealerFileSize('');
+                    document.getElementById('dealerCsvFile').value = '';
                 } else if (result.ok && !result.data.success) {
                     toastr.warning(T('Import.SuccessWithErrors', 'İçe aktarma tamamlandı ancak hatalar var.'));
                 } else {

@@ -4901,6 +4901,48 @@
   <LocaleResource Name="Import.CustomersCreated">
     <Value>Firma Oluşturuldu</Value>
   </LocaleResource>
+  <LocaleResource Name="Import.DealerImport">
+    <Value>Bayi İçe Aktarma</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealerInfo">
+    <Value>CSV Kolon Bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Company">
+    <Value>Firma adı (zorunlu, yoksa oluşturulur)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Name">
+    <Value>Bayi adı (zorunlu)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Contact">
+    <Value>İletişim ve konum bilgileri</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Type">
+    <Value>Perakende, Toptan, Franchise, Yetkili Bayi (varsayılan: Perakende)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Organizations">
+    <Value>Organizasyon adları, | ile ayrılmış (yoksa oluşturulur)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.Notes">
+    <Value>Notlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.DealersCreated">
+    <Value>Bayi Oluşturuldu</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.OrganizationsLinked">
+    <Value>Organizasyon Bağlandı</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.ProcessedDealers">
+    <Value>İşlenen Bayiler (İlk 50)</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.Dealer.CustomerNote">
+    <Value>Firma yukarıdaki listeden seçilir; CSV'de firma kolonu bulunmaz.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomer">
+    <Value>-- Firma Seçin --</Value>
+  </LocaleResource>
+  <LocaleResource Name="Import.SelectCustomerWarning">
+    <Value>Lütfen bir firma seçin.</Value>
+  </LocaleResource>
   <LocaleResource Name="Import.PersonnelCreated">
     <Value>Personel Oluşturuldu</Value>
   </LocaleResource>
@@ -8066,6 +8108,15 @@
   </LocaleResource>
   <LocaleResource Name="Dealer.Notes">
     <Value>Notlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.NoOrganizations">
+    <Value>Bu müşteriye ait organizasyon bulunmuyor.</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.Organizations">
+    <Value>Organizasyonlar</Value>
+  </LocaleResource>
+  <LocaleResource Name="Dealer.OrganizationsHint">
+    <Value>Bayinin bağlı olduğu organizasyonları seçin</Value>
   </LocaleResource>
   <LocaleResource Name="Dealer.Phone">
     <Value>Telefon</Value>

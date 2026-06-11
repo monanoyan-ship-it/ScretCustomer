@@ -135,6 +135,95 @@ public class ImportApiController : BaseApiController
         return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "personnel_import_template.xlsx");
     }
 
+    #region Dealer Import
+
+    /// <summary>
+    /// CSV dosyasından bayi verilerini import eder (organizasyon bağlama dahil)
+    /// </summary>
+    [HttpPost("dealers")]
+    [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB limit
+    public async Task<ActionResult<DealerImportResultDto>> ImportDealers(
+        IFormFile file,
+        [FromQuery] int customerId)
+    {
+        try
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new { message = "Dosya seçilmedi." });
+            }
+
+            if (customerId <= 0)
+            {
+                return BadRequest(new { message = "Firma seçilmedi." });
+            }
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (extension != ".csv")
+            {
+                return BadRequest(new { message = "Sadece CSV dosyaları kabul edilir." });
+            }
+
+            using var stream = file.OpenReadStream();
+            var result = await _importService.ImportDealersFromCsvAsync(stream, customerId);
+
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            else
+            {
+                return BadRequest(result);
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CreateErrorResponse("Bayi import işlemi sırasında hata oluştu.", ex));
+        }
+    }
+
+    /// <summary>
+    /// Bayi import örnek Excel şablonu indirir
+    /// </summary>
+    [HttpGet("dealers/template")]
+    [AllowAnonymous]
+    public IActionResult GetDealerTemplate()
+    {
+        using var workbook = new XLWorkbook();
+        var ws = workbook.Worksheets.Add("Dealers");
+
+        // Header (Firma formdan seçilir - CSV'de Company yok)
+        var headers = new[] { "Name", "Address", "City", "District", "Phone", "Email", "ContactPerson", "DealerType", "Organizations", "Notes" };
+        for (int i = 0; i < headers.Length; i++)
+        {
+            ws.Cell(1, i + 1).Value = headers[i];
+        }
+
+        // Header style
+        var headerRange = ws.Range(1, 1, 1, headers.Length);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        // Sample data row 1
+        var row2 = new[] { "Kadıköy Şubesi", "Bağdat Cad. No:1", "İstanbul", "Kadıköy", "0216 123 4567", "kadikoy@bayi.com", "Ahmet Yılmaz", "Perakende", "Marmara Bölge|İstanbul Anadolu", "" };
+        // Sample data row 2
+        var row3 = new[] { "Çankaya Şubesi", "Atatürk Bulvarı No:5", "Ankara", "Çankaya", "0312 555 1234", "cankaya@bayi.com", "Mehmet Kaya", "Yetkili Bayi", "İç Anadolu Bölge", "Açılış 2025" };
+        for (int i = 0; i < row2.Length; i++)
+        {
+            ws.Cell(2, i + 1).Value = row2[i];
+            ws.Cell(3, i + 1).Value = row3[i];
+        }
+
+        ws.Columns().AdjustToContents();
+
+        using var stream = new MemoryStream();
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+        return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "dealer_import_template.xlsx");
+    }
+
+    #endregion
+
     #region Checklist Import
 
     /// <summary>

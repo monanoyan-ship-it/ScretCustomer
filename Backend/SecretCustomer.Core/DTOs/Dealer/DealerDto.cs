@@ -31,6 +31,10 @@ public class DealerDto
     public int CustomerId { get; set; }
     public string? CustomerName { get; set; }
 
+    // Bagli organizasyonlar (many-to-many)
+    public List<int> OrganizationIds { get; set; } = new();
+    public List<string> OrganizationNames { get; set; } = new();
+
     // Stats
     public int EvaluationCount { get; set; }
     public decimal? AverageScore { get; set; }
@@ -86,6 +90,11 @@ public class CreateDealerDto
 
     [Required(ErrorMessage = "Müşteri seçimi zorunludur")]
     public int CustomerId { get; set; }
+
+    /// <summary>
+    /// Bayinin baglanacagi organizasyonlar (opsiyonel, coklu)
+    /// </summary>
+    public List<int>? OrganizationIds { get; set; }
 }
 
 /// <summary>
@@ -133,6 +142,11 @@ public class UpdateDealerDto
     public bool IsActive { get; set; } = true;
 
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Bayinin baglanacagi organizasyonlar (opsiyonel, coklu)
+    /// </summary>
+    public List<int>? OrganizationIds { get; set; }
 }
 
 /// <summary>
